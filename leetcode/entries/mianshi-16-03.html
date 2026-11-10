@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>交点 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 841 / 1159</span>
+  <nav class="pn"><a href="0362.html">上一篇</a><a href="0220.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 16.03. </span>交点</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">数学</li><li class="tag">几何</li><li class="tag">数学</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">叉积判平行：不平行就用参数 t、u 判交点是否都落在线段内；共线则投影取重叠区间的最小 X 端点。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>把线段写成 <code>起点 + t·方向</code>。<code>r×s ≠ 0</code>（叉积）时两直线交于一点：<code>t = q×s/(r×s)</code>、<code>u = q×r/(r×s)</code>，<code>t、u 都在 [0,1]</code> 才是线段交点。</li><li><strong>整数坐标全程用叉积/点积的整数比较</strong>（<code>in01</code> 用交叉相乘判 <code>[0,1]</code>），避免浮点误差；只在最后一步转 <code>double</code>。</li><li>共线（<code>r×s = 0</code> 且 <code>q×r = 0</code>）：两段投影到段 1 的参数轴，重叠区间 <code>[lo, hi]</code> 非空才有交；沿段 1 方向 X 单调，<code>rx &gt; 0</code> 取 <code>lo</code> 端、否则取 <code>hi</code> 端，正好是「X 最小、再 Y 最小」。</li><li>线段退化成点时单独判「点是否在另一段上」。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">double</span>[] intersection(<span class="k">int</span>[] start1, <span class="k">int</span>[] end1, <span class="k">int</span>[] start2, <span class="k">int</span>[] end2) {</span><span class="ln"><span class="no">3</span>        <span class="k">long</span> x1 = start1[<span class="n">0</span>], y1 = start1[<span class="n">1</span>], x2 = end1[<span class="n">0</span>], y2 = end1[<span class="n">1</span>];</span><span class="ln"><span class="no">4</span>        <span class="k">long</span> x3 = start2[<span class="n">0</span>], y3 = start2[<span class="n">1</span>], x4 = end2[<span class="n">0</span>], y4 = end2[<span class="n">1</span>];</span><span class="ln"><span class="no">5</span>        <span class="k">long</span> rx = x2 - x1, ry = y2 - y1, sx = x4 - x3, sy = y4 - y3;</span><span class="ln"><span class="no">6</span>        <span class="k">boolean</span> deg1 = rx == <span class="n">0</span> &amp;&amp; ry == <span class="n">0</span>, deg2 = sx == <span class="n">0</span> &amp;&amp; sy == <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">if</span> (deg1 &amp;&amp; deg2) <span class="k">return</span> x1 == x3 &amp;&amp; y1 == y3 ? pt(x1, y1) : <span class="k">new</span> <span class="k">double</span>[<span class="n">0</span>];</span><span class="ln"><span class="no">8</span>        <span class="k">if</span> (deg1) <span class="k">return</span> onSeg(x3, y3, sx, sy, x1, y1) ? pt(x1, y1) : <span class="k">new</span> <span class="k">double</span>[<span class="n">0</span>];</span><span class="ln"><span class="no">9</span>        <span class="k">if</span> (deg2) <span class="k">return</span> onSeg(x1, y1, rx, ry, x3, y3) ? pt(x3, y3) : <span class="k">new</span> <span class="k">double</span>[<span class="n">0</span>];</span><span class="ln"><span class="no">10</span>        <span class="k">long</span> denom = rx * sy - ry * sx;   <span class="c">// r×s：非 0 表示两线段方向不平行</span></span><span class="ln"><span class="no">11</span>        <span class="k">long</span> qx = x3 - x1, qy = y3 - y1;</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (denom != <span class="n">0</span>) {</span><span class="ln"><span class="no">13</span>            <span class="k">long</span> tn = qx * sy - qy * sx, un = qx * ry - qy * rx;</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (in01(tn, denom) &amp;&amp; in01(un, denom)) {</span><span class="ln"><span class="no">15</span>                <span class="k">double</span> t = (<span class="k">double</span>) tn / denom;</span><span class="ln"><span class="no">16</span>                <span class="k">return</span> pt(x1 + rx * t, y1 + ry * t);</span><span class="ln"><span class="no">17</span>            }</span><span class="ln"><span class="no">18</span>            <span class="k">return</span> <span class="k">new</span> <span class="k">double</span>[<span class="n">0</span>];</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">if</span> (qx * ry - qy * rx != <span class="n">0</span>) <span class="k">return</span> <span class="k">new</span> <span class="k">double</span>[<span class="n">0</span>];   <span class="c">// 平行但不共线</span></span><span class="ln"><span class="no">21</span>        <span class="c">// 共线：把两段都投影到段 1 的参数轴上，重叠区间的端点即候选</span></span><span class="ln"><span class="no">22</span>        <span class="k">long</span> rr = rx * rx + ry * ry;</span><span class="ln"><span class="no">23</span>        <span class="k">long</span> t0 = qx * rx + qy * ry;                            <span class="c">// 段 2 起点的投影（分母 rr）</span></span><span class="ln"><span class="no">24</span>        <span class="k">long</span> t1 = t0 + sx * rx + sy * ry;                       <span class="c">// 段 2 终点的投影</span></span><span class="ln"><span class="no">25</span>        <span class="k">long</span> lo = <span class="t">Math</span>.max(<span class="n">0</span>, <span class="t">Math</span>.min(t0, t1)), hi = <span class="t">Math</span>.min(rr, <span class="t">Math</span>.max(t0, t1));</span><span class="ln"><span class="no">26</span>        <span class="k">if</span> (lo &gt; hi) <span class="k">return</span> <span class="k">new</span> <span class="k">double</span>[<span class="n">0</span>];</span><span class="ln"><span class="no">27</span>        <span class="c">// 重叠段上取 X 最小（X 同取 Y 最小）的端点：沿段 1 方向 X 单调，选对应参数即可</span></span><span class="ln"><span class="no">28</span>        <span class="k">long</span> pick = rx &gt; <span class="n">0</span> || (rx == <span class="n">0</span> &amp;&amp; ry &gt; <span class="n">0</span>) ? lo : hi;</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> pt(x1 + (<span class="k">double</span>) rx * pick / rr, y1 + (<span class="k">double</span>) ry * pick / rr);</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span> </span><span class="ln"><span class="no">32</span>    <span class="c">// t = num/den（den ≠ 0）是否落在 [0, 1]，用整数比较避免浮点误差</span></span><span class="ln"><span class="no">33</span>    <span class="k">private</span> <span class="k">boolean</span> in01(<span class="k">long</span> num, <span class="k">long</span> den) {</span><span class="ln"><span class="no">34</span>        <span class="k">if</span> (den &lt; <span class="n">0</span>) { num = -num; den = -den; }</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> num &gt;= <span class="n">0</span> &amp;&amp; num &lt;= den;</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span> </span><span class="ln"><span class="no">38</span>    <span class="c">// 点 (px,py) 是否在线段 (起点 qx,qy，方向 dx,dy) 上：共线且投影在段内</span></span><span class="ln"><span class="no">39</span>    <span class="k">private</span> <span class="k">boolean</span> onSeg(<span class="k">long</span> qx, <span class="k">long</span> qy, <span class="k">long</span> dx, <span class="k">long</span> dy, <span class="k">long</span> px, <span class="k">long</span> py) {</span><span class="ln"><span class="no">40</span>        <span class="k">long</span> ex = px - qx, ey = py - qy;</span><span class="ln"><span class="no">41</span>        <span class="k">return</span> ex * dy - ey * dx == <span class="n">0</span> &amp;&amp; ex * dx + ey * dy &gt;= <span class="n">0</span> &amp;&amp; ex * dx + ey * dy &lt;= dx * dx + dy * dy;</span><span class="ln"><span class="no">42</span>    }</span><span class="ln"><span class="no">43</span> </span><span class="ln"><span class="no">44</span>    <span class="k">private</span> <span class="k">double</span>[] pt(<span class="k">double</span> x, <span class="k">double</span> y) {</span><span class="ln"><span class="no">45</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">double</span>[]{x, y};</span><span class="ln"><span class="no">46</span>    }</span><span class="ln"><span class="no">47</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定两条线段（表示为起点<code>start = {X1, Y1}</code>和终点<code>end = {X2, Y2}</code>），如果它们有交点，请计算其交点，没有交点则返回空值。</p>
+
+<p>要求浮点型误差不超过<code>10^-6</code>。若有多个交点（线段重叠）则返回 X 值最小的点，X 坐标相同则返回 Y 值最小的点。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>
+line1 = {0, 0}, {1, 0}
+line2 = {1, 1}, {0, -1}
+<strong>输出：</strong> {0.5, 0}
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>
+line1 = {0, 0}, {3, 3}
+line2 = {1, 1}, {2, 2}
+<strong>输出：</strong> {1, 1}
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>
+line1 = {0, 0}, {1, 1}
+line2 = {1, 0}, {2, 1}
+<strong>输出：</strong> {}，两条线段没有交点
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>坐标绝对值不会超过 2^7</li>
+	<li>输入的坐标均是有效的二维坐标</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public double[] intersection(int[] start1, int[] end1, int[] start2, int[] end2) {", "        long x1 = start1[0], y1 = start1[1], x2 = end1[0], y2 = end1[1];", "        long x3 = start2[0], y3 = start2[1], x4 = end2[0], y4 = end2[1];", "        long rx = x2 - x1, ry = y2 - y1, sx = x4 - x3, sy = y4 - y3;", "        boolean deg1 = rx == 0 && ry == 0, deg2 = sx == 0 && sy == 0;", "        if (deg1 && deg2) return x1 == x3 && y1 == y3 ? pt(x1, y1) : new double[0];", "        if (deg1) return onSeg(x3, y3, sx, sy, x1, y1) ? pt(x1, y1) : new double[0];", "        if (deg2) return onSeg(x1, y1, rx, ry, x3, y3) ? pt(x3, y3) : new double[0];", "        long denom = rx * sy - ry * sx;   // r×s：非 0 表示两线段方向不平行", "        long qx = x3 - x1, qy = y3 - y1;", "        if (denom != 0) {", "            long tn = qx * sy - qy * sx, un = qx * ry - qy * rx;", "            if (in01(tn, denom) && in01(un, denom)) {", "                double t = (double) tn / denom;", "                return pt(x1 + rx * t, y1 + ry * t);", "            }", "            return new double[0];", "        }", "        if (qx * ry - qy * rx != 0) return new double[0];   // 平行但不共线", "        // 共线：把两段都投影到段 1 的参数轴上，重叠区间的端点即候选", "        long rr = rx * rx + ry * ry;", "        long t0 = qx * rx + qy * ry;                            // 段 2 起点的投影（分母 rr）", "        long t1 = t0 + sx * rx + sy * ry;                       // 段 2 终点的投影", "        long lo = Math.max(0, Math.min(t0, t1)), hi = Math.min(rr, Math.max(t0, t1));", "        if (lo > hi) return new double[0];", "        // 重叠段上取 X 最小（X 同取 Y 最小）的端点：沿段 1 方向 X 单调，选对应参数即可", "        long pick = rx > 0 || (rx == 0 && ry > 0) ? lo : hi;", "        return pt(x1 + (double) rx * pick / rr, y1 + (double) ry * pick / rr);", "    }", "", "    // t = num/den（den ≠ 0）是否落在 [0, 1]，用整数比较避免浮点误差", "    private boolean in01(long num, long den) {", "        if (den < 0) { num = -num; den = -den; }", "        return num >= 0 && num <= den;", "    }", "", "    // 点 (px,py) 是否在线段 (起点 qx,qy，方向 dx,dy) 上：共线且投影在段内", "    private boolean onSeg(long qx, long qy, long dx, long dy, long px, long py) {", "        long ex = px - qx, ey = py - qy;", "        return ex * dy - ey * dx == 0 && ex * dx + ey * dy >= 0 && ex * dx + ey * dy <= dx * dx + dy * dy;", "    }", "", "    private double[] pt(double x, double y) {", "        return new double[]{x, y};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 16.03. 交点 —— 图解：叉积判平行 → 参数 t/u 判落段内 → 共线时投影取重叠端点。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { start1: [0, 0], end1: [3, 3], start2: [0, 2], end2: [2, 0] };
+
+function trace(input) {
+  var s1 = input.start1, e1 = input.end1, s2 = input.start2, e2 = input.end2;
+  var frames = [];
+  var DEN = 'long denom = rx * sy - ry * sx;';
+  var TN = 'long tn = qx * sy - qy * sx, un = qx * ry - qy * rx;';
+  var IN = 'if (in01(tn, denom) && in01(un, denom)) {';
+  var RET = 'return pt(x1 + rx * t, y1 + ry * t);';
+
+  var x1 = s1[0], y1 = s1[1], x2 = e1[0], y2 = e1[1];
+  var x3 = s2[0], y3 = s2[1], x4 = e2[0], y4 = e2[1];
+  var rx = x2 - x1, ry = y2 - y1, sx = x4 - x3, sy = y4 - y3;
+  var deg1 = rx === 0 && ry === 0, deg2 = sx === 0 && sy === 0;
+  var qx = x3 - x1, qy = y3 - y1;
+
+  function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = a % b; a = b; b = t; } return a || 1; }
+  function frac(num, den) {
+    if (num === 0) return '0';
+    var g = gcd(num, den);
+    num /= g; den /= g;
+    if (den < 0) { num = -num; den = -den; }
+    return den === 1 ? String(num) : num + '/' + den;
+  }
+
+  // 与 Solution.java 相同的完整算法（退化/平行/共线分支照搬）
+  var result = [];
+  var crossed = false;
+  var denom = rx * sy - ry * sx;
+  function in01(num, den) {
+    if (den < 0) { num = -num; den = -den; }
+    return num >= 0 && num <= den;
+  }
+  function push(x, y) { result = [Math.round(x * 1e6), Math.round(y * 1e6)]; }
+  if (deg1 && deg2) {
+    if (x1 === x3 && y1 === y3) push(x1, y1);
+  } else if (deg1) {
+    var ex1 = x1 - x3, ey1 = y1 - y3;
+    if (ex1 * sy - ey1 * sx === 0 && ex1 * sx + ey1 * sy >= 0 && ex1 * sx + ey1 * sy <= sx * sx + sy * sy) push(x1, y1);
+  } else if (deg2) {
+    var ex2 = x3 - x1, ey2 = y3 - y1;
+    if (ex2 * ry - ey2 * rx === 0 && ex2 * rx + ey2 * ry >= 0 && ex2 * rx + ey2 * ry <= rx * rx + ry * ry) push(x3, y3);
+  } else if (denom !== 0) {
+    var tn = qx * sy - qy * sx, un = qx * ry - qy * rx;
+    if (in01(tn, denom) && in01(un, denom)) {
+      crossed = true;
+      var t = tn / denom;
+      push(x1 + rx * t, y1 + ry * t);
+    }
+  } else if (qx * ry - qy * rx !== 0) {
+    // 平行但不共线：无交点
+  } else {
+    var rr = rx * rx + ry * ry;
+    var t0 = qx * rx + qy * ry, t1 = t0 + sx * rx + sy * ry;
+    var lo = Math.max(0, Math.min(t0, t1)), hi = Math.min(rr, Math.max(t0, t1));
+    if (lo <= hi) {
+      var pick = rx > 0 || (rx === 0 && ry > 0) ? lo : hi;
+      push(x1 + rx * pick / rr, y1 + ry * pick / rr);
+    }
+  }
+
+  // 网格面板：只有坐标都落在 0..3 的小网格里才画（图解示例必然满足）
+  var useGrid = [x1, y1, x2, y2, x3, y3, x4, y4].every(function (v) { return v >= 0 && v <= 3; });
+  function lattice(seg) {
+    var ax = seg[0], ay = seg[1], bx = seg[2], by = seg[3];
+    var dx = bx - ax, dy = by - ay, g = gcd(dx, dy), pts = [];
+    for (var i = 0; i <= g; i++) pts.push([ax + dx / g * i, ay + dy / g * i]);
+    return pts;
+  }
+  function gridPanel(seg, cls, extra) {
+    var rows = [], marks = {}, r, c;
+    var pts = lattice(seg);
+    pts.forEach(function (p) { marks[(3 - p[1]) + ',' + p[0]] = cls; });
+    if (extra) for (var key in extra) marks[key] = extra[key];
+    for (r = 0; r < 4; r++) {
+      var row = [];
+      for (c = 0; c < 4; c++) row.push('');
+      rows.push(row);
+    }
+    return Viz.grid(rows, {
+      title: '线段 ' + seg.title + '：' + '(' + seg[0] + ',' + seg[1] + ')→(' + seg[2] + ',' + seg[3] + ')',
+      marks: marks,
+      rowLabels: ['y=3', 'y=2', 'y=1', 'y=0'],
+      colLabels: ['x=0', 'x=1', 'x=2', 'x=3']
+    });
+  }
+  var g1 = [{ title: '1', 0: x1, 1: y1, 2: x2, 3: y2 }, { title: '2', 0: x3, 1: y3, 2: x4, 3: y4 }];
+  if (useGrid && crossed) {
+    frames.push(Viz.frame(DEN, 'r×s = ' + denom + ' ≠ 0：两线段方向不平行，延长线必交于一点', [
+      gridPanel(g1[0], 'win'),
+      gridPanel(g1[1], 'win'),
+      Viz.vars([{ name: 'r×s', v: String(denom), cls: 'new' }, { name: '结论', v: '不平行' }])
+    ]));
+    frames.push(Viz.frame(TN, '交点参数：t = (起点2−起点1)×s / (r×s) = ' + frac(tn, denom) + '，u = ' + frac(un, denom), [
+      Viz.vars([
+        { name: 't（在线段 1 上的位置）', v: frac(tn, denom), cls: 'new' },
+        { name: 'u（在线段 2 上的位置）', v: frac(un, denom), cls: 'new' }
+      ])
+    ]));
+    var ip = [x1 + rx * (tn / denom), y1 + ry * (tn / denom)];
+    var ipTxt = '(' + Math.round(ip[0] * 1e6) / 1e6 + ', ' + Math.round(ip[1] * 1e6) / 1e6 + ')';
+    var ipKey = null;
+    if (Number.isInteger(ip[0]) && Number.isInteger(ip[1]) && ip[0] >= 0 && ip[0] <= 3 && ip[1] >= 0 && ip[1] <= 3) ipKey = (3 - ip[1]) + ',' + ip[0];
+    frames.push(Viz.frame(IN, '0 ≤ t ≤ 1 且 0 ≤ u ≤ 1：交点同时落在线段 1 和线段 2 上', [
+      gridPanel(g1[0], 'win', ipKey ? (function () { var m = {}; m[ipKey] = 'cur'; return m; })() : null),
+      gridPanel(g1[1], 'win', ipKey ? (function () { var m = {}; m[ipKey] = 'cur'; return m; })() : null),
+      Viz.vars([{ name: 't ∈ [0,1]', v: '✓' }, { name: 'u ∈ [0,1]', v: '✓' }])
+    ]));
+    frames.push(Viz.frame(RET, '交点 = 起点1 + t·r = ' + ipTxt + '，两段的网格都停在同一格', [
+      gridPanel(g1[0], 'win', ipKey ? (function () { var m = {}; m[ipKey] = 'done'; return m; })() : null),
+      gridPanel(g1[1], 'win', ipKey ? (function () { var m = {}; m[ipKey] = 'done'; return m; })() : null),
+      Viz.vars([{ name: '交点', v: ipTxt, cls: 'done' }])
+    ]));
+  }
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

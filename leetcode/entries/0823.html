@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>带因子的二叉树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 899 / 1159</span>
+  <nav class="pn"><a href="0833.html">上一篇</a><a href="1242.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">823. </span>带因子的二叉树</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">动态规划</li><li class="aux">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">动态规划</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">排序 + DP：从小到大算 dp[a] = 1 + Σ 因子对的 dp 乘积（左右相同计 1 组、不同计 2 组），全部累加取模。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>根值 <code>a</code> 的树：左右孩子都是数组里更小的值且乘积等于 <code>a</code>，所以先<strong>排序</strong>，dp 只依赖更小的值。</li><li>转移：<code>dp[i] += dp[l] × dp[r]</code>（<code>arr[l] × arr[r] == arr[i]</code>）；左右因子相同计 1 组、不同则左右交换计 2 组，所以只枚举左 ≤ 右再乘 2。</li><li>每个值至少有单结点这 1 棵；答案 = 所有 <code>dp[i]</code> 累加对 <code>10⁹+7</code> 取模。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> numFactoredBinaryTrees(<span class="k">int</span>[] arr) {</span><span class="ln"><span class="no">5</span>        <span class="t">Arrays</span>.sort(arr);</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> n = arr.length;</span><span class="ln"><span class="no">7</span>        <span class="k">final</span> <span class="k">long</span> MOD = <span class="n">1_000_000_007</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">long</span>[] dp = <span class="k">new</span> <span class="k">long</span>[n];                      <span class="c">// dp[i]：以 arr[i] 为根的因子二叉树数</span></span><span class="ln"><span class="no">9</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; idx = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();  <span class="c">// 值 → 排序后的下标</span></span><span class="ln"><span class="no">10</span>        <span class="k">long</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">12</span>            dp[i] = <span class="n">1</span>;                                <span class="c">// 单结点树</span></span><span class="ln"><span class="no">13</span>            <span class="k">for</span> (<span class="k">int</span> l = <span class="n">0</span>; l &lt; i; l++) {</span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (arr[i] % arr[l] != <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">15</span>                <span class="t">Integer</span> r = idx.get(arr[i] / arr[l]);</span><span class="ln"><span class="no">16</span>                <span class="c">// 只枚举左因子 ≤ 右因子：相同算 1 组，不同左右交换算 2 组</span></span><span class="ln"><span class="no">17</span>                <span class="k">if</span> (r == <span class="k">null</span> || arr[r] &lt; arr[l]) <span class="k">continue</span>;</span><span class="ln"><span class="no">18</span>                dp[i] = (dp[i] + dp[l] * dp[r] * (l == r ? <span class="n">1</span> : <span class="n">2</span>)) % MOD;</span><span class="ln"><span class="no">19</span>            }</span><span class="ln"><span class="no">20</span>            idx.put(arr[i], i);</span><span class="ln"><span class="no">21</span>            ans = (ans + dp[i]) % MOD;</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> (<span class="k">int</span>) ans;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给出一个含有不重复整数元素的数组 <code>arr</code> ，每个整数 <code>arr[i]</code> 均大于 1。</p>
+
+<p>用这些整数来构建二叉树，每个整数可以使用任意次数。其中：每个非叶结点的值应等于它的两个子结点的值的乘积。</p>
+
+<p>满足条件的二叉树一共有多少个？答案可能很大，返回<strong> 对 </strong><code>10<sup>9</sup> + 7</code> <strong>取余</strong> 的结果。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> <code>arr = [2, 4]</code>
+<strong>输出:</strong> 3
+<strong>解释:</strong> 可以得到这些二叉树: <code>[2], [4], [4, 2, 2]</code></pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> <code>arr = [2, 4, 5, 10]</code>
+<strong>输出:</strong> <code>7</code>
+<strong>解释:</strong> 可以得到这些二叉树: <code>[2], [4], [5], [10], [4, 2, 2], [10, 2, 5], [10, 5, 2]</code>.</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= arr.length &lt;= 1000</code></li>
+	<li><code>2 &lt;= arr[i] &lt;= 10<sup>9</sup></code></li>
+	<li><code>arr</code> 中的所有值 <strong>互不相同</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int numFactoredBinaryTrees(int[] arr) {", "        Arrays.sort(arr);", "        int n = arr.length;", "        final long MOD = 1_000_000_007;", "        long[] dp = new long[n];                      // dp[i]：以 arr[i] 为根的因子二叉树数", "        Map<Integer, Integer> idx = new HashMap<>();  // 值 → 排序后的下标", "        long ans = 0;", "        for (int i = 0; i < n; i++) {", "            dp[i] = 1;                                // 单结点树", "            for (int l = 0; l < i; l++) {", "                if (arr[i] % arr[l] != 0) continue;", "                Integer r = idx.get(arr[i] / arr[l]);", "                // 只枚举左因子 ≤ 右因子：相同算 1 组，不同左右交换算 2 组", "                if (r == null || arr[r] < arr[l]) continue;", "                dp[i] = (dp[i] + dp[l] * dp[r] * (l == r ? 1 : 2)) % MOD;", "            }", "            idx.put(arr[i], i);", "            ans = (ans + dp[i]) % MOD;", "        }", "        return (int) ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 823. 带因子的二叉树 —— 图解：排序后逐值做 DP，因子对计数，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [2, 4, 5, 10] };
+
+function trace(input) {
+  var arr = input.arr.slice().sort(function (a, b) { return a - b; });
+  var n = arr.length;
+  var MOD = 1000000007;
+  var idx = {};          // 值 → 排序后的下标
+  var dp = [];           // dp[i]：以 arr[i] 为根的树数
+  var ans = 0;
+  var frames = [];
+
+  function arrPanel(i) {
+    var marks = {};
+    if (i != null) marks[i] = 'cur';
+    return Viz.cells(arr, { title: '排序后的 arr', marks: marks });
+  }
+  function tablePanel(chgVal) {
+    var rows = [];
+    for (var j = 0; j < dp.length; j++) {
+      rows.push({ k: String(arr[j]), v: String(dp[j]), cls: arr[j] === chgVal ? 'chg' : '' });
+    }
+    return Viz.table('dp：以该值为根的树数', rows);
+  }
+  function snap(at, key, i, chgVal) {
+    frames.push(Viz.frame(at, key, [arrPanel(i), tablePanel(chgVal), Viz.vars([{ name: 'ans（累加）', v: ans, cls: 'chg' }])]));
+  }
+
+  for (var i = 0; i < n; i++) {
+    dp[i] = 1;
+    if (i === 0) snap('dp[i] = 1;', '每个值先算单结点树：dp = 1', i, null);
+    for (var l = 0; l < i; l++) {
+      if (arr[i] % arr[l] !== 0) continue;
+      var r = idx[Math.floor(arr[i] / arr[l])];
+      if (r === undefined || arr[r] < arr[l]) continue;
+      dp[i] = (dp[i] + dp[l] * dp[r] * (l === r ? 1 : 2)) % MOD;
+      if (arr[i] === 4) snap('dp[i] = (dp[i] + dp[l] * dp[r] * (l == r ? 1 : 2)) % MOD;',
+        '4 = 2×2：左右同因子，计 1 组 → 2 棵', i, 4);
+      if (arr[i] === 10 && l === 0) snap('dp[i] = (dp[i] + dp[l] * dp[r] * (l == r ? 1 : 2)) % MOD;',
+        '10 = 2×5：左右可交换，计 2 组 → 3 棵', i, 10);
+    }
+    idx[arr[i]] = i;
+    ans = (ans + dp[i]) % MOD;
+  }
+
+  snap('ans = (ans + dp[i]) % MOD;', '全部累加：Σ dp = ' + ans, null, null);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

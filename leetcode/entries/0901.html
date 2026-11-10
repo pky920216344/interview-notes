@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>股票价格跨度 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 733 / 1159</span>
+  <nav class="pn"><a href="1020.html">上一篇</a><a href="0589.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">901. </span>股票价格跨度</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">单调栈</li><li class="tag">栈</li><li class="tag">设计</li><li class="tag">数据流</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">单调栈只留比今天高的价格；弹出的天把自己已算好的跨度整体并入今天。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>跨度 = 往回数连续 <code>≤ price</code> 的天数；比今天高的价格是挡板，挡板内的日子可以整段归并。</li><li>栈存 <code>[价格, 跨度]</code>，从底到顶严格递减；<code>next</code> 时把所有 <code>≤ price</code> 的弹出，<code>span</code> 累加它们的跨度再入栈。</li><li>被弹的天 ≤ 当前价，以后永远不会再挡住任何一天，所以放心并入；每个价格至多进出栈一次，均摊 O(1)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 均摊 O(1)（每个价格至多进出栈一次），空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">StockSpanner</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 栈从底到顶价格严格递减，元素是 [价格, 那天已算好的跨度]</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Deque</span>&lt;<span class="k">int</span>[]&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">StockSpanner</span>() {</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">public</span> <span class="k">int</span> next(<span class="k">int</span> price) {</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> span = <span class="n">1</span>;   <span class="c">// 今天自己先算 1 天</span></span><span class="ln"><span class="no">12</span>        <span class="c">// 弹掉所有 ≤ 今天的价格：被弹的天连同它的跨度一起并入今天</span></span><span class="ln"><span class="no">13</span>        <span class="k">while</span> (!stack.isEmpty() &amp;&amp; stack.peek()[<span class="n">0</span>] &lt;= price) {</span><span class="ln"><span class="no">14</span>            span += stack.pop()[<span class="n">1</span>];</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        stack.push(<span class="k">new</span> <span class="k">int</span>[]{price, span});</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> span;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>设计一种算法，收集某支股票的每日价格报价，并返回该股票当前日期的 <strong>价格跨度</strong>。</p>
+
+<p>股票在某一天的&nbsp;<strong>价格跨度&nbsp;</strong>是指：从当天开始向前，连续的股票价格小于或等于当天价格的最大天数。</p>
+
+<ul>
+	<li>例如，如果股票过去四天的价格为 <code>[7,2,1,2]</code>，今天的价格为 <code>2</code>，那么今天的价格跨度为 <code>4</code>，因为从今天开始向前，有连续 4&nbsp;天的股票价格小于或等于 2。</li>
+	<li>同样，如果股票过去四天的价格为 <code>[7,34,1,2]</code>，今天的价格为 <code>8</code>，那么今天的价格跨度为 <code>3</code>，因为从今天开始向前，有连续 3 天的股票价格小于或等于 8。</li>
+</ul>
+
+<p>实现 <code>StockSpanner</code> 类：</p>
+
+<ul>
+	<li><code>StockSpanner()</code> 初始化该类的对象。</li>
+	<li><code>int next(int price)</code> 给定今天的股票价格 <code>price</code>，返回今天股票价格的 <strong>价格跨度</strong>。</li>
+</ul>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<pre>
+<strong>输入</strong>
+["StockSpanner", "next", "next", "next", "next", "next", "next", "next"]
+[[], [100], [80], [60], [70], [60], [75], [85]]
+<strong>输出</strong>
+[null, 1, 1, 1, 2, 1, 4, 6]
+
+<strong>解释</strong>
+StockSpanner stockSpanner = new StockSpanner();
+stockSpanner.next(100); // 返回 1
+stockSpanner.next(80);  // 返回 1
+stockSpanner.next(60);  // 返回 1
+stockSpanner.next(70);  // 返回 2
+stockSpanner.next(60);  // 返回 1
+stockSpanner.next(75);  // 返回 4，因为包含今天在内的最后 4 天的价格都小于或等于今天的价格 75。
+stockSpanner.next(85);  // 返回 6
+</pre>
+
+
+
+<p><strong>约束条件：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= price &lt;= 10<sup>5</sup></code></li>
+	<li>最多会调用 <code>10<sup>4</sup></code> 次 <code>next</code>。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class StockSpanner {", "    // 栈从底到顶价格严格递减，元素是 [价格, 那天已算好的跨度]", "    private final Deque<int[]> stack = new ArrayDeque<>();", "", "    public StockSpanner() {", "    }", "", "    public int next(int price) {", "        int span = 1;   // 今天自己先算 1 天", "        // 弹掉所有 ≤ 今天的价格：被弹的天连同它的跨度一起并入今天", "        while (!stack.isEmpty() && stack.peek()[0] <= price) {", "            span += stack.pop()[1];", "        }", "        stack.push(new int[]{price, span});", "        return span;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 901. 股票价格跨度 —— 图解：单调栈 [价格, 跨度]，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { prices: [100, 80, 60, 70, 60, 75, 85] };
+
+function trace(input) {
+  var prices = input.prices;
+  var stack = [];   // 从底到顶价格严格递减，元素 [价格, 跨度, 第几天]
+  var out = [];
+  var frames = [];
+  var cur = null;
+  var shotFirstPop = false, shotSecondPop = false, shotToBottom = false;
+
+  function pricesPanel(popped, today) {
+    var marks = {};
+    for (var i = 0; i < prices.length; i++) if (i < today) marks[i] = 'win';
+    if (today >= 0) marks[today] = 'cur';
+    (popped || []).forEach(function (d) { marks[d] = 'bad'; });
+    return Viz.cells(prices.map(String), { title: '逐日报价（红 = 这一弹被并掉的日子）', marks: marks });
+  }
+  function stackPanel() {
+    var rows = [];
+    for (var i = stack.length - 1; i >= 0; i--) rows.push({ k: String(stack[i][0]), v: '跨度 ' + stack[i][1] });
+    return Viz.table('单调栈（顶在上）：价格 → 已并好的跨度', rows, { hint: '从底到顶价格严格递减' });
+  }
+  function varsPanel(span) {
+    return Viz.vars([
+      { name: '今天价格', v: cur == null ? '—' : String(prices[cur]) },
+      { name: 'span', v: String(span), cls: 'chg' }
+    ]);
+  }
+
+  frames.push(Viz.frame('int span = 1;',
+    '第 1 天报价 ' + prices[0] + '：栈空没有挡板，跨度就是自己这 1 天',
+    [pricesPanel(null, 0), stackPanel(), varsPanel(1)]));
+
+  for (var i = 0; i < prices.length; i++) {
+    cur = i;
+    var price = prices[i], span = 1, pops = 0;
+    var popped = [];
+    while (stack.length && stack[stack.length - 1][0] <= price) {
+      var top = stack.pop();
+      popped.push(top[2]);
+      span += top[1];
+      pops++;
+      if (!shotFirstPop) {
+        shotFirstPop = true;
+        frames.push(Viz.frame('span += stack.pop()[1];',
+          '今天 ' + price + ' 弹掉 ≤ 自己的 ' + top[0] + '：它的跨度 ' + top[1] + ' 并进来',
+          [pricesPanel(popped, i), stackPanel(), varsPanel(span)]));
+      } else if (pops === 2 && !shotSecondPop) {
+        shotSecondPop = true;
+        frames.push(Viz.frame('span += stack.pop()[1];',
+          '今天 ' + price + ' 一口气并掉 ' + pops + ' 天：span 累成 ' + span,
+          [pricesPanel(popped, i), stackPanel(), varsPanel(span)]));
+      }
+    }
+    if (!shotToBottom && stack.length === 1 && span > 2) {
+      shotToBottom = true;
+      frames.push(Viz.frame('stack.push(new int[]{price, span});',
+        '今天 ' + price + ' 并掉前面全部低价日：span = ' + span + '，只剩栈底 ' + stack[0][0] + ' 挡着',
+        [pricesPanel(null, i), stackPanel(), varsPanel(span)]));
+    }
+    stack.push([price, span]);
+    out.push(span);
+  }
+
+  frames.push(Viz.frame('return span;',
+    '最后一次：跨度 ' + out[out.length - 1] + '；比它高的价格留在栈里当挡板',
+    [pricesPanel(null, prices.length - 1), stackPanel(), varsPanel(out[out.length - 1])]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

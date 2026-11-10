@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>早餐组合 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 700 / 1159</span>
+  <nav class="pn"><a href="0719.html">上一篇</a><a href="0910.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">LCP 18. </span>早餐组合</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 2</li><li class="algo">二分查找</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">二分查找</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">drinks 排序后，枚举每个主食 s，二分数出「≤ x−s 的饮料个数」累加；比双指针少踩同值的坑。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每个方案 = 一主食 + 一饮料：固定主食 <code>s</code> 后，能搭的饮料价格上界就是 <code>x − s</code>。</li><li><code>drinks</code> 排序后，<code>≤ x−s</code> 的个数就是 <code>upperBound</code> 的位置；<code>s ≥ x</code> 时连最便宜饮料都配不上，直接跳过。</li><li>累加用 <code>long</code>（最多 10¹⁰），最后对 <code>1e9+7</code> 取模；枚举 + 二分避开了双指针写法里「同值要停稳」的坑。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log m + m log m)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> breakfastNumber(<span class="k">int</span>[] staple, <span class="k">int</span>[] drinks, <span class="k">int</span> x) {</span><span class="ln"><span class="no">5</span>        <span class="t">Arrays</span>.sort(drinks);</span><span class="ln"><span class="no">6</span>        <span class="k">long</span> total = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> s : staple) {</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (s &gt;= x) <span class="k">continue</span>;   <span class="c">// 饮料至少 1 元，主食已占满 x 就一种都配不上</span></span><span class="ln"><span class="no">9</span>            <span class="c">// 主食定下后，饮料价格 ≤ x−s 都行：二分数出 drinks 里的个数</span></span><span class="ln"><span class="no">10</span>            total += upperBound(drinks, x - s);</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="k">return</span> (<span class="k">int</span>) (total % <span class="n">1000000007</span>);</span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span>    <span class="c">// 第一个大于 target 的下标 = ≤ target 的元素个数</span></span><span class="ln"><span class="no">16</span>    <span class="k">private</span> <span class="k">int</span> upperBound(<span class="k">int</span>[] a, <span class="k">int</span> target) {</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> lo = <span class="n">0</span>, hi = a.length;</span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">19</span>            <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (a[mid] &lt;= target) lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">21</span>            <span class="k">else</span> hi = mid;</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> lo;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>小扣在秋日市集选择了一家早餐摊位，一维整型数组 <code>staple</code> 中记录了每种主食的价格，一维整型数组 <code>drinks</code> 中记录了每种饮料的价格。小扣的计划选择一份主食和一款饮料，且花费不超过 <code>x</code> 元。请返回小扣共有多少种购买方案。</p>
+<p>注意：答案需要以 <code>1e9 + 7 (1000000007)</code> 为底取模，如：计算初始结果为：<code>1000000008</code>，请返回 <code>1</code></p>
+<p><strong>示例 1：</strong></p>
+<p>输入：<code>staple = [10,20,5], drinks = [5,5,2], x = 15</code><br>输出：<code>6</code><br>解释：小扣有 6 种购买方案，所选主食与所选饮料在数组中对应的下标分别是：<br>第 1 种方案：staple[0] + drinks[0] = 10 + 5 = 15；<br>第 2 种方案：staple[0] + drinks[1] = 10 + 5 = 15；<br>第 3 种方案：staple[0] + drinks[2] = 10 + 2 = 12；<br>第 4 种方案：staple[2] + drinks[0] = 5 + 5 = 10；<br>第 5 种方案：staple[2] + drinks[1] = 5 + 5 = 10；<br>第 6 种方案：staple[2] + drinks[2] = 5 + 2 = 7。</p>
+<p><strong>示例 2：</strong></p>
+<p>输入：<code>staple = [2,1,1], drinks = [8,9,5,1], x = 9</code><br>输出：<code>8</code><br>解释：小扣有 8 种购买方案，所选主食与所选饮料在数组中对应的下标分别是：<br>第 1 种方案：staple[0] + drinks[2] = 2 + 5 = 7；<br>第 2 种方案：staple[0] + drinks[3] = 2 + 1 = 3；<br>第 3 种方案：staple[1] + drinks[0] = 1 + 8 = 9；<br>第 4 种方案：staple[1] + drinks[2] = 1 + 5 = 6；<br>第 5 种方案：staple[1] + drinks[3] = 1 + 1 = 2；<br>第 6 种方案：staple[2] + drinks[0] = 1 + 8 = 9；<br>第 7 种方案：staple[2] + drinks[2] = 1 + 5 = 6；<br>第 8 种方案：staple[2] + drinks[3] = 1 + 1 = 2；</p>
+<p><strong>提示：</strong><br>+ <code>1 &lt;= staple.length &lt;= 10^5</code><br>+ <code>1 &lt;= drinks.length &lt;= 10^5</code><br>+ <code>1 &lt;= staple[i],drinks[i] &lt;= 10^5</code><br>+ <code>1 &lt;= x &lt;= 2*10^5</code></p></div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int breakfastNumber(int[] staple, int[] drinks, int x) {", "        Arrays.sort(drinks);", "        long total = 0;", "        for (int s : staple) {", "            if (s >= x) continue;   // 饮料至少 1 元，主食已占满 x 就一种都配不上", "            // 主食定下后，饮料价格 ≤ x−s 都行：二分数出 drinks 里的个数", "            total += upperBound(drinks, x - s);", "        }", "        return (int) (total % 1000000007);", "    }", "", "    // 第一个大于 target 的下标 = ≤ target 的元素个数", "    private int upperBound(int[] a, int target) {", "        int lo = 0, hi = a.length;", "        while (lo < hi) {", "            int mid = (lo + hi) >>> 1;", "            if (a[mid] <= target) lo = mid + 1;", "            else hi = mid;", "        }", "        return lo;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// LCP 18. 早餐组合 —— 图解：复刻 Solution.java 的「排序 + 枚举主食二分饮料」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { staple: [10, 20, 5], drinks: [5, 5, 2], x: 15 };
+
+function trace(input) {
+  var staple = input.staple.slice().sort(function (a, b) { return a - b; });
+  var drinks = input.drinks.slice().sort(function (a, b) { return a - b; });
+  var x = input.x;
+  var frames = [];
+  var total = 0;
+  var skippedLast = false;
+
+  function staplePanel(i) {
+    var marks = {};
+    if (i != null) marks[i] = 'cur';
+    var pointers = i != null && i < staple.length ? [{ at: i, label: 's', cls: 'p-cur' }] : [];
+    return Viz.cells(staple.map(String), { title: 'staple 排序后', marks: marks, pointers: pointers });
+  }
+  function drinksPanel(cnt) {
+    var marks = {};
+    for (var j = 0; j < drinks.length; j++) marks[j] = j < cnt ? 'win' : 'dim';
+    var range = cnt > 0 ? { from: 0, to: cnt - 1, label: '≤ 目标，共 ' + cnt + ' 款' } : null;
+    return Viz.cells(drinks.map(String), { title: 'drinks 排序后', marks: marks, range: range });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: 'x 预算', v: String(x), cls: '' },
+      { name: 'total 方案数', v: String(total), cls: 'chg' }
+    ]);
+  }
+
+  for (var i = 0; i < staple.length; i++) {
+    var s = staple[i];
+    if (s >= x) { skippedLast = (i === staple.length - 1); continue; }   // 和 Solution 一致：直接跳过
+    skippedLast = false;
+    var cnt = 0, lo = 0, hi = drinks.length;
+    while (lo < hi) {
+      var mid = (lo + hi) >> 1;
+      if (drinks[mid] <= x - s) lo = mid + 1;
+      else hi = mid;
+    }
+    cnt = lo;
+    total += cnt;
+    if (i === 0 || i === 1) {
+      frames.push(Viz.frame('total += upperBound(drinks, x - s);',
+        '主食 ' + s + '：饮料 ≤ ' + (x - s) + ' 的有 ' + cnt + ' 款，方案数累计 ' + total,
+        [staplePanel(i), drinksPanel(cnt), varsPanel()]));
+    }
+  }
+
+  frames.push(Viz.frame('return (int) (total % 1000000007);',
+    (skippedLast ? '主食 ' + staple[staple.length - 1] + ' ≥ x 被跳过；' : '扫完全部主食；')
+      + '共 ' + total + ' 种方案，取模后答案 ' + (total % 1000000007),
+    [staplePanel(staple.length - 1), drinksPanel(0), varsPanel()]));
+  return { frames: frames, result: total % 1000000007 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

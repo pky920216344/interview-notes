@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>手撕快速排序 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 9 / 1159</span>
+  <nav class="pn"><a href="0005.html">上一篇</a><a href="0200.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">补充题4. </span>手撕快速排序</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 360</li><li class="algo">分治</li><li class="tag">数组</li><li class="tag">分治</li><li class="tag">桶排序</li><li class="tag">计数排序</li><li class="tag">基数排序</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="tag">归并排序</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">快速排序：随机选基准，三向切分成「小于 / 等于 / 大于」三段，等于的一段已就位，只递归左右两段。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>随机选基准 <code>pivot</code>，有序数组也不会退化成 <code>O(n^2)</code>；三向切分让大量重复元素也不拖慢。</li><li><code>i</code> 从左往右扫：<code>[lo, lt)</code> 小于，<code>[lt, i)</code> 等于，<code>[i, gt]</code> 还没看，<code>(gt, hi]</code> 大于。</li><li><code>a[i] &lt; pivot</code>：与 <code>lt</code> 处交换，<code>lt</code>、<code>i</code> 右移；<code>a[i] &gt; pivot</code>：与 <code>gt</code> 处交换，<code>gt</code> 左移，<strong><code>i</code> 不动</strong>，换来的数还没看；相等：<code>i</code> 右移。</li><li><code>i</code> 越过 <code>gt</code> 后，等于 <code>pivot</code> 的一段已就位，只递归 <code>[lo, lt - 1]</code> 和 <code>[gt + 1, hi]</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 平均 O(n log n)，空间复杂度 O(log n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Random</span> rnd = <span class="k">new</span> <span class="t">Random</span>();</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="k">int</span>[] sortArray(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">7</span>        sort(nums, <span class="n">0</span>, nums.length - <span class="n">1</span>);</span><span class="ln"><span class="no">8</span>        <span class="k">return</span> nums;</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">void</span> sort(<span class="k">int</span>[] a, <span class="k">int</span> lo, <span class="k">int</span> hi) {</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (lo &gt;= hi) <span class="k">return</span>;</span><span class="ln"><span class="no">13</span>        <span class="c">// 随机选基准，有序数组也不会退化</span></span><span class="ln"><span class="no">14</span>        <span class="k">int</span> pivot = a[lo + rnd.nextInt(hi - lo + <span class="n">1</span>)];</span><span class="ln"><span class="no">15</span>        <span class="c">// 三向切分，i 从左往右扫：</span></span><span class="ln"><span class="no">16</span>        <span class="c">// [lo, lt) 小于，[lt, i) 等于，(gt, hi] 大于</span></span><span class="ln"><span class="no">17</span>        <span class="k">int</span> lt = lo, i = lo, gt = hi;</span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (i &lt;= gt) {</span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (a[i] &lt; pivot) swap(a, lt++, i++);</span><span class="ln"><span class="no">20</span>            <span class="k">else</span> <span class="k">if</span> (a[i] &gt; pivot) swap(a, i, gt--);</span><span class="ln"><span class="no">21</span>            <span class="k">else</span> i++;</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="c">// 等于基准的一段已就位，只递归左右两段</span></span><span class="ln"><span class="no">24</span>        sort(a, lo, lt - <span class="n">1</span>);</span><span class="ln"><span class="no">25</span>        sort(a, gt + <span class="n">1</span>, hi);</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span> </span><span class="ln"><span class="no">28</span>    <span class="k">private</span> <span class="k">void</span> swap(<span class="k">int</span>[] a, <span class="k">int</span> i, <span class="k">int</span> j) {</span><span class="ln"><span class="no">29</span>        <span class="k">int</span> t = a[i];</span><span class="ln"><span class="no">30</span>        a[i] = a[j];</span><span class="ln"><span class="no">31</span>        a[j] = t;</span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组&nbsp;<code>nums</code>，请你将该数组升序排列。</p>
+
+<p>你必须在 <strong>不使用任何内置函数</strong> 的情况下解决问题，时间复杂度为 <code>O(nlog(n))</code>，并且空间复杂度尽可能小。</p>
+
+
+
+<ol>
+</ol>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [5,2,3,1]
+<strong>输出：</strong>[1,2,3,5]
+<strong>解释：</strong>数组排序后，某些数字的位置没有改变（例如，2 和 3），而其他数字的位置发生了改变（例如，1 和 5）。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [5,1,1,2,0,0]
+<strong>输出：</strong>[0,0,1,1,2,5]
+<strong>解释：</strong>请注意，nums 的值不一定唯一。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 5 * 10<sup>4</sup></code></li>
+	<li><code>-5 * 10<sup>4</sup> &lt;= nums[i] &lt;= 5 * 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private final Random rnd = new Random();", "", "    public int[] sortArray(int[] nums) {", "        sort(nums, 0, nums.length - 1);", "        return nums;", "    }", "", "    private void sort(int[] a, int lo, int hi) {", "        if (lo >= hi) return;", "        // 随机选基准，有序数组也不会退化", "        int pivot = a[lo + rnd.nextInt(hi - lo + 1)];", "        // 三向切分，i 从左往右扫：", "        // [lo, lt) 小于，[lt, i) 等于，(gt, hi] 大于", "        int lt = lo, i = lo, gt = hi;", "        while (i <= gt) {", "            if (a[i] < pivot) swap(a, lt++, i++);", "            else if (a[i] > pivot) swap(a, i, gt--);", "            else i++;", "        }", "        // 等于基准的一段已就位，只递归左右两段", "        sort(a, lo, lt - 1);", "        sort(a, gt + 1, hi);", "    }", "", "    private void swap(int[] a, int i, int j) {", "        int t = a[i];", "        a[i] = a[j];", "        a[j] = t;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 912. 排序数组（codetop 补充题「手撕快速排序」）—— 图解：复刻 Solution.java 的三向切分快速排序，
+// 只给最外层第一次切分拍快照（5 个关键时刻）。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [5, 3, 8, 3, 1, 7, 2, 3] };
+
+function trace(input) {
+  var a = input.nums.slice();      // Java 里原地排序，这里同样只改自己的拷贝
+  var n = a.length;
+  var frames = [];
+  var seenLess = false, seenMore = false;
+
+  function swap(x, y) { var t = a[x]; a[x] = a[y]; a[y] = t; }
+
+  // 切分中的数组：[lo, lt) 小于，[lt, i) 等于，[i, gt] 还没看，(gt, hi] 大于。
+  // i 越过数组末尾时（i === n）不画指针。
+  function panel(pivot, lt, i, gt, pickedAt) {
+    var marks = {};
+    for (var x = 0; x < n; x++) {
+      if (x < lt) marks[x] = 'win';
+      else if (x < i) marks[x] = 'cur';
+      else if (x <= gt) marks[x] = '';
+      else marks[x] = 'bad';
+    }
+    if (pickedAt != null) marks[pickedAt] = 'cur';   // 刚选出的基准那一格
+    var pointers = [{ at: lt, label: 'lt', cls: 'p-left' }];
+    if (i < n) pointers.push({ at: i, label: 'i', cls: 'p-mid' });
+    pointers.push({ at: gt, label: 'gt', cls: 'p-right' });
+    return Viz.cells(a, {
+      title: 'pivot = ' + pivot + '　青 小于　黄 等于　红 大于　白 未看',
+      marks: marks,
+      pointers: pointers
+    });
+  }
+
+  function sort(lo, hi, top) {
+    if (lo >= hi) return;
+    var p = lo + ((hi - lo) >> 1);   // Java 里随机选；图解固定取中间那格，方便复现
+    var pivot = a[p];
+    var lt = lo, i = lo, gt = hi;
+    if (top) {
+      frames.push(Viz.frame('int lt = lo, i = lo, gt = hi;',
+        '选基准 pivot = ' + pivot + '；lt、i 在最左，gt 在最右',
+        [panel(pivot, lt, i, gt, p)]));
+    }
+    while (i <= gt) {
+      var v = a[i];
+      if (v < pivot) {
+        swap(lt, i); lt++; i++;
+        if (top && !seenLess) {
+          seenLess = true;
+          frames.push(Viz.frame('if (a[i] < pivot) swap(a, lt++, i++);',
+            v + ' < ' + pivot + '：与 lt 处交换，lt、i 一起右移', [panel(pivot, lt, i, gt)]));
+        }
+      } else if (v > pivot) {
+        swap(i, gt); gt--;
+        if (top && !seenMore) {
+          seenMore = true;
+          frames.push(Viz.frame('else if (a[i] > pivot) swap(a, i, gt--);',
+            v + ' > ' + pivot + '：与 gt 处交换，gt 左移；i 不动（换来的还没看）', [panel(pivot, lt, i, gt)]));
+        }
+      } else i++;
+    }
+    if (top) {
+      frames.push(Viz.frame('sort(a, lo, lt - 1);',
+        'i 越过 gt：三段排好，等于基准的已就位，两侧再递归', [panel(pivot, lt, i, gt)]));
+    }
+    sort(lo, lt - 1, false);
+    sort(gt + 1, hi, false);
+  }
+
+  sort(0, n - 1, true);
+
+  var done = {};
+  for (var x = 0; x < n; x++) done[x] = 'done';
+  frames.push(Viz.frame('return nums;', '左右两段各自递归排好，整个数组有序',
+    [Viz.cells(a, { title: '排序完成', marks: done })]));
+
+  return { frames: frames, result: a };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

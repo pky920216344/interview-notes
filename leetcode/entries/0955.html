@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>删列造序 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1046 / 1159</span>
+  <nav class="pn"><a href="0954.html">上一篇</a><a href="1218.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">955. </span>删列造序 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">逐列贪心：只看还悬着（大小未定）的相邻行对；新列让某对递减就删，否则把变严格的对定死。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>greater[i]</code> = 第 <code>i−1</code> 行已严格小于第 <code>i</code> 行；已定死的行对以后<strong>怎么都不用再看</strong>。</li><li>扫一列：只在悬着的行对里找递减，找到就整列删除；没有递减才保留，并顺手把变严格的对定死。</li><li>平局（相等）不算安全也不算危险：留到后面的列继续决出大小。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(rows × cols)，空间复杂度 O(rows)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> minDeletionSize(<span class="t">String</span>[] strs) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> rows = strs.length, cols = strs[<span class="n">0</span>].length();</span><span class="ln"><span class="no">4</span>        <span class="c">// greater[i]：第 i−1 行与第 i 行的大小已定死（严格小于）</span></span><span class="ln"><span class="no">5</span>        <span class="k">boolean</span>[] greater = <span class="k">new</span> <span class="k">boolean</span>[rows];</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> col = <span class="n">0</span>; col &lt; cols; col++) {</span><span class="ln"><span class="no">8</span>            <span class="k">boolean</span> ok = <span class="k">true</span>;</span><span class="ln"><span class="no">9</span>            <span class="c">// 只查还没定死的行对：已定死的行对怎么都不会递减</span></span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; rows &amp;&amp; ok; i++)</span><span class="ln"><span class="no">11</span>                <span class="k">if</span> (!greater[i] &amp;&amp; strs[i - <span class="n">1</span>].charAt(col) &gt; strs[i].charAt(col)) ok = <span class="k">false</span>;</span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (!ok) { ans++; <span class="k">continue</span>; }   <span class="c">// 让悬着的行对递减，这一列必须删</span></span><span class="ln"><span class="no">13</span>            <span class="c">// 保留这一列：把变成严格小于的行对定死</span></span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; rows; i++)</span><span class="ln"><span class="no">15</span>                <span class="k">if</span> (!greater[i]) greater[i] = strs[i - <span class="n">1</span>].charAt(col) &lt; strs[i].charAt(col);</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定由 <code>n</code> 个字符串组成的数组 <code>strs</code>，其中每个字符串长度相等。</p>
+
+<p>选取一个删除索引序列，对于 <code>strs</code> 中的每个字符串，删除对应每个索引处的字符。</p>
+
+<p>比如，有 <code>strs = ["abcdef", "uvwxyz"]</code>，删除索引序列 <code>{0, 2, 3}</code>，删除后 <code>strs</code> 为<code>["bef", "vyz"]</code>。</p>
+
+<p>假设，我们选择了一组删除索引 <code>answer</code>，那么在执行删除操作之后，最终得到的数组的元素是按 <strong>字典序</strong>（<code>strs[0] <= strs[1] <= strs[2] ... <= strs[n - 1]</code>）排列的，然后请你返回 <code>answer.length</code> 的最小可能值。</p>
+
+
+
+<ol>
+</ol>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>strs = ["ca","bb","ac"]
+<strong>输出：</strong>1
+<strong>解释： </strong>
+删除第一列后，strs = ["a", "b", "c"]。
+现在 strs 中元素是按字典排列的 (即，strs[0] <= strs[1] <= strs[2])。
+我们至少需要进行 1 次删除，因为最初 strs 不是按字典序排列的，所以答案是 1。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>strs = ["xc","yb","za"]
+<strong>输出：</strong>0
+<strong>解释：</strong>
+strs 的列已经是按字典序排列了，所以我们不需要删除任何东西。
+注意 strs 的行不需要按字典序排列。
+也就是说，strs[0][0] <= strs[0][1] <= ... 不一定成立。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>strs = ["zyx","wvu","tsr"]
+<strong>输出：</strong>3
+<strong>解释：</strong>
+我们必须删掉每一列。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == strs.length</code></li>
+	<li><code>1 <= n <= 100</code></li>
+	<li><code>1 <= strs[i].length <= 100</code></li>
+	<li><code>strs[i]</code> 由小写英文字母组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int minDeletionSize(String[] strs) {", "        int rows = strs.length, cols = strs[0].length();", "        // greater[i]：第 i−1 行与第 i 行的大小已定死（严格小于）", "        boolean[] greater = new boolean[rows];", "        int ans = 0;", "        for (int col = 0; col < cols; col++) {", "            boolean ok = true;", "            // 只查还没定死的行对：已定死的行对怎么都不会递减", "            for (int i = 1; i < rows && ok; i++)", "                if (!greater[i] && strs[i - 1].charAt(col) > strs[i].charAt(col)) ok = false;", "            if (!ok) { ans++; continue; }   // 让悬着的行对递减，这一列必须删", "            // 保留这一列：把变成严格小于的行对定死", "            for (int i = 1; i < rows; i++)", "                if (!greater[i]) greater[i] = strs[i - 1].charAt(col) < strs[i].charAt(col);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 955. 删列造序 II —— 图解：复刻 Solution.java 的逐列贪心，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { strs: ['aca', 'aae', 'bxf'] };
+
+function trace(input) {
+  var strs = input.strs, rows = strs.length, cols = strs[0].length;
+  var greater = [];   // greater[i]：行 i−1 已严格小于行 i
+  var deletedCol = [];
+  var i, c;
+  for (i = 0; i < rows; i++) greater.push(false);
+  for (c = 0; c < cols; c++) deletedCol.push(false);
+  var ans = 0;
+  var frames = [];
+
+  var BAD = 'if (!greater[i] && strs[i - 1].charAt(col) > strs[i].charAt(col)) ok = false;';
+  var DEL = 'if (!ok) { ans++; continue; }';
+  var LOCK = 'if (!greater[i]) greater[i] = strs[i - 1].charAt(col) < strs[i].charAt(col);';
+  var RET = 'return ans;';
+
+  // col：当前处理到的列；bad/win 标在 col 列的行对上；curCol：整列标成「正在看」
+  function gridPanel(col, bad, win, curCol) {
+    var marks = {};
+    var r;
+    for (r = 0; r < rows; r++)
+      for (c = 0; c < cols; c++)
+        if (c < col) marks[r + ',' + c] = deletedCol[c] ? 'dim' : 'done';
+    if (bad) { marks[bad[0] + ',' + col] = 'bad'; marks[bad[1] + ',' + col] = 'bad'; }
+    if (win) { marks[win[0] + ',' + col] = 'win'; marks[win[1] + ',' + col] = 'win'; }
+    if (curCol != null && curCol < cols)
+      for (r = 0; r < rows; r++) if (marks[r + ',' + curCol] == null) marks[r + ',' + curCol] = 'cur';
+    var labels = null;
+    if (cols <= 8) { labels = []; for (c = 0; c < cols; c++) labels.push(String(c)); }
+    return Viz.grid(strs.map(function (s) { return s.split(''); }),
+      { title: 'strs 的字符矩阵', marks: marks, colLabels: labels, corner: '行' });
+  }
+  function snap(at, key, col, bad, win, curCol) {
+    frames.push(Viz.frame(at, key,
+      [gridPanel(col, bad, win, curCol), Viz.vars([{ name: '已删列数', v: ans, cls: 'chg' }])]));
+  }
+
+  for (var col = 0; col < cols; col++) {
+    var ok = true, badPair = null, winPair = null;
+    for (i = 1; i < rows && ok; i++) {
+      if (!greater[i]) {
+        var a = strs[i - 1].charAt(col), b = strs[i].charAt(col);
+        if (a > b) { ok = false; badPair = [i - 1, i]; }
+        else if (a < b && winPair == null) winPair = [i - 1, i];
+      }
+    }
+    if (col === 0) snap(BAD, '逐列决定删还是留：先看第 0 列', col, null, null, col);
+    if (!ok) {
+      deletedCol[col] = true;
+      snap(DEL, '第 ' + col + ' 列让行 ' + badPair[0] + '→' + badPair[1] + ' 递减：删掉', col, badPair, null, null);
+      ans++;
+      continue;
+    }
+    for (i = 1; i < rows; i++)
+      if (!greater[i]) greater[i] = strs[i - 1].charAt(col) < strs[i].charAt(col);
+    if (col === 0) snap(LOCK, '第 0 列安全：行 1<2 定死，行 0=1 还悬着', col, null, winPair, col + 1);
+    if (col === cols - 1 && winPair) snap(LOCK, '最后一列把 a<e 定死，悬着的行对全落定', col, null, winPair, null);
+  }
+
+  snap(RET, '共删 ' + ans + ' 列，剩下的行已按字典序排好', cols, null, null, null);
+  return { frames: frames, result: ans };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

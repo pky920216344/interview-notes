@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>在受污染的二叉树中查找元素 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1029 / 1159</span>
+  <nav class="pn"><a href="0878.html">上一篇</a><a href="0374.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1261. </span>在受污染的二叉树中查找元素</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">位运算</li><li class="aux">深度优先搜索/递归</li><li class="aux">设计</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">设计</li><li class="tag">哈希表</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">恢复时父值确定则孩子值必被规则唯一确定，DFS 一遍写回；find 用 target+1 的二进制位直接下行（0 左 1 右）。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>污染只毁了值、没毁结构：根必是 <code>0</code>，父结点值为 <code>x</code> 时左孩子必是 <code>2x+1</code>、右孩子必是 <code>2x+2</code>，DFS 一遍即可恢复。</li><li><code>find</code> 不需要哈希集合：<code>target+1</code> 的二进制去掉最高位后，<code>0</code> 对应走左、<code>1</code> 对应走右，正好是根到 target 的路径。</li><li>沿位下行遇到空结点就是不存在；<code>target=0</code> 时一位都不用走（根就是 0）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 恢复 O(n)；find O(log target)，空间复杂度 O(1)（恢复是原地写值）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">FindElements</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">TreeNode</span> root;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">FindElements</span>(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">5</span>        <span class="k">this</span>.root = root;</span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (root != <span class="k">null</span>) recover(root, <span class="n">0</span>);   <span class="c">// 根必为 0，一路往下推</span></span><span class="ln"><span class="no">7</span>    }</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="c">// 父结点的值确定后，左右孩子的值就被规则唯一确定，直接写回</span></span><span class="ln"><span class="no">10</span>    <span class="k">private</span> <span class="k">void</span> recover(<span class="t">TreeNode</span> node, <span class="k">int</span> val) {</span><span class="ln"><span class="no">11</span>        node.val = val;</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (node.left != <span class="k">null</span>) recover(node.left, <span class="n">2</span> * val + <span class="n">1</span>);</span><span class="ln"><span class="no">13</span>        <span class="k">if</span> (node.right != <span class="k">null</span>) recover(node.right, <span class="n">2</span> * val + <span class="n">2</span>);</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="k">public</span> <span class="k">boolean</span> find(<span class="k">int</span> target) {</span><span class="ln"><span class="no">17</span>        <span class="t">TreeNode</span> cur = root;</span><span class="ln"><span class="no">18</span>        <span class="c">// target+1 的二进制去掉最高位后，0 走左、1 走右，正好是根到 target 的路径</span></span><span class="ln"><span class="no">19</span>        <span class="k">for</span> (<span class="k">int</span> bit = <span class="t">Integer</span>.highestOneBit(target + <span class="n">1</span>) &gt;&gt; <span class="n">1</span>; bit &gt; <span class="n">0</span> &amp;&amp; cur != <span class="k">null</span>; bit &gt;&gt;= <span class="n">1</span>)</span><span class="ln"><span class="no">20</span>            cur = (target + <span class="n">1</span> &amp; bit) == <span class="n">0</span> ? cur.left : cur.right;</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> cur != <span class="k">null</span>;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给出一个满足下述规则的二叉树：</p>
+
+<ol>
+	<li><code>root.val == 0</code></li>
+	<li>对于任意 <code>treeNode</code>：
+	<ol type="a">
+		<li>如果 <code>treeNode.val</code> 为&nbsp;<code>x</code> 且&nbsp;<code>treeNode.left != null</code>，那么&nbsp;<code>treeNode.left.val == 2 * x + 1</code></li>
+		<li>如果 <code>treeNode.val</code> 为&nbsp;<code>x</code> 且 <code>treeNode.right != null</code>，那么&nbsp;<code>treeNode.right.val == 2 * x + 2</code></li>
+	</ol>
+	</li>
+</ol>
+
+<p>现在这个二叉树受到「污染」，所有的&nbsp;<code>treeNode.val</code>&nbsp;都变成了&nbsp;<code>-1</code>。</p>
+
+<p>请你先还原二叉树，然后实现&nbsp;<code>FindElements</code>&nbsp;类：</p>
+
+<ul>
+	<li><code>FindElements(TreeNode* root)</code>&nbsp;用受污染的二叉树初始化对象，你需要先把它还原。</li>
+	<li><code>bool find(int target)</code>&nbsp;判断目标值&nbsp;<code>target</code>&nbsp;是否存在于还原后的二叉树中并返回结果。</li>
+</ul>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/4444d97886ed.jpg" style="height: 119px; width: 320px;" /></strong></p>
+
+<pre>
+<strong>输入：</strong>
+["FindElements","find","find"]
+[[[-1,null,-1]],[1],[2]]
+<strong>输出：</strong>
+[null,false,true]
+<strong>解释：</strong>
+FindElements findElements = new FindElements([-1,null,-1]); 
+findElements.find(1); // return False 
+findElements.find(2); // return True </pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/bf58c9dbcef0.jpg" style="height: 198px; width: 400px;" /></strong></p>
+
+<pre>
+<strong>输入：</strong>
+["FindElements","find","find","find"]
+[[[-1,-1,-1,-1,-1]],[1],[3],[5]]
+<strong>输出：</strong>
+[null,true,true,false]
+<strong>解释：</strong>
+FindElements findElements = new FindElements([-1,-1,-1,-1,-1]);
+findElements.find(1); // return True
+findElements.find(3); // return True
+findElements.find(5); // return False</pre>
+
+<p><strong class="example">示例 3：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/44fac1fa5e71.jpg" style="height: 274px; width: 306px;" /></strong></p>
+
+<pre>
+<strong>输入：</strong>
+["FindElements","find","find","find","find"]
+[[[-1,null,-1,-1,null,-1]],[2],[3],[4],[5]]
+<strong>输出：</strong>
+[null,true,false,false,true]
+<strong>解释：</strong>
+FindElements findElements = new FindElements([-1,null,-1,-1,null,-1]);
+findElements.find(2); // return True
+findElements.find(3); // return False
+findElements.find(4); // return False
+findElements.find(5); // return True
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>TreeNode.val == -1</code></li>
+	<li>二叉树的高度不超过&nbsp;<code>20</code></li>
+	<li>节点的总数在&nbsp;<code>[1,&nbsp;10<sup>4</sup>]</code>&nbsp;之间</li>
+	<li>调用&nbsp;<code>find()</code>&nbsp;的总次数在&nbsp;<code>[1,&nbsp;10<sup>4</sup>]</code>&nbsp;之间</li>
+	<li><code>0 &lt;= target &lt;= 10<sup>6</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class FindElements {", "    private final TreeNode root;", "", "    public FindElements(TreeNode root) {", "        this.root = root;", "        if (root != null) recover(root, 0);   // 根必为 0，一路往下推", "    }", "", "    // 父结点的值确定后，左右孩子的值就被规则唯一确定，直接写回", "    private void recover(TreeNode node, int val) {", "        node.val = val;", "        if (node.left != null) recover(node.left, 2 * val + 1);", "        if (node.right != null) recover(node.right, 2 * val + 2);", "    }", "", "    public boolean find(int target) {", "        TreeNode cur = root;", "        // target+1 的二进制去掉最高位后，0 走左、1 走右，正好是根到 target 的路径", "        for (int bit = Integer.highestOneBit(target + 1) >> 1; bit > 0 && cur != null; bit >>= 1)", "            cur = (target + 1 & bit) == 0 ? cur.left : cur.right;", "        return cur != null;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1261. 在受污染的二叉树中查找元素 —— 图解：复刻 Solution.java 的「DFS 恢复 + 位路径下行」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { tree: [-1, -1, -1, -1, -1], targets: [1, 3, 5] };
+
+function trace(input) {
+  var arr = input.tree, targets = input.targets;
+  var frames = [];
+
+  // 按力扣层序语义建树（与 lib/Trees.of 相同的规则），结点记下自己在层序数组里的下标
+  function build(a) {
+    if (!a.length || a[0] == null) return null;
+    var root = { idx: 0, val: -1, left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < a.length) {
+      var cur = q.shift();
+      if (i < a.length && a[i] != null) { cur.left = { idx: i, val: -1, left: null, right: null }; q.push(cur.left); }
+      i++;
+      if (i < a.length && a[i] != null) { cur.right = { idx: i, val: -1, left: null, right: null }; q.push(cur.right); }
+      i++;
+    }
+    return root;
+  }
+
+  function treePanel(marks, labels) {
+    return Viz.tree(arr, { title: '这棵二叉树', marks: marks || {}, labels: labels || [] });
+  }
+
+  function varsPanel(items) { return Viz.vars(items); }
+
+  var root = build(arr);
+  var small = arr.length <= 12 && arr.length > 0;
+
+  // —— 恢复：BFS 按层推进（与 Java 的 DFS 顺序不同，但写入的值一一对应）——
+  var marks = {}, labels = [];
+  if (small) frames.push(Viz.frame('if (root != null) recover(root, 0);',
+    '树被污染：所有结点值都是 -1，只有结构可信',
+    [treePanel(marks, []), varsPanel([{ name: '规则', v: '左=2x+1，右=2x+2', cls: '' }])]));
+
+  var level = [];
+  if (root != null) { root.val = 0; level.push(root); }
+  var depth = 0;
+  var snapDepth = { 0: true, 1: true, 2: true };
+  while (level.length) {
+    var next = [];
+    level.forEach(function (node) {
+      if (node.left != null) { node.left.val = 2 * node.val + 1; next.push(node.left); }
+      if (node.right != null) { node.right.val = 2 * node.val + 2; next.push(node.right); }
+    });
+    depth++;
+    if (small && snapDepth[depth] && next.length > 0) {
+      var nm = {};
+      next.forEach(function (node) { nm[node.idx] = 'new'; });
+      Object.keys(marks).forEach(function (k) { nm[k] = 'done'; });
+      marks = nm;
+      var ls = next.map(function (node) { return { at: node.idx, label: String(node.val), cls: 'new' }; });
+      labels = labels.concat(ls);
+      frames.push(Viz.frame('if (node.left != null) recover(node.left, 2 * val + 1);',
+        '恢复第 ' + (depth + 1) + ' 层：' + next.map(function (node) { return node.val; }).join('、') + '（父值×2+1 / ×2+2）',
+        [treePanel(marks, labels), varsPanel([{ name: '已恢复', v: labels.length + ' 个结点', cls: 'done' }])]));
+    }
+    level = next;
+  }
+
+  // —— find：target+1 的二进制去掉最高位，0 左 1 右 ——
+  function find(target) {
+    var cur = root, path = [];
+    for (var bit = highbit(target + 1) >> 1; bit > 0 && cur != null; bit >>= 1) {
+      path.push(cur);
+      cur = (target + 1 & bit) == 0 ? cur.left : cur.right;
+    }
+    return { hit: cur != null, path: cur != null ? path.concat([cur]) : path };
+  }
+  function highbit(x) { var h = 1; while (h * 2 <= x) h <<= 1; return h; }   // x 的最高位（x ≥ 1）
+
+  var out = [];
+  var findSnapped = 0;
+  targets.forEach(function (t) {
+    var r = find(t);
+    out.push(r.hit);
+    if (small && findSnapped < 2 && t <= 63) {
+      findSnapped++;
+      var fm = {}, bits = highbit(t + 1) >> 1, seq = [];
+      for (var b = bits; b > 0; b >>= 1) seq.push((t + 1 & b) == 0 ? 0 : 1);
+      r.path.forEach(function (node) { fm[node.idx] = 'cur'; });
+      frames.push(Viz.frame('cur = (target + 1 & bit) == 0 ? cur.left : cur.right;',
+        'find(' + t + ')：' + (t + 1) + ' 的位 ' + seq.join('→') + '（0 左 1 右）' + (r.hit ? '，命中' : '，走到空'),
+        [treePanel(Object.assign({}, marks, fm), []), varsPanel([{ name: 'find(' + t + ')', v: r.hit ? 'true' : 'false', cls: r.hit ? 'hit' : 'bad' }])]));
+    }
+  });
+
+  if (small) frames.push(Viz.frame('return cur != null;',
+    '查询完毕：共 ' + out.length + ' 次 find，结果见变量面板',
+    [treePanel(marks, labels), varsPanel([{ name: 'find 结果', v: '[' + out.join(',') + ']', cls: 'done' }])]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>输出二叉树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 934 / 1159</span>
+  <nav class="pn"><a href="1473.html">上一篇</a><a href="0368.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">655. </span>输出二叉树</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">先量深度定行列数，再递归：每个子树占一段列区间，值放区间正中点，左右子树各分一半。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>深度 <code>d</code>（结点层数）决定形状：矩阵是 <code>d</code> 行、<code>2^d − 1</code> 列，先全填空串。</li><li>递归 <code>fill(node, r, lo, hi)</code>：子树占列区间 <code>[lo, hi]</code>，值放 <code>mid = (lo+hi)/2</code>，左子树分 <code>[lo, mid−1]</code>，右子树分 <code>[mid+1, hi]</code>。</li><li>这个「对半分」与题面公式 <code>c ± 2^(h−r−1)</code> 等价，但更好写更好记；空孩子直接返回。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + 2^depth·depth)，空间复杂度 O(2^depth·depth)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">ArrayList</span>;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.<span class="t">List</span>;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; printTree(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">6</span>        <span class="c">// 深度（层数）决定矩阵行数，列数 = 2^深度 - 1</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> depth = depth(root);</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> cols = (<span class="n">1</span> &lt;&lt; depth) - <span class="n">1</span>;</span><span class="ln"><span class="no">9</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; res = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; depth; r++) {</span><span class="ln"><span class="no">11</span>            <span class="t">List</span>&lt;<span class="t">String</span>&gt; row = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; cols; c++) row.add(<span class="s">""</span>);</span><span class="ln"><span class="no">13</span>            res.add(row);</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        fill(root, <span class="n">0</span>, <span class="n">0</span>, cols - <span class="n">1</span>, res);</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> res;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    <span class="k">private</span> <span class="k">int</span> depth(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> node == <span class="k">null</span> ? <span class="n">0</span> : <span class="n">1</span> + <span class="t">Math</span>.max(depth(node.left), depth(node.right));</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span> </span><span class="ln"><span class="no">23</span>    <span class="c">// 当前子树占列区间 [lo, hi]，值放在正中间；左右子树各分一半</span></span><span class="ln"><span class="no">24</span>    <span class="k">private</span> <span class="k">void</span> fill(<span class="t">TreeNode</span> node, <span class="k">int</span> r, <span class="k">int</span> lo, <span class="k">int</span> hi, <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; res) {</span><span class="ln"><span class="no">25</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span>;</span><span class="ln"><span class="no">26</span>        <span class="k">int</span> mid = (lo + hi) / <span class="n">2</span>;</span><span class="ln"><span class="no">27</span>        res.get(r).set(mid, <span class="t">String</span>.valueOf(node.val));</span><span class="ln"><span class="no">28</span>        fill(node.left, r + <span class="n">1</span>, lo, mid - <span class="n">1</span>, res);</span><span class="ln"><span class="no">29</span>        fill(node.right, r + <span class="n">1</span>, mid + <span class="n">1</span>, hi, res);</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一棵二叉树的根节点 <code>root</code> ，请你构造一个下标从 <strong>0</strong> 开始、大小为 <code>m x n</code> 的字符串矩阵 <code>res</code> ，用以表示树的 <strong>格式化布局</strong> 。构造此格式化布局矩阵需要遵循以下规则：</p>
+
+<ul>
+	<li>树的 <strong>高度</strong> 为 <code>height</code> ，矩阵的行数 <code>m</code> 应该等于 <code>height + 1</code> 。</li>
+	<li>矩阵的列数 <code>n</code> 应该等于 <code>2<sup>height+1</sup> - 1</code> 。</li>
+	<li><strong>根节点</strong> 需要放置在 <strong>顶行</strong> 的 <strong>正中间</strong> ，对应位置为 <code>res[0][(n-1)/2]</code> 。</li>
+	<li>对于放置在矩阵中的每个节点，设对应位置为 <code>res[r][c]</code> ，将其左子节点放置在 <code>res[r+1][c-2<sup>height-r-1</sup>]</code> ，右子节点放置在 <code>res[r+1][c+2<sup>height-r-1</sup>]</code> 。</li>
+	<li>继续这一过程，直到树中的所有节点都妥善放置。</li>
+	<li>任意空单元格都应该包含空字符串 <code>""</code> 。</li>
+</ul>
+
+<p>返回构造得到的矩阵<em> </em><code>res</code> 。</p>
+
+
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/e82ff0123bf6.jpg" style="width: 141px; height: 181px;" />
+<pre>
+<strong>输入：</strong>root = [1,2]
+<strong>输出：</strong>
+[["","1",""],
+&nbsp;["2","",""]]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/4eee81ee2d57.jpg" style="width: 207px; height: 302px;" />
+<pre>
+<strong>输入：</strong>root = [1,2,3,null,4]
+<strong>输出：</strong>
+[["","","","1","","",""],
+&nbsp;["","2","","","","3",""],
+&nbsp;["","","4","","","",""]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中节点数在范围 <code>[1, 2<sup>10</sup>]</code> 内</li>
+	<li><code>-99 &lt;= Node.val &lt;= 99</code></li>
+	<li>树的深度在范围 <code>[1, 10]</code> 内</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.ArrayList;", "import java.util.List;", "", "class Solution {", "    public List<List<String>> printTree(TreeNode root) {", "        // 深度（层数）决定矩阵行数，列数 = 2^深度 - 1", "        int depth = depth(root);", "        int cols = (1 << depth) - 1;", "        List<List<String>> res = new ArrayList<>();", "        for (int r = 0; r < depth; r++) {", "            List<String> row = new ArrayList<>();", "            for (int c = 0; c < cols; c++) row.add(\"\");", "            res.add(row);", "        }", "        fill(root, 0, 0, cols - 1, res);", "        return res;", "    }", "", "    private int depth(TreeNode node) {", "        return node == null ? 0 : 1 + Math.max(depth(node.left), depth(node.right));", "    }", "", "    // 当前子树占列区间 [lo, hi]，值放在正中间；左右子树各分一半", "    private void fill(TreeNode node, int r, int lo, int hi, List<List<String>> res) {", "        if (node == null) return;", "        int mid = (lo + hi) / 2;", "        res.get(r).set(mid, String.valueOf(node.val));", "        fill(node.left, r + 1, lo, mid - 1, res);", "        fill(node.right, r + 1, mid + 1, hi, res);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 655. 输出二叉树 —— 图解：复刻 Solution.java 的「区间对半放中点」，每个结点落位时拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { tree: [1, 2, 3, null, 4] };
+
+function trace(input) {
+  var level = input.tree;
+  var frames = [];
+
+  // 层序数组建树（和 Trees.of 一致）
+  function build() {
+    if (!level.length || level[0] === null) return null;
+    var root = { val: level[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < level.length) {
+      var cur = q.shift();
+      if (i < level.length && level[i] !== null) { cur.left = { val: level[i], left: null, right: null }; q.push(cur.left); }
+      i++;
+      if (i < level.length && level[i] !== null) { cur.right = { val: level[i], left: null, right: null }; q.push(cur.right); }
+      i++;
+    }
+    return root;
+  }
+  function depth(node) { return node ? 1 + Math.max(depth(node.left), depth(node.right)) : 0; }
+
+  var root = build();
+  var d = depth(root);
+  var cols = (1 << d) - 1;
+  var mat = [];
+  for (var r = 0; r < d; r++) {
+    var row = [];
+    for (var c = 0; c < cols; c++) row.push('');
+    mat.push(row);
+  }
+
+  function gridPanel(placed) {
+    var marks = {};
+    placed.forEach(function (p) { marks[p[0] + ',' + p[1]] = 'done'; });
+    if (placed.length) {
+      var last = placed[placed.length - 1];
+      marks[last[0] + ',' + last[1]] = 'cur';
+    }
+    return Viz.grid(mat.map(function (rw) { return rw.slice(); }), {
+      title: 'res 矩阵（' + d + ' 行 × ' + cols + ' 列）', marks: marks
+    });
+  }
+  function varsPanel(lo, hi, mid) {
+    return Viz.vars([
+      { name: '列区间 [lo, hi]', v: '[' + lo + ', ' + hi + ']' },
+      { name: '中点 mid', v: String(mid) }
+    ]);
+  }
+
+  var placed = [];
+  function fill(node, r, lo, hi) {
+    if (!node) return;
+    var mid = (lo + hi) >> 1;
+    mat[r][mid] = String(node.val);
+    placed.push([r, mid]);
+    frames.push(Viz.frame('res.get(r).set(mid, String.valueOf(node.val));',
+      '放 ' + node.val + '：子树占列 [' + lo + ', ' + hi + ']，放在中点 ' + mid + '（第 ' + r + ' 行）',
+      [gridPanel(placed), varsPanel(lo, hi, mid)]));
+    fill(node.left, r + 1, lo, mid - 1);
+    fill(node.right, r + 1, mid + 1, hi);
+  }
+  fill(root, 0, 0, cols - 1);
+
+  frames.push(Viz.frame('return res;',
+    d === 1 ? '只有一个结点，1×1 的矩阵' : '所有结点落位：越深占的列区间越窄，但都居中',
+    [gridPanel(placed), varsPanel(0, cols - 1, (cols - 1) >> 1)]));
+
+  return { frames: frames, result: mat.map(function (rw) { return rw.slice(); }) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

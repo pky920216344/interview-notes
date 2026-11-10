@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>构建回文串检测 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 918 / 1159</span>
+  <nav class="pn"><a href="1234.html">上一篇</a><a href="1064.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1177. </span>构建回文串检测</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">前缀和/差分</li><li class="aux">位运算</li><li class="tag">位运算</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">前缀和</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">前缀奇偶掩码：区间字母奇偶 = 两掩码异或；可重排成回文 ⟺ 奇数字母数/2 ≤ k。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>pre[i]</code> 是前 <code>i</code> 个字母出现次数的奇偶掩码，每读一个字母异或上它的位。</li><li>区间 <code>[l, r]</code> 的奇偶掩码 = <code>pre[r+1] ^ pre[l]</code>，1 的个数就是奇数次字母数 <code>odd</code>。</li><li>重排成回文 ⟺ <code>odd ≤ 1</code>；每次替换可消掉一对奇数字母，中间可留一个 → 条件 <code>odd / 2 ≤ k</code>。</li><li>掩码异或代替逐字母计数，每个查询 O(1)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + q)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Boolean</span>&gt; canMakePaliQueries(<span class="t">String</span> s, <span class="k">int</span>[][] queries) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">6</span>        <span class="c">// pre[i]：前 i 个字符里每个字母出现次数的奇偶掩码</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] pre = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) pre[i + <span class="n">1</span>] = pre[i] ^ (<span class="n">1</span> &lt;&lt; (s.charAt(i) - <span class="s">'a'</span>));</span><span class="ln"><span class="no">9</span>        <span class="t">List</span>&lt;<span class="t">Boolean</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(queries.length);</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span>[] q : queries) {</span><span class="ln"><span class="no">11</span>            <span class="c">// 区间内出现奇数次的字母数 = 两个前缀掩码异或后的 1 的个数</span></span><span class="ln"><span class="no">12</span>            <span class="k">int</span> odd = <span class="t">Integer</span>.bitCount(pre[q[<span class="n">1</span>] + <span class="n">1</span>] ^ pre[q[<span class="n">0</span>]]);</span><span class="ln"><span class="no">13</span>            <span class="c">// 一次替换能配对消掉两个奇数字母，剩下的一个可以放回文正中</span></span><span class="ln"><span class="no">14</span>            ans.add(odd / <span class="n">2</span> &lt;= q[<span class="n">2</span>]);</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串&nbsp;<code>s</code>，请你对&nbsp;<code>s</code>&nbsp;的子串进行检测。</p>
+
+<p>每次检测，待检子串都可以表示为&nbsp;<code>queries[i] = [left, right, k]</code>。我们可以 <strong>重新排列</strong> 子串&nbsp;<code>s[left], ..., s[right]</code>，并从中选择 <strong>最多</strong> <code>k</code>&nbsp;项替换成任何小写英文字母。&nbsp;</p>
+
+<p>如果在上述检测过程中，子串可以变成回文形式的字符串，那么检测结果为&nbsp;<code>true</code>，否则结果为&nbsp;<code>false</code>。</p>
+
+<p>返回答案数组&nbsp;<code>answer[]</code>，其中&nbsp;<code>answer[i]</code>&nbsp;是第&nbsp;<code>i</code>&nbsp;个待检子串&nbsp;<code>queries[i]</code>&nbsp;的检测结果。</p>
+
+<p>注意：在替换时，子串中的每个字母都必须作为 <strong>独立的</strong> 项进行计数，也就是说，如果&nbsp;<code>s[left..right] = &quot;aaa&quot;</code>&nbsp;且&nbsp;<code>k = 2</code>，我们只能替换其中的两个字母。（另外，任何检测都不会修改原始字符串 <code>s</code>，可以认为每次检测都是独立的）</p>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre><strong>输入：</strong>s = &quot;abcda&quot;, queries = [[3,3,0],[1,2,0],[0,3,1],[0,3,2],[0,4,1]]
+<strong>输出：</strong>[true,false,false,true,true]
+<strong>解释：</strong>
+queries[0] : 子串 = &quot;d&quot;，回文。
+queries[1] :&nbsp;子串 = &quot;bc&quot;，不是回文。
+queries[2] :&nbsp;子串 = &quot;abcd&quot;，只替换 1 个字符是变不成回文串的。
+queries[3] :&nbsp;子串 = &quot;abcd&quot;，可以变成回文的 &quot;abba&quot;。 也可以变成 &quot;baab&quot;，先重新排序变成 &quot;bacd&quot;，然后把 &quot;cd&quot; 替换为 &quot;ab&quot;。
+queries[4] :&nbsp;子串 = &quot;abcda&quot;，可以变成回文的 &quot;abcba&quot;。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length,&nbsp;queries.length&nbsp;&lt;= 10^5</code></li>
+	<li><code>0 &lt;= queries[i][0] &lt;= queries[i][1] &lt;&nbsp;s.length</code></li>
+	<li><code>0 &lt;= queries[i][2] &lt;= s.length</code></li>
+	<li><code>s</code> 中只有小写英文字母</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Boolean> canMakePaliQueries(String s, int[][] queries) {", "        int n = s.length();", "        // pre[i]：前 i 个字符里每个字母出现次数的奇偶掩码", "        int[] pre = new int[n + 1];", "        for (int i = 0; i < n; i++) pre[i + 1] = pre[i] ^ (1 << (s.charAt(i) - 'a'));", "        List<Boolean> ans = new ArrayList<>(queries.length);", "        for (int[] q : queries) {", "            // 区间内出现奇数次的字母数 = 两个前缀掩码异或后的 1 的个数", "            int odd = Integer.bitCount(pre[q[1] + 1] ^ pre[q[0]]);", "            // 一次替换能配对消掉两个奇数字母，剩下的一个可以放回文正中", "            ans.add(odd / 2 <= q[2]);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1177. 构建回文串检测 —— 图解：复刻 Solution.java 的「前缀奇偶掩码 + 异或」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'abcda', queries: [[3, 3, 0], [1, 2, 0], [0, 3, 1], [0, 3, 2], [0, 4, 1]] };
+
+function trace(input) {
+  var s = input.s, queries = input.queries;
+  var n = s.length;
+  var frames = [];
+
+  var pre = [0];
+  for (var i = 0; i < n; i++) pre.push(pre[i] ^ (1 << (s[i].charCodeAt(0) - 97)));
+
+  function cellsPanel(marks, l, r) {
+    var ptrs = [];
+    if (l != null) ptrs.push({ at: l, label: 'left', cls: 'p-left' });
+    if (r != null) ptrs.push({ at: r, label: 'right', cls: 'p-right' });
+    return Viz.cells(s.split(''), { title: 's', marks: marks || {}, pointers: ptrs });
+  }
+  function prePanel() {
+    var rows = [];
+    for (var i = 0; i <= n; i++) rows.push({ k: 'pre[' + i + ']', v: bin(pre[i]), cls: '' });
+    return Viz.table('pre[i]：前 i 个字母的奇偶掩码（1=奇数次）', rows, { hint: '字母 a~e 从低位到高位' });
+  }
+  function bin(m) {
+    var out = '';
+    for (var b = 4; b >= 0; b--) out += (m >> b) & 1;
+    return out;
+  }
+  function popcount(m) {
+    var c = 0;
+    while (m) { c += m & 1; m >>>= 1; }
+    return c;
+  }
+  function varsPanel(mask, odd, k) {
+    return Viz.vars([
+      { name: '区间掩码', v: bin(mask) },
+      { name: '奇数字母数 odd', v: String(odd), cls: 'chg' },
+      { name: 'k', v: String(k) },
+      { name: 'odd/2 ≤ k ?', v: Math.floor(odd / 2) <= k ? '成立' : '不成立' }
+    ]);
+  }
+
+  frames.push(Viz.frame("pre[i + 1] = pre[i] ^ (1 << (s.charAt(i) - 'a'));",
+    '逐字符建前缀掩码：每读一个字母翻转它的那一位', [cellsPanel(null, null, null), prePanel()]));
+
+  var out = [];
+  for (var qi = 0; qi < queries.length; qi++) {
+    var l = queries[qi][0], r = queries[qi][1], k = queries[qi][2];
+    var mask = pre[r + 1] ^ pre[l];
+    var odd = popcount(mask);
+    var ok = Math.floor(odd / 2) <= k;   // 与 Java 的整除一致：奇数 1 个也不用换
+    out.push(ok);
+    var marks = {};
+    for (var j = l; j <= r; j++) marks[j] = 'win';
+    if (qi === 2) {
+      frames.push(Viz.frame('int odd = Integer.bitCount(pre[q[1] + 1] ^ pre[q[0]]);',
+        '查询 [0,3]：「abcd」四个字母都是奇数次，要换 2 个 > k=1 → false',
+        [cellsPanel(marks, l, r), prePanel(), varsPanel(mask, odd, k)]));
+    }
+    if (qi === 3) {
+      frames.push(Viz.frame('ans.add(odd / 2 <= q[2]);',
+        '查询 [0,3] 但 k=2：4 个奇数字母换 2 次正好 → true',
+        [cellsPanel(marks, l, r), prePanel(), varsPanel(mask, odd, k)]));
+    }
+    if (qi === 4) {
+      frames.push(Viz.frame('ans.add(odd / 2 <= q[2]);',
+        '查询 [0,4]：「abcda」里 a 配对了，只剩 3 个奇数，换 1 个就够',
+        [cellsPanel(marks, l, r), prePanel(), varsPanel(mask, odd, k)]));
+    }
+  }
+
+  frames.push(Viz.frame('return ans;', '每个查询一个布尔值，共 ' + out.length + ' 个', [prePanel()]));
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

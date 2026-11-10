@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>打砖块 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 940 / 1159</span>
+  <nav class="pn"><a href="0944.html">上一篇</a><a href="1202.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">803. </span>打砖块</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">并查集</li><li class="tag">并查集</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">正向打砖会连环掉、没法增量算；逆向思维：先打完所有 hits 得终局，再倒序把砖「补回」，用并查集量屋顶连通块的变化。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>终局网格：被 hits 打掉的位置标 2（原本的 0 不动）；对存活的砖建并查集，<strong>虚拟屋顶结点</strong>连第 0 行所有砖，其余砖只向左、向上合并。</li><li>倒序处理 hits：把 2 的位置补回成 1，与四邻的现存砖 union（第 0 行还要连屋顶）；<code>now − stable − 1</code> 就是这一击的掉落数——补回的砖自己占 1，多出来的才是被它连回来的。</li><li>打在空位（原本就是 0）的位置直接跳过，答案 0；差值为负也按 0 报。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn·α + hits)，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">int</span>[] parent, sz;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] hitBricks(<span class="k">int</span>[][] grid, <span class="k">int</span>[][] hits) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> m = grid.length, n = grid[<span class="n">0</span>].length;</span><span class="ln"><span class="no">6</span>        <span class="c">// 逆向：先打完所有 hits 得到终局，再按逆序把砖「补回」，看每次补回让屋顶连通块多了几块</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[][] g = <span class="k">new</span> <span class="k">int</span>[m][];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) g[i] = grid[i].clone();</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span>[] h : hits) <span class="k">if</span> (g[h[<span class="n">0</span>]][h[<span class="n">1</span>]] == <span class="n">1</span>) g[h[<span class="n">0</span>]][h[<span class="n">1</span>]] = <span class="n">2</span>;   <span class="c">// 2 = 会被打掉的砖</span></span><span class="ln"><span class="no">10</span>        parent = <span class="k">new</span> <span class="k">int</span>[m * n + <span class="n">1</span>];</span><span class="ln"><span class="no">11</span>        sz = <span class="k">new</span> <span class="k">int</span>[m * n + <span class="n">1</span>];</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt;= m * n; i++) { parent[i] = i; sz[i] = <span class="n">1</span>; }</span><span class="ln"><span class="no">13</span>        <span class="k">int</span> roof = m * n;   <span class="c">// 虚拟屋顶结点，第 0 行的砖都连到它</span></span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) <span class="k">if</span> (g[<span class="n">0</span>][j] == <span class="n">1</span>) union(j, roof);</span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; m; i++)</span><span class="ln"><span class="no">16</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++)</span><span class="ln"><span class="no">17</span>                <span class="k">if</span> (g[i][j] == <span class="n">1</span>) {</span><span class="ln"><span class="no">18</span>                    <span class="k">if</span> (g[i - <span class="n">1</span>][j] == <span class="n">1</span>) union(i * n + j, (i - <span class="n">1</span>) * n + j);</span><span class="ln"><span class="no">19</span>                    <span class="k">if</span> (j &gt; <span class="n">0</span> &amp;&amp; g[i][j - <span class="n">1</span>] == <span class="n">1</span>) union(i * n + j, i * n + j - <span class="n">1</span>);</span><span class="ln"><span class="no">20</span>                }</span><span class="ln"><span class="no">21</span>        <span class="k">int</span> stable = count(roof);   <span class="c">// 终局时与屋顶连通的砖数（含屋顶结点本身）</span></span><span class="ln"><span class="no">22</span>        <span class="k">int</span>[] ans = <span class="k">new</span> <span class="k">int</span>[hits.length];</span><span class="ln"><span class="no">23</span>        <span class="k">for</span> (<span class="k">int</span> k = hits.length - <span class="n">1</span>; k &gt;= <span class="n">0</span>; k--) {</span><span class="ln"><span class="no">24</span>            <span class="k">int</span> r = hits[k][<span class="n">0</span>], c = hits[k][<span class="n">1</span>];</span><span class="ln"><span class="no">25</span>            <span class="k">if</span> (g[r][c] != <span class="n">2</span>) <span class="k">continue</span>;   <span class="c">// 本来就是空位，没有砖可掉</span></span><span class="ln"><span class="no">26</span>            g[r][c] = <span class="n">1</span>;</span><span class="ln"><span class="no">27</span>            <span class="k">if</span> (r == <span class="n">0</span>) union(r * n + c, roof);</span><span class="ln"><span class="no">28</span>            <span class="k">int</span>[][] dirs = {{<span class="n">1</span>, <span class="n">0</span>}, {-<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">0</span>, <span class="n">1</span>}, {<span class="n">0</span>, -<span class="n">1</span>}};</span><span class="ln"><span class="no">29</span>            <span class="k">for</span> (<span class="k">int</span>[] d : dirs) {</span><span class="ln"><span class="no">30</span>                <span class="k">int</span> nr = r + d[<span class="n">0</span>], nc = c + d[<span class="n">1</span>];</span><span class="ln"><span class="no">31</span>                <span class="k">if</span> (nr &gt;= <span class="n">0</span> &amp;&amp; nr &lt; m &amp;&amp; nc &gt;= <span class="n">0</span> &amp;&amp; nc &lt; n &amp;&amp; g[nr][nc] == <span class="n">1</span>) union(r * n + c, nr * n + nc);</span><span class="ln"><span class="no">32</span>            }</span><span class="ln"><span class="no">33</span>            <span class="k">int</span> now = count(roof);</span><span class="ln"><span class="no">34</span>            <span class="c">// 补回的砖自己占 1，多出来的才是这一击连带的掉落</span></span><span class="ln"><span class="no">35</span>            ans[k] = <span class="t">Math</span>.max(<span class="n">0</span>, now - stable - <span class="n">1</span>);</span><span class="ln"><span class="no">36</span>            stable = now;</span><span class="ln"><span class="no">37</span>        }</span><span class="ln"><span class="no">38</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">39</span>    }</span><span class="ln"><span class="no">40</span> </span><span class="ln"><span class="no">41</span>    <span class="k">private</span> <span class="k">int</span> find(<span class="k">int</span> x) {</span><span class="ln"><span class="no">42</span>        <span class="k">while</span> (parent[x] != x) {</span><span class="ln"><span class="no">43</span>            parent[x] = parent[parent[x]];   <span class="c">// 路径压缩</span></span><span class="ln"><span class="no">44</span>            x = parent[x];</span><span class="ln"><span class="no">45</span>        }</span><span class="ln"><span class="no">46</span>        <span class="k">return</span> x;</span><span class="ln"><span class="no">47</span>    }</span><span class="ln"><span class="no">48</span> </span><span class="ln"><span class="no">49</span>    <span class="k">private</span> <span class="k">void</span> union(<span class="k">int</span> a, <span class="k">int</span> b) {</span><span class="ln"><span class="no">50</span>        a = find(a);</span><span class="ln"><span class="no">51</span>        b = find(b);</span><span class="ln"><span class="no">52</span>        <span class="k">if</span> (a == b) <span class="k">return</span>;</span><span class="ln"><span class="no">53</span>        <span class="k">if</span> (sz[a] &lt; sz[b]) { <span class="k">int</span> t = a; a = b; b = t; }</span><span class="ln"><span class="no">54</span>        parent[b] = a;</span><span class="ln"><span class="no">55</span>        sz[a] += sz[b];</span><span class="ln"><span class="no">56</span>    }</span><span class="ln"><span class="no">57</span> </span><span class="ln"><span class="no">58</span>    <span class="k">private</span> <span class="k">int</span> count(<span class="k">int</span> x) { <span class="k">return</span> sz[find(x)]; }</span><span class="ln"><span class="no">59</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>有一个 <code>m x n</code> 的二元网格<meta charset="UTF-8" />&nbsp;<code>grid</code>&nbsp;，其中 <code>1</code> 表示砖块，<code>0</code> 表示空白。砖块 <strong>稳定</strong>（不会掉落）的前提是：</p>
+
+<ul>
+	<li>一块砖直接连接到网格的顶部，或者</li>
+	<li>至少有一块相邻（4&nbsp;个方向之一）砖块<strong> 稳定 </strong>不会掉落时</li>
+</ul>
+
+<p>给你一个数组 <code>hits</code> ，这是需要依次消除砖块的位置。每当消除&nbsp;<code>hits[i] = (rowi, coli)</code> 位置上的砖块时，对应位置的砖块（若存在）会消失，然后其他的砖块可能因为这一消除操作而 <strong>掉落</strong> 。一旦砖块掉落，它会 <strong>立即</strong> 从网格&nbsp;<code>grid</code>&nbsp;中消失（即，它不会落在其他稳定的砖块上）。</p>
+
+<p>返回一个数组 <code>result</code> ，其中 <code>result[i]</code> 表示第 <code>i</code> 次消除操作对应掉落的砖块数目。</p>
+
+<p><strong>注意</strong>，消除可能指向是没有砖块的空白位置，如果发生这种情况，则没有砖块掉落。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>grid = [[1,0,0,0],[1,1,1,0]], hits = [[1,0]]
+<strong>输出：</strong>[2]
+<strong>解释：</strong>网格开始为：
+[[1,0,0,0]，
+ [<strong>1</strong>,1,1,0]]
+消除 (1,0) 处加粗的砖块，得到网格：
+[[1,0,0,0]
+ [0,<strong>1</strong>,<strong>1</strong>,0]]
+两个加粗的砖不再稳定，因为它们不再与顶部相连，也不再与另一个稳定的砖相邻，因此它们将掉落。得到网格：
+[[1,0,0,0],
+ [0,0,0,0]]
+因此，结果为 [2] 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>grid = [[1,0,0,0],[1,1,0,0]], hits = [[1,1],[1,0]]
+<strong>输出：</strong>[0,0]
+<strong>解释：</strong>网格开始为：
+[[1,0,0,0],
+ [1,<strong>1</strong>,0,0]]
+消除 (1,1) 处加粗的砖块，得到网格：
+[[1,0,0,0],
+ [1,0,0,0]]
+剩下的砖都很稳定，所以不会掉落。网格保持不变：
+[[1,0,0,0], 
+ [<strong>1</strong>,0,0,0]]
+接下来消除 (1,0) 处加粗的砖块，得到网格：
+[[1,0,0,0],
+ [0,0,0,0]]
+剩下的砖块仍然是稳定的，所以不会有砖块掉落。
+因此，结果为 [0,0] 。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == grid.length</code></li>
+	<li><code>n == grid[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 200</code></li>
+	<li><code>grid[i][j]</code> 为 <code>0</code> 或 <code>1</code></li>
+	<li><code>1 &lt;= hits.length &lt;= 4 * 10<sup>4</sup></code></li>
+	<li><code>hits[i].length == 2</code></li>
+	<li><code>0 &lt;= x<sub>i&nbsp;</sub>&lt;= m - 1</code></li>
+	<li><code>0 &lt;=&nbsp;y<sub>i</sub> &lt;= n - 1</code></li>
+	<li>所有 <code>(x<sub>i</sub>, y<sub>i</sub>)</code> 互不相同</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private int[] parent, sz;", "", "    public int[] hitBricks(int[][] grid, int[][] hits) {", "        int m = grid.length, n = grid[0].length;", "        // 逆向：先打完所有 hits 得到终局，再按逆序把砖「补回」，看每次补回让屋顶连通块多了几块", "        int[][] g = new int[m][];", "        for (int i = 0; i < m; i++) g[i] = grid[i].clone();", "        for (int[] h : hits) if (g[h[0]][h[1]] == 1) g[h[0]][h[1]] = 2;   // 2 = 会被打掉的砖", "        parent = new int[m * n + 1];", "        sz = new int[m * n + 1];", "        for (int i = 0; i <= m * n; i++) { parent[i] = i; sz[i] = 1; }", "        int roof = m * n;   // 虚拟屋顶结点，第 0 行的砖都连到它", "        for (int j = 0; j < n; j++) if (g[0][j] == 1) union(j, roof);", "        for (int i = 1; i < m; i++)", "            for (int j = 0; j < n; j++)", "                if (g[i][j] == 1) {", "                    if (g[i - 1][j] == 1) union(i * n + j, (i - 1) * n + j);", "                    if (j > 0 && g[i][j - 1] == 1) union(i * n + j, i * n + j - 1);", "                }", "        int stable = count(roof);   // 终局时与屋顶连通的砖数（含屋顶结点本身）", "        int[] ans = new int[hits.length];", "        for (int k = hits.length - 1; k >= 0; k--) {", "            int r = hits[k][0], c = hits[k][1];", "            if (g[r][c] != 2) continue;   // 本来就是空位，没有砖可掉", "            g[r][c] = 1;", "            if (r == 0) union(r * n + c, roof);", "            int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};", "            for (int[] d : dirs) {", "                int nr = r + d[0], nc = c + d[1];", "                if (nr >= 0 && nr < m && nc >= 0 && nc < n && g[nr][nc] == 1) union(r * n + c, nr * n + nc);", "            }", "            int now = count(roof);", "            // 补回的砖自己占 1，多出来的才是这一击连带的掉落", "            ans[k] = Math.max(0, now - stable - 1);", "            stable = now;", "        }", "        return ans;", "    }", "", "    private int find(int x) {", "        while (parent[x] != x) {", "            parent[x] = parent[parent[x]];   // 路径压缩", "            x = parent[x];", "        }", "        return x;", "    }", "", "    private void union(int a, int b) {", "        a = find(a);", "        b = find(b);", "        if (a == b) return;", "        if (sz[a] < sz[b]) { int t = a; a = b; b = t; }", "        parent[b] = a;", "        sz[a] += sz[b];", "    }", "", "    private int count(int x) { return sz[find(x)]; }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 803. 打砖块 —— 图解：复刻 Solution.java 的「逆向并查集」：先打完，再逆序补砖看连通数变化。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[1, 0, 0, 0], [1, 1, 1, 0]], hits: [[1, 0]] };
+
+function trace(input) {
+  var m = input.grid.length, n = input.grid[0].length;
+  var g = input.grid.map(function (row) { return row.slice(); });   // 0 空 1 砖 2 被打掉
+  var hits = input.hits;
+  var frames = [];
+
+  // 并查集（与 Java 相同：路径压缩 + 按大小合并）
+  var total = m * n, roof = m * n;
+  var parent = [], sz = [];
+  for (var i = 0; i <= total; i++) { parent[i] = i; sz[i] = 1; }
+  function find(x) { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; }
+  function union(a, b) {
+    a = find(a); b = find(b);
+    if (a === b) return;
+    if (sz[a] < sz[b]) { var t = a; a = b; b = t; }
+    parent[b] = a;
+    sz[a] += sz[b];
+  }
+
+  function show(v) { return v === 1 ? '■' : (v === 2 ? '✗' : '·'); }
+  function gridPanel(marks) {
+    var rows = g.map(function (row) { return row.map(show); });
+    return Viz.grid(rows, { title: 'grid（■ 砖、· 空位、✗ 被 hits 打掉）', marks: marks || {} });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+  function stableMarks() {
+    var mk = {};
+    for (var r = 0; r < m; r++)
+      for (var c = 0; c < n; c++)
+        if (g[r][c] === 1 && find(r * n + c) === find(roof)) mk[r + ',' + c] = 'win';
+    return mk;
+  }
+
+  // 先打掉所有 hits 里的砖
+  var hitMarks = {};
+  for (i = 0; i < hits.length; i++) {
+    var hr = hits[i][0], hc = hits[i][1];
+    if (g[hr][hc] === 1) { g[hr][hc] = 2; hitMarks[hr + ',' + hc] = 'bad'; }
+  }
+  frames.push(Viz.frame('if (g[h[0]][h[1]] == 1) g[h[0]][h[1]] = 2;',
+    '逆向想：先打完所有 hits 得到终局，再倒着把砖一块块补回去', [gridPanel(hitMarks)]));
+
+  // 终局建并查集：第 0 行连虚拟屋顶，其余砖向左、向上合并
+  for (var j = 0; j < n; j++) if (g[0][j] === 1) union(j, roof);
+  for (i = 1; i < m; i++)
+    for (j = 0; j < n; j++)
+      if (g[i][j] === 1) {
+        if (g[i - 1][j] === 1) union(i * n + j, (i - 1) * n + j);
+        if (j > 0 && g[i][j - 1] === 1) union(i * n + j, i * n + j - 1);
+      }
+
+  var stable = sz[find(roof)];
+  frames.push(Viz.frame('int stable = count(roof);',
+    '终局连好并查集：亮着的都连着屋顶；stable = ' + stable + '（含屋顶结点自己）',
+    [gridPanel(stableMarks()), varsPanel([{ name: 'stable（屋顶连通块大小）', v: String(stable) }])]));
+
+  var ans = [];
+  var lastHit = -1;
+  for (var k = hits.length - 1; k >= 0; k--) {
+    var r = hits[k][0], c = hits[k][1];
+    if (g[r][c] !== 2) { ans[k] = 0; continue; }   // 本来就是空位
+    g[r][c] = 1;
+    if (r === 0) union(r * n + c, roof);
+    var dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    for (var d = 0; d < 4; d++) {
+      var nr = r + dirs[d][0], nc = c + dirs[d][1];
+      if (nr >= 0 && nr < m && nc >= 0 && nc < n && g[nr][nc] === 1) union(r * n + c, nr * n + nc);
+    }
+    var now = sz[find(roof)];
+    ans[k] = Math.max(0, now - stable - 1);
+    if (lastHit < 0) {
+      lastHit = k;
+      var mk = stableMarks();
+      mk[r + ',' + c] = 'new';
+      frames.push(Viz.frame('int now = count(roof);',
+        '逆序补回 (' + r + ',' + c + ')：接上邻居后屋顶连通块 ' + stable + ' → ' + now,
+        [gridPanel(mk), varsPanel([
+          { name: '补回前 stable', v: String(stable) },
+          { name: '补回后 now', v: String(now), cls: 'chg' },
+          { name: '这一击掉落', v: String(ans[k]) + ' = now − stable − 1' }
+        ])]));
+    }
+    stable = now;
+  }
+
+  frames.push(Viz.frame('return ans;',
+    '每击掉落数 = 连通块增量 −1（补回的砖自己占 1）：ans = [' + ans.join(', ') + ']',
+    [gridPanel(stableMarks()), varsPanel([{ name: 'ans', v: '[' + ans.join(', ') + ']', cls: 'chg' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

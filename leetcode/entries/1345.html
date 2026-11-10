@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>跳跃游戏 IV · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 768 / 1159</span>
+  <nav class="pn"><a href="1124.html">上一篇</a><a href="1375.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1345. </span>跳跃游戏 IV</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">广度优先搜索</li><li class="aux">哈希表</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">BFS 三类边：i±1 和「所有等值下标」；等值整组入队后立刻把传送门拆掉，防止同值互跳把图炸掉。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>无权图最短步数用 BFS：每个下标的邻居是 <code>i−1</code>、<code>i+1</code> 和所有 <code>arr[j] == arr[i]</code> 的 <code>j</code>。</li><li>同值下标预先分组；第一次扩展某值时把整组一起入队，然后<strong>删掉该组</strong>——此后组内成员全已访问，再跳也不会有新收获。</li><li>逐层扩展，终点获得下标时的层数即答案；起点即终点（<code>n=1</code>）返回 0。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> minJumps(<span class="k">int</span>[] arr) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = arr.length;</span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (n == <span class="n">1</span>) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="c">// 等值下标分组：同值的格子之间有「传送门」</span></span><span class="ln"><span class="no">8</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; same = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) same.computeIfAbsent(arr[i], k -&gt; <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;()).add(i);</span><span class="ln"><span class="no">10</span>        <span class="k">boolean</span>[] vis = <span class="k">new</span> <span class="k">boolean</span>[n];</span><span class="ln"><span class="no">11</span>        vis[<span class="n">0</span>] = <span class="k">true</span>;</span><span class="ln"><span class="no">12</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">13</span>        queue.addLast(<span class="n">0</span>);</span><span class="ln"><span class="no">14</span>        <span class="k">int</span> step = <span class="n">0</span>;</span><span class="ln"><span class="no">15</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">16</span>            step++;</span><span class="ln"><span class="no">17</span>            <span class="k">for</span> (<span class="k">int</span> k = queue.size(); k &gt; <span class="n">0</span>; k--) {</span><span class="ln"><span class="no">18</span>                <span class="k">int</span> i = queue.pollFirst();</span><span class="ln"><span class="no">19</span>                <span class="c">// 两类普通边：左右各走一步</span></span><span class="ln"><span class="no">20</span>                <span class="k">int</span>[] near = {i - <span class="n">1</span>, i + <span class="n">1</span>};</span><span class="ln"><span class="no">21</span>                <span class="k">for</span> (<span class="k">int</span> j : near) {</span><span class="ln"><span class="no">22</span>                    <span class="k">if</span> (j &gt;= <span class="n">0</span> &amp;&amp; j &lt; n &amp;&amp; !vis[j]) {</span><span class="ln"><span class="no">23</span>                        vis[j] = <span class="k">true</span>;</span><span class="ln"><span class="no">24</span>                        queue.addLast(j);</span><span class="ln"><span class="no">25</span>                    }</span><span class="ln"><span class="no">26</span>                }</span><span class="ln"><span class="no">27</span>                <span class="c">// 传送门：整组一起入队；用完立刻拆门，防止同值之间反复互跳</span></span><span class="ln"><span class="no">28</span>                <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; group = same.get(arr[i]);</span><span class="ln"><span class="no">29</span>                <span class="k">if</span> (group != <span class="k">null</span>) {</span><span class="ln"><span class="no">30</span>                    <span class="k">for</span> (<span class="k">int</span> j : group) {</span><span class="ln"><span class="no">31</span>                        <span class="k">if</span> (!vis[j]) {</span><span class="ln"><span class="no">32</span>                            vis[j] = <span class="k">true</span>;</span><span class="ln"><span class="no">33</span>                            queue.addLast(j);</span><span class="ln"><span class="no">34</span>                        }</span><span class="ln"><span class="no">35</span>                    }</span><span class="ln"><span class="no">36</span>                    same.remove(arr[i]);</span><span class="ln"><span class="no">37</span>                }</span><span class="ln"><span class="no">38</span>            }</span><span class="ln"><span class="no">39</span>            <span class="k">if</span> (vis[n - <span class="n">1</span>]) <span class="k">return</span> step;</span><span class="ln"><span class="no">40</span>        }</span><span class="ln"><span class="no">41</span>        <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">42</span>    }</span><span class="ln"><span class="no">43</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组&nbsp;<code>arr</code>&nbsp;，你一开始在数组的第一个元素处（下标为 0）。</p>
+
+<p>每一步，你可以从下标&nbsp;<code>i</code>&nbsp;跳到下标&nbsp;<code>i + 1</code> 、<code>i - 1</code> 或者 <code>j</code> ：</p>
+
+<ul>
+	<li><code>i + 1</code> 需满足：<code>i + 1 &lt; arr.length</code></li>
+	<li><code>i - 1</code>&nbsp;需满足：<code>i - 1 &gt;= 0</code></li>
+	<li><code>j</code>&nbsp;需满足：<code>arr[i] == arr[j]</code>&nbsp;且&nbsp;<code>i != j</code></li>
+</ul>
+
+<p>请你返回到达数组最后一个元素的下标处所需的&nbsp;<strong>最少操作次数</strong>&nbsp;。</p>
+
+<p>注意：任何时候你都不能跳到数组外面。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [100,-23,-23,404,100,23,23,23,3,404]
+<strong>输出：</strong>3
+<strong>解释：</strong>那你需要跳跃 3 次，下标依次为 0 --&gt; 4 --&gt; 3 --&gt; 9 。下标 9 为数组的最后一个元素的下标。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [7]
+<strong>输出：</strong>0
+<strong>解释：</strong>一开始就在最后一个元素处，所以你不需要跳跃。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [7,6,9,6,9,6,9,7]
+<strong>输出：</strong>1
+<strong>解释：</strong>你可以直接从下标 0 处跳到下标 7 处，也就是数组的最后一个元素处。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+<meta charset="UTF-8" />
+
+<ul>
+	<li><code>1 &lt;= arr.length &lt;= 5 * 10<sup>4</sup></code></li>
+	<li><code>-10<sup>8</sup>&nbsp;&lt;= arr[i] &lt;= 10<sup>8</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int minJumps(int[] arr) {", "        int n = arr.length;", "        if (n == 1) return 0;", "        // 等值下标分组：同值的格子之间有「传送门」", "        Map<Integer, List<Integer>> same = new HashMap<>();", "        for (int i = 0; i < n; i++) same.computeIfAbsent(arr[i], k -> new ArrayList<>()).add(i);", "        boolean[] vis = new boolean[n];", "        vis[0] = true;", "        Deque<Integer> queue = new ArrayDeque<>();", "        queue.addLast(0);", "        int step = 0;", "        while (!queue.isEmpty()) {", "            step++;", "            for (int k = queue.size(); k > 0; k--) {", "                int i = queue.pollFirst();", "                // 两类普通边：左右各走一步", "                int[] near = {i - 1, i + 1};", "                for (int j : near) {", "                    if (j >= 0 && j < n && !vis[j]) {", "                        vis[j] = true;", "                        queue.addLast(j);", "                    }", "                }", "                // 传送门：整组一起入队；用完立刻拆门，防止同值之间反复互跳", "                List<Integer> group = same.get(arr[i]);", "                if (group != null) {", "                    for (int j : group) {", "                        if (!vis[j]) {", "                            vis[j] = true;", "                            queue.addLast(j);", "                        }", "                    }", "                    same.remove(arr[i]);", "                }", "            }", "            if (vis[n - 1]) return step;", "        }", "        return -1;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1345. 跳跃游戏 IV —— 图解：复刻 Solution.java 的「BFS + 等值传送门用完即拆」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [2, 100, 100, 100, -1, 100, 2, 3] };
+
+function trace(input) {
+  var arr = input.arr;
+  var n = arr.length;
+  var frames = [];
+
+  // 等值下标分组（与 Java 相同）：同值格子之间有传送门
+  var same = {};
+  for (var i = 0; i < n; i++) {
+    if (!same[arr[i]]) same[arr[i]] = [];
+    same[arr[i]].push(i);
+  }
+
+  var vis = new Array(n).fill(false);
+  var queue = [];
+  if (n > 0) { vis[0] = true; queue = [0]; }
+  var step = 0, ans = n === 1 ? 0 : -1;
+  var doorEvent = null;   // 第一次「传送门带新下标入队」的事件，记录当时快照
+
+  function arrPanel(marks) {
+    return Viz.cells(arr, { title: 'arr（下标即位置，走到最后一个下标为止）', marks: marks || {} });
+  }
+  function doorsPanel(rows) {
+    return Viz.table('等值传送门（同值下标可互跳）', rows);
+  }
+  function varsPanel(q, s, a, fresh) {
+    return Viz.vars([
+      { name: '队列（已入队待扩展）', v: '[' + q.join(',') + ']', cls: '' },
+      { name: 'step', v: s, cls: '' },
+      { name: 'ans（最少步数）', v: a, cls: fresh ? 'new' : '' },
+    ]);
+  }
+
+  if (n > 0) {
+    var m0 = {};
+    m0[0] = 'cur';
+    var rows0 = [];
+    for (var key0 in same) rows0.push({ k: '值 ' + key0, v: '→ [' + same[key0].join(',') + ']', cls: '' });
+    frames.push(Viz.frame('queue.addLast(0);', '从下标 0 出发做 BFS；同值的下标之间有传送门',
+      [arrPanel(m0), doorsPanel(rows0), varsPanel([0], 0, '？', false)]));
+  }
+
+  // 逐层 BFS，与 Java 相同
+  while (queue.length > 0 && ans < 0) {
+    step++;
+    var next = [];
+    for (var k = 0; k < queue.length; k++) {
+      var cur = queue[k];
+      var near = [cur - 1, cur + 1];
+      for (var a = 0; a < near.length; a++) {
+        var j1 = near[a];
+        if (j1 >= 0 && j1 < n && !vis[j1]) { vis[j1] = true; next.push(j1); }
+      }
+      var group = same[arr[cur]];
+      if (group) {
+        var added = [];
+        for (var b = 0; b < group.length; b++) {
+          var j2 = group[b];
+          if (!vis[j2]) { vis[j2] = true; next.push(j2); added.push(j2); }
+        }
+        if (added.length && !doorEvent) {
+          var before = [];
+          for (var key in same) {
+            before.push({ k: '值 ' + key, v: '→ [' + same[key].join(',') + ']', cls: Number(key) === arr[cur] ? 'cur' : '' });
+          }
+          var after = before.filter(function (r) { return r.k !== '值 ' + arr[cur]; });
+          doorEvent = { cur: cur, val: arr[cur], added: added.slice(), before: before, after: after, next: next.slice() };
+        }
+        delete same[arr[cur]];   // 门用完即拆
+      }
+    }
+    queue = next;
+    if (vis[n - 1]) ans = step;
+  }
+
+  if (doorEvent) {
+    var m1 = {}, m2 = {};
+    for (var c = 0; c < n; c++) if (vis[c]) { m1[c] = 'win'; m2[c] = 'win'; }
+    m1[doorEvent.cur] = 'cur';
+    for (var d = 0; d < doorEvent.added.length; d++) m1[doorEvent.added[d]] = 'new';
+    m2[doorEvent.cur] = 'dim';
+    frames.push(Viz.frame('for (int j : group) {',
+      '处理 ' + doorEvent.cur + '：邻居入队，传送门把同值的 [' + doorEvent.added.join(',') + '] 也一起送进下一层',
+      [arrPanel(m1), doorsPanel(doorEvent.before), varsPanel(doorEvent.next, step, '？', false)]));
+    frames.push(Viz.frame('same.remove(arr[i]);',
+      '门用完即拆：值 ' + doorEvent.val + ' 的传送门删掉，同值之间不再互相跳，图不会越扩越大',
+      [arrPanel(m2), doorsPanel(doorEvent.after), varsPanel(doorEvent.next, step, '？', false)]));
+  }
+
+  var m3 = {};
+  for (var c3 = 0; c3 < n; c3++) if (vis[c3]) m3[c3] = 'win';
+  if (n > 0) m3[n - 1] = 'done';
+  frames.push(Viz.frame('if (vis[n - 1]) return step;',
+    ans < 0 ? 'BFS 结束' : '第 ' + ans + ' 层铺到终点：答案就是层数 ' + ans,
+    [arrPanel(m3), varsPanel(queue, step, ans, ans >= 0)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

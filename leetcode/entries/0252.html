@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>会议室 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 359 / 1159</span>
+  <nav class="pn"><a href="offer-60.html">上一篇</a><a href="0875.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">252. </span>会议室</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 10</li><li class="algo">扫描线/排序</li><li class="tag">数组</li><li class="tag">排序</li><li class="tag">quicksort</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">按开始时间排序，然后只看相邻两场：上一场的结束时间 ≤ 这一场的开始时间就来得及，否则冲突。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>排序后若相邻两场不重叠，则任意两场都不重叠（开始时间更晚的场只会更靠后），所以只需 <code>n-1</code> 次相邻比较。</li><li>冲突条件是 <code>intervals[i][0] &lt; intervals[i-1][1]</code>：<strong>正好衔接</strong>（上一场 5 结束、这一场 5 开始）不算冲突。</li><li>会员题：本地验证通过即可，不提交力扣。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(log n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> canAttendMeetings(<span class="k">int</span>[][] intervals) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 按开始时间排序后，只要相邻两场不重叠，全部会议就都不重叠</span></span><span class="ln"><span class="no">6</span>        <span class="t">Arrays</span>.sort(intervals, (a, b) -&gt; a[<span class="n">0</span>] - b[<span class="n">0</span>]);</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; intervals.length; i++) {</span><span class="ln"><span class="no">8</span>            <span class="c">// 上一场结束 ≤ 这一场开始才来得及（正好衔接不算冲突）</span></span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (intervals[i][<span class="n">0</span>] &lt; intervals[i - <span class="n">1</span>][<span class="n">1</span>]) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean canAttendMeetings(int[][] intervals) {", "        // 按开始时间排序后，只要相邻两场不重叠，全部会议就都不重叠", "        Arrays.sort(intervals, (a, b) -> a[0] - b[0]);", "        for (int i = 1; i < intervals.length; i++) {", "            // 上一场结束 ≤ 这一场开始才来得及（正好衔接不算冲突）", "            if (intervals[i][0] < intervals[i - 1][1]) return false;", "        }", "        return true;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 252. 会议室 —— 图解：复刻 Solution.java 的「按开始时间排序 + 相邻比较」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { intervals: [[1, 5], [5, 10], [9, 15], [20, 30]] };
+
+function trace(input) {
+  var intervals = input.intervals.slice();
+  var frames = [];
+  var fired = { sorted: false, ok: false, bad: false };
+
+  // 每场会议画成「开始~结束」一格，指针压在正在比较的相邻两场上
+  function cellsPanel(prev, cur, badIdx) {
+    var marks = {};
+    if (prev != null) marks[prev] = 'win';
+    if (cur != null && marks[cur] !== 'win') marks[cur] = 'cur';
+    if (badIdx != null) { marks[badIdx] = 'bad'; marks[badIdx - 1] = 'bad'; }
+    var items = intervals.map(function (it) { return it[0] + '~' + it[1]; });
+    var pointers = [];
+    if (prev != null) pointers.push({ at: prev, label: '上一场', cls: 'p-prev' });
+    if (cur != null) pointers.push({ at: cur, label: '这一场', cls: 'p-cur' });
+    return Viz.cells(items, { title: '按开始时间排好序的会议', marks: marks, pointers: pointers });
+  }
+  function varsPanel(ok) {
+    return Viz.vars([{ name: '能否全部参加', v: ok == null ? '比较中…' : String(ok), cls: ok != null ? 'chg' : '' }]);
+  }
+
+  intervals.sort(function (a, b) { return a[0] - b[0]; });
+  fired.sorted = true;
+  frames.push(Viz.frame('Arrays.sort(intervals, (a, b) -> a[0] - b[0]);',
+    '先按开始时间排序：冲突只可能出现在相邻两场之间',
+    [cellsPanel(null, null, null), varsPanel(null)]));
+
+  var ans = true;
+  for (var i = 1; i < intervals.length; i++) {
+    var overlap = intervals[i][0] < intervals[i - 1][1];
+    if (!overlap && !fired.ok) {
+      fired.ok = true;
+      frames.push(Viz.frame('if (intervals[i][0] < intervals[i - 1][1]) return false;',
+        '上一场 ' + intervals[i - 1][1] + ' 结束，这一场 ' + intervals[i][0] + ' 才开始：正好衔接，不冲突',
+        [cellsPanel(i - 1, i, null), varsPanel(null)]));
+    }
+    if (overlap) {
+      ans = false;
+      if (!fired.bad) {
+        fired.bad = true;
+        frames.push(Viz.frame('if (intervals[i][0] < intervals[i - 1][1]) return false;',
+          '上一场到 ' + intervals[i - 1][1] + ' 才结束，这一场 ' + intervals[i][0] + ' 就开始：重叠了',
+          [cellsPanel(null, i, i), varsPanel(false)]));
+      }
+      break;
+    }
+  }
+
+  frames.push(Viz.frame('return true;',
+    ans ? '相邻两场全部错开：返回 true' : '发现重叠：返回 false',
+    [cellsPanel(null, null, null), varsPanel(ans)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

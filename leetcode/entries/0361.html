@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>轰炸敌人 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1145 / 1159</span>
+  <nav class="pn"><a href="0588.html">上一篇</a><a href="0549.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">361. </span>轰炸敌人</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">模拟</li><li class="aux">前缀和/差分</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">把每行、每列按墙分段缓存敌人数：行段数 rowHits、列段数 colHits[j]，空地的威力就是两者相加。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>一格放炸弹能炸的是「所在行段 + 所在列段」的敌人；同一段里的空地答案相同，不必重算。</li><li>行：进入新行段（行首或左边是墙）才向右重数一段；列：<code>colHits[j]</code> 在列顶或上邻是墙时才向下重数。</li><li>走到 <code>'0'</code> 格就用现成的 <code>rowHits + colHits[j]</code> 更新答案；整张图一遍扫完。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m·n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maxKilledEnemies(<span class="k">char</span>[][] grid) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = grid.length, n = grid[<span class="n">0</span>].length;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> rowHits = <span class="n">0</span>;                    <span class="c">// 当前行、所在墙段内的敌人数</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] colHits = <span class="k">new</span> <span class="k">int</span>[n];         <span class="c">// 每列、所在墙段内的敌人数</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">8</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">9</span>                <span class="c">// 行首或左边是墙：这一行段没数过，向右数到下一个墙为止</span></span><span class="ln"><span class="no">10</span>                <span class="k">if</span> (j == <span class="n">0</span> || grid[i][j - <span class="n">1</span>] == <span class="s">'W'</span>) {</span><span class="ln"><span class="no">11</span>                    rowHits = <span class="n">0</span>;</span><span class="ln"><span class="no">12</span>                    <span class="k">for</span> (<span class="k">int</span> k = j; k &lt; n &amp;&amp; grid[i][k] != <span class="s">'W'</span>; k++) {</span><span class="ln"><span class="no">13</span>                        <span class="k">if</span> (grid[i][k] == <span class="s">'E'</span>) rowHits++;</span><span class="ln"><span class="no">14</span>                    }</span><span class="ln"><span class="no">15</span>                }</span><span class="ln"><span class="no">16</span>                <span class="c">// 顶行或上面是墙：这一列段没数过，向下数到下一个墙为止</span></span><span class="ln"><span class="no">17</span>                <span class="k">if</span> (i == <span class="n">0</span> || grid[i - <span class="n">1</span>][j] == <span class="s">'W'</span>) {</span><span class="ln"><span class="no">18</span>                    colHits[j] = <span class="n">0</span>;</span><span class="ln"><span class="no">19</span>                    <span class="k">for</span> (<span class="k">int</span> k = i; k &lt; m &amp;&amp; grid[k][j] != <span class="s">'W'</span>; k++) {</span><span class="ln"><span class="no">20</span>                        <span class="k">if</span> (grid[k][j] == <span class="s">'E'</span>) colHits[j]++;</span><span class="ln"><span class="no">21</span>                    }</span><span class="ln"><span class="no">22</span>                }</span><span class="ln"><span class="no">23</span>                <span class="c">// 炸弹只能放空地：威力 = 行段敌数 + 列段敌数</span></span><span class="ln"><span class="no">24</span>                <span class="k">if</span> (grid[i][j] == <span class="s">'0'</span>) ans = <span class="t">Math</span>.max(ans, rowHits + colHits[j]);</span><span class="ln"><span class="no">25</span>            }</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maxKilledEnemies(char[][] grid) {", "        int m = grid.length, n = grid[0].length;", "        int rowHits = 0;                    // 当前行、所在墙段内的敌人数", "        int[] colHits = new int[n];         // 每列、所在墙段内的敌人数", "        int ans = 0;", "        for (int i = 0; i < m; i++) {", "            for (int j = 0; j < n; j++) {", "                // 行首或左边是墙：这一行段没数过，向右数到下一个墙为止", "                if (j == 0 || grid[i][j - 1] == 'W') {", "                    rowHits = 0;", "                    for (int k = j; k < n && grid[i][k] != 'W'; k++) {", "                        if (grid[i][k] == 'E') rowHits++;", "                    }", "                }", "                // 顶行或上面是墙：这一列段没数过，向下数到下一个墙为止", "                if (i == 0 || grid[i - 1][j] == 'W') {", "                    colHits[j] = 0;", "                    for (int k = i; k < m && grid[k][j] != 'W'; k++) {", "                        if (grid[k][j] == 'E') colHits[j]++;", "                    }", "                }", "                // 炸弹只能放空地：威力 = 行段敌数 + 列段敌数", "                if (grid[i][j] == '0') ans = Math.max(ans, rowHits + colHits[j]);", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 361. 轰炸敌人（会员题）—— 图解：行/列各按墙分段缓存敌人数，空地威力 = 行段 + 列段。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// grid 的两种形态（字符串数组 / 字符数组）都按行拆成字符处理。
+
+var STORY_INPUT = { grid: ['0E00', 'E0WE', '0E00'] };
+
+function trace(input) {
+  var g = input.grid.map(function (r) { return typeof r === 'string' ? r.split('') : r; });
+  var m = g.length, n = g[0].length;
+  var colHits = new Array(n).fill(0);
+  var rowHits = 0, ans = 0, bestI = -1, bestJ = -1;
+  var frames = [];
+  var didRow0 = false, hits = 0;
+
+  function gridPanel(marks) {
+    var rows = g.map(function (row) { return row.slice(); });
+    return Viz.grid(rows, { title: 'grid：0 空地 / E 敌人 / W 墙', marks: marks || {} });
+  }
+  function colPanel(hi) {
+    var marks = {};
+    if (hi != null) marks[hi] = 'hit';
+    return Viz.cells(colHits, { title: 'colHits：每列所在墙段的敌人数', marks: marks });
+  }
+  function varsPanel(extra) {
+    var items = [
+      { name: 'rowHits（当前行段敌数）', v: String(rowHits) },
+      { name: 'ans（目前最大威力）', v: String(ans), cls: 'chg' }
+    ];
+    (extra || []).forEach(function (e) { items.push(e); });
+    return Viz.vars(items);
+  }
+  function snap(at, key, marks, hi, extra) {
+    frames.push(Viz.frame(at, key, [gridPanel(marks), colPanel(hi), varsPanel(extra)]));
+  }
+
+  for (var i = 0; i < m; i++) {
+    for (var j = 0; j < n; j++) {
+      if (j === 0 || g[i][j - 1] === 'W') {
+        rowHits = 0;
+        for (var k = j; k < n && g[i][k] !== 'W'; k++) rowHits += g[i][k] === 'E' ? 1 : 0;
+      }
+      var colRedone = false;
+      if (i === 0 || g[i - 1][j] === 'W') {
+        colHits[j] = 0;
+        for (var k2 = i; k2 < m && g[k2][j] !== 'W'; k2++) colHits[j] += g[k2][j] === 'E' ? 1 : 0;
+        colRedone = true;
+      }
+      if (g[i][j] === '0' && rowHits + colHits[j] > ans) {
+        ans = rowHits + colHits[j];
+        bestI = i; bestJ = j;
+        if (hits < 3) {
+          hits++;
+          var mk = {};
+          mk[i + ',' + j] = 'cur';
+          snap('if (grid[i][j] == \'0\') ans = Math.max(ans, rowHits + colHits[j]);',
+            '(' + i + ',' + j + ') 是空地：行段 ' + rowHits + ' + 列段 ' + colHits[j] + ' = ' + ans + '，刷新最大',
+            mk, colRedone ? j : null, [{ name: '这一格', v: '威力 ' + ans, cls: 'done' }]);
+        }
+      }
+      if (i === 0 && j === n - 1 && !didRow0) {
+        didRow0 = true;
+        snap('colHits[j] = 0;', '第 0 行扫完：每列从顶向下数到墙，colHits 备好；行段敌数缓存在 rowHits',
+          null, null, [{ name: '说明', v: '段没变就不重算，整图一遍扫完', cls: '' }]);
+      }
+    }
+  }
+
+  var fin = {};
+  if (bestI >= 0) fin[bestI + ',' + bestJ] = 'done';
+  snap('return ans;', bestI >= 0 ? '扫完全图：最好位置 (' + bestI + ',' + bestJ + ')，炸 ' + ans + ' 个敌人' : '没有空地可放炸弹，返回 0',
+    fin, null, [{ name: 'ans', v: String(ans), cls: 'done' }]);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

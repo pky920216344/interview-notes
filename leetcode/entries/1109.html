@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>航班预订统计 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 426 / 1159</span>
+  <nav class="pn"><a href="offer-25.html">上一篇</a><a href="offer-41.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1109. </span>航班预订统计</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 7</li><li class="algo">前缀和/差分</li><li class="tag">数组</li><li class="tag">前缀和</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">差分数组：每条预订只在起点 +seats、终点后一格 −seats，最后前缀和一遍还原每个航班的座位数。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>区间整体加一个数不必逐格加：<code>d[l-1] += seats</code>、<code>d[r] -= seats</code>（题目 1 起始，转成 0 起始下标）。</li><li>全部记完后做前缀和：累计到哪一班，那个值就是该班的座位总数。</li><li>撤销记在 <code>d[r]</code>：<code>r = n</code> 时要写 <code>d[n]</code>，所以差分数组开 <code>n+1</code> 长。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + m)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span>[] corpFlightBookings(<span class="k">int</span>[][] bookings, <span class="k">int</span> n) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 差分：区间 [l, r] 整段加 seats ⇒ 起点记账、终点后一格撤销</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] d = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span>[] b : bookings) {</span><span class="ln"><span class="no">6</span>            d[b[<span class="n">0</span>] - <span class="n">1</span>] += b[<span class="n">2</span>];</span><span class="ln"><span class="no">7</span>            d[b[<span class="n">1</span>]] -= b[<span class="n">2</span>];</span><span class="ln"><span class="no">8</span>        }</span><span class="ln"><span class="no">9</span>        <span class="k">int</span>[] ans = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">10</span>        <span class="k">int</span> run = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">12</span>            <span class="c">// 前缀和还原：跑到哪一班，累计值就是该班的座位总数</span></span><span class="ln"><span class="no">13</span>            run += d[i];</span><span class="ln"><span class="no">14</span>            ans[i] = run;</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>这里有&nbsp;<code>n</code>&nbsp;个航班，它们分别从 <code>1</code> 到 <code>n</code> 进行编号。</p>
+
+<p>有一份航班预订表&nbsp;<code>bookings</code> ，表中第&nbsp;<code>i</code>&nbsp;条预订记录&nbsp;<code>bookings[i] = [first<sub>i</sub>, last<sub>i</sub>, seats<sub>i</sub>]</code>&nbsp;意味着在从 <code>first<sub>i</sub></code>&nbsp;到 <code>last<sub>i</sub></code> （<strong>包含</strong> <code>first<sub>i</sub></code> 和 <code>last<sub>i</sub></code> ）的 <strong>每个航班</strong> 上预订了 <code>seats<sub>i</sub></code>&nbsp;个座位。</p>
+
+<p>请你返回一个长度为 <code>n</code> 的数组&nbsp;<code>answer</code>，里面的元素是每个航班预定的座位总数。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>bookings = [[1,2,10],[2,3,20],[2,5,25]], n = 5
+<strong>输出：</strong>[10,55,45,25,25]
+<strong>解释：</strong>
+航班编号        1   2   3   4   5
+预订记录 1 ：   10  10
+预订记录 2 ：       20  20
+预订记录 3 ：       25  25  25  25
+总座位数：      10  55  45  25  25
+因此，answer = [10,55,45,25,25]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>bookings = [[1,2,10],[2,2,15]], n = 2
+<strong>输出：</strong>[10,25]
+<strong>解释：</strong>
+航班编号        1   2
+预订记录 1 ：   10  10
+预订记录 2 ：       15
+总座位数：      10  25
+因此，answer = [10,25]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= bookings.length &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>bookings[i].length == 3</code></li>
+	<li><code>1 &lt;= first<sub>i</sub> &lt;= last<sub>i</sub> &lt;= n</code></li>
+	<li><code>1 &lt;= seats<sub>i</sub> &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int[] corpFlightBookings(int[][] bookings, int n) {", "        // 差分：区间 [l, r] 整段加 seats ⇒ 起点记账、终点后一格撤销", "        int[] d = new int[n + 1];", "        for (int[] b : bookings) {", "            d[b[0] - 1] += b[2];", "            d[b[1]] -= b[2];", "        }", "        int[] ans = new int[n];", "        int run = 0;", "        for (int i = 0; i < n; i++) {", "            // 前缀和还原：跑到哪一班，累计值就是该班的座位总数", "            run += d[i];", "            ans[i] = run;", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1109. 航班预订统计 —— 图解：复刻 Solution.java 的差分数组，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { bookings: [[1, 2, 10], [2, 3, 20], [2, 5, 25]], n: 5 };
+
+function trace(input) {
+  var bookings = input.bookings, n = input.n;
+  var d = [], ans = [], frames = [], shown = {};
+  for (var t = 0; t <= n; t++) d.push(0);
+  for (t = 0; t < n; t++) ans.push(0);
+
+  function bookingsPanel(hitIdx) {
+    return Viz.table('预订 bookings：[首, 尾, 座数]', bookings.map(function (bk, i) {
+      return { k: '第 ' + (i + 1) + ' 条', v: '[' + bk[0] + ',' + bk[1] + '] +' + bk[2], cls: i === hitIdx ? 'hit' : '' };
+    }), { hint: '（预订记的是区间整体加）' });
+  }
+  function dPanel(marks) {
+    return Viz.cells(d.slice(), { title: '差分数组 d（下标 i = 航班 i+1）', marks: marks || {} });
+  }
+  function ansPanel(marks) {
+    return Viz.cells(ans.slice(), { title: 'ans：每个航班的座位总数', marks: marks || {} });
+  }
+
+  // 1~2 帧：每条预订只在起点 +seats、终点后一格 -seats
+  bookings.forEach(function (bk, idx) {
+    d[bk[0] - 1] += bk[2];
+    d[bk[1]] -= bk[2];
+    if (idx === 0 && !shown.b0) {
+      shown.b0 = true;
+      var m = {};
+      m[bk[0] - 1] = 'chg';
+      m[bk[1]] = 'chg';
+      frames.push(Viz.frame('d[b[1]] -= b[2];',
+        '第 1 条 [' + bk[0] + ',' + bk[1] + '] +' + bk[2] + '：起点 +' + bk[2] + '，终点后一格 −' + bk[2],
+        [bookingsPanel(0), dPanel(m)]));
+    }
+    if (idx === bookings.length - 1 && !shown.bLast) {
+      shown.bLast = true;
+      var m2 = {};
+      m2[bk[0] - 1] = 'chg';
+      m2[bk[1]] = 'chg';
+      frames.push(Viz.frame('d[b[1]] -= b[2];',
+        '末条 [' + bk[0] + ',' + bk[1] + '] +' + bk[2] + '：撤销记在 d[' + bk[1] + ']，差分数组因此开 n+1 长',
+        [bookingsPanel(idx), dPanel(m2)]));
+    }
+  });
+
+  if (bookings.length) {
+    frames.push(Viz.frame('int[] ans = new int[n];',
+      '预订全部记完：d 里只存相邻两班的座位增量',
+      [bookingsPanel(-1), dPanel({})]));
+  }
+
+  // 前缀和还原
+  var run = 0;
+  for (var i = 0; i < n; i++) {
+    run += d[i];
+    ans[i] = run;
+    if (i === 1 && !shown.pre && n >= 2) {
+      shown.pre = true;
+      var am = { 0: 'done', 1: 'chg' };
+      frames.push(Viz.frame('run += d[i];',
+        '前缀和还原：跑到航班 2，累计 ' + (run - d[i]) + ' + ' + d[i] + ' = ' + run,
+        [dPanel({}), ansPanel(am), Viz.vars([{ name: 'run（累计）', v: run, cls: 'chg' }])]));
+    }
+  }
+
+  var done = {};
+  for (i = 0; i < n; i++) done[i] = 'done';
+  frames.push(Viz.frame('return ans;',
+    '还原完成：ans = [' + ans.join(',') + ']',
+    [ansPanel(done)]));
+
+  return { frames: frames, result: ans.slice() };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

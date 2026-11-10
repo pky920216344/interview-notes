@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>文件组合 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 345 / 1159</span>
+  <nav class="pn"><a href="0986.html">上一篇</a><a href="0905.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 57 - II. </span>文件组合</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 11</li><li class="algo">滑动窗口</li><li class="tag">数学</li><li class="tag">双指针</li><li class="tag">枚举</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">滑动窗口：窗口 [l, r] 是连续正整数、和为 sum；小了右扩、大了左缩、等于就收下并左缩，l 一路右移保证答案按首项升序。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>窗口至少两个数：<code>l</code> 从 1、<code>r</code> 从 2 开始，<code>sum = 1+2</code>；<code>l &lt; r</code> 时才继续（只剩一个数就没意义了）。</li><li><code>sum &lt; target</code> 右扩 <code>++r</code>，<code>sum &gt; target</code> 左缩 <code>sum -= l++</code>；<strong>命中后也要左缩</strong>，继续找下一段。</li><li><code>l</code> 只增不减，命中的顺序就是首项升序，答案天然有序。</li><li>连续和可以用求根公式直接算（数学解），但滑窗更不容易写错，两者都是 O(target)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(target)，空间复杂度 O(1)（不算输出）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[][] fileCombination(<span class="k">int</span> target) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="c">// 窗口 [l, r] 里是连续正整数 l..r，sum 是它们的和；至少要两个数</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> l = <span class="n">1</span>, r = <span class="n">2</span>, sum = <span class="n">3</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">while</span> (l &lt; r) {</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (sum == target) {                 <span class="c">// 命中：收下这一段，左缩继续找下一段</span></span><span class="ln"><span class="no">10</span>                <span class="k">int</span>[] seq = <span class="k">new</span> <span class="k">int</span>[r - l + <span class="n">1</span>];</span><span class="ln"><span class="no">11</span>                <span class="k">for</span> (<span class="k">int</span> i = l; i &lt;= r; i++) seq[i - l] = i;</span><span class="ln"><span class="no">12</span>                ans.add(seq);</span><span class="ln"><span class="no">13</span>                sum -= l;</span><span class="ln"><span class="no">14</span>                l++;</span><span class="ln"><span class="no">15</span>            } <span class="k">else</span> <span class="k">if</span> (sum &lt; target) {           <span class="c">// 和小了：右扩</span></span><span class="ln"><span class="no">16</span>                r++;</span><span class="ln"><span class="no">17</span>                sum += r;</span><span class="ln"><span class="no">18</span>            } <span class="k">else</span> {                             <span class="c">// 和大了：左缩</span></span><span class="ln"><span class="no">19</span>                sum -= l;</span><span class="ln"><span class="no">20</span>                l++;</span><span class="ln"><span class="no">21</span>            }</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> ans.toArray(<span class="k">new</span> <span class="k">int</span>[<span class="n">0</span>][]);</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>待传输文件被切分成多个部分，按照原排列顺序，每部分文件编号均为一个 <strong>正整数</strong>（至少含有两个文件）。传输要求为：连续文件编号总和为接收方指定数字 <code>target</code> 的所有文件。请返回所有符合该要求的文件传输组合列表。</p>
+
+<p><strong>注意</strong>，返回时需遵循以下规则：</p>
+
+<ul>
+	<li>每种组合按照文件编号 <strong>升序</strong> 排列；</li>
+	<li>不同组合按照第一个文件编号 <strong>升序</strong> 排列。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>target = 12
+<strong>输出：</strong>[[3, 4, 5]]
+<strong>解释：</strong>在上述示例中，存在一个连续正整数序列的和为 12，为 [3, 4, 5]。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>target = 18
+<strong>输出：</strong>[[3,4,5,6],[5,6,7]]
+<strong>解释：</strong>在上述示例中，存在两个连续正整数序列的和分别为 18，分别为 [3, 4, 5, 6] 和 [5, 6, 7]。
+</pre>
+
+
+
+<p><b>提示：</b></p>
+
+<ul>
+	<li><code>1 &lt;= target &lt;= 10^5</code></li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[][] fileCombination(int target) {", "        List<int[]> ans = new ArrayList<>();", "        // 窗口 [l, r] 里是连续正整数 l..r，sum 是它们的和；至少要两个数", "        int l = 1, r = 2, sum = 3;", "        while (l < r) {", "            if (sum == target) {                 // 命中：收下这一段，左缩继续找下一段", "                int[] seq = new int[r - l + 1];", "                for (int i = l; i <= r; i++) seq[i - l] = i;", "                ans.add(seq);", "                sum -= l;", "                l++;", "            } else if (sum < target) {           // 和小了：右扩", "                r++;", "                sum += r;", "            } else {                             // 和大了：左缩", "                sum -= l;", "                l++;", "            }", "        }", "        return ans.toArray(new int[0][]);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 剑指 Offer 57 - II. 文件组合（和为 s 的连续正数序列）—— 图解：滑动窗口，在 4~5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { target: 18 };
+
+function trace(input) {
+  var target = input.target;
+  var frames = [];
+
+  // 先完整模拟一遍，记录关键事件，再按最大 r 渲染数轴（随机大输入也不会画出越界面板）
+  var events = [];
+  var l = 1, r = 2, sum = 3;
+  var ans = [];
+  events.push({ kind: 'init', l: l, r: r, sum: sum });
+  var hits = 0;
+  while (l < r) {
+    if (sum === target) {
+      var seq = [];
+      for (var i = l; i <= r; i++) seq.push(i);
+      ans.push(seq);
+      hits++;
+      events.push({ kind: 'hit', l: l, r: r, sum: sum, no: hits, ansLen: ans.length });
+      sum -= l; l++;
+    } else if (sum < target) {
+      r++; sum += r;
+    } else {
+      sum -= l; l++;
+    }
+  }
+  events.push({ kind: 'final', l: l, r: r, sum: sum });
+
+  var maxR = 2;
+  events.forEach(function (e) { maxR = Math.max(maxR, e.r); });
+  maxR = Math.min(maxR, 40);
+
+  function cellsPanel(e) {
+    var items = [], marks = {};
+    for (var c = 1; c <= maxR; c++) items.push(String(c));
+    for (var k = 0; k < ans.length; k++)
+      for (c = ans[k][0]; c <= ans[k][1] && c <= maxR; c++) marks[c - 1] = e.kind === 'final' ? 'done' : 'win';
+    var range = e.l - 1 <= Math.min(e.r, maxR) - 1
+      ? { from: e.l - 1, to: Math.min(e.r, maxR) - 1, label: '窗口和 = ' + e.sum }
+      : null;
+    return Viz.cells(items, { title: '连续正整数数轴', marks: marks, range: range });
+  }
+  function varsPanel(e) {
+    var items = [
+      { name: 'target', v: target },
+      { name: 'l（左端）', v: e.l },
+      { name: 'r（右端）', v: e.r },
+      { name: 'sum', v: e.sum }
+    ];
+    if (e.kind === 'final') items.push({ name: 'ans', v: ans.length ? JSON.stringify(ans.map(function (s) { return s[0] + '..' + s[s.length - 1]; })) : '（空）' });
+    return Viz.vars(items);
+  }
+  function snap(e, at, key) { frames.push(Viz.frame(at, key, [cellsPanel(e), varsPanel(e)])); }
+
+  var done = { init: false, h1: false, h2: false, final: false };
+  events.forEach(function (e) {
+    if (e.kind === 'init' && !done.init) {
+      done.init = true;
+      snap(e, 'int l = 1, r = 2, sum = 3;',
+        '开局：窗口 [1,2] 至少两个数，sum=3 比 ' + target + ' 小 → 右扩');
+    } else if (e.kind === 'hit' && e.no === 1 && !done.h1) {
+      done.h1 = true;
+      snap(e, 'if (sum == target) {',
+        'sum == ' + target + '：收下 [' + e.l + '..' + e.r + ']，左缩找下一段');
+    } else if (e.kind === 'hit' && e.no === 2 && !done.h2) {
+      done.h2 = true;
+      snap(e, 'if (sum == target) {',
+        '又命中 [' + e.l + '..' + e.r + ']：l 一路右移，答案按首项升序');
+    } else if (e.kind === 'final' && !done.final) {
+      done.final = true;
+      var short = ans.map(function (s) { return '[' + s[0] + '..' + s[s.length - 1] + ']'; });
+      var list = short.slice(0, 3).join('、') + (short.length > 3 ? ' 等' : '');
+      snap(e, 'return ans.toArray(new int[0][]);',
+        ans.length ? '扫完：' + target + ' 共 ' + ans.length + ' 段：' + list : '扫完：' + target + ' 没有连续序列组合，返回空');
+    }
+  });
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

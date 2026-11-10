@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>括号生成 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 43 / 1159</span>
+  <nav class="pn"><a href="0704.html">上一篇</a><a href="0032.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">22. </span>括号生成</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 152</li><li class="algo">回溯</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="tag">回溯</li><li class="tag">bracket-sequences</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">回溯：open &lt; n 才能放 &#x27;(&#x27;，close &lt; open 才能放 &#x27;)&#x27;，放满 2n 位就记下一个答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dfs(open, close)</code>：<code>path</code> 是已经放好的括号串，<code>open</code>、<code>close</code> 是其中左、右括号的个数。</li><li>左括号没用完（<code>open &lt; n</code>）就可以放 <code>'('</code>；右括号比左括号少（<code>close &lt; open</code>）才可以放 <code>')'</code>，这样永远不会出现孤立的右括号。</li><li>每试一个字符：<code>append</code>、递归、再 <code>deleteCharAt</code> 撤销，回到上一层继续试下一种。</li><li><code>path.length() == 2 * n</code> 时，一定恰好 <code>n</code> 对且合法，直接记录。合法串个数是卡特兰数，约 <code>4^n / n^1.5</code>，每个复制 <code>O(n)</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(4^n / √n)，空间复杂度 O(n)（不计输出）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span> n;</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; ans;</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">StringBuilder</span> path = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; generateParenthesis(<span class="k">int</span> n) {</span><span class="ln"><span class="no">9</span>        <span class="k">this</span>.n = n;</span><span class="ln"><span class="no">10</span>        ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        dfs(<span class="n">0</span>, <span class="n">0</span>);</span><span class="ln"><span class="no">12</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span>    <span class="c">// open / close：path 里已有的左括号、右括号个数</span></span><span class="ln"><span class="no">16</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span> open, <span class="k">int</span> close) {</span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (path.length() == <span class="n">2</span> * n) {</span><span class="ln"><span class="no">18</span>            ans.add(path.toString());</span><span class="ln"><span class="no">19</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="c">// 左括号还没用完，就可以放 '('</span></span><span class="ln"><span class="no">22</span>        <span class="k">if</span> (open &lt; n) {</span><span class="ln"><span class="no">23</span>            path.append(<span class="s">'('</span>);</span><span class="ln"><span class="no">24</span>            dfs(open + <span class="n">1</span>, close);</span><span class="ln"><span class="no">25</span>            path.deleteCharAt(path.length() - <span class="n">1</span>);</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        <span class="c">// 右括号比左括号少，才可以放 ')'</span></span><span class="ln"><span class="no">28</span>        <span class="k">if</span> (close &lt; open) {</span><span class="ln"><span class="no">29</span>            path.append(<span class="s">')'</span>);</span><span class="ln"><span class="no">30</span>            dfs(open, close + <span class="n">1</span>);</span><span class="ln"><span class="no">31</span>            path.deleteCharAt(path.length() - <span class="n">1</span>);</span><span class="ln"><span class="no">32</span>        }</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>数字 <code>n</code>&nbsp;代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且 <strong>有效的 </strong>括号组合。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 3
+<strong>输出：</strong>["((()))","(()())","(())()","()(())","()()()"]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 1
+<strong>输出：</strong>["()"]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 8</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private int n;", "    private List<String> ans;", "    private final StringBuilder path = new StringBuilder();", "", "    public List<String> generateParenthesis(int n) {", "        this.n = n;", "        ans = new ArrayList<>();", "        dfs(0, 0);", "        return ans;", "    }", "", "    // open / close：path 里已有的左括号、右括号个数", "    private void dfs(int open, int close) {", "        if (path.length() == 2 * n) {", "            ans.add(path.toString());", "            return;", "        }", "        // 左括号还没用完，就可以放 '('", "        if (open < n) {", "            path.append('(');", "            dfs(open + 1, close);", "            path.deleteCharAt(path.length() - 1);", "        }", "        // 右括号比左括号少，才可以放 ')'", "        if (close < open) {", "            path.append(')');", "            dfs(open, close + 1);", "            path.deleteCharAt(path.length() - 1);", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 22. 括号生成 —— 图解：复刻 Solution.java 的「open / close 计数回溯」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 3 };
+
+function trace(input) {
+  var n = input.n;
+  var path = [];       // 对应 Java 里的 StringBuilder
+  var ans = [];        // 按 DFS 找到的顺序；返回前再排序，和 Java 的规范化一致
+  var frames = [];
+  var shown = { full: false, balanced: false };   // 两种「被规则挡住」的时刻各拍一次
+
+  // 括号串面板：共 2n 个位置，没填的留空；左括号标青色，右括号不标；o.done 为真时整串标成结果。
+  function pathPanel(o) {
+    var items = [], marks = {};
+    for (var k = 0; k < 2 * n; k++) {
+      items.push(k < path.length ? path[k] : '');
+      if (k < path.length && path[k] === '(') marks[k] = 'win';
+      if (o && o.done && k < path.length) marks[k] = 'done';
+    }
+    return Viz.cells(items, { title: 'path（共 2n = ' + 2 * n + ' 位，青色是左括号）', marks: marks, hideIndex: true });
+  }
+
+  function countPanel(open, close) {
+    return Viz.vars([{ name: 'n', v: n, cls: '' }, { name: 'open', v: open, cls: '' }, { name: 'close', v: close, cls: '' }]);
+  }
+
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  snap('dfs(0, 0);', '从空串开始：2n = ' + 2 * n + ' 个位置，一位一位往后填',
+    [pathPanel(), countPanel(0, 0)]);
+
+  function dfs(open, close) {
+    if (path.length === 2 * n) {
+      ans.push(path.join(''));
+      if (ans.length === 1) {
+        snap('ans.add(path.toString());', '放满 2n 位：「' + path.join('') + '」是第一个答案',
+          [pathPanel({ done: true }), countPanel(open, close)]);
+      }
+      return;
+    }
+    if (!shown.full && open === n) {
+      shown.full = true;
+      snap('if (open < n) {', 'open = n = ' + n + '：左括号用完了，不能再放 (，只能放 )',
+        [pathPanel(), countPanel(open, close)]);
+    }
+    if (open < n) {
+      path.push('(');
+      dfs(open + 1, close);
+      path.pop();
+    }
+    if (!shown.balanced && open > 0 && close === open) {
+      shown.balanced = true;
+      snap('if (close < open) {', 'close = open = ' + open + '：已配平，不能放 )，只能放 (',
+        [pathPanel(), countPanel(open, close)]);
+    }
+    if (close < open) {
+      path.push(')');
+      dfs(open, close + 1);
+      path.pop();
+    }
+  }
+  dfs(0, 0);
+
+  snap('return ans;', '搜完：n = ' + n + ' 共 ' + ans.length + ' 个合法组合',
+    [Viz.table('ans：所有合法的括号组合', ans.map(function (p, k) { return { k: String(k + 1), v: p, cls: '' }; }))]);
+  return { frames: frames, result: ans.slice().sort() };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

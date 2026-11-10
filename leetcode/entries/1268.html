@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>搜索推荐系统 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 572 / 1159</span>
+  <nav class="pn"><a href="1062.html">上一篇</a><a href="1154.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1268. </span>搜索推荐系统</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">二分查找</li><li class="tag">字典树</li><li class="tag">数组</li><li class="tag">字符串</li><li class="tag">二分查找</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">产品先排序；对每个前缀二分找第一个 ≥ 前缀的下标，从那里连续取至多 3 个以该前缀开头的。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>排序后所有以 <code>prefix</code> 开头的产品在数组里是<strong>连续一段</strong>，且天然按字典序排好。</li><li>每个前缀二分找 <code>lo</code>：第一个 <code>≥ prefix</code> 的下标（比它小的都以该前缀为界被跳过）。</li><li>从 <code>lo</code> 向右取，遇到不以 <code>prefix</code> 开头的就停，最多取 3 个。</li><li>每个前缀独立做一遍，共 <code>searchWord.length()</code> 轮。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n + m log n)，空间复杂度 O(1)（不计输出）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; suggestedProducts(<span class="t">String</span>[] products, <span class="t">String</span> searchWord) {</span><span class="ln"><span class="no">5</span>        <span class="t">Arrays</span>.sort(products);   <span class="c">// 排序后，前缀相同的产品是连续的一段，且按字典序排好</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; out = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> n = products.length;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= searchWord.length(); i++) {</span><span class="ln"><span class="no">9</span>            <span class="t">String</span> prefix = searchWord.substring(<span class="n">0</span>, i);</span><span class="ln"><span class="no">10</span>            <span class="c">// 二分找第一个 &gt;= prefix 的位置：以 prefix 开头的产品从这里开始</span></span><span class="ln"><span class="no">11</span>            <span class="k">int</span> lo = <span class="n">0</span>, hi = n;</span><span class="ln"><span class="no">12</span>            <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">13</span>                <span class="k">int</span> mid = (lo + hi) / <span class="n">2</span>;</span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (products[mid].compareTo(prefix) &lt; <span class="n">0</span>) lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">15</span>                <span class="k">else</span> hi = mid;</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>            <span class="t">List</span>&lt;<span class="t">String</span>&gt; picks = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">18</span>            <span class="k">for</span> (<span class="k">int</span> j = lo; j &lt; n &amp;&amp; picks.size() &lt; <span class="n">3</span> &amp;&amp; products[j].startsWith(prefix); j++) picks.add(products[j]);</span><span class="ln"><span class="no">19</span>            out.add(picks);</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个产品数组&nbsp;<code>products</code>&nbsp;和一个字符串&nbsp;<code>searchWord</code>&nbsp;，<code>products</code>&nbsp; 数组中每个产品都是一个字符串。</p>
+
+<p>请你设计一个推荐系统，在依次输入单词&nbsp;<code>searchWord</code> 的每一个字母后，推荐&nbsp;<code>products</code> 数组中前缀与&nbsp;<code>searchWord</code> 相同的最多三个产品。如果前缀相同的可推荐产品超过三个，请按字典序返回最小的三个。</p>
+
+<p>请你以二维列表的形式，返回在输入&nbsp;<code>searchWord</code>&nbsp;每个字母后相应的推荐产品的列表。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>products = [&quot;mobile&quot;,&quot;mouse&quot;,&quot;moneypot&quot;,&quot;monitor&quot;,&quot;mousepad&quot;], searchWord = &quot;mouse&quot;
+<strong>输出：</strong>[
+[&quot;mobile&quot;,&quot;moneypot&quot;,&quot;monitor&quot;],
+[&quot;mobile&quot;,&quot;moneypot&quot;,&quot;monitor&quot;],
+[&quot;mouse&quot;,&quot;mousepad&quot;],
+[&quot;mouse&quot;,&quot;mousepad&quot;],
+[&quot;mouse&quot;,&quot;mousepad&quot;]
+]
+<strong>解释：</strong>按字典序排序后的产品列表是 [&quot;mobile&quot;,&quot;moneypot&quot;,&quot;monitor&quot;,&quot;mouse&quot;,&quot;mousepad&quot;]
+输入 m 和 mo，由于所有产品的前缀都相同，所以系统返回字典序最小的三个产品 [&quot;mobile&quot;,&quot;moneypot&quot;,&quot;monitor&quot;]
+输入 mou， mous 和 mouse 后系统都返回 [&quot;mouse&quot;,&quot;mousepad&quot;]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>products = [&quot;havana&quot;], searchWord = &quot;havana&quot;
+<strong>输出：</strong>[[&quot;havana&quot;],[&quot;havana&quot;],[&quot;havana&quot;],[&quot;havana&quot;],[&quot;havana&quot;],[&quot;havana&quot;]]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>products = [&quot;bags&quot;,&quot;baggage&quot;,&quot;banner&quot;,&quot;box&quot;,&quot;cloths&quot;], searchWord = &quot;bags&quot;
+<strong>输出：</strong>[[&quot;baggage&quot;,&quot;bags&quot;,&quot;banner&quot;],[&quot;baggage&quot;,&quot;bags&quot;,&quot;banner&quot;],[&quot;baggage&quot;,&quot;bags&quot;],[&quot;bags&quot;]]
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre><strong>输入：</strong>products = [&quot;havana&quot;], searchWord = &quot;tatiana&quot;
+<strong>输出：</strong>[[],[],[],[],[],[],[]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= products.length &lt;= 1000</code></li>
+	<li><code>1 &lt;= &Sigma; products[i].length &lt;= 2 * 10^4</code></li>
+	<li><code>products[i]</code>&nbsp;中所有的字符都是小写英文字母。</li>
+	<li><code>1 &lt;= searchWord.length &lt;= 1000</code></li>
+	<li><code>searchWord</code>&nbsp;中所有字符都是小写英文字母。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<String>> suggestedProducts(String[] products, String searchWord) {", "        Arrays.sort(products);   // 排序后，前缀相同的产品是连续的一段，且按字典序排好", "        List<List<String>> out = new ArrayList<>();", "        int n = products.length;", "        for (int i = 1; i <= searchWord.length(); i++) {", "            String prefix = searchWord.substring(0, i);", "            // 二分找第一个 >= prefix 的位置：以 prefix 开头的产品从这里开始", "            int lo = 0, hi = n;", "            while (lo < hi) {", "                int mid = (lo + hi) / 2;", "                if (products[mid].compareTo(prefix) < 0) lo = mid + 1;", "                else hi = mid;", "            }", "            List<String> picks = new ArrayList<>();", "            for (int j = lo; j < n && picks.size() < 3 && products[j].startsWith(prefix); j++) picks.add(products[j]);", "            out.add(picks);", "        }", "        return out;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1268. 搜索推荐系统 —— 图解：复刻 Solution.java 的「排序 + 每个前缀二分定位」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { products: ['mobile', 'mouse', 'moneypot', 'monitor', 'mousepad'], searchWord: 'mou' };
+
+function trace(input) {
+  var products = input.products.slice().sort(function (a, b) { return a < b ? -1 : a > b ? 1 : 0; });
+  var searchWord = input.searchWord;
+  var frames = [];
+  var out = [];
+  var prevLo = -1;
+
+  function arrPanel(o) {
+    var marks = {}, i;
+    for (i = 0; i < o.lo && i < products.length; i++) marks[i] = 'dim';
+    if (o.lo < products.length) marks[o.lo] = 'cur';
+    var pointers = [];
+    if (products.length) {
+      pointers.push({ at: Math.min(o.lo, products.length - 1), label: 'lo', cls: 'p-left' });
+      pointers.push({ at: Math.min(o.hi, products.length - 1), label: 'hi', cls: 'p-right' });
+      if (o.mid != null) pointers.push({ at: o.mid, label: 'mid', cls: 'p-mid' });
+    }
+    return Viz.cells(products, { title: '排序后的 products', marks: marks, pointers: pointers });
+  }
+  function rowsPanel(prefix, picks, newest) {
+    var rows = out.map(function (p, i) {
+      return { k: searchWord.slice(0, i + 1), v: p.join('、') || '（无）', cls: (newest && i === out.length - 1) ? 'new' : '' };
+    });
+    if (prefix != null) rows.push({ k: prefix, v: picks.join('、') || '（无）', cls: newest ? 'new' : 'cur' });
+    return Viz.table('每个前缀的推荐（字典序最小至多 3 个）', rows);
+  }
+  function snap(at, key, panels) { if (frames.length < 6) frames.push(Viz.frame(at, key, panels)); }
+
+  for (var i = 1; i <= searchWord.length; i++) {
+    var prefix = searchWord.slice(0, i);
+    // 二分找第一个 >= prefix 的位置
+    var lo = 0, hi = products.length, mid = null;
+    while (lo < hi) {
+      mid = (lo + hi) >> 1;
+      if (products[mid] < prefix) lo = mid + 1; else hi = mid;
+    }
+    if (out.length === 0 || lo !== prevLo) {
+      snap('if (products[mid].compareTo(prefix) < 0) lo = mid + 1;',
+        '前缀 ' + prefix + '：二分收束，lo=' + lo + (lo < products.length ? '，从「' + products[lo] + '」开始找' : '，没有产品 ≥ 前缀'),
+        [arrPanel({ lo: lo, hi: hi, mid: mid }), rowsPanel(null, null, false)]);
+    }
+    var picks = [];
+    for (var j = lo; j < products.length && picks.length < 3 && products[j].slice(0, prefix.length) === prefix; j++) picks.push(products[j]);
+    out.push(picks);
+    snap('out.add(picks);', '前缀 ' + prefix + ' 的推荐：' + (picks.join('、') || '没有匹配的产品'),
+      [arrPanel({ lo: lo, hi: hi, mid: null }), rowsPanel(prefix, picks, true)]);
+    prevLo = lo;
+  }
+
+  snap('return out;', 'searchWord 的每个前缀都取完，共 ' + out.length + ' 行', [rowsPanel(null, null, false)]);
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

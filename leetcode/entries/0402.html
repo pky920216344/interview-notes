@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>移掉 K 位数字 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 118 / 1159</span>
+  <nav class="pn"><a href="offer-51.html">上一篇</a><a href="0136.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">402. </span>移掉 K 位数字</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 54</li><li class="algo">单调栈</li><li class="tag">栈</li><li class="tag">贪心</li><li class="tag">字符串</li><li class="tag">单调栈</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">单调栈：后一位比栈顶小就弹栈（最多 k 次），扫完不够 k 就从尾截断，再去前导零，全空输出 &quot;0&quot;。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>高位越小整个数越小：让保留的数字序列尽量「非减」。</li><li>扫描每个字符：栈顶比当前位大就弹掉并 <code>k--</code>（受 k 限制），然后当前位入栈。</li><li>扫完还剩 k 次没删：栈已非减，直接从尾部截掉 k 个。</li><li>去掉前导零；全空返回 <code>"0"</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">String</span> removeKdigits(<span class="t">String</span> num, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="c">// sb 当栈用：栈顶比当前位大就弹掉——高位留着大数字只会让结果更大</span></span><span class="ln"><span class="no">4</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; num.length(); i++) {</span><span class="ln"><span class="no">6</span>            <span class="k">char</span> c = num.charAt(i);</span><span class="ln"><span class="no">7</span>            <span class="k">while</span> (k &gt; <span class="n">0</span> &amp;&amp; sb.length() &gt; <span class="n">0</span> &amp;&amp; sb.charAt(sb.length() - <span class="n">1</span>) &gt; c) {</span><span class="ln"><span class="no">8</span>                sb.deleteCharAt(sb.length() - <span class="n">1</span>);</span><span class="ln"><span class="no">9</span>                k--;</span><span class="ln"><span class="no">10</span>            }</span><span class="ln"><span class="no">11</span>            sb.append(c);</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="c">// 还没删够 k 个：剩下的栈是非减的，从尾部删</span></span><span class="ln"><span class="no">14</span>        sb.setLength(sb.length() - k);</span><span class="ln"><span class="no">15</span>        <span class="c">// 去前导零；全删空就是 "0"</span></span><span class="ln"><span class="no">16</span>        <span class="k">int</span> z = <span class="n">0</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">while</span> (z &lt; sb.length() &amp;&amp; sb.charAt(z) == <span class="s">'0'</span>) z++;</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> z == sb.length() ? <span class="s">"0"</span> : sb.substring(z);</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个以字符串表示的非负整数 <code>num</code> 和一个整数 <code>k</code> ，移除这个数中的 <code>k</code><em> </em>位数字，使得剩下的数字最小。请你以字符串形式返回这个最小的数字。</p>
+ 
+
+<p><strong>示例 1 ：</strong></p>
+
+<pre>
+<strong>输入：</strong>num = "1432219", k = 3
+<strong>输出：</strong>"1219"
+<strong>解释：</strong>移除掉三个数字 4, 3, 和 2 形成一个新的最小的数字 1219 。
+</pre>
+
+<p><strong>示例 2 ：</strong></p>
+
+<pre>
+<strong>输入：</strong>num = "10200", k = 1
+<strong>输出：</strong>"200"
+<strong>解释：</strong>移掉首位的 1 剩下的数字为 200. 注意输出不能有任何前导零。
+</pre>
+
+<p><strong>示例 3 ：</strong></p>
+
+<pre>
+<strong>输入：</strong>num = "10", k = 2
+<strong>输出：</strong>"0"
+<strong>解释：</strong>从原数字移除所有的数字，剩余为空就是 0 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= k <= num.length <= 10<sup>5</sup></code></li>
+	<li><code>num</code> 仅由若干位数字（0 - 9）组成</li>
+	<li>除了 <strong>0</strong> 本身之外，<code>num</code> 不含任何前导零</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public String removeKdigits(String num, int k) {", "        // sb 当栈用：栈顶比当前位大就弹掉——高位留着大数字只会让结果更大", "        StringBuilder sb = new StringBuilder();", "        for (int i = 0; i < num.length(); i++) {", "            char c = num.charAt(i);", "            while (k > 0 && sb.length() > 0 && sb.charAt(sb.length() - 1) > c) {", "                sb.deleteCharAt(sb.length() - 1);", "                k--;", "            }", "            sb.append(c);", "        }", "        // 还没删够 k 个：剩下的栈是非减的，从尾部删", "        sb.setLength(sb.length() - k);", "        // 去前导零；全删空就是 \"0\"", "        int z = 0;", "        while (z < sb.length() && sb.charAt(z) == '0') z++;", "        return z == sb.length() ? \"0\" : sb.substring(z);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 402. 移掉 K 位数字 —— 图解：复刻 Solution.java 的单调栈，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { num: '1432219', k: 3 };
+
+function trace(input) {
+  var num = input.num;
+  var k = input.k;
+  var frames = [];
+  var stack = [];   // 每项 { c, idx }：栈里保留的数字及其在 num 里的下标
+
+  var POP = 'sb.deleteCharAt(sb.length() - 1);';
+
+  function snap(at, key, ci, poppedIdx, topCls) {
+    var marks = {};
+    if (ci != null && ci < num.length) marks[ci] = 'cur';
+    if (poppedIdx != null) marks[poppedIdx] = 'bad';
+    var sm = {};
+    if (stack.length && topCls) sm[stack.length - 1] = topCls;
+    frames.push(Viz.frame(at, key, [
+      Viz.cells(num.split(''), { title: 'num（正在读哪一位）', marks: marks }),
+      Viz.cells(stack.map(function (e) { return e.c; }), { title: '栈 sb（左底右顶）', marks: sm }),
+      Viz.vars([{ name: 'k 还能删', v: k }])
+    ]));
+  }
+
+  var snappedPop = false, snappedK0 = false;
+  for (var i = 0; i < num.length; i++) {
+    var c = num[i];
+    while (k > 0 && stack.length > 0 && stack[stack.length - 1].c > c) {
+      var top = stack.pop();
+      k--;
+      // 两帧只拍图解示例里的两次关键弹栈
+      if (!snappedPop) { snappedPop = true; snap(POP, '读到 ' + c + '：栈顶 ' + top.c + ' 比它大，弹出（k 少 1）', i, top.idx, ''); }
+      else if (k === 0 && !snappedK0) { snappedK0 = true; snap(POP, '再弹 ' + top.c + '：k 用完了，比它小的都留了下来', i, top.idx, ''); }
+    }
+    stack.push({ c: c, idx: i });
+    if (i === 0) snap('sb.append(c);', '第一位 ' + c + ' 直接入栈', i, null, 'new');
+  }
+
+  // 与 Java 相同：截断剩余的 k 个，再去前导零
+  stack.length = Math.max(0, stack.length - k);
+  var z = 0;
+  while (z < stack.length && stack[z].c === '0') z++;
+  var out = z === stack.length ? '0' : stack.slice(z).map(function (e) { return e.c; }).join('');
+
+  var done = {};
+  for (var d = 0; d < stack.length; d++) done[d] = 'done';
+  frames.push(Viz.frame('return z == sb.length() ? "0" : sb.substring(z);',
+    'k 删完' + (z > 0 ? '、去掉前导零' : '') + '：最小的数是 ' + out, [
+    Viz.cells(stack.map(function (e) { return e.c; }), { title: '栈里剩下的数字', marks: done }),
+    Viz.vars([{ name: '结果', v: out, cls: 'done' }])
+  ]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

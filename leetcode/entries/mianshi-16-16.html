@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>部分排序 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 557 / 1159</span>
+  <nav class="pn"><a href="0980.html">上一篇</a><a href="0968.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 16.16. </span>部分排序</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">模拟</li><li class="tag">栈</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">排序</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">双向扫描定两端：从左往右记前缀最大值，比它小的元素最后出现的位置是 r；从右往左记后缀最小值，比它大的元素最早出现的位置是 l。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>一个元素要进待排区，当且仅当<strong>前面有比它大的</strong>（或<strong>后面有比它小的</strong>）。</li><li>从左往右维护前缀最大值 <code>mx</code>：<code>array[i] &lt; mx</code> 说明 <code>i</code> 错位，<code>r</code> 不断右移到<strong>最后一个</strong>这样的 <code>i</code>。</li><li>从右往左维护后缀最小值 <code>mn</code>：<code>array[i] &gt; mn</code> 说明 <code>i</code> 错位，<code>l</code> 不断左移到<strong>最早</strong>这样的 <code>i</code>。</li><li>排好 <code>[l, r]</code> 恰好整体有序且最短；数组本来有序时两遍都扫不到错位，返回 <code>[-1, -1]</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span>[] subSort(<span class="k">int</span>[] array) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = array.length, l = -<span class="n">1</span>, r = -<span class="n">1</span>;</span><span class="ln"><span class="no">4</span>        <span class="c">// 从左往右记前缀最大值：比它小的元素前面必有更大的数，最后出现的那个位置就是 r</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span> mx = <span class="t">Integer</span>.MIN_VALUE;</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (array[i] &lt; mx) r = i;</span><span class="ln"><span class="no">8</span>            <span class="k">else</span> mx = array[i];</span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="c">// 从右往左记后缀最小值：比它大的元素后面必有更小的数，最早出现的那个位置就是 l</span></span><span class="ln"><span class="no">11</span>        <span class="k">int</span> mn = <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> i = n - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (array[i] &gt; mn) l = i;</span><span class="ln"><span class="no">14</span>            <span class="k">else</span> mn = array[i];</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{l, r};</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个整数数组，编写一个函数，找出索引<code>m</code>和<code>n</code>，只要将索引区间<code>[m,n]</code>的元素排好序，整个数组就是有序的。注意：<code>n-m</code>尽量最小，也就是说，找出符合条件的最短序列。函数返回值为<code>[m,n]</code>，若不存在这样的<code>m</code>和<code>n</code>（例如整个数组是有序的），请返回<code>[-1,-1]</code>。</p>
+<p><strong>示例：</strong></p>
+<pre><strong>输入：</strong> [1,2,4,7,10,11,7,12,6,7,16,18,19]
+<strong>输出：</strong> [3,9]
+</pre>
+<p><strong>提示：</strong></p>
+<ul>
+<li><code>0 <= len(array) <= 1000000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int[] subSort(int[] array) {", "        int n = array.length, l = -1, r = -1;", "        // 从左往右记前缀最大值：比它小的元素前面必有更大的数，最后出现的那个位置就是 r", "        int mx = Integer.MIN_VALUE;", "        for (int i = 0; i < n; i++) {", "            if (array[i] < mx) r = i;", "            else mx = array[i];", "        }", "        // 从右往左记后缀最小值：比它大的元素后面必有更小的数，最早出现的那个位置就是 l", "        int mn = Integer.MAX_VALUE;", "        for (int i = n - 1; i >= 0; i--) {", "            if (array[i] > mn) l = i;", "            else mn = array[i];", "        }", "        return new int[]{l, r};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 16.16. 部分排序 —— 图解：复刻 Solution.java 的「前缀最大 + 后缀最小双向扫描」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { array: [1, 5, 3, 4, 2, 6, 7] };
+
+function trace(input) {
+  var a = input.array || [];
+  var n = a.length;
+  var frames = [];
+  var R = 'if (array[i] < mx) r = i;';
+  var L = 'if (array[i] > mn) l = i;';
+  var RET = 'return new int[]{l, r};';
+
+  // 第一遍：先把最终的 l、r 算出来，第二遍扫描时才知道「最后一条」更新发生在哪
+  var lFinal = -1, rFinal = -1;
+  var mx0 = -Infinity, mn0 = Infinity;
+  for (var i0 = 0; i0 < n; i0++) { if (a[i0] < mx0) rFinal = i0; else mx0 = a[i0]; }
+  for (i0 = n - 1; i0 >= 0; i0--) { if (a[i0] > mn0) lFinal = i0; else mn0 = a[i0]; }
+
+  function snap(at, key, marks, ptr) {
+    var items = a.map(String);
+    frames.push(Viz.frame(at, key, [
+      Viz.cells(items, { title: '数组 array', marks: marks, pointers: ptr ? [ptr] : [] }),
+      Viz.vars([
+        { name: 'r（待排区右端）', v: rFinal },
+        { name: 'l（待排区左端）', v: lFinal }
+      ])
+    ]));
+  }
+
+  // 从左往右扫前缀最大值，拍 r 的第一次和最后一次更新
+  var mx = -Infinity, firstR = true;
+  for (var i = 0; i < n; i++) {
+    if (a[i] < mx) {
+      if (firstR) {
+        firstR = false;
+        var m1 = {};
+        m1[i] = 'cur';
+        snap(R, '读 ' + a[i] + '：比前面的最大值 ' + mx + ' 小，前面有更大的数 → 它得进待排区，r 记到这', m1, { at: i, label: 'i', cls: 'p-cur' });
+      }
+      if (i === rFinal) {
+        var m2 = {};
+        m2[i] = 'chg';
+        snap(R, '比前缀小的元素最后出现在这里：r 定在 ' + i + '，之后的数都不比前缀小', m2, { at: i, label: 'i', cls: 'p-cur' });
+      }
+    } else mx = a[i];
+  }
+
+  // 从右往左扫后缀最小值，拍 l 的第一次和最后一次更新
+  var mn = Infinity, firstL = true;
+  for (i = n - 1; i >= 0; i--) {
+    if (a[i] > mn) {
+      if (firstL) {
+        firstL = false;
+        var m3 = {};
+        m3[i] = 'cur';
+        snap(L, '倒着扫：' + a[i] + ' 比后面的最小值 ' + mn + ' 大 → 它也进待排区，l 记到这', m3, { at: i, label: 'i', cls: 'p-cur' });
+      }
+      if (i === lFinal) {
+        var m4 = {};
+        m4[i] = 'chg';
+        snap(L, '比后缀大的元素最早出现在这里：l 定在 ' + i + '，待排区两端都齐了', m4, { at: i, label: 'i', cls: 'p-cur' });
+      }
+    } else mn = a[i];
+  }
+
+  var mf = {};
+  if (lFinal >= 0) for (i = lFinal; i <= rFinal; i++) mf[i] = 'win';
+  snap(RET, lFinal >= 0
+    ? '排好 [' + lFinal + ', ' + rFinal + '] 这一段整体就有序：返回 [' + lFinal + ', ' + rFinal + ']'
+    : '整个数组本来就有序：不用排，返回 [-1, -1]', mf, null);
+  return { frames: frames, result: [lFinal, rFinal] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

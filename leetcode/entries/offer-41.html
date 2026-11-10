@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>数据流中的中位数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 427 / 1159</span>
+  <nav class="pn"><a href="1109.html">上一篇</a><a href="1438.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 41. </span>数据流中的中位数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 7</li><li class="algo">堆</li><li class="aux">设计</li><li class="tag">设计</li><li class="tag">双指针</li><li class="tag">数据流</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">双堆对半分：左大顶堆装较小一半、右小顶堆装较大一半，大小差 ≤ 1；中位数从两堆顶拼出来。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>add</code>：先入左堆，再把左堆最大值挪到右堆——这一步保证左堆的数都不大于右堆的数。</li><li>若右堆比左堆多，再挪一个回左堆：两堆大小差永远 ≤ 1，且约定左堆可以多 1 个。</li><li>中位数：奇数个取左堆顶；偶数个取两堆顶的平均。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 每次 add O(log n)，查询 O(1)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">MedianFinder</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// left 大顶堆装较小的一半，right 小顶堆装较大的一半</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">PriorityQueue</span>&lt;<span class="t">Integer</span>&gt; left = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;(<span class="t">Collections</span>.reverseOrder());</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">PriorityQueue</span>&lt;<span class="t">Integer</span>&gt; right = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">MedianFinder</span>() {</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="k">void</span> addNum(<span class="k">int</span> num) {</span><span class="ln"><span class="no">12</span>        <span class="c">// 先进左堆，再把左堆最大的挪给右堆：左堆的数从此都不大于右堆</span></span><span class="ln"><span class="no">13</span>        left.offer(num);</span><span class="ln"><span class="no">14</span>        right.offer(left.poll());</span><span class="ln"><span class="no">15</span>        <span class="c">// 右堆多了就挪一个回左堆：两堆大小差永远不超过 1</span></span><span class="ln"><span class="no">16</span>        <span class="k">if</span> (right.size() &gt; left.size()) left.offer(right.poll());</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    <span class="k">public</span> <span class="k">double</span> findMedian() {</span><span class="ln"><span class="no">20</span>        <span class="c">// 奇数个：左堆顶（较小一半的最大值）就是中位数</span></span><span class="ln"><span class="no">21</span>        <span class="k">return</span> left.size() &gt; right.size() ? left.peek() : (left.peek() + (<span class="k">double</span>) right.peek()) / <span class="n">2</span>;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p><strong>中位数&nbsp;</strong>是有序整数列表中的中间值。如果列表的大小是偶数，则没有中间值，中位数是两个中间值的平均值。</p>
+
+<p>例如，<br />
+<code>[2,3,4]</code> 的中位数是 <code>3</code><br />
+<code>[2,3]</code> 的中位数是 <code>(2 + 3) / 2 = 2.5</code><br />
+设计一个支持以下两种操作的数据结构：</p>
+
+<ul>
+	<li><code>void addNum(int num)</code> - 从数据流中添加一个整数到数据结构中。</li>
+	<li><code>double findMedian()</code> - 返回目前所有元素的中位数。</li>
+</ul>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：
+</strong>["MedianFinder","addNum","addNum","findMedian","addNum","findMedian"]
+[[],[1],[2],[],[3],[]]
+<strong>输出：</strong>[null,null,null,1.50000,null,2.00000]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：
+</strong>["MedianFinder","addNum","findMedian","addNum","findMedian"]
+[[],[2],[],[3],[]]
+<strong>输出：</strong>[null,null,2.00000,null,2.50000]</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>最多会对&nbsp;<code>addNum、findMedian</code> 进行&nbsp;<code>50000</code>&nbsp;次调用。</li>
+</ul>
+
+<p>注意：本题与主站 295 题相同：<a href="https://leetcode.cn/problems/find-median-from-data-stream/">https://leetcode.cn/problems/find-median-from-data-stream/</a></p>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class MedianFinder {", "    // left 大顶堆装较小的一半，right 小顶堆装较大的一半", "    private final PriorityQueue<Integer> left = new PriorityQueue<>(Collections.reverseOrder());", "    private final PriorityQueue<Integer> right = new PriorityQueue<>();", "", "    public MedianFinder() {", "    }", "", "    public void addNum(int num) {", "        // 先进左堆，再把左堆最大的挪给右堆：左堆的数从此都不大于右堆", "        left.offer(num);", "        right.offer(left.poll());", "        // 右堆多了就挪一个回左堆：两堆大小差永远不超过 1", "        if (right.size() > left.size()) left.offer(right.poll());", "    }", "", "    public double findMedian() {", "        // 奇数个：左堆顶（较小一半的最大值）就是中位数", "        return left.size() > right.size() ? left.peek() : (left.peek() + (double) right.peek()) / 2;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 剑指 Offer 41 数据流中的中位数 —— 图解：复刻 Solution.java 的双堆协议，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { ops: [['add', 1], ['add', 2], ['median'], ['add', 3], ['median']] };
+
+function trace(input) {
+  var frames = [], res = [];
+
+  // 二叉堆：max 为真是大顶堆，实现 offer / poll / peek / size（对应 Java 里的两个堆）
+  function Heap(max) {
+    var a = [];
+    function before(i, j) { return max ? a[i] > a[j] : a[i] < a[j]; }
+    function swap(i, j) { var t = a[i]; a[i] = a[j]; a[j] = t; }
+    function up(i) {
+      while (i > 0) {
+        var p = (i - 1) >> 1;
+        if (!before(i, p)) break;
+        swap(i, p);
+        i = p;
+      }
+    }
+    function down() {
+      var i = 0;
+      for (;;) {
+        var l = 2 * i + 1, r = l + 1, m = i;
+        if (l < a.length && before(l, m)) m = l;
+        if (r < a.length && before(r, m)) m = r;
+        if (m === i) break;
+        swap(i, m);
+        i = m;
+      }
+    }
+    return {
+      offer: function (x) { a.push(x); up(a.length - 1); },
+      poll: function () { var top = a[0], last = a.pop(); if (a.length) { a[0] = last; down(); } return top; },
+      peek: function () { return a[0]; },
+      size: function () { return a.length; },
+      sorted: function () { return a.slice().sort(function (x, y) { return x - y; }); }
+    };
+  }
+
+  var left = Heap(true), right = Heap(false);
+
+  // 半区面板：按升序摆出这个堆装着的数，堆顶位置挂标签
+  function heapPanel(h, title, markVal, markCls) {
+    var items = h.sorted();
+    var marks = {};
+    if (markVal != null) {
+      var at = items.indexOf(markVal);
+      if (at >= 0) marks[at] = markCls;
+    }
+    var pointers = [];
+    if (items.length) pointers.push({ at: h === left ? items.length - 1 : 0, label: '堆顶', cls: 'p-mid' });
+    return Viz.cells(items, { title: title + (items.length ? '' : '（空）'), marks: marks, pointers: pointers, hideIndex: true });
+  }
+
+  var OFFER = 'left.offer(num);';
+  var MOVE = 'right.offer(left.poll());';
+  var BACK = 'if (right.size() > left.size()) left.offer(right.poll());';
+  var RET = 'return left.size() > right.size() ? left.peek() : (left.peek() + (double) right.peek()) / 2;';
+  var fired = {}, addCount = 0, medCount = 0;
+
+  input.ops.forEach(function (op) {
+    if (op[0] === 'add') {
+      var x = op[1];
+      addCount++;
+      left.offer(x);
+      var moved = left.poll();
+      right.offer(moved);
+      if (right.size() > left.size()) {
+        var back = right.poll();
+        left.offer(back);
+        if (addCount === 3 && !fired.back) {
+          fired.back = true;
+          frames.push(Viz.frame(BACK, 'addNum(' + x + ')：右堆多了 1 个，把最小的 ' + back + ' 挪回左堆，大小差回到 1 以内',
+            [heapPanel(left, '较小的一半（大顶堆）', back, 'chg'), heapPanel(right, '较大的一半（小顶堆）', null, null)]));
+        }
+      } else if (addCount === 2 && !fired.move) {
+        fired.move = true;
+        frames.push(Viz.frame(MOVE, 'addNum(' + x + ')：左堆最大的 ' + moved + ' 挪给右堆，左半从此 ≤ 右半',
+          [heapPanel(left, '较小的一半（大顶堆）', null, null), heapPanel(right, '较大的一半（小顶堆）', moved, 'new')]));
+      }
+      if (addCount === 1 && !fired.first) {
+        fired.first = true;
+        frames.push(Viz.frame(OFFER, 'addNum(' + x + ')：先落到左堆；左堆可以比右堆多 1 个，右堆暂时空着',
+          [heapPanel(left, '较小的一半（大顶堆）', x, 'new'), heapPanel(right, '较大的一半（小顶堆）', null, null)]));
+      }
+      res.push(null);
+    } else {
+      medCount++;
+      var m = left.size() > right.size() ? left.peek() : (left.peek() + right.peek()) / 2;
+      if (medCount === 1 && !fired.medEven) {
+        fired.medEven = true;
+        frames.push(Viz.frame(RET, 'findMedian：偶数个，取两堆顶平均 (' + left.peek() + '+' + right.peek() + ')/2 = ' + m,
+          [heapPanel(left, '较小的一半（大顶堆）', left.peek(), 'hit'), heapPanel(right, '较大的一半（小顶堆）', right.peek(), 'hit'),
+            Viz.vars([{ name: '中位数', v: m, cls: 'chg' }])]));
+      } else if (medCount === 2 && !fired.medOdd) {
+        fired.medOdd = true;
+        frames.push(Viz.frame(RET, 'findMedian：奇数个，左堆顶 ' + left.peek() + ' 就是中位数',
+          [heapPanel(left, '较小的一半（大顶堆）', left.peek(), 'hit'), heapPanel(right, '较大的一半（小顶堆）', null, null),
+            Viz.vars([{ name: '中位数', v: m, cls: 'chg' }])]));
+      }
+      res.push(m);
+    }
+  });
+
+  return { frames: frames, result: res.slice() };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

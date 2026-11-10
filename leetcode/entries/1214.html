@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>查找两棵二叉搜索树之和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1069 / 1159</span>
+  <nav class="pn"><a href="0930.html">上一篇</a><a href="mianshi-16-20.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1214. </span>查找两棵二叉搜索树之和</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">双指针</li><li class="aux">栈</li><li class="tag">栈</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉搜索树</li><li class="tag">双指针</li><li class="tag">二分查找</li><li class="tag">二叉树</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">两棵 BST 各做一个反向中序迭代器（一升一降），像有序数组两端的 two sum 一样夹逼：和偏小升序进一位，偏大降序退一位。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>BST 的中序是有序序列：root1 做升序迭代器、root2 做降序迭代器，就等价于在两个有序数组两端放指针。</li><li>迭代器 = 栈：先把左链（升序）或右链（降序）压栈；<code>next</code> 弹栈并把该结点的右链/左链压入。</li><li>夹逼规则：<code>a + b &lt; target</code> 时 <code>a</code> 进一位（变大），<code>&gt; target</code> 时 <code>b</code> 退一位（变小），相等即成功。</li><li>和用 <code>long</code> 求更稳；一边走完还没命中就返回 <code>false</code>。空间只有两条栈深，比「哈希集存一棵树」省。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m + n)，空间复杂度 O(h₁ + h₂)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">ArrayDeque</span>;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.<span class="t">Deque</span>;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="k">boolean</span> twoSumBSTs(<span class="t">TreeNode</span> root1, <span class="t">TreeNode</span> root2, <span class="k">int</span> target) {</span><span class="ln"><span class="no">6</span>        <span class="t">Deque</span>&lt;<span class="t">TreeNode</span>&gt; asc = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;(), desc = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        leftChain(asc, root1);    <span class="c">// 升序迭代器：root1 的中序从小到大</span></span><span class="ln"><span class="no">8</span>        rightChain(desc, root2);  <span class="c">// 降序迭代器：root2 的中序从大到小</span></span><span class="ln"><span class="no">9</span>        <span class="t">TreeNode</span> a = nextAsc(asc), b = nextDesc(desc);</span><span class="ln"><span class="no">10</span>        <span class="c">// 双指针夹逼：和偏小 a 进一位，偏大 b 退一位</span></span><span class="ln"><span class="no">11</span>        <span class="k">while</span> (a != <span class="k">null</span> &amp;&amp; b != <span class="k">null</span>) {</span><span class="ln"><span class="no">12</span>            <span class="k">long</span> sum = (<span class="k">long</span>) a.val + b.val;   <span class="c">// 值可达 1e9 量级，求和用 long 稳妥</span></span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (sum == target) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (sum &lt; target) a = nextAsc(asc);</span><span class="ln"><span class="no">15</span>            <span class="k">else</span> b = nextDesc(desc);</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span> </span><span class="ln"><span class="no">20</span>    <span class="c">// 把 node 沿左链压栈：之后逐个 pop 就得到从小到大</span></span><span class="ln"><span class="no">21</span>    <span class="k">private</span> <span class="k">void</span> leftChain(<span class="t">Deque</span>&lt;<span class="t">TreeNode</span>&gt; st, <span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">22</span>        <span class="k">for</span> (; node != <span class="k">null</span>; node = node.left) st.push(node);</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span> </span><span class="ln"><span class="no">25</span>    <span class="c">// 把 node 沿右链压栈：之后逐个 pop 就得到从大到小</span></span><span class="ln"><span class="no">26</span>    <span class="k">private</span> <span class="k">void</span> rightChain(<span class="t">Deque</span>&lt;<span class="t">TreeNode</span>&gt; st, <span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">27</span>        <span class="k">for</span> (; node != <span class="k">null</span>; node = node.right) st.push(node);</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span> </span><span class="ln"><span class="no">30</span>    <span class="k">private</span> <span class="t">TreeNode</span> nextAsc(<span class="t">Deque</span>&lt;<span class="t">TreeNode</span>&gt; st) {</span><span class="ln"><span class="no">31</span>        <span class="k">if</span> (st.isEmpty()) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">32</span>        <span class="t">TreeNode</span> node = st.pop();</span><span class="ln"><span class="no">33</span>        leftChain(st, node.right);   <span class="c">// 后继在右子树的最左结点</span></span><span class="ln"><span class="no">34</span>        <span class="k">return</span> node;</span><span class="ln"><span class="no">35</span>    }</span><span class="ln"><span class="no">36</span> </span><span class="ln"><span class="no">37</span>    <span class="k">private</span> <span class="t">TreeNode</span> nextDesc(<span class="t">Deque</span>&lt;<span class="t">TreeNode</span>&gt; st) {</span><span class="ln"><span class="no">38</span>        <span class="k">if</span> (st.isEmpty()) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">39</span>        <span class="t">TreeNode</span> node = st.pop();</span><span class="ln"><span class="no">40</span>        rightChain(st, node.left);   <span class="c">// 前驱在左子树的最右结点</span></span><span class="ln"><span class="no">41</span>        <span class="k">return</span> node;</span><span class="ln"><span class="no">42</span>    }</span><span class="ln"><span class="no">43</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.ArrayDeque;", "import java.util.Deque;", "", "class Solution {", "    public boolean twoSumBSTs(TreeNode root1, TreeNode root2, int target) {", "        Deque<TreeNode> asc = new ArrayDeque<>(), desc = new ArrayDeque<>();", "        leftChain(asc, root1);    // 升序迭代器：root1 的中序从小到大", "        rightChain(desc, root2);  // 降序迭代器：root2 的中序从大到小", "        TreeNode a = nextAsc(asc), b = nextDesc(desc);", "        // 双指针夹逼：和偏小 a 进一位，偏大 b 退一位", "        while (a != null && b != null) {", "            long sum = (long) a.val + b.val;   // 值可达 1e9 量级，求和用 long 稳妥", "            if (sum == target) return true;", "            if (sum < target) a = nextAsc(asc);", "            else b = nextDesc(desc);", "        }", "        return false;", "    }", "", "    // 把 node 沿左链压栈：之后逐个 pop 就得到从小到大", "    private void leftChain(Deque<TreeNode> st, TreeNode node) {", "        for (; node != null; node = node.left) st.push(node);", "    }", "", "    // 把 node 沿右链压栈：之后逐个 pop 就得到从大到小", "    private void rightChain(Deque<TreeNode> st, TreeNode node) {", "        for (; node != null; node = node.right) st.push(node);", "    }", "", "    private TreeNode nextAsc(Deque<TreeNode> st) {", "        if (st.isEmpty()) return null;", "        TreeNode node = st.pop();", "        leftChain(st, node.right);   // 后继在右子树的最左结点", "        return node;", "    }", "", "    private TreeNode nextDesc(Deque<TreeNode> st) {", "        if (st.isEmpty()) return null;", "        TreeNode node = st.pop();", "        rightChain(st, node.left);   // 前驱在左子树的最右结点", "        return node;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1214. 查找两棵二叉搜索树之和 —— 图解：复刻 Solution.java 的「双栈反向中序 + 夹逼」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { t1: [4, 2, 6, 1, 3, 5, 7], t2: [10, 5, 15, 3, 7, null, 18], target: 12 };
+
+function trace(input) {
+  var level = [input.t1, input.t2], target = input.target;
+  var frames = [];
+
+  // 力扣层序数组（队列式：每个非空结点依次占两个槽位）→ 结点
+  function build(arr) {
+    var n = arr.length;
+    if (n === 0 || arr[0] === null || arr[0] === undefined) return null;
+    var root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < n) {
+      var cur = q.shift();
+      if (i < n && arr[i] !== null && arr[i] !== undefined) {
+        cur.left = { idx: i, val: arr[i], left: null, right: null };
+        q.push(cur.left);
+      }
+      i++;
+      if (i < n && arr[i] !== null && arr[i] !== undefined) {
+        cur.right = { idx: i, val: arr[i], left: null, right: null };
+        q.push(cur.right);
+      }
+      i++;
+    }
+    return root;
+  }
+  var roots = [build(level[0]), build(level[1])];
+
+  // 与 Solution.java 相同的两个迭代器；emitted 记录已消费的结点下标（画 dim）
+  function makeIter(root, asc) {
+    var st = [], emitted = {};
+    function chain(node) {
+      while (node !== null) {
+        st.push(node);
+        node = asc ? node.left : node.right;
+      }
+    }
+    chain(root);
+    return {
+      next: function () {
+        if (st.length === 0) return null;
+        var node = st.pop();
+        emitted[node.idx] = true;
+        chain(asc ? node.right : node.left);
+        return node;
+      },
+      emitted: emitted
+    };
+  }
+  var asc = makeIter(roots[0], true), desc = makeIter(roots[1], false);
+
+  var A_PRIME = 'TreeNode a = nextAsc(asc), b = nextDesc(desc);';
+  var A_SUM = 'long sum = (long) a.val + b.val;   // 值可达 1e9 量级，求和用 long 稳妥';
+  var A_HIT = 'if (sum == target) return true;';
+  var A_FALSE = 'return false;';
+
+  function treePanel(which, a, b) {
+    var isA = which === 0;
+    var cur = isA ? a : b;
+    var marks = {};
+    var em = isA ? asc.emitted : desc.emitted;
+    for (var k in em) marks[k] = 'dim';
+    if (cur !== null && cur !== undefined) marks[cur.idx] = 'cur';
+    return Viz.tree(level[which], {
+      title: isA ? 'root1：升序迭代器（中序从小到大）' : 'root2：降序迭代器（中序从大到小）',
+      marks: marks
+    });
+  }
+  function varsPanel(a, b, sum) {
+    var items = [{ name: 'target', v: String(target) }];
+    if (a != null) items.push({ name: 'a（root1 当前）', v: String(a.val) });
+    if (b != null) items.push({ name: 'b（root2 当前）', v: String(b.val) });
+    if (sum != null) items.push({ name: 'a + b', v: String(sum), cls: 'chg' });
+    return Viz.vars(items);
+  }
+
+  var a = asc.next(), b = desc.next();
+  var shots = 0;
+  while (a !== null && b !== null) {
+    var sum = a.val + b.val;
+    if (shots < 4) {
+      shots++;
+      var verdict = sum > target ? ' 偏大 → b 降序退一位' : (sum < target ? ' 偏小 → a 升序进一位' : ' 正中 target');
+      frames.push(Viz.frame(shots === 1 ? A_PRIME : A_SUM,
+        'a=' + a.val + '，b=' + b.val + '：和 ' + sum + verdict,
+        [treePanel(0, a, b), treePanel(1, a, b), varsPanel(a, b, sum)]));
+    }
+    if (sum === target) {
+      var hm = {};
+      hm[a.idx] = 'done';
+      frames.push(Viz.frame(A_HIT, 'a=' + a.val + ' + b=' + b.val + ' = target：找到配对，返回 true',
+        [treePanel(0, a, b), treePanel(1, a, b), varsPanel(a, b, sum)]));
+      return { frames: frames, result: true };
+    }
+    if (sum < target) a = asc.next();
+    else b = desc.next();
+  }
+
+  frames.push(Viz.frame([A_HIT, A_FALSE], '一边的迭代器走完了：两树凑不出 target，返回 false',
+    [treePanel(0, a, b), treePanel(1, a, b), varsPanel(a, b, null)]));
+
+  return { frames: frames, result: false };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

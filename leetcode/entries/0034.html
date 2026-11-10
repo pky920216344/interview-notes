@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>在排序数组中查找元素的第一个和最后一个位置 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 60 / 1159</span>
+  <nav class="pn"><a href="0151.html">上一篇</a><a href="0394.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">34. </span>在排序数组中查找元素的第一个和最后一个位置</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 104</li><li class="algo">二分查找</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">两次二分：lowerBound 找「第一个 ≥ target」，upperBound 找「第一个 &gt; target」，后者减一就是结束位置。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>找左端点：二分出第一个 <code>&gt;= target</code> 的下标 <code>lo</code>；<code>lo</code> 越界或 <code>nums[lo] != target</code> 说明根本不存在，返回 <code>[-1,-1]</code>。</li><li>找右端点：再二分出第一个 <code>&gt; target</code> 的下标，<code>- 1</code> 就是最后一个 <code>target</code>。</li><li>两个二分都是左闭右开 <code>[left, right)</code>，<code>right</code> 从 <code>n</code> 开始；<code>nums[mid]</code> 不够就 <code>left = mid + 1</code>，否则 <code>right = mid</code>。</li><li>两趟唯一区别是 <code>&lt;</code> 还是 <code>&lt;=</code>：把等于的留在区间里，lowerBound 就停在第一个等值处。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span>[] searchRange(<span class="k">int</span>[] nums, <span class="k">int</span> target) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 第一趟：找第一个 &gt;= target 的下标</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span> lo = lowerBound(nums, target);</span><span class="ln"><span class="no">5</span>        <span class="c">// 越界或该位置不是 target：数组里没有</span></span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (lo == nums.length || nums[lo] != target) {</span><span class="ln"><span class="no">7</span>            <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{-<span class="n">1</span>, -<span class="n">1</span>};</span><span class="ln"><span class="no">8</span>        }</span><span class="ln"><span class="no">9</span>        <span class="c">// 第二趟：第一个 &gt; target 的下标减一，就是结束位置</span></span><span class="ln"><span class="no">10</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{lo, upperBound(nums, target) - <span class="n">1</span>};</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="c">// 第一个 &gt;= target 的下标</span></span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="k">int</span> lowerBound(<span class="k">int</span>[] nums, <span class="k">int</span> target) {</span><span class="ln"><span class="no">15</span>        <span class="c">// 左闭右开 [left, right)，right 从 n 开始</span></span><span class="ln"><span class="no">16</span>        <span class="k">int</span> left = <span class="n">0</span>, right = nums.length;</span><span class="ln"><span class="no">17</span>        <span class="k">while</span> (left &lt; right) {</span><span class="ln"><span class="no">18</span>            <span class="k">int</span> mid = left + (right - left) / <span class="n">2</span>;</span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (nums[mid] &lt; target) left = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">20</span>            <span class="c">// nums[mid] &gt;= target：mid 可能就是答案</span></span><span class="ln"><span class="no">21</span>            <span class="k">else</span> right = mid;</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> left;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span> </span><span class="ln"><span class="no">26</span>    <span class="c">// 第一个 &gt; target 的下标</span></span><span class="ln"><span class="no">27</span>    <span class="k">private</span> <span class="k">int</span> upperBound(<span class="k">int</span>[] nums, <span class="k">int</span> target) {</span><span class="ln"><span class="no">28</span>        <span class="k">int</span> left = <span class="n">0</span>, right = nums.length;</span><span class="ln"><span class="no">29</span>        <span class="k">while</span> (left &lt; right) {</span><span class="ln"><span class="no">30</span>            <span class="k">int</span> mid = left + (right - left) / <span class="n">2</span>;</span><span class="ln"><span class="no">31</span>            <span class="k">if</span> (nums[mid] &lt;= target) left = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">32</span>            <span class="c">// nums[mid] &gt; target：mid 可能就是答案</span></span><span class="ln"><span class="no">33</span>            <span class="k">else</span> right = mid;</span><span class="ln"><span class="no">34</span>        }</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> left;</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个按照非递减顺序排列的整数数组 <code>nums</code>，和一个目标值 <code>target</code>。请你找出给定目标值在数组中的开始位置和结束位置。</p>
+
+<p>如果数组中不存在目标值 <code>target</code>，返回&nbsp;<code>[-1, -1]</code>。</p>
+
+<p>你必须设计并实现时间复杂度为&nbsp;<code>O(log n)</code>&nbsp;的算法解决此问题。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [<code>5,7,7,8,8,10]</code>, target = 8
+<strong>输出：</strong>[3,4]</pre>
+
+<p><strong>示例&nbsp;2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [<code>5,7,7,8,8,10]</code>, target = 6
+<strong>输出：</strong>[-1,-1]</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [], target = 0
+<strong>输出：</strong>[-1,-1]</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= nums.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>-10<sup>9</sup>&nbsp;&lt;= nums[i]&nbsp;&lt;= 10<sup>9</sup></code></li>
+	<li><code>nums</code>&nbsp;是一个非递减数组</li>
+	<li><code>-10<sup>9</sup>&nbsp;&lt;= target&nbsp;&lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int[] searchRange(int[] nums, int target) {", "        // 第一趟：找第一个 >= target 的下标", "        int lo = lowerBound(nums, target);", "        // 越界或该位置不是 target：数组里没有", "        if (lo == nums.length || nums[lo] != target) {", "            return new int[]{-1, -1};", "        }", "        // 第二趟：第一个 > target 的下标减一，就是结束位置", "        return new int[]{lo, upperBound(nums, target) - 1};", "    }", "", "    // 第一个 >= target 的下标", "    private int lowerBound(int[] nums, int target) {", "        // 左闭右开 [left, right)，right 从 n 开始", "        int left = 0, right = nums.length;", "        while (left < right) {", "            int mid = left + (right - left) / 2;", "            if (nums[mid] < target) left = mid + 1;", "            // nums[mid] >= target：mid 可能就是答案", "            else right = mid;", "        }", "        return left;", "    }", "", "    // 第一个 > target 的下标", "    private int upperBound(int[] nums, int target) {", "        int left = 0, right = nums.length;", "        while (left < right) {", "            int mid = left + (right - left) / 2;", "            if (nums[mid] <= target) left = mid + 1;", "            // nums[mid] > target：mid 可能就是答案", "            else right = mid;", "        }", "        return left;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 34. 在排序数组中查找元素的第一个和最后一个位置 —— 图解：复刻 Solution.java 的「两次二分」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [5, 7, 7, 8, 8, 10], target: 8 };
+
+function trace(input) {
+  var nums = input.nums, target = input.target, n = nums.length;
+  var frames = [];
+  var isStory = input === STORY_INPUT;
+  var snapped = {};
+
+  // 数组面板：range 画出剩余区间（左闭右开 [l, r) 画成 [l, r-1]），mid 是刚比较过的位置
+  function snap(at, key, l, r, marks, mid, extra) {
+    var pointers = mid == null ? [] : [{ at: mid, label: 'mid', cls: 'p-mid' }];
+    var panels = [Viz.cells(nums, {
+      title: '数组 nums（target = ' + target + '）',
+      marks: marks || {},
+      pointers: pointers,
+      range: l < r ? { from: l, to: r - 1, label: '区间 [' + l + ', ' + r + ')' } : null
+    })];
+    if (extra) panels.push(Viz.vars(extra));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  function once(name) { if (snapped[name]) return false; snapped[name] = true; return true; }
+
+  if (isStory) {
+    snap('int lo = lowerBound(nums, target);',
+      '第一趟二分找「第一个 ≥ 8」的下标，区间 [0, 6)',
+      0, n, {}, null, [{ name: 'target', v: target }]);
+  }
+
+  // lowerBound：第一个 >= target 的下标
+  var lo = 0;
+  {
+    var l = 0, r = n;
+    while (l < r) {
+      var mid = (l + r) >> 1;
+      if (nums[mid] < target) {
+        l = mid + 1;
+        // 故事里两次「<」分别读到 7：把左边整段丢掉，left 一路收到 3
+        if (isStory && l === 3 && once('lo')) {
+          snap('if (nums[mid] < target) left = mid + 1;',
+            '两次 mid 都读到 7 < 8：左边整段丢掉，lo = 3',
+            l, r, { 0: 'dim', 1: 'dim', 2: 'dim', 3: 'win' }, mid,
+            [{ name: 'lo', v: l, cls: 'new' }]);
+        }
+      } else {
+        r = mid;
+        // 故事里第一次比较：mid=3 读到 8，答案在 mid 或左边
+        if (isStory && once('ge')) {
+          snap('// nums[mid] >= target：mid 可能就是答案',
+            'mid=3 读到 8 ≥ 8：起点在 mid 或左边，区间收成 [0, 3)',
+            l, r, { 3: 'cur' }, mid);
+        }
+      }
+    }
+    lo = l;
+  }
+
+  // 数组里确实没有 target：直接 [-1, -1]
+  if (lo === n || nums[lo] !== target) {
+    return { frames: frames, result: [-1, -1] };
+  }
+
+  // upperBound：第一个 > target 的下标
+  var ub = 0;
+  {
+    var l = 0, r = n;
+    while (l < r) {
+      var mid = (l + r) >> 1;
+      if (nums[mid] <= target) {
+        l = mid + 1;
+        // 故事里 mid=3 读到 8：8 仍 ≤ 8，还不算「大于」
+        if (isStory && once('le')) {
+          snap('if (nums[mid] <= target) left = mid + 1;',
+            '第二趟找「第一个 > 8」：mid 的 8 仍 ≤ 8，left 跳到 4',
+            l, r, { 0: 'dim', 1: 'dim', 2: 'dim', 3: 'dim' }, mid);
+        }
+      } else {
+        r = mid;
+      }
+    }
+    ub = l;
+  }
+
+  if (isStory) {
+    snap('return new int[]{lo, upperBound(nums, target) - 1};',
+      '第一个 > 8 在下标 5，减一得 4：答案 [3, 4]',
+      0, 0, { 0: 'dim', 1: 'dim', 2: 'dim', 3: 'done', 4: 'done', 5: 'dim' }, null,
+      [{ name: 'lo', v: lo }, { name: 'hi', v: ub - 1, cls: 'new' }]);
+  }
+
+  return { frames: frames, result: [lo, ub - 1] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

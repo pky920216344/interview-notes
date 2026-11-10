@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>删除中间节点 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1094 / 1159</span>
+  <nav class="pn"><a href="supp-15.html">上一篇</a><a href="mianshi-04-06.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 02.03. </span>删除中间节点</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 1</li><li class="algo">链表</li><li class="tag">链表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">拿不到前驱，就把待删结点伪装成后继：拷贝后继的值，再让 next 越过后继。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>单向链表删结点通常要前驱，但这里只有 <code>node</code> 本身，于是换个思路：<strong>不删它，把它变成后继</strong>。</li><li><code>node.val = node.next.val</code>：值被后继覆盖。</li><li><code>node.next = node.next.next</code>：跳过后继，链表等效于少了原结点。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="c">// 只拿到待删结点、拿不到前驱：把它自己变成后继，再让 next 越过后继</span></span><span class="ln"><span class="no">3</span>    <span class="k">public</span> <span class="k">void</span> deleteNode(<span class="t">ListNode</span> node) {</span><span class="ln"><span class="no">4</span>        node.val = node.next.val;</span><span class="ln"><span class="no">5</span>        node.next = node.next.next;</span><span class="ln"><span class="no">6</span>    }</span><span class="ln"><span class="no">7</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>若链表中的某个节点，既不是链表头节点，也不是链表尾节点，则称其为该链表的「中间节点」。</p>
+
+<p>假定已知链表的某一个中间节点，请实现一种算法，将该节点从链表中删除。</p>
+
+<p>例如，传入节点 <code>c</code>（位于单向链表 <code>a->b->c->d->e->f</code> 中），将其删除后，剩余链表为 <code>a->b->d->e->f</code></p>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入：</strong>节点 5 （位于单向链表 4->5->1->9 中）
+<strong>输出：</strong>不返回任何数据，从链表中删除传入的节点 5，使链表变为 4->1->9
+</pre>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    // 只拿到待删结点、拿不到前驱：把它自己变成后继，再让 next 越过后继", "    public void deleteNode(ListNode node) {", "        node.val = node.next.val;", "        node.next = node.next.next;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 02.03. 删除中间节点 —— 图解：复刻 Solution.java 的「拷值 + 越过」两步，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { vals: [4, 5, 1, 9], idx: 1 };
+
+function trace(input) {
+  var a = input.vals.slice();
+  var idx = input.idx;
+  var frames = [];
+
+  function chain(marks, skipAfter, pointers) {
+    var opts = { title: '单向链表（没有前驱指针可用）', marks: marks || {}, pointers: pointers || [] };
+    if (skipAfter == null) {
+      opts.nulls = [a.length - 1];
+    } else {
+      var edges = [];
+      for (var i = 0; i + 1 < a.length; i++) {
+        if (i === skipAfter) {
+          // 越过 i+1；i 是倒数第二个结点时 next 直接是空
+          if (i + 2 < a.length) edges.push([i, i + 2]);
+        } else {
+          edges.push([i, i + 1]);
+        }
+      }
+      opts.edges = edges;
+      opts.nulls = skipAfter + 2 >= a.length ? [skipAfter, a.length - 1] : [a.length - 1];
+    }
+    return Viz.list(a.slice(), opts);
+  }
+  function nodePtr() { return [{ at: idx, label: 'node', cls: 'p-cur' }]; }
+
+  // 1) 开局：node 指着待删结点
+  var m0 = {}; m0[idx] = 'cur';
+  frames.push(Viz.frame('public void deleteNode(ListNode node) {',
+    '只拿到待删结点 ' + a[idx] + '，前驱不可见，删不动常规的「摘链」', [chain(m0, null, nodePtr())]));
+
+  // 2) 第一步：把后继的值拷给自己
+  a[idx] = a[idx + 1];
+  var m1 = {}; m1[idx] = 'new';
+  frames.push(Viz.frame('node.val = node.next.val;',
+    '第一步：把后继的值 ' + a[idx] + ' 拷进自己，原值 ' + input.vals[idx] + ' 被「顶掉」', [chain(m1, null, nodePtr())]));
+
+  // 3) 第二步：node.next 越过后继，重复结点出局
+  var m2 = {}; m2[idx] = 'new'; m2[idx + 1] = 'dim';
+  frames.push(Viz.frame('node.next = node.next.next;',
+    '第二步：next 越过重复结点，它从此不在链上', [chain(m2, idx, nodePtr())]));
+
+  // 4) 结果
+  a.splice(idx + 1, 1);
+  var m3 = {};
+  for (var i = 0; i < a.length; i++) m3[i] = 'done';
+  frames.push(Viz.frame('node.next = node.next.next;',
+    '链表变成 ' + a.join('→') + '，等效于删掉了原结点', [chain(m3, null)]));
+
+  return { frames: frames, result: a };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

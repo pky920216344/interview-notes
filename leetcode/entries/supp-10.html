@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>36进制减法 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 655 / 1159</span>
+  <nav class="pn"><a href="1302.html">上一篇</a><a href="1060.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">补充题10. </span>36进制减法</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">模拟</li><li class="st-warn" title="codetop 自行补充的条目，力扣上没有对应页面，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">36 进制竖式减法：从最低位逐位相减，不够减就向高位借 1（借 1 当 36），最后去掉前导零。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>逐位相减与十进制竖式完全同构：本位 = <code>a</code> 的位 − <code>b</code> 的位 − <code>borrow</code>，不够就 <code>+36</code> 并把 <code>borrow</code> 置 1。</li><li>位值换算：<code>0-9</code> 用 <code>c-'0'</code>，<code>a-z</code> 用 <code>c-'a'+10</code>；写回时反向拼回字符。</li><li>短的那一位按 0 补；结束后反转结果串并去掉前导零（全 0 保留一个 <code>"0"</code>）。</li><li>对拍参照：<code>BigInteger(s, 36)</code> 天然支持 36 进制加减。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(len)，空间复杂度 O(len)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="c">/**</span></span><span class="ln"><span class="no">3</span><span class="c">     * 36 进制减法（codetop 补充题，自定约定）：数字用 0-9 和小写 a-z（a=10 … z=35）。</span></span><span class="ln"><span class="no">4</span><span class="c">     * a、b 都是无前导零的非负整数串（0 本身记作 "0"），题目保证 a ≥ b；</span></span><span class="ln"><span class="no">5</span><span class="c">     * 返回 a − b 的 36 进制串，同样无前导零（结果为 0 时返回 "0"）。</span></span><span class="ln"><span class="no">6</span><span class="c">     */</span></span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">String</span> sub36(<span class="t">String</span> a, <span class="t">String</span> b) {</span><span class="ln"><span class="no">8</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">9</span>        <span class="k">int</span> i = a.length() - <span class="n">1</span>, j = b.length() - <span class="n">1</span>, borrow = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">while</span> (i &gt;= <span class="n">0</span> || j &gt;= <span class="n">0</span>) {</span><span class="ln"><span class="no">11</span>            <span class="c">// 本位 = a 的位 − b 的位 − 借位；不够减就向高位借 1（借 1 当 36）</span></span><span class="ln"><span class="no">12</span>            <span class="k">int</span> d = (i &gt;= <span class="n">0</span> ? val(a.charAt(i--)) : <span class="n">0</span>) - (j &gt;= <span class="n">0</span> ? val(b.charAt(j--)) : <span class="n">0</span>) - borrow;</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (d &lt; <span class="n">0</span>) { d += <span class="n">36</span>; borrow = <span class="n">1</span>; } <span class="k">else</span> borrow = <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>            sb.append(digit(d));</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        sb.reverse();</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> start = <span class="n">0</span>;</span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (start &lt; sb.length() - <span class="n">1</span> &amp;&amp; sb.charAt(start) == <span class="s">'0'</span>) start++;</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> sb.substring(start);</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>    <span class="k">private</span> <span class="k">int</span> val(<span class="k">char</span> c) {</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> c &lt;= <span class="s">'9'</span> ? c - <span class="s">'0'</span> : c - <span class="s">'a'</span> + <span class="n">10</span>;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span> </span><span class="ln"><span class="no">26</span>    <span class="k">private</span> <span class="k">char</span> digit(<span class="k">int</span> v) {</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> v &lt; <span class="n">10</span> ? (<span class="k">char</span>) (<span class="s">'0'</span> + v) : (<span class="k">char</span>) (<span class="s">'a'</span> + v - <span class="n">10</span>);</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>这个条目没有现成的题面。</p></div></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    /**", "     * 36 进制减法（codetop 补充题，自定约定）：数字用 0-9 和小写 a-z（a=10 … z=35）。", "     * a、b 都是无前导零的非负整数串（0 本身记作 \"0\"），题目保证 a ≥ b；", "     * 返回 a − b 的 36 进制串，同样无前导零（结果为 0 时返回 \"0\"）。", "     */", "    public String sub36(String a, String b) {", "        StringBuilder sb = new StringBuilder();", "        int i = a.length() - 1, j = b.length() - 1, borrow = 0;", "        while (i >= 0 || j >= 0) {", "            // 本位 = a 的位 − b 的位 − 借位；不够减就向高位借 1（借 1 当 36）", "            int d = (i >= 0 ? val(a.charAt(i--)) : 0) - (j >= 0 ? val(b.charAt(j--)) : 0) - borrow;", "            if (d < 0) { d += 36; borrow = 1; } else borrow = 0;", "            sb.append(digit(d));", "        }", "        sb.reverse();", "        int start = 0;", "        while (start < sb.length() - 1 && sb.charAt(start) == '0') start++;", "        return sb.substring(start);", "    }", "", "    private int val(char c) {", "        return c <= '9' ? c - '0' : c - 'a' + 10;", "    }", "", "    private char digit(int v) {", "        return v < 10 ? (char) ('0' + v) : (char) ('a' + v - 10);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 补充题10 36进制减法 —— 图解：复刻 Solution.java 的竖式减法（从低位逐位借位），在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { a: '3a', b: '1f' };
+
+var CHARS = '0123456789abcdefghijklmnopqrstuvwxyz';
+
+function trace(input) {
+  var a = input.a, b = input.b;
+  var n = Math.max(a.length, b.length);
+  var frames = [];
+  var outDigits = [];   // 已算出的低位数字符（从右往左填）
+  var borrow = 0;
+
+  function val(c) { return CHARS.indexOf(c); }
+  function digit(v) { return CHARS.charAt(v); }
+
+  // 右对齐的格子：左边不足的位补 ' '；返回 [a 行, b 行, 结果行]
+  function board() {
+    var pa = [], pb = [], po = [];
+    for (var c = 0; c < n; c++) {
+      var ai = a.length - n + c, bi = b.length - n + c;
+      pa.push(ai >= 0 ? a.charAt(ai) : '·');
+      pb.push(bi >= 0 ? b.charAt(bi) : '·');
+      po.push('·');
+    }
+    for (var k = 0; k < outDigits.length; k++) po[n - 1 - k] = outDigits[k];
+    return { pa: pa, pb: pb, po: po };
+  }
+
+  function boardPanel(curCol) {
+    var b = board();
+    var marks = {};
+    if (curCol != null) marks['0,' + curCol] = 'cur';
+    if (curCol != null) marks['1,' + curCol] = 'cur';
+    if (curCol != null) marks['2,' + curCol] = 'new';
+    return Viz.grid([b.pa, b.pb, b.po], {
+      title: '竖式右对齐（上 a，中 b，下逐位写差；· 是空位）',
+      marks: marks, rowLabels: ['a', 'b', '差'], corner: '位'
+    });
+  }
+  function varsPanel(showBorrow) {
+    var items = [{ name: 'borrow（欠高位的）', v: borrow, cls: showBorrow ? 'bad' : '' }];
+    return Viz.vars(items);
+  }
+  function snap(at, key, curCol, showBorrow) {
+    frames.push(Viz.frame(at, key, [boardPanel(curCol), varsPanel(showBorrow)]));
+  }
+
+  snap('int d = (i >= 0 ? val(a.charAt(i--)) : 0) - (j >= 0 ? val(b.charAt(j--)) : 0) - borrow;',
+    '开局：两数右对齐，从最低位开始逐位相减，borrow 记欠高位的 1', n - 1, false);
+
+  var i = a.length - 1, j = b.length - 1;
+  var done = 0;
+  while (i >= 0 || j >= 0) {
+    var da = i >= 0 ? val(a.charAt(i--)) : 0;
+    var db = j >= 0 ? val(b.charAt(j--)) : 0;
+    var incoming = borrow;
+    var d = da - db - incoming;
+    if (d < 0) { d += 36; borrow = 1; } else borrow = 0;
+    outDigits.push(digit(d));
+    done++;
+    if (done <= 2) {
+      var word;
+      if (done === 1 && input.a === STORY_INPUT.a && input.b === STORY_INPUT.b) {
+        word = "最低位 10('a')−15('f') 不够减：借 1 当 36 → 本位 31='v'，欠高位 1";
+      } else if (done === 2 && input.a === STORY_INPUT.a && input.b === STORY_INPUT.b) {
+        word = "次低位 3 − 1 − 1(还上借位) = 1 → '1'";
+      } else {
+        word = "本位 " + da + "(" + digit(da) + ") − " + db + "(" + digit(db) + ")"
+            + (incoming ? " − 1(还上借位) = " : " = ") + d + " → " + digit(d) + (borrow ? "，欠高位 1" : "");
+      }
+      snap('if (d < 0) { d += 36; borrow = 1; } else borrow = 0;', word, n - done, borrow === 1);
+    }
+  }
+
+  snap('return sb.substring(start);', '算完所有位、去掉前导零：答案 ' + outDigits.slice().reverse().join(''), null, false);
+  return { frames: frames, result: (function () { var s = outDigits.slice().reverse().join(''); var p = 0; while (p < s.length - 1 && s.charAt(p) === '0') p++; return s.substring(p); })() };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

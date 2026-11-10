@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>化栈为队 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 849 / 1159</span>
+  <nav class="pn"><a href="1131.html">上一篇</a><a href="1477.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 03.04. </span>化栈为队</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 1</li><li class="algo">栈</li><li class="aux">设计</li><li class="tag">栈</li><li class="tag">设计</li><li class="tag">队列</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">双栈分工：push 只进 in；pop/peek 时若 out 空了，把 in 整体倒进 out，栈顶即队首。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>in</code> 栈只管进，<code>out</code> 栈只管出：两个栈一倒腾，先进先出的顺序就出来了。</li><li><code>pop</code>/<code>peek</code>：<code>out</code> 空了才把 <code>in</code> 全部倒入 <code>out</code>（每个元素最多被倒一次，<strong>均摊 O(1)</strong>）；<code>out</code> 不空就直接用栈顶。</li><li><code>empty</code>：两个栈都空才是空队列。</li><li>关键点：<strong>不要每次 pop 都倒腾</strong>，只在 <code>out</code> 空时倒，倒一半会破坏顺序。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 均摊 O(1)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">Stack</span>;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">MyQueue</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Stack</span>&lt;<span class="t">Integer</span>&gt; in = <span class="k">new</span> <span class="t">Stack</span>&lt;&gt;();   <span class="c">// 只负责压入</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Stack</span>&lt;<span class="t">Integer</span>&gt; out = <span class="k">new</span> <span class="t">Stack</span>&lt;&gt;();  <span class="c">// 只负责弹出</span></span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="c">/** Initialize your data structure here. */</span></span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">MyQueue</span>() {</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="c">/** Push element x to the back of queue. */</span></span><span class="ln"><span class="no">12</span>    <span class="k">public</span> <span class="k">void</span> push(<span class="k">int</span> x) {</span><span class="ln"><span class="no">13</span>        in.push(x);</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="c">/** Removes the element from in front of queue and returns that element. */</span></span><span class="ln"><span class="no">17</span>    <span class="k">public</span> <span class="k">int</span> pop() {</span><span class="ln"><span class="no">18</span>        pour();</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> out.pop();</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>    <span class="c">/** Get the front element. */</span></span><span class="ln"><span class="no">23</span>    <span class="k">public</span> <span class="k">int</span> peek() {</span><span class="ln"><span class="no">24</span>        pour();</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> out.peek();</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span> </span><span class="ln"><span class="no">28</span>    <span class="c">/** Returns whether the queue is empty. */</span></span><span class="ln"><span class="no">29</span>    <span class="k">public</span> <span class="k">boolean</span> empty() {</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> in.isEmpty() &amp;&amp; out.isEmpty();</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span> </span><span class="ln"><span class="no">33</span>    <span class="c">// out 空了才把 in 整体倒过去，倒完栈顶正好是队首</span></span><span class="ln"><span class="no">34</span>    <span class="k">private</span> <span class="k">void</span> pour() {</span><span class="ln"><span class="no">35</span>        <span class="k">if</span> (out.isEmpty()) {</span><span class="ln"><span class="no">36</span>            <span class="k">while</span> (!in.isEmpty()) out.push(in.pop());</span><span class="ln"><span class="no">37</span>        }</span><span class="ln"><span class="no">38</span>    }</span><span class="ln"><span class="no">39</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>实现一个MyQueue类，该类用两个栈来实现一个队列。</p><br><p><strong>示例：</strong><pre>MyQueue queue = new MyQueue();<br><br>queue.push(1);<br>queue.push(2);<br>queue.peek();  // 返回 1<br>queue.pop();   // 返回 1<br>queue.empty(); // 返回 false</pre></p><br><p><strong>说明：</strong><br><ul><li>你只能使用标准的栈操作 -- 也就是只有 <code>push to top</code>, <code>peek/pop from top</code>, <code>size</code> 和 <code>is empty</code> 操作是合法的。</li><li>你所使用的语言也许不支持栈。你可以使用 list 或者 deque（双端队列）来模拟一个栈，只要是标准的栈操作即可。</li><li>假设所有操作都是有效的 （例如，一个空的队列不会调用 pop 或者 peek 操作）。</li></ul></p></div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.Stack;", "", "class MyQueue {", "    private final Stack<Integer> in = new Stack<>();   // 只负责压入", "    private final Stack<Integer> out = new Stack<>();  // 只负责弹出", "", "    /** Initialize your data structure here. */", "    public MyQueue() {", "    }", "", "    /** Push element x to the back of queue. */", "    public void push(int x) {", "        in.push(x);", "    }", "", "    /** Removes the element from in front of queue and returns that element. */", "    public int pop() {", "        pour();", "        return out.pop();", "    }", "", "    /** Get the front element. */", "    public int peek() {", "        pour();", "        return out.peek();", "    }", "", "    /** Returns whether the queue is empty. */", "    public boolean empty() {", "        return in.isEmpty() && out.isEmpty();", "    }", "", "    // out 空了才把 in 整体倒过去，倒完栈顶正好是队首", "    private void pour() {", "        if (out.isEmpty()) {", "            while (!in.isEmpty()) out.push(in.pop());", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 03.04. 化栈为队 —— 图解：双栈分工，out 空了才把 in 整体倒过去。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { ops: [['push', 1], ['push', 2], ['push', 3], ['pop'], ['peek'], ['push', 4], ['pop'], ['empty']] };
+
+function trace(input) {
+  var ops = input.ops;
+  var inStack = [];    // 下标 0 是栈底，最后一个是栈顶
+  var outStack = [];
+  var frames = [];
+  var out = [];
+  var PUSH = 'in.push(x);';
+  var POUR = 'while (!in.isEmpty()) out.push(in.pop());';
+  var POP = 'return out.pop();';
+  var PEEK = 'return out.peek();';
+  var EMPTY = 'return in.isEmpty() && out.isEmpty();';
+  var seen = { push: false, pour: false, pop: false, peek: false, latePush: false, empty: false };
+
+  function stackPanel(a, title, topCls) {
+    var n = a.length;
+    var marks = {};
+    if (n > 0 && topCls) marks[n - 1] = topCls;
+    var edges = [];
+    for (var k = 0; k + 1 < n; k++) edges.push([k, k + 1]);
+    var pointers = n > 0 ? [{ at: n - 1, label: '栈顶', cls: 'p-cur' }] : [];
+    return Viz.list(a.map(String), { title: title, marks: marks, pointers: pointers, edges: edges, nulls: [] });
+  }
+  function snap(at, key, topIn, topOut, vars) {
+    frames.push(Viz.frame(at, key, [
+      stackPanel(inStack, 'in 栈（只进）', topIn),
+      stackPanel(outStack, 'out 栈（只出）', topOut),
+      Viz.vars(vars || [])
+    ]));
+  }
+
+  for (var i = 0; i < ops.length; i++) {
+    var op = ops[i];
+    if (op[0] === 'push') {
+      inStack.push(op[1]);
+      if (!seen.push) {
+        seen.push = true;
+        snap(PUSH, 'push：新元素一律压进 in 栈，队尾不断变长', 'new', null, [{ name: '本次 push', v: String(op[1]) }]);
+      } else if (!seen.latePush && outStack.length > 0) {
+        seen.latePush = true;
+        snap(PUSH, 'push 只进 in：out 里还有元素就先不动它', 'new', null, [{ name: '本次 push', v: String(op[1]) }]);
+      }
+    } else if (op[0] === 'pop' || op[0] === 'peek') {
+      if (outStack.length === 0) {
+        while (inStack.length > 0) outStack.push(inStack.pop());   // 对应 pour()
+        if (!seen.pour) {
+          seen.pour = true;
+          snap(POUR, 'out 空了才倒：in 整体压进 out，栈顶正好是队首', null, 'cur',
+            [{ name: '本次' + (op[0] === 'pop' ? 'pop' : 'peek'), v: '先倒腾再' + op[0] }]);
+        }
+      }
+      var v = outStack.pop();
+      if (op[0] === 'peek') outStack.push(v);
+      if (op[0] === 'pop' && !seen.pop) {
+        seen.pop = true;
+        out.push(v);
+        snap(POP, 'pop：弹出 out 栈顶 ' + v + '，就是最先入队的', null, null, [{ name: 'pop 返回', v: String(v), cls: 'done' }]);
+        continue;
+      }
+      if (op[0] === 'peek' && !seen.peek) {
+        seen.peek = true;
+        snap(PEEK, 'peek：看 out 栈顶但不弹出，队首还在', null, 'hit', [{ name: 'peek 返回', v: String(v), cls: 'done' }]);
+      }
+      out.push(v);
+    } else {
+      if (!seen.empty) {
+        seen.empty = true;
+        var e = inStack.length === 0 && outStack.length === 0;
+        snap(EMPTY, 'empty：in、out 两个栈都空才是空队', null, null,
+          [{ name: 'in 空', v: inStack.length === 0 ? '是' : '否' }, { name: 'out 空', v: outStack.length === 0 ? '是' : '否' },
+           { name: 'empty 返回', v: String(e), cls: 'done' }]);
+      }
+      out.push(inStack.length === 0 && outStack.length === 0);
+    }
+  }
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

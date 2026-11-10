@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>查找和最小的 K 对数字 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 389 / 1159</span>
+  <nav class="pn"><a href="0701.html">上一篇</a><a href="0781.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">373. </span>查找和最小的 K 对数字</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 8</li><li class="algo">堆</li><li class="tag">数组</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">小顶堆装「行 × 列」下标对：每行先放 (i,0)，弹出谁就把谁那一行的下一列推进来，弹 k 次即答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>把所有对想成 <code>nums1.length</code> 行的矩阵，每行按列递增：第 k 小只需在堆里维护「每行的候选」。</li><li>初始把 <code>(i, 0)</code>（<code>i &lt; min(len1, k)</code>）入堆；弹出的 <code>(i, j)</code> 就是当前最小的对，答案收下它。</li><li>弹出后把同一行的下一个 <code>(i, j+1)</code> 推回堆——每行内部有序，堆顶永远是全局最小。</li><li>和用 <code>long</code> 比较：两个 10^9 相加会溢出 <code>int</code>；只入前 k 行是因为更靠后的行不可能挤进前 k。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(k log k)，空间复杂度 O(k)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; kSmallestPairs(<span class="k">int</span>[] nums1, <span class="k">int</span>[] nums2, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 堆里放下标对 {i, j}：按和排序（和可能超 int，用 long 比；和相同按 i、j 定序保证稳定）</span></span><span class="ln"><span class="no">6</span>        <span class="t">PriorityQueue</span>&lt;<span class="k">int</span>[]&gt; heap = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;((x, y) -&gt; {</span><span class="ln"><span class="no">7</span>            <span class="k">long</span> sx = (<span class="k">long</span>) nums1[x[<span class="n">0</span>]] + nums2[x[<span class="n">1</span>]], sy = (<span class="k">long</span>) nums1[y[<span class="n">0</span>]] + nums2[y[<span class="n">1</span>]];</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (sx != sy) <span class="k">return</span> <span class="t">Long</span>.compare(sx, sy);</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (x[<span class="n">0</span>] != y[<span class="n">0</span>]) <span class="k">return</span> x[<span class="n">0</span>] - y[<span class="n">0</span>];</span><span class="ln"><span class="no">10</span>            <span class="k">return</span> x[<span class="n">1</span>] - y[<span class="n">1</span>];</span><span class="ln"><span class="no">11</span>        });</span><span class="ln"><span class="no">12</span>        <span class="c">// 只需前 k 行：第 k 小之前的对每行至少占一个，后面的行轮不到</span></span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; <span class="t">Math</span>.min(nums1.length, k); i++) heap.offer(<span class="k">new</span> <span class="k">int</span>[]{i, <span class="n">0</span>});</span><span class="ln"><span class="no">14</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; out = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">15</span>        <span class="k">while</span> (out.size() &lt; k &amp;&amp; !heap.isEmpty()) {</span><span class="ln"><span class="no">16</span>            <span class="k">int</span>[] top = heap.poll();</span><span class="ln"><span class="no">17</span>            out.add(<span class="t">Arrays</span>.asList(nums1[top[<span class="n">0</span>]], nums2[top[<span class="n">1</span>]]));</span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (top[<span class="n">1</span>] + <span class="n">1</span> &lt; nums2.length) heap.offer(<span class="k">new</span> <span class="k">int</span>[]{top[<span class="n">0</span>], top[<span class="n">1</span>] + <span class="n">1</span>});</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定两个以 <strong>非递减顺序排列</strong> 的整数数组 <code>nums1</code> 和<code>nums2</code>,&nbsp;以及一个整数 <code>k</code>。</p>
+
+<p>定义一对值&nbsp;<code>(u,v)</code>，其中第一个元素来自&nbsp;<code>nums1</code>，第二个元素来自 <code>nums2</code>。</p>
+
+<p>请找到和最小的 <code>k</code>&nbsp;个数对&nbsp;<code>(u<sub>1</sub>,v<sub>1</sub>)</code>, <code>&nbsp;(u<sub>2</sub>,v<sub>2</sub>)</code> &nbsp;... &nbsp;<code>(u<sub>k</sub>,v<sub>k</sub>)</code>&nbsp;。</p>
+
+
+
+<p><strong class="example">示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> nums1 = [1,7,11], nums2 = [2,4,6], k = 3
+<strong>输出:</strong> [[1,2],[1,4],[1,6]]
+<strong>解释: </strong>返回序列中的前 3 对数：
+     [1,2],[1,4],[1,6],[7,2],[7,4],[11,2],[7,6],[11,4],[11,6]
+</pre>
+
+<p><strong class="example">示例 2:</strong></p>
+
+<pre>
+<strong>输入: </strong>nums1 = [1,1,2], nums2 = [1,2,3], k = 2
+<strong>输出: </strong>[[1,1],[1,1]]
+<strong>解释: </strong>返回序列中的前 2 对数：
+&nbsp;    [1,1],[1,1],[1,2],[2,1],[1,2],[2,2],[1,3],[1,3],[2,3]
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums1.length, nums2.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>-10<sup>9</sup> &lt;= nums1[i], nums2[i] &lt;= 10<sup>9</sup></code></li>
+	<li><code>nums1</code> 和 <code>nums2</code> 均为 <strong>升序排列</strong></li>
+	<li><meta charset="UTF-8" /><code>1 &lt;= k &lt;= 10<sup>4</sup></code></li>
+	<li><code>k &lt;=&nbsp;nums1.length *&nbsp;nums2.length</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<Integer>> kSmallestPairs(int[] nums1, int[] nums2, int k) {", "        // 堆里放下标对 {i, j}：按和排序（和可能超 int，用 long 比；和相同按 i、j 定序保证稳定）", "        PriorityQueue<int[]> heap = new PriorityQueue<>((x, y) -> {", "            long sx = (long) nums1[x[0]] + nums2[x[1]], sy = (long) nums1[y[0]] + nums2[y[1]];", "            if (sx != sy) return Long.compare(sx, sy);", "            if (x[0] != y[0]) return x[0] - y[0];", "            return x[1] - y[1];", "        });", "        // 只需前 k 行：第 k 小之前的对每行至少占一个，后面的行轮不到", "        for (int i = 0; i < Math.min(nums1.length, k); i++) heap.offer(new int[]{i, 0});", "        List<List<Integer>> out = new ArrayList<>();", "        while (out.size() < k && !heap.isEmpty()) {", "            int[] top = heap.poll();", "            out.add(Arrays.asList(nums1[top[0]], nums2[top[1]]));", "            if (top[1] + 1 < nums2.length) heap.offer(new int[]{top[0], top[1] + 1});", "        }", "        return out;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 373. 查找和最小的 K 对数字 —— 图解：复刻 Solution.java 的「行 × 列小顶堆」，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums1: [1, 7, 11], nums2: [2, 4, 6], k: 3 };
+
+function trace(input) {
+  var n1 = input.nums1, n2 = input.nums2, k = input.k;
+
+  // 与 Java 相同的全序比较：先和，再 i，再 j（和可能超 int，JS 数直接算）
+  function cmp(x, y) {
+    var sx = n1[x[0]] + n2[x[1]], sy = n1[y[0]] + n2[y[1]];
+    if (sx !== sy) return sx - sy;
+    if (x[0] !== y[0]) return x[0] - y[0];
+    return x[1] - y[1];
+  }
+
+  // 二叉小顶堆
+  var heap = [];
+  function less(i, j) { return cmp(heap[i], heap[j]) < 0; }
+  function swap(i, j) { var t = heap[i]; heap[i] = heap[j]; heap[j] = t; }
+  function offer(p) {
+    heap.push(p);
+    var c = heap.length - 1;
+    while (c > 0) {
+      var par = (c - 1) >> 1;
+      if (!less(c, par)) break;
+      swap(c, par);
+      c = par;
+    }
+  }
+  function poll() {
+    var top = heap[0], last = heap.pop();
+    if (heap.length) {
+      heap[0] = last;
+      var p = 0;
+      for (;;) {
+        var l = 2 * p + 1, r = l + 1, m = p;
+        if (l < heap.length && less(l, m)) m = l;
+        if (r < heap.length && less(r, m)) m = r;
+        if (m === p) break;
+        swap(p, m);
+        p = m;
+      }
+    }
+    return top;
+  }
+
+  var frames = [], seenTags = {}, out = [];
+  var SEED = 'for (int i = 0; i < Math.min(nums1.length, k); i++) heap.offer(new int[]{i, 0});';
+  var POLL = 'int[] top = heap.poll();';
+  var END = 'return out;';
+
+  function heapPanel() {
+    var items = heap.map(function (p) { return '(' + p[0] + ',' + p[1] + ') 和' + (n1[p[0]] + n2[p[1]]); });
+    return Viz.cells(items, {
+      title: '小顶堆（顶=当前全局最小）', marks: {}, hideIndex: true,
+      pointers: heap.length ? [{ at: 0, label: '堆顶', cls: 'p-head' }] : []
+    });
+  }
+  function outPanel() {
+    var items = out.map(function (p) { return p[0] + ',' + p[1]; });
+    var marks = {};
+    for (var i = 0; i < out.length; i++) marks[i] = 'done';
+    return Viz.cells(items.length ? items : ['（还没弹出）'], { title: '答案 out', marks: marks, hideIndex: true });
+  }
+  function snap(at, key, tag) {
+    if (tag) { if (seenTags[tag]) return; seenTags[tag] = true; }
+    frames.push(Viz.frame(at, key, [heapPanel(), outPanel(), Viz.vars([{ name: 'k', v: k, cls: '' }, { name: '已弹出', v: out.length, cls: 'chg' }])]));
+  }
+
+  for (var i = 0; i < Math.min(n1.length, k); i++) offer([i, 0]);
+  snap(SEED, '开局：前 ' + Math.min(n1.length, k) + ' 行各推 (i,0) 进堆', 'seed');
+
+  while (out.length < k && heap.length) {
+    var top = poll();
+    out.push([n1[top[0]], n2[top[1]]]);
+    if (top[1] + 1 < n2.length) offer([top[0], top[1] + 1]);
+    if (out.length <= 3) snap(POLL, '弹出 (' + top[0] + ',' + top[1] + ') 收进答案，同行下一个 (i,' + (top[1] + 1) + ') 推回堆', 'pop' + out.length);
+  }
+
+  snap(END, out.length < k ? '堆空了：数对不足 k 个，返回全部' : '弹满 k 个：这就是和最小的 k 对', null);
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

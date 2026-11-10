@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>合并 K 个升序链表 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 23 / 1159</span>
+  <nav class="pn"><a href="0092.html">上一篇</a><a href="0054.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">23. </span>合并 K 个升序链表</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 264</li><li class="algo">分治</li><li class="aux">链表</li><li class="tag">链表</li><li class="tag">分治</li><li class="tag">堆（优先队列）</li><li class="tag">归并排序</li><li class="tag">tournament-sort</li><li class="st-ok" title="你在力扣上已经通过这道题，本项目不重复提交；本页代码只做了本地验证">本人已 AC</li></ul>
+<p class="idea">分治：把 k 条链表对半拆开，递归合并左右两半，再用「合并两个有序链表」把两条合成一条。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>merge(lo, hi)</code> 返回 <code>lists[lo..hi]</code> 合并后的链表：<code>lo == hi</code> 直接返回；否则从 <code>mid</code> 对半拆，递归合并左右两半。</li><li>左右两半各得一条有序链表后，用 <code>mergeTwo</code> 合成一条：就是「合并两个有序链表」，哨兵 + 谁小接谁，最后接上剩下的。</li><li>每层递归合计只处理 N 个结点（N 是结点总数），共 <code>log k</code> 层，所以时间 O(N log k)；递归栈深 O(log k)。</li><li>边界：<code>lists</code> 为空数组直接返回 <code>null</code>；空链表（<code>null</code>）照常参与合并。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(N log k)，空间复杂度 O(log k)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">ListNode</span> mergeKLists(<span class="t">ListNode</span>[] lists) {</span><span class="ln"><span class="no">3</span>        <span class="k">if</span> (lists.length == <span class="n">0</span>) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">return</span> merge(lists, <span class="n">0</span>, lists.length - <span class="n">1</span>);</span><span class="ln"><span class="no">5</span>    }</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="c">// 合并 lists[lo..hi]：对半拆开，各自合并成一条，再把两条合并</span></span><span class="ln"><span class="no">8</span>    <span class="k">private</span> <span class="t">ListNode</span> merge(<span class="t">ListNode</span>[] lists, <span class="k">int</span> lo, <span class="k">int</span> hi) {</span><span class="ln"><span class="no">9</span>        <span class="k">if</span> (lo == hi) <span class="k">return</span> lists[lo];</span><span class="ln"><span class="no">10</span>        <span class="k">int</span> mid = lo + (hi - lo) / <span class="n">2</span>;</span><span class="ln"><span class="no">11</span>        <span class="t">ListNode</span> left = merge(lists, lo, mid);</span><span class="ln"><span class="no">12</span>        <span class="t">ListNode</span> right = merge(lists, mid + <span class="n">1</span>, hi);</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> mergeTwo(left, right);</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="c">// 合并两个升序链表：哨兵 + 谁小接谁</span></span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="t">ListNode</span> mergeTwo(<span class="t">ListNode</span> a, <span class="t">ListNode</span> b) {</span><span class="ln"><span class="no">18</span>        <span class="t">ListNode</span> dummy = <span class="k">new</span> <span class="t">ListNode</span>(), tail = dummy;</span><span class="ln"><span class="no">19</span>        <span class="k">while</span> (a != <span class="k">null</span> &amp;&amp; b != <span class="k">null</span>) {</span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (a.val &lt;= b.val) {</span><span class="ln"><span class="no">21</span>                tail.next = a;</span><span class="ln"><span class="no">22</span>                a = a.next;</span><span class="ln"><span class="no">23</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">24</span>                tail.next = b;</span><span class="ln"><span class="no">25</span>                b = b.next;</span><span class="ln"><span class="no">26</span>            }</span><span class="ln"><span class="no">27</span>            tail = tail.next;</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="c">// 剩下的那一条整段接上</span></span><span class="ln"><span class="no">30</span>        tail.next = a != <span class="k">null</span> ? a : b;</span><span class="ln"><span class="no">31</span>        <span class="k">return</span> dummy.next;</span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个链表数组，每个链表都已经按升序排列。</p>
+
+<p>请你将所有链表合并到一个升序链表中，返回合并后的链表。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>lists = [[1,4,5],[1,3,4],[2,6]]
+<strong>输出：</strong>[1,1,2,3,4,4,5,6]
+<strong>解释：</strong>链表数组如下：
+[
+  1-&gt;4-&gt;5,
+  1-&gt;3-&gt;4,
+  2-&gt;6
+]
+将它们合并到一个有序链表中得到。
+1-&gt;1-&gt;2-&gt;3-&gt;4-&gt;4-&gt;5-&gt;6
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>lists = []
+<strong>输出：</strong>[]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>lists = [[]]
+<strong>输出：</strong>[]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>k == lists.length</code></li>
+	<li><code>0 &lt;= k &lt;= 10^4</code></li>
+	<li><code>0 &lt;= lists[i].length &lt;= 500</code></li>
+	<li><code>-10^4 &lt;= lists[i][j] &lt;= 10^4</code></li>
+	<li><code>lists[i]</code> 按 <strong>升序</strong> 排列</li>
+	<li><code>lists[i].length</code> 的总和不超过 <code>10^4</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public ListNode mergeKLists(ListNode[] lists) {", "        if (lists.length == 0) return null;", "        return merge(lists, 0, lists.length - 1);", "    }", "", "    // 合并 lists[lo..hi]：对半拆开，各自合并成一条，再把两条合并", "    private ListNode merge(ListNode[] lists, int lo, int hi) {", "        if (lo == hi) return lists[lo];", "        int mid = lo + (hi - lo) / 2;", "        ListNode left = merge(lists, lo, mid);", "        ListNode right = merge(lists, mid + 1, hi);", "        return mergeTwo(left, right);", "    }", "", "    // 合并两个升序链表：哨兵 + 谁小接谁", "    private ListNode mergeTwo(ListNode a, ListNode b) {", "        ListNode dummy = new ListNode(), tail = dummy;", "        while (a != null && b != null) {", "            if (a.val <= b.val) {", "                tail.next = a;", "                a = a.next;", "            } else {", "                tail.next = b;", "                b = b.next;", "            }", "            tail = tail.next;", "        }", "        // 剩下的那一条整段接上", "        tail.next = a != null ? a : b;", "        return dummy.next;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 23. 合并 K 个升序链表 —— 图解：复刻 Solution.java 的「对半拆、递归合并、再合并两条」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 快照都拍在最外层那次 merge 调用里：拆开 → 左半返回 → 右半返回 → 合并两条。
+
+var STORY_INPUT = { lists: [[1, 4], [2, 5], [3], [0]] };
+
+function trace(input) {
+  var frames = [];
+
+  function node(v) { return { v: v, next: null }; }
+  var lists = input.lists.map(function (arr) {
+    var d = node(0), t = d;
+    arr.forEach(function (x) { t.next = node(x); t = t.next; });
+    return d.next;
+  });
+
+  function valsOf(h) { var a = []; for (var p = h; p !== null; p = p.next) a.push(p.v); return a; }
+  // 值用箭头连起来；太长就截断，免得说明文字超长
+  function arrow(vals, max) { return vals.length > max ? vals.slice(0, max - 1).join('→') + '→…' : vals.join('→'); }
+  function nm(lo, hi) { return lo === hi ? 'L' + lo : 'L' + lo + '~' + hi; }
+
+  // 一排链表：segs = [{ head, name, cls }]；每条链内部画直线箭头、尾巴画 ∅，链头结点下面挂名字
+  function row(segs, title) {
+    var nodes = [], edges = [], nulls = [], marks = {}, pointers = [];
+    segs.forEach(function (s) {
+      if (s.head === null) return;
+      var start = nodes.length;
+      for (var p = s.head; p !== null; p = p.next) nodes.push(p);
+      for (var i = start; i + 1 < nodes.length; i++) edges.push([i, i + 1]);
+      nulls.push(nodes.length - 1);
+      if (s.cls) for (var j = start; j < nodes.length; j++) marks[j] = s.cls;
+      pointers.push({ at: start, label: s.name, cls: 'p-head' });
+    });
+    return Viz.list(nodes.map(function (u) { return u.v; }), { title: title, marks: marks, edges: edges, nulls: nulls, pointers: pointers });
+  }
+
+  // 下面照着 Java 一行行复刻
+  function mergeTwo(a, b) {
+    var dummy = node(0), tail = dummy;
+    while (a !== null && b !== null) {
+      if (a.v <= b.v) {
+        tail.next = a;
+        a = a.next;
+      } else {
+        tail.next = b;
+        b = b.next;
+      }
+      tail = tail.next;
+    }
+    tail.next = a !== null ? a : b;
+    return dummy.next;
+  }
+
+  function merge(lo, hi, root) {
+    if (lo === hi) return lists[lo];
+    var mid = lo + Math.floor((hi - lo) / 2);
+    var i;
+
+    if (root) {
+      var segs = [];
+      for (i = lo; i <= hi; i++) segs.push({ head: lists[i], name: nm(i, i), cls: i <= mid ? 'win' : 'new' });
+      frames.push(Viz.frame('int mid = ', '区间 [' + lo + ',' + hi + '] 从 mid=' + mid + ' 劈开：左 ' + nm(lo, mid) + '（青）、右 ' + nm(mid + 1, hi) + '（蓝）',
+        [row(segs, '各条链表（青 = 左半，蓝 = 右半）'),
+         Viz.vars([{ name: 'lo', v: lo }, { name: 'hi', v: hi }, { name: 'mid', v: mid }])]));
+    }
+
+    var left = merge(lo, mid, false);
+    if (root) {
+      var s2 = [{ head: left, name: nm(lo, mid), cls: 'win' }];
+      for (i = mid + 1; i <= hi; i++) s2.push({ head: lists[i], name: nm(i, i), cls: 'new' });
+      frames.push(Viz.frame('ListNode left = merge(', '左半递归返回：' + nm(lo, mid) + ' 已合成一条 ' + arrow(valsOf(left), 5),
+        [row(s2, '左半已经合成一条，右半还没动')]));
+    }
+
+    var right = merge(mid + 1, hi, false);
+    if (root) {
+      frames.push(Viz.frame('ListNode right = merge(', '右半也返回了：' + nm(mid + 1, hi) + ' 已合成一条 ' + arrow(valsOf(right), 5),
+        [row([{ head: left, name: nm(lo, mid), cls: 'win' }, { head: right, name: nm(mid + 1, hi), cls: 'new' }], '左右两半各是一条有序链表')]));
+    }
+
+    var res = mergeTwo(left, right);
+    if (root) {
+      frames.push(Viz.frame('return mergeTwo(left, right);', '最后把左右两条 mergeTwo 合成一条，就是答案',
+        [row([{ head: res, name: nm(lo, hi), cls: 'done' }], '合并后的链表')]));
+    }
+    return res;
+  }
+
+  if (lists.length === 0) return { frames: frames, result: [] };
+  var result = merge(0, lists.length - 1, true);
+  return { frames: frames, result: valsOf(result) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

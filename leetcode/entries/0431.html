@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>将 N 叉树编码为二叉树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1159 / 1159</span>
+  <nav class="pn"><a href="0636.html">上一篇</a><span class="off">下一篇</span></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">431. </span>将 N 叉树编码为二叉树</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">设计</li><li class="tag">二叉树</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">左孩子右兄弟：N 叉结点的第一个孩子 → 二叉 left，其余孩子依次挂到前一个孩子的 right 链；解码按同样规则反着走。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>编码：每个 N 叉结点变成二叉结点；<strong>第一个孩子挂 <code>left</code></strong>，后面的孩子依次接到前一个孩子的 <code>right</code>（兄弟链）。</li><li>子树先整体编好、再挂进父结点的链里（递归天然如此）；解码时 <code>left</code> 链上每个结点都是一个孩子，各自再解码出自己的子树。</li><li>编码 + 解码互逆，<code>n</code> 个结点进出各一遍，<code>decode(encode(t))</code> 还原原树。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="c">/** N 叉树结点（力扣 431 自带的定义，本地验证时 Solution 与 Check 共用）。 */</span></span><span class="ln"><span class="no">4</span><span class="k">class</span> <span class="t">Node</span> {</span><span class="ln"><span class="no">5</span>    <span class="k">int</span> val;</span><span class="ln"><span class="no">6</span>    <span class="t">List</span>&lt;<span class="t">Node</span>&gt; children;</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="t">Node</span>(<span class="k">int</span> val) {</span><span class="ln"><span class="no">9</span>        <span class="k">this</span>.val = val;</span><span class="ln"><span class="no">10</span>        <span class="k">this</span>.children = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span>}</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span><span class="k">class</span> <span class="t">Codec</span> {</span><span class="ln"><span class="no">15</span>    <span class="c">// 编码：左孩子右兄弟——第一个孩子挂 left，其余孩子依次接到前一个的 right</span></span><span class="ln"><span class="no">16</span>    <span class="k">public</span> <span class="t">TreeNode</span> encode(<span class="t">Node</span> root) {</span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (root == <span class="k">null</span>) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">18</span>        <span class="t">TreeNode</span> node = <span class="k">new</span> <span class="t">TreeNode</span>(root.val);</span><span class="ln"><span class="no">19</span>        <span class="t">TreeNode</span> tail = <span class="k">null</span>;   <span class="c">// 已挂好的兄弟链尾巴</span></span><span class="ln"><span class="no">20</span>        <span class="k">for</span> (<span class="t">Node</span> child : root.children) {</span><span class="ln"><span class="no">21</span>            <span class="t">TreeNode</span> kid = encode(child);   <span class="c">// 子树先整体编好，再挂进链里</span></span><span class="ln"><span class="no">22</span>            <span class="k">if</span> (tail == <span class="k">null</span>) node.left = kid;</span><span class="ln"><span class="no">23</span>            <span class="k">else</span> tail.right = kid;</span><span class="ln"><span class="no">24</span>            tail = kid;</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> node; <span class="c">// 二叉树根</span></span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span> </span><span class="ln"><span class="no">29</span>    <span class="c">// 解码：left 链上每个结点都是一个孩子，每个孩子的右链是它后面的兄弟</span></span><span class="ln"><span class="no">30</span>    <span class="k">public</span> <span class="t">Node</span> decode(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">31</span>        <span class="k">if</span> (root == <span class="k">null</span>) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">32</span>        <span class="t">Node</span> node = <span class="k">new</span> <span class="t">Node</span>(root.val);</span><span class="ln"><span class="no">33</span>        <span class="k">for</span> (<span class="t">TreeNode</span> kid = root.left; kid != <span class="k">null</span>; kid = kid.right) {</span><span class="ln"><span class="no">34</span>            node.children.add(decode(kid));</span><span class="ln"><span class="no">35</span>        }</span><span class="ln"><span class="no">36</span>        <span class="k">return</span> node;</span><span class="ln"><span class="no">37</span>    }</span><span class="ln"><span class="no">38</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "/** N 叉树结点（力扣 431 自带的定义，本地验证时 Solution 与 Check 共用）。 */", "class Node {", "    int val;", "    List<Node> children;", "", "    Node(int val) {", "        this.val = val;", "        this.children = new ArrayList<>();", "    }", "}", "", "class Codec {", "    // 编码：左孩子右兄弟——第一个孩子挂 left，其余孩子依次接到前一个的 right", "    public TreeNode encode(Node root) {", "        if (root == null) return null;", "        TreeNode node = new TreeNode(root.val);", "        TreeNode tail = null;   // 已挂好的兄弟链尾巴", "        for (Node child : root.children) {", "            TreeNode kid = encode(child);   // 子树先整体编好，再挂进链里", "            if (tail == null) node.left = kid;", "            else tail.right = kid;", "            tail = kid;", "        }", "        return node; // 二叉树根", "    }", "", "    // 解码：left 链上每个结点都是一个孩子，每个孩子的右链是它后面的兄弟", "    public Node decode(TreeNode root) {", "        if (root == null) return null;", "        Node node = new Node(root.val);", "        for (TreeNode kid = root.left; kid != null; kid = kid.right) {", "            node.children.add(decode(kid));", "        }", "        return node;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 431. 将 N 叉树编码为二叉树 —— 图解：复刻 Solution.java 的「左孩子右兄弟」编码，5 张关键帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, null, 3, 2, 4, null, 5, 6] };
+
+function trace(input) {
+  var arr = input.root || [];
+  var frames = [];
+
+  // 与 Check.of 相同规则解析 N 叉层序数组：[根, null, 各结点孩子组…每组以 null 结尾]
+  function parseNary(a) {
+    if (!a.length || a[0] == null) return null;
+    var root = { val: a[0], children: [] };
+    var level = [root], i = 2;
+    while (level.length && i < a.length) {
+      var next = [];
+      for (var pi = 0; pi < level.length; pi++) {
+        var p = level[pi];
+        while (i < a.length && a[i] != null) {
+          var c = { val: a[i], children: [] };
+          p.children.push(c);
+          next.push(c);
+          i++;
+        }
+        i++;   // 吃掉这组孩子后面的 null
+      }
+      level = next;
+    }
+    return root;
+  }
+  var rootN = parseNary(arr);
+  if (!rootN) return { frames: frames, result: [] };
+
+  // N 叉树表：每个结点一行孩子列表
+  function naryTable(src, hitVal) {
+    var rows = [], q = [src];
+    while (q.length) {
+      var nd = q.shift();
+      nd.children.forEach(function (c) { q.push(c); });
+      rows.push({ k: String(nd.val), v: nd.children.length ? nd.children.map(function (c) { return c.val; }).join(',') : '（叶）', cls: nd.val === hitVal ? 'hit' : '' });
+    }
+    return Viz.table('N 叉树：结点 → 孩子列表', rows);
+  }
+
+  // 二叉树层序数组（与 Trees.toLevel 相同：null 占位，尾部裁掉）
+  function toLevelBinary(root) {
+    var out = [];
+    if (!root) return out;
+    var q = [root];
+    while (q.length) {
+      var nd = q.shift();
+      if (nd === null) { out.push(null); continue; }
+      out.push(nd.val);
+      q.push(nd.left);
+      q.push(nd.right);
+    }
+    while (out.length && out[out.length - 1] === null) out.pop();
+    return out;
+  }
+  // val（互不相同）→ 二叉树层序下标
+  function indexOfVals(root) {
+    var map = {}, q = [root], i = 0;
+    while (q.length) {
+      var nd = q.shift();
+      if (nd === null) { i++; continue; }
+      map[nd.val] = i;
+      q.push(nd.left, nd.right);
+      i++;
+    }
+    return map;
+  }
+  function binPanel(root, title, newVals, doneAll) {
+    var level = toLevelBinary(root);
+    var map = indexOfVals(root);
+    var marks = {};
+    (newVals || []).forEach(function (v) { if (map[v] !== undefined) marks[map[v]] = 'new'; });
+    if (doneAll) for (var k = 0; k < level.length; k++) if (level[k] !== null) marks[k] = 'done';
+    return Viz.tree(level, { title: title, marks: marks });
+  }
+
+  // 与 Solution.encode 完全相同的递归
+  var mainBin = null;
+  var snappedC = false;
+  var LEFT = 'if (tail == null) node.left = kid;';
+  var RIGHT = 'else tail.right = kid;';
+  function subtreeVals(bin) {
+    var vals = [], q = [bin];
+    while (q.length) {
+      var nd = q.shift();
+      if (nd === null) continue;
+      vals.push(nd.val);
+      q.push(nd.left, nd.right);
+    }
+    return vals;
+  }
+  function encodeN(node) {
+    var bin = { val: node.val, left: null, right: null };
+    if (mainBin === null) {
+      mainBin = bin;
+      frames.push(Viz.frame('TreeNode node = new TreeNode(root.val);', '开局：二叉树先放根，规则是「左孩子右兄弟」',
+        [naryTable(rootN, node.val), binPanel(mainBin, '二叉树（编码中）', [])]));
+    }
+    var tail = null;
+    for (var i = 0; i < node.children.length; i++) {
+      var kid = encodeN(node.children[i]);
+      if (tail === null) {
+        bin.left = kid;
+        if (node.val === 1) {   // 根的第一个孩子整棵挂 left
+          frames.push(Viz.frame(LEFT, '回到 ' + node.val + '：第一个孩子 ' + kid.val + ' 连同编好的子树整棵挂到 left',
+            [naryTable(rootN, node.val), binPanel(mainBin, '二叉树（编码中）', subtreeVals(kid))]));
+        }
+      } else {
+        tail.right = kid;
+        if (node.val === 3) {   // 子树内部：孩子先在子树里串成兄弟链
+          frames.push(Viz.frame(RIGHT, '编 ' + node.val + ' 的孩子：' + kid.val + ' 接到前一个孩子的 right——先在子树里串好兄弟链',
+            [naryTable(rootN, node.val), binPanel(mainBin, '二叉树（编码中）', []), binPanel(bin, '子树 ' + node.val + '（还没挂上去）', [kid.val])]));
+        }
+        if (node.val === 1 && !snappedC) {   // 根的后续孩子依次接 right（图里画第一根就够）
+          snappedC = true;
+          frames.push(Viz.frame(RIGHT, '兄弟 ' + kid.val + ' 接到前一个孩子的 right：兄弟链延长',
+            [naryTable(rootN, node.val), binPanel(mainBin, '二叉树（编码中）', [kid.val])]));
+        }
+      }
+      tail = kid;
+    }
+    return bin;
+  }
+
+  var encoded = encodeN(rootN);
+
+  // 与 Solution.decode 相同的还原：left 链 = 孩子列表
+  function decodeB(bin) {
+    if (bin === null) return null;
+    var node = { val: bin.val, children: [] };
+    for (var kid = bin.left; kid !== null; kid = kid.right) node.children.push(decodeB(kid));
+    return node;
+  }
+  var decoded = decodeB(encoded);
+  frames.push(Viz.frame('for (TreeNode kid = root.left; kid != null; kid = kid.right) {',
+    '编码完成；解码反着走：left 链就是孩子列表，还原出同一棵 N 叉树',
+    [binPanel(encoded, '编码出的二叉树', null, true), naryTable(decoded, -1)]));
+
+  return { frames: frames, result: toLevelBinary(encoded) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

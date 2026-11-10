@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>青蛙过河 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 775 / 1159</span>
+  <nav class="pn"><a href="0211.html">上一篇</a><a href="1089.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">403. </span>青蛙过河</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">动态规划</li><li class="aux">哈希表</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">DP：哈希表存「每块石子位置 → 能到达它的上一步跳距集合」；每块石子用 k−1/k/k+1 向前跳，落到石子上就记下跳距；末石集合非空即能过河。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>状态：到达每块石子时，上一步跳距可能有哪些。位置可达 <code>2^31</code>，只能用哈希表，不能开数组。</li><li>起点：位置 0 的集合放一个 <code>0</code>，配合 <code>k−1/k/k+1</code> 的规则正好限定「第一步只能跳 1」。</li><li>转移：石子按位置升序处理（跳距 ≥ 1 只会往前），对每个 <code>k</code> 试 <code>k−1</code>、<code>k</code>、<code>k+1</code>，落点是石子才把跳距记进它的集合；<code>k ≤ 0</code> 跳过。</li><li>答案：末石的集合非空即可达。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> canCross(<span class="k">int</span>[] stones) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = stones.length;</span><span class="ln"><span class="no">6</span>        <span class="c">// dp[pos] = 能跳到石子 pos 的所有「上一步跳距」；位置可达 2^31，只能用哈希表</span></span><span class="ln"><span class="no">7</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt;&gt; dp = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> s : stones) dp.put(s, <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;());</span><span class="ln"><span class="no">9</span>        dp.get(<span class="n">0</span>).add(<span class="n">0</span>);   <span class="c">// 记 0，正好配出「第一步只能跳 1」</span></span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> pos : stones) {</span><span class="ln"><span class="no">11</span>            <span class="k">for</span> (<span class="k">int</span> k : dp.get(pos)) {</span><span class="ln"><span class="no">12</span>                <span class="k">for</span> (<span class="k">int</span> step = k - <span class="n">1</span>; step &lt;= k + <span class="n">1</span>; step++) {</span><span class="ln"><span class="no">13</span>                    <span class="k">if</span> (step &lt;= <span class="n">0</span>) <span class="k">continue</span>;                  <span class="c">// 只能向前跳</span></span><span class="ln"><span class="no">14</span>                    <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; next = dp.get(pos + step);   <span class="c">// 不是石子就取到 null</span></span><span class="ln"><span class="no">15</span>                    <span class="k">if</span> (next != <span class="k">null</span>) next.add(step);</span><span class="ln"><span class="no">16</span>                }</span><span class="ln"><span class="no">17</span>            }</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> !dp.get(stones[n - <span class="n">1</span>]).isEmpty();</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>一只青蛙想要过河。 假定河流被等分为若干个单元格，并且在每一个单元格内都有可能放有一块石子（也有可能没有）。 青蛙可以跳上石子，但是不可以跳入水中。</p>
+
+<p>给你石子的位置列表 <code>stones</code>（用单元格序号 <strong>升序</strong> 表示），&nbsp;请判定青蛙能否成功过河（即能否在最后一步跳至最后一块石子上）。开始时，&nbsp;青蛙默认已站在第一块石子上，并可以假定它第一步只能跳跃 <code>1</code> 个单位（即只能从单元格 1 跳至单元格 2 ）。</p>
+
+<p>如果青蛙上一步跳跃了&nbsp;<code>k</code><em>&nbsp;</em>个单位，那么它接下来的跳跃距离只能选择为&nbsp;<code>k - 1</code>、<code>k</code><em>&nbsp;</em>或&nbsp;<code>k + 1</code> 个单位。&nbsp;另请注意，青蛙只能向前方（终点的方向）跳跃。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>stones = [0,1,3,5,6,8,12,17]
+<strong>输出：</strong>true
+<strong>解释：</strong>青蛙可以成功过河，按照如下方案跳跃：跳 1 个单位到第 2 块石子, 然后跳 2 个单位到第 3 块石子, 接着 跳 2 个单位到第 4 块石子, 然后跳 3 个单位到第 6 块石子, 跳 4 个单位到第 7 块石子, 最后，跳 5 个单位到第 8 个石子（即最后一块石子）。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>stones = [0,1,2,3,4,8,9,11]
+<strong>输出：</strong>false
+<strong>解释：</strong>这是因为第 5 和第 6 个石子之间的间距太大，没有可选的方案供青蛙跳跃过去。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= stones.length &lt;= 2000</code></li>
+	<li><code>0 &lt;= stones[i] &lt;= 2<sup>31</sup> - 1</code></li>
+	<li><code>stones[0] == 0</code></li>
+	<li><code>stones</code>&nbsp;按严格升序排列</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean canCross(int[] stones) {", "        int n = stones.length;", "        // dp[pos] = 能跳到石子 pos 的所有「上一步跳距」；位置可达 2^31，只能用哈希表", "        Map<Integer, Set<Integer>> dp = new HashMap<>();", "        for (int s : stones) dp.put(s, new HashSet<>());", "        dp.get(0).add(0);   // 记 0，正好配出「第一步只能跳 1」", "        for (int pos : stones) {", "            for (int k : dp.get(pos)) {", "                for (int step = k - 1; step <= k + 1; step++) {", "                    if (step <= 0) continue;                  // 只能向前跳", "                    Set<Integer> next = dp.get(pos + step);   // 不是石子就取到 null", "                    if (next != null) next.add(step);", "                }", "            }", "        }", "        return !dp.get(stones[n - 1]).isEmpty();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 403. 青蛙过河 —— 图解：复刻 Solution.java 的「位置 → 可达跳距集合」DP，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { stones: [0, 1, 3, 5, 6, 8] };
+
+function trace(input) {
+  var stones = input.stones;
+  var n = stones.length;
+  var dp = {};                      // 位置 -> 能跳到它的上一步跳距列表（去重，模拟 Set）
+  stones.forEach(function (s) { dp[s] = []; });
+  var frames = [];
+  var last = stones[n - 1];
+
+  var START = 'dp.get(0).add(0);';
+  var STEP = 'Set<Integer> next = dp.get(pos + step);';
+  var RET = 'return !dp.get(stones[n - 1]).isEmpty();';
+
+  function stonesPanel(curPos) {
+    var marks = {}, labels = [];
+    stones.forEach(function (s, i) {
+      if (dp[s].length) marks[i] = s === curPos ? 'cur' : 'win';
+    });
+    if (curPos != null) labels.push({ at: stones.indexOf(curPos), label: 'pos=' + curPos, cls: 'p-cur' });
+    labels.push({ at: n - 1, label: '末石 ' + last, cls: 'p-right' });
+    return Viz.cells(stones, { title: '石子位置', marks: marks, pointers: labels });
+  }
+  function tablePanel(hotPos) {
+    var rows = stones.filter(function (s) { return dp[s].length; }).map(function (s) {
+      return { k: 'pos ' + s, v: dp[s].join('\u3001'), cls: s === hotPos ? 'hit' : '' };
+    });
+    return Viz.table('dp[pos]：能跳到这块石子的上一步跳距', rows, { hint: '（起点记 0，配出第一步只能跳 1）' });
+  }
+  function snap(at, key, curPos, hotPos) {
+    frames.push(Viz.frame(at, key, [stonesPanel(curPos), tablePanel(hotPos)]));
+  }
+
+  dp[0].push(0);
+  snap(START, '起点记跳距 0：配合 k\u22121/k/k+1 的规则，第一步就只能跳 1', 0, 0);
+
+  for (var i = 0; i < n; i++) {
+    var pos = stones[i];
+    var from = dp[pos].slice();
+    for (var ki = 0; ki < from.length; ki++) {
+      var k = from[ki];
+      for (var step = k - 1; step <= k + 1; step++) {
+        if (step <= 0) continue;
+        if (dp[pos + step] && dp[pos + step].indexOf(step) < 0) dp[pos + step].push(step);
+      }
+    }
+    if (pos === 1) snap(STEP, '从 1 出发（k=1）：跳 1 落进水里，跳 2 落到石子 3', pos, pos);
+    if (pos === 3) snap(STEP, '石子 3 带着跳距 2：跳 2 落到 5，跳 3 落到 6', pos, pos);
+    if (pos === 5) snap(STEP, '从 5 跳 3 直达末石 8，dp[8] 记下跳距 3', pos, pos);
+  }
+
+  var ok = dp[last].length > 0;
+  frames.push(Viz.frame(RET, ok ? '末石 ' + last + ' 的跳距集合非空：能过河' : '末石的集合是空的：过不了河',
+    [stonesPanel(null), tablePanel(last)]));
+
+  return { frames: frames, result: ok };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

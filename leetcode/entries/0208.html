@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>实现 Trie (前缀树) · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 138 / 1159</span>
+  <nav class="pn"><a href="0007.html">上一篇</a><a href="0091.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">208. </span>实现 Trie (前缀树)</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 43</li><li class="algo">字典树</li><li class="tag">设计</li><li class="tag">字典树</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">26 叉前缀树：结点存 26 个孩子指针和 isEnd；路径在即前缀在，isEnd 才算完整单词。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每个结点有 <code>children[26]</code> 和 <code>isEnd</code>；插入沿字符往下走，缺结点就新建，走完把末端 <code>isEnd = true</code>。</li><li>公共查找 <code>find(s)</code>：沿字符走，路径断了返回 <code>null</code>。</li><li><code>search</code>：走到头且 <code>isEnd</code>（路径在但没标记结尾，只是前缀）；<code>startsWith</code>：只要路径存在。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 insert/search/startsWith 均 O(L)，L 为字符串长，空间复杂度 O(总结点数 × 26)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Trie</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 26 叉孩子数组 + isEnd：路径在即前缀在，isEnd 才算完整单词</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Trie</span>[] children = <span class="k">new</span> <span class="t">Trie</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">boolean</span> isEnd;</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">Trie</span>() {</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="k">void</span> insert(<span class="t">String</span> word) {</span><span class="ln"><span class="no">12</span>        <span class="t">Trie</span> cur = <span class="k">this</span>;</span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">char</span> c : word.toCharArray()) {</span><span class="ln"><span class="no">14</span>            <span class="k">int</span> i = c - <span class="s">'a'</span>;</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (cur.children[i] == <span class="k">null</span>) cur.children[i] = <span class="k">new</span> <span class="t">Trie</span>();</span><span class="ln"><span class="no">16</span>            cur = cur.children[i];</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="c">// 路径终点标记为完整单词</span></span><span class="ln"><span class="no">19</span>        cur.isEnd = <span class="k">true</span>;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>    <span class="c">// 沿字符往下走，路径断了返回 null</span></span><span class="ln"><span class="no">23</span>    <span class="k">private</span> <span class="t">Trie</span> find(<span class="t">String</span> s) {</span><span class="ln"><span class="no">24</span>        <span class="t">Trie</span> cur = <span class="k">this</span>;</span><span class="ln"><span class="no">25</span>        <span class="k">for</span> (<span class="k">char</span> c : s.toCharArray()) {</span><span class="ln"><span class="no">26</span>            cur = cur.children[c - <span class="s">'a'</span>];</span><span class="ln"><span class="no">27</span>            <span class="k">if</span> (cur == <span class="k">null</span>) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> cur;</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span> </span><span class="ln"><span class="no">32</span>    <span class="k">public</span> <span class="k">boolean</span> search(<span class="t">String</span> word) {</span><span class="ln"><span class="no">33</span>        <span class="t">Trie</span> node = find(word);</span><span class="ln"><span class="no">34</span>        <span class="c">// 要走到头且标记过结尾：只是前缀不算</span></span><span class="ln"><span class="no">35</span>        <span class="k">return</span> node != <span class="k">null</span> &amp;&amp; node.isEnd;</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span> </span><span class="ln"><span class="no">38</span>    <span class="k">public</span> <span class="k">boolean</span> startsWith(<span class="t">String</span> prefix) {</span><span class="ln"><span class="no">39</span>        <span class="c">// 只要路径存在即可，不要求 isEnd</span></span><span class="ln"><span class="no">40</span>        <span class="k">return</span> find(prefix) != <span class="k">null</span>;</span><span class="ln"><span class="no">41</span>    }</span><span class="ln"><span class="no">42</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p><strong><a href="https://baike.baidu.com/item/字典树/9825209?fr=aladdin" target="_blank">Trie</a></strong>（发音类似 "try"）或者说 <strong>前缀树</strong> 是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。这一数据结构有相当多的应用情景，例如自动补全和拼写检查。</p>
+
+<p>请你实现 Trie 类：</p>
+
+<ul>
+	<li><code>Trie()</code> 初始化前缀树对象。</li>
+	<li><code>void insert(String word)</code> 向前缀树中插入字符串 <code>word</code> 。</li>
+	<li><code>boolean search(String word)</code> 如果字符串 <code>word</code> 在前缀树中，返回 <code>true</code>（即，在检索之前已经插入）；否则，返回 <code>false</code> 。</li>
+	<li><code>boolean startsWith(String prefix)</code> 如果之前已经插入的字符串&nbsp;<code>word</code> 的前缀之一为 <code>prefix</code> ，返回 <code>true</code> ；否则，返回 <code>false</code> 。</li>
+</ul>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入</strong>
+["Trie", "insert", "search", "search", "startsWith", "insert", "search"]
+[[], ["apple"], ["apple"], ["app"], ["app"], ["app"], ["app"]]
+<strong>输出</strong>
+[null, null, true, false, true, null, true]
+
+<strong>解释</strong>
+Trie trie = new Trie();
+trie.insert("apple");
+trie.search("apple");   // 返回 True
+trie.search("app");     // 返回 False
+trie.startsWith("app"); // 返回 True
+trie.insert("app");
+trie.search("app");     // 返回 True
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= word.length, prefix.length &lt;= 2000</code></li>
+	<li><code>word</code> 和 <code>prefix</code> 仅由小写英文字母组成</li>
+	<li><code>insert</code>、<code>search</code> 和 <code>startsWith</code> 调用次数 <strong>总计</strong> 不超过 <code>3 * 10<sup>4</sup></code> 次</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Trie {", "    // 26 叉孩子数组 + isEnd：路径在即前缀在，isEnd 才算完整单词", "    private final Trie[] children = new Trie[26];", "    private boolean isEnd;", "", "    public Trie() {", "    }", "", "    public void insert(String word) {", "        Trie cur = this;", "        for (char c : word.toCharArray()) {", "            int i = c - 'a';", "            if (cur.children[i] == null) cur.children[i] = new Trie();", "            cur = cur.children[i];", "        }", "        // 路径终点标记为完整单词", "        cur.isEnd = true;", "    }", "", "    // 沿字符往下走，路径断了返回 null", "    private Trie find(String s) {", "        Trie cur = this;", "        for (char c : s.toCharArray()) {", "            cur = cur.children[c - 'a'];", "            if (cur == null) return null;", "        }", "        return cur;", "    }", "", "    public boolean search(String word) {", "        Trie node = find(word);", "        // 要走到头且标记过结尾：只是前缀不算", "        return node != null && node.isEnd;", "    }", "", "    public boolean startsWith(String prefix) {", "        // 只要路径存在即可，不要求 isEnd", "        return find(prefix) != null;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 208. 实现 Trie (前缀树) —— 图解：复刻 Solution.java 的「沿字符走 + isEnd」，6 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  ops: [['insert', 'apple'], ['search', 'apple'], ['search', 'app'], ['startsWith', 'app'], ['insert', 'app'], ['search', 'app']]
+};
+
+function trace(input) {
+  var frames = [];
+  var paths = [];     // 已建出来的结点路径（'a'、'ap'…），按建结点顺序
+  var isEnd = {};     // path -> true 仅当被 insert 标记为完整单词
+  var out = [];
+
+  // Trie 的等价复刻：路径存在 ⇔ 结点存在；isEnd 标完整单词
+  function insert(word) {
+    var p = '';
+    for (var i = 0; i < word.length; i++) {
+      p += word.charAt(i);
+      if (isEnd[p] === undefined) { isEnd[p] = false; paths.push(p); }
+    }
+    isEnd[word] = true;
+  }
+  function search(word) { return isEnd[word] === true; }
+  function startsWith(s) { return isEnd[s] !== undefined; }
+
+  // 单词面板：matched 之前的字符高亮，breakAt 那一格标路径断点
+  function wordPanel(word, matched, breakAt, cls) {
+    var marks = {};
+    for (var i = 0; i < word.length; i++) {
+      if (breakAt != null && i === breakAt) marks[i] = 'bad';
+      else if (i <= matched) marks[i] = cls;
+    }
+    return Viz.cells(word.split(''), { title: '单词 ' + word, marks: marks });
+  }
+
+  function triePanel(hintRows) {
+    var rows = paths.map(function (p) {
+      var cls = '';
+      for (var i = 0; i < hintRows.length; i++) if (hintRows[i].p === p) cls = hintRows[i].cls;
+      return { k: p, v: isEnd[p] ? '单词结尾' : '前缀', cls: cls };
+    });
+    return Viz.table('前缀树结点（路径 → 是否单词结尾）', rows, { hint: '（根未画出）' });
+  }
+
+  var fired = {};
+  function fireOnce(tag, at, key, panels) {
+    if (fired[tag]) return;
+    fired[tag] = true;
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  input.ops.forEach(function (op) {
+    var kind = op[0], word = op[1];
+    var tag = kind + word;
+    if (kind === 'insert') {
+      var wasEnd = isEnd[word] === true;
+      var wasPath = isEnd[word] !== undefined;
+      insert(word);
+      if (tag === 'insertapple') {
+        fireOnce(tag, 'cur.isEnd = true;',
+          'insert(apple)：沿途补 5 个结点，末端标记 isEnd',
+          [wordPanel(word, word.length - 1, null, 'new'), triePanel([{ p: 'apple', cls: 'new' }])]);
+      } else if (tag === 'insertapp' && wasPath && !wasEnd) {
+        fireOnce(tag, 'cur.isEnd = true;',
+          'insert(app)：结点已存在，只把 app 标记为单词结尾',
+          [wordPanel(word, word.length - 1, null, 'new'), triePanel([{ p: 'app', cls: 'chg' }])]);
+      }
+    } else if (kind === 'search') {
+      var pathOk = true, breakAt = null;
+      var p = '';
+      for (var i = 0; i < word.length; i++) {
+        p += word.charAt(i);
+        if (isEnd[p] === undefined) { pathOk = false; breakAt = i; break; }
+      }
+      var res = pathOk ? isEnd[word] === true : false;
+      out.push(res);
+      if (tag === 'searchapple') {
+        fireOnce(tag, 'return node != null && node.isEnd;',
+          'search(apple)：走完全程且末端标记 isEnd → true',
+          [wordPanel(word, word.length - 1, null, 'win'), triePanel([{ p: 'apple', cls: 'hit' }])]);
+      } else if (tag === 'searchapp') {
+        if (!res) {
+          fireOnce(tag + '-miss', 'return node != null && node.isEnd;',
+            'search(app)：路径在，但 app 没标记结尾 → false',
+            [wordPanel(word, word.length - 1, null, 'win'), triePanel([{ p: 'app', cls: 'hit' }])]);
+        } else {
+          fireOnce(tag + '-hit', 'return node != null && node.isEnd;',
+            'search(app)：现在 app 标记过结尾了 → true',
+            [wordPanel(word, word.length - 1, null, 'win'), triePanel([{ p: 'app', cls: 'hit' }])]);
+        }
+      }
+    } else if (kind === 'startsWith') {
+      var ok = startsWith(word);
+      out.push(ok);
+      if (tag === 'startsWithapp') {
+        fireOnce(tag, 'return find(prefix) != null;',
+          'startsWith(app)：只要路径存在就 true，不要求结尾',
+          [wordPanel(word, word.length - 1, null, 'win'), triePanel([{ p: 'app', cls: 'hit' }])]);
+      }
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

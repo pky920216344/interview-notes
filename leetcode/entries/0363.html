@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>矩形区域不超过 K 的最大数值和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 956 / 1159</span>
+  <nav class="pn"><a href="1178.html">上一篇</a><a href="1046.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">363. </span>矩形区域不超过 K 的最大数值和</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">前缀和/差分</li><li class="aux">二分查找</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">矩阵</li><li class="tag">有序集合</li><li class="tag">前缀和</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">枚举上下两行把中间行压成一条 colSum，问题退化为「不超过 k 的最大子数组和」：前缀和进有序集合，查 ≥ pre−k 的最小前缀。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>双重循环枚举上边界 <code>top</code>、下边界 <code>bottom</code>，行间数值累加进 <code>colSum</code> —— 每一对 (top,bottom) 只花 O(n) 更新。</li><li>一维问题「子数组和 ≤ k 的最大值」：子段和 = <code>pre[r] − pre[l]</code>，要它 ≤ k 且最大 → <code>pre[l] ≥ pre[r] − k</code> 中<strong>最小</strong>的那个。</li><li><code>TreeSet.ceiling(pre − k)</code> 一步查到 <code>ge</code>；<code>pre − ge</code> 即候选答案，前缀 <code>0</code> 别忘先放进集合。</li><li>若行数远多于列数，先转置矩阵再套同一套流程，复杂度按小边平方走。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m²·n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> maxSumSubmatrix(<span class="k">int</span>[][] matrix, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> m = matrix.length, n = matrix[<span class="n">0</span>].length;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> ans = <span class="t">Integer</span>.MIN_VALUE;</span><span class="ln"><span class="no">7</span>        <span class="c">// 枚举上边界 top、下边界 bottom，两行之间压成一条 colSum，矩形问题变成一维问题</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> top = <span class="n">0</span>; top &lt; m; top++) {</span><span class="ln"><span class="no">9</span>            <span class="k">int</span>[] colSum = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> bottom = top; bottom &lt; m; bottom++) {</span><span class="ln"><span class="no">11</span>                <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) colSum[j] += matrix[bottom][j];</span><span class="ln"><span class="no">12</span>                ans = <span class="t">Math</span>.max(ans, maxSubarrayNoMore(colSum, k));</span><span class="ln"><span class="no">13</span>            }</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="c">// 一维版：不超过 k 的最大子数组和。前缀和 pre，答案 = pre − ge，ge 是 ≥ pre−k 的最小前缀</span></span><span class="ln"><span class="no">19</span>    <span class="k">private</span> <span class="k">int</span> maxSubarrayNoMore(<span class="k">int</span>[] a, <span class="k">int</span> k) {</span><span class="ln"><span class="no">20</span>        <span class="t">TreeSet</span>&lt;<span class="t">Integer</span>&gt; set = <span class="k">new</span> <span class="t">TreeSet</span>&lt;&gt;();</span><span class="ln"><span class="no">21</span>        set.add(<span class="n">0</span>);</span><span class="ln"><span class="no">22</span>        <span class="k">int</span> pre = <span class="n">0</span>, best = <span class="t">Integer</span>.MIN_VALUE;</span><span class="ln"><span class="no">23</span>        <span class="k">for</span> (<span class="k">int</span> v : a) {</span><span class="ln"><span class="no">24</span>            pre += v;</span><span class="ln"><span class="no">25</span>            <span class="t">Integer</span> ge = set.ceiling(pre - k);   <span class="c">// 这样子段和 pre − ge ≤ k；ge 越小则子段和越大</span></span><span class="ln"><span class="no">26</span>            <span class="k">if</span> (ge != <span class="k">null</span>) best = <span class="t">Math</span>.max(best, pre - ge);</span><span class="ln"><span class="no">27</span>            set.add(pre);</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> best;</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个 <code>m x n</code> 的矩阵 <code>matrix</code> 和一个整数 <code>k</code> ，找出并返回矩阵内部矩形区域的不超过 <code>k</code> 的最大数值和。</p>
+
+<p>题目数据保证总会存在一个数值和不超过 <code>k</code> 的矩形区域。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/aa274a5e9dde.jpg" style="width: 255px; height: 176px;" />
+<pre>
+<strong>输入：</strong>matrix = [[1,0,1],[0,-2,3]], k = 2
+<strong>输出：</strong>2
+<strong>解释：</strong>蓝色边框圈出来的矩形区域 <code>[[0, 1], [-2, 3]]</code> 的数值和是 2，且 2 是不超过 k 的最大数字（k = 2）。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>matrix = [[2,2,-1]], k = 3
+<strong>输出：</strong>3
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == matrix.length</code></li>
+	<li><code>n == matrix[i].length</code></li>
+	<li><code>1 <= m, n <= 100</code></li>
+	<li><code>-100 <= matrix[i][j] <= 100</code></li>
+	<li><code>-10<sup>5</sup> <= k <= 10<sup>5</sup></code></li>
+</ul>
+
+
+
+<p><strong>进阶：</strong>如果行数远大于列数，该如何设计解决方案？</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int maxSumSubmatrix(int[][] matrix, int k) {", "        int m = matrix.length, n = matrix[0].length;", "        int ans = Integer.MIN_VALUE;", "        // 枚举上边界 top、下边界 bottom，两行之间压成一条 colSum，矩形问题变成一维问题", "        for (int top = 0; top < m; top++) {", "            int[] colSum = new int[n];", "            for (int bottom = top; bottom < m; bottom++) {", "                for (int j = 0; j < n; j++) colSum[j] += matrix[bottom][j];", "                ans = Math.max(ans, maxSubarrayNoMore(colSum, k));", "            }", "        }", "        return ans;", "    }", "", "    // 一维版：不超过 k 的最大子数组和。前缀和 pre，答案 = pre − ge，ge 是 ≥ pre−k 的最小前缀", "    private int maxSubarrayNoMore(int[] a, int k) {", "        TreeSet<Integer> set = new TreeSet<>();", "        set.add(0);", "        int pre = 0, best = Integer.MIN_VALUE;", "        for (int v : a) {", "            pre += v;", "            Integer ge = set.ceiling(pre - k);   // 这样子段和 pre − ge ≤ k；ge 越小则子段和越大", "            if (ge != null) best = Math.max(best, pre - ge);", "            set.add(pre);", "        }", "        return best;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 363. 矩形区域不超过 K 的最大数值和 —— 图解：复刻 Solution.java 的「行对压缩 + 前缀和查 TreeSet」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { matrix: [[1, 0, 1], [0, -2, 3]], k: 2 };
+
+function trace(input) {
+  var matrix = input.matrix, k = input.k;
+  var m = matrix.length, n = matrix[0].length;
+  var frames = [];
+  var ans = -Infinity, bestRect = null;
+
+  function gridPanel(marks) {
+    return Viz.grid(matrix.map(function (row) { return row.map(String); }),
+      { title: 'matrix（win=当前上下边界夹住的行）', marks: marks || {} });
+  }
+  function cellsPanel(items, title, marks, range) {
+    return Viz.cells(items, { title: title, marks: marks || {}, range: range || null });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+  function snap(at, key, gm, panels2, items) {
+    var panels = [gridPanel(gm)];
+    if (panels2) panels = panels.concat(panels2);
+    if (items) panels.push(varsPanel(items));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  for (var top = 0; top < m; top++) {
+    var colSum = new Array(n).fill(0);
+    for (var bottom = top; bottom < m; bottom++) {
+      for (var j = 0; j < n; j++) colSum[j] += matrix[bottom][j];
+      var fullBand = top === 0 && bottom === m - 1;
+      var bandMarks = {};
+      for (var rr = top; rr <= bottom; rr++) for (var cc = 0; cc < n; cc++) bandMarks[rr + ',' + cc] = 'win';
+
+      if (fullBand) {
+        var cm = {};
+        for (j = 0; j < n; j++) cm[j] = 'new';
+        snap('for (int j = 0; j < n; j++) colSum[j] += matrix[bottom][j];',
+          '上下边界夹住全部行：压成一条 colSum，矩形问题变一维', bandMarks,
+          [cellsPanel(colSum, 'colSum：' + top + '..' + bottom + ' 行的和', cm, null)], null);
+      }
+
+      // 一维 pass：P[t] = 前 t 列的和（P[0]=0）；找 ≥ P[r]−k 的最小 P[l]
+      var P = [0];
+      for (j = 0; j < n; j++) P.push(P[j] + colSum[j]);
+      for (var r = 1; r <= n; r++) {
+        var ge = Infinity;
+        for (var l = 0; l < r; l++) if (P[l] >= P[r] - k && P[l] < ge) ge = P[l];
+        if (ge < Infinity) {
+          var sum = P[r] - ge;
+          if (sum >= ans) {   // 并列取最后一次，图解的矩形和题面示意一致
+            ans = sum;
+            var gl = 0;
+            for (l = 0; l < r; l++) if (P[l] === ge) { gl = l; break; }
+            bestRect = { top: top, bottom: bottom, l: gl, r: r - 1 };
+          }
+        }
+        if (fullBand && r === 1) {
+          var p1 = {};
+          p1[1] = 'new';
+          snap('set.add(pre);',
+            '前缀和依次进有序集合：P[0]=0 先在，P[1]=' + P[1] + ' 刚进来', bandMarks,
+            [cellsPanel(colSum, 'colSum：' + top + '..' + bottom + ' 行的和', {}, null),
+             cellsPanel(P, '前缀和 P（P[0]=0）', p1, null)],
+            [{ name: 'pre = P[1]', v: String(P[1]) },
+             { name: 'ge = ≥ pre−k 最小', v: 0 >= P[1] - k ? '0' : '无' }]);
+        }
+        if (fullBand && r === n) {
+          var pm = {};
+          pm[r] = 'cur';
+          var range = null, sumTxt = '—';
+          if (ge < Infinity) {
+            for (l = 0; l < r; l++) if (P[l] === ge) { pm[l] = 'hit'; break; }
+            range = { from: gl, to: r - 1, label: '子段和 = ' + sum };
+            sumTxt = String(sum) + '（≤ k）';
+          }
+          snap('if (ge != null) best = Math.max(best, pre - ge);',
+            '查 ≥ pre−k 的最小前缀 ge：这段子段和 = ' + sumTxt, bandMarks,
+            [cellsPanel(colSum, 'colSum：' + top + '..' + bottom + ' 行的和', {}, null),
+             cellsPanel(P, '前缀和 P（P[0]=0）', pm, range)],
+            [{ name: 'pre = P[' + r + ']', v: String(P[r]) },
+             { name: 'ge（≥ pre−k 最小）', v: ge < Infinity ? String(ge) : '无' },
+             { name: '本段 ans', v: sumTxt }]);
+        }
+      }
+    }
+  }
+
+  var fm = {};
+  if (bestRect) {
+    for (var i = bestRect.top; i <= bestRect.bottom; i++)
+      for (j = bestRect.l; j <= bestRect.r; j++) fm[i + ',' + j] = 'done';
+  }
+  snap('return ans;',
+    bestRect ? '答案 ' + ans + '：就是这块矩形' : '没有 ≤ k 的矩形',
+    fm, null, [{ name: 'ans', v: String(ans) }]);
+
+  return { frames: frames, result: ans === -Infinity ? -2147483648 : ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉搜索树迭代器 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 402 / 1159</span>
+  <nav class="pn"><a href="0559.html">上一篇</a><a href="supp-24.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">173. </span>二叉搜索树迭代器</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 8</li><li class="algo">栈</li><li class="aux">设计</li><li class="tag">栈</li><li class="tag">树</li><li class="tag">设计</li><li class="tag">二叉搜索树</li><li class="tag">二叉树</li><li class="tag">迭代器</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">受控中序：栈里只存「从根到下一个待访问结点」的左链，栈顶就是中序的下一个；next 弹栈顶，再把右孩子的左链压栈。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>构造时从根一路向左，把左链全压进栈；栈顶就是中序的下一个，<code>hasNext</code> 就是栈非空。</li><li><code>next()</code> 弹出栈顶返回；它有右子树就把右孩子的左链压栈——相当于「访问完就转到中序后继」。</li><li>均摊 O(1)：每个结点一生最多进栈、出栈各一次，<code>n</code> 次 <code>next</code> 总共 O(n)；空间只有一条左链 O(h)，比整棵中序存数组的 O(n) 省。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 均摊 O(1)，空间复杂度 O(h)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="c">/*</span></span><span class="ln"><span class="no">4</span><span class="c"> * Definition for a binary tree node.</span></span><span class="ln"><span class="no">5</span><span class="c"> * public class TreeNode {</span></span><span class="ln"><span class="no">6</span><span class="c"> *     int val;</span></span><span class="ln"><span class="no">7</span><span class="c"> *     TreeNode left;</span></span><span class="ln"><span class="no">8</span><span class="c"> *     TreeNode right;</span></span><span class="ln"><span class="no">9</span><span class="c"> *     TreeNode() {}</span></span><span class="ln"><span class="no">10</span><span class="c"> *     TreeNode(int val) { this.val = val; }</span></span><span class="ln"><span class="no">11</span><span class="c"> *     TreeNode(int val, TreeNode left, TreeNode right) {</span></span><span class="ln"><span class="no">12</span><span class="c"> *         this.val = val;</span></span><span class="ln"><span class="no">13</span><span class="c"> *         this.left = left;</span></span><span class="ln"><span class="no">14</span><span class="c"> *         this.right = right;</span></span><span class="ln"><span class="no">15</span><span class="c"> *     }</span></span><span class="ln"><span class="no">16</span><span class="c"> * }</span></span><span class="ln"><span class="no">17</span><span class="c"> */</span></span><span class="ln"><span class="no">18</span><span class="k">class</span> <span class="t">BSTIterator</span> {</span><span class="ln"><span class="no">19</span>    <span class="c">// 栈里存「从根到下一个待访问结点」的左链，栈顶就是中序的下一个</span></span><span class="ln"><span class="no">20</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Deque</span>&lt;<span class="t">TreeNode</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>    <span class="k">public</span> <span class="t">BSTIterator</span>(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">23</span>        pushLeft(root);</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span> </span><span class="ln"><span class="no">26</span>    <span class="k">public</span> <span class="k">int</span> next() {</span><span class="ln"><span class="no">27</span>        <span class="c">// 弹出栈顶：它是当前未访问结点里最小的</span></span><span class="ln"><span class="no">28</span>        <span class="t">TreeNode</span> node = stack.pop();</span><span class="ln"><span class="no">29</span>        <span class="c">// 它的右子树里还有更大的未访问值，把右孩子的左链压进去</span></span><span class="ln"><span class="no">30</span>        pushLeft(node.right);</span><span class="ln"><span class="no">31</span>        <span class="k">return</span> node.val;</span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span> </span><span class="ln"><span class="no">34</span>    <span class="k">public</span> <span class="k">boolean</span> hasNext() {</span><span class="ln"><span class="no">35</span>        <span class="c">// 栈空说明中序已经走完</span></span><span class="ln"><span class="no">36</span>        <span class="k">return</span> !stack.isEmpty();</span><span class="ln"><span class="no">37</span>    }</span><span class="ln"><span class="no">38</span> </span><span class="ln"><span class="no">39</span>    <span class="c">// 从 node 一路向左，把左链全压进栈</span></span><span class="ln"><span class="no">40</span>    <span class="k">private</span> <span class="k">void</span> pushLeft(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">41</span>        <span class="k">while</span> (node != <span class="k">null</span>) {</span><span class="ln"><span class="no">42</span>            stack.push(node);</span><span class="ln"><span class="no">43</span>            node = node.left;</span><span class="ln"><span class="no">44</span>        }</span><span class="ln"><span class="no">45</span>    }</span><span class="ln"><span class="no">46</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">实现一个二叉搜索树迭代器类<code>BSTIterator</code> ，表示一个按中序遍历二叉搜索树（BST）的迭代器：
+<div class="original__bRMd">
+<div>
+<ul>
+	<li><code>BSTIterator(TreeNode root)</code> 初始化 <code>BSTIterator</code> 类的一个对象。BST 的根节点 <code>root</code> 会作为构造函数的一部分给出。指针应初始化为一个不存在于 BST 中的数字，且该数字小于 BST 中的任何元素。</li>
+	<li><code>boolean hasNext()</code> 如果向指针右侧遍历存在数字，则返回 <code>true</code> ；否则返回 <code>false</code> 。</li>
+	<li><code>int next()</code>将指针向右移动，然后返回指针处的数字。</li>
+</ul>
+
+<p>注意，指针初始化为一个不存在于 BST 中的数字，所以对 <code>next()</code> 的首次调用将返回 BST 中的最小元素。</p>
+</div>
+</div>
+
+<p>你可以假设 <code>next()</code> 调用总是有效的，也就是说，当调用 <code>next()</code> 时，BST 的中序遍历中至少存在一个下一个数字。</p>
+
+
+
+<p><strong>示例：</strong></p>
+<img alt="" src="../assets/img/31198cd37141.png" style="width: 189px; height: 178px;" />
+<pre>
+<strong>输入</strong>
+["BSTIterator", "next", "next", "hasNext", "next", "hasNext", "next", "hasNext", "next", "hasNext"]
+[[[7, 3, 15, null, null, 9, 20]], [], [], [], [], [], [], [], [], []]
+<strong>输出</strong>
+[null, 3, 7, true, 9, true, 15, true, 20, false]
+
+<strong>解释</strong>
+BSTIterator bSTIterator = new BSTIterator([7, 3, 15, null, null, 9, 20]);
+bSTIterator.next();    // 返回 3
+bSTIterator.next();    // 返回 7
+bSTIterator.hasNext(); // 返回 True
+bSTIterator.next();    // 返回 9
+bSTIterator.hasNext(); // 返回 True
+bSTIterator.next();    // 返回 15
+bSTIterator.hasNext(); // 返回 True
+bSTIterator.next();    // 返回 20
+bSTIterator.hasNext(); // 返回 False
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中节点的数目在范围 <code>[1, 10<sup>5</sup>]</code> 内</li>
+	<li><code>0 <= Node.val <= 10<sup>6</sup></code></li>
+	<li>最多调用 <code>10<sup>5</sup></code> 次 <code>hasNext</code> 和 <code>next</code> 操作</li>
+</ul>
+
+
+
+<p><strong>进阶：</strong></p>
+
+<ul>
+	<li>你可以设计一个满足下述条件的解决方案吗？<code>next()</code> 和 <code>hasNext()</code> 操作均摊时间复杂度为 <code>O(1)</code> ，并使用 <code>O(h)</code> 内存。其中 <code>h</code> 是树的高度。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "/*", " * Definition for a binary tree node.", " * public class TreeNode {", " *     int val;", " *     TreeNode left;", " *     TreeNode right;", " *     TreeNode() {}", " *     TreeNode(int val) { this.val = val; }", " *     TreeNode(int val, TreeNode left, TreeNode right) {", " *         this.val = val;", " *         this.left = left;", " *         this.right = right;", " *     }", " * }", " */", "class BSTIterator {", "    // 栈里存「从根到下一个待访问结点」的左链，栈顶就是中序的下一个", "    private final Deque<TreeNode> stack = new ArrayDeque<>();", "", "    public BSTIterator(TreeNode root) {", "        pushLeft(root);", "    }", "", "    public int next() {", "        // 弹出栈顶：它是当前未访问结点里最小的", "        TreeNode node = stack.pop();", "        // 它的右子树里还有更大的未访问值，把右孩子的左链压进去", "        pushLeft(node.right);", "        return node.val;", "    }", "", "    public boolean hasNext() {", "        // 栈空说明中序已经走完", "        return !stack.isEmpty();", "    }", "", "    // 从 node 一路向左，把左链全压进栈", "    private void pushLeft(TreeNode node) {", "        while (node != null) {", "            stack.push(node);", "            node = node.left;", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 173. 二叉搜索树迭代器 —— 图解：复刻 Solution.java 的「栈存左链、受控中序」，在关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  root: [7, 3, 15, null, null, 9, 20],
+  ops: ['next', 'next', 'hasNext', 'next', 'hasNext', 'next', 'hasNext', 'next', 'hasNext']
+};
+
+function trace(input) {
+  var arr = input.root, ops = input.ops;
+  var frames = [];
+
+  // 力扣层序数组建二叉树，结点带层序下标
+  function build(a) {
+    if (!a.length || a[0] === null) return null;
+    var mk = function (v, i) { return { val: v, idx: i, l: null, r: null }; };
+    var root = mk(a[0], 0);
+    var q = [root], i = 1;
+    while (q.length && i < a.length) {
+      var n = q.shift();
+      if (i < a.length) { if (a[i] !== null) { n.l = mk(a[i], i); q.push(n.l); } i++; }
+      if (i < a.length) { if (a[i] !== null) { n.r = mk(a[i], i); q.push(n.r); } i++; }
+    }
+    return root;
+  }
+  var root = build(arr);
+
+  var stack = [];       // 从栈底到栈顶：一路左链，栈顶 = 下一个中序结点
+  var visited = {};     // 层序下标 → 已输出
+  var out = [];
+  var shown = {};
+  function snap(tag, at, key, panels) {
+    if (shown[tag]) return;
+    shown[tag] = true;
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  // 树面板：win = 在栈里等访问，done = 已输出，cur = 刚弹出
+  function treePanel(curIdx) {
+    var marks = {};
+    stack.forEach(function (n) { marks[n.idx] = 'win'; });
+    for (var k in visited) marks[k] = 'done';
+    if (curIdx != null) marks[curIdx] = 'cur';
+    var labels = stack.length ? [{ at: stack[stack.length - 1].idx, label: '栈顶', cls: 'p-cur' }] : [];
+    return Viz.tree(arr, { title: 'BST', marks: marks, labels: labels });
+  }
+
+  function stackPanel() {
+    var pointers = [];
+    if (stack.length) {
+      pointers.push({ at: 0, label: '栈底', cls: 'p-prev' });
+      pointers.push({ at: stack.length - 1, label: '栈顶', cls: 'p-cur' });
+    }
+    return Viz.cells(stack.map(function (n) { return n.val; }),
+      { title: '栈：从根到下一个结点的左链', pointers: pointers, hideIndex: true });
+  }
+
+  function pushLeft(node) {
+    while (node) { stack.push(node); node = node.l; }
+  }
+
+  pushLeft(root);
+  snap('init', 'pushLeft(root);',
+    stack.length ? '初始化：从根一路向左压栈，栈顶 ' + stack[stack.length - 1].val + ' 就是中序第一个'
+      : '空树：栈里没有结点，hasNext 一直是 false',
+    [treePanel(null), stackPanel()]);
+
+  ops.forEach(function (op) {
+    if (op === 'next') {
+      var node = stack.pop();
+      if (!shown.next) {
+        snap('next', 'TreeNode node = stack.pop();',
+          'next()：弹出栈顶 ' + node.val + ' 输出——栈顶永远是中序的下一个',
+          [treePanel(node.idx), stackPanel()]);
+      }
+      visited[node.idx] = true;
+      out.push(node.val);
+      if (node.r) {
+        pushLeft(node.r);
+        if (!shown.right) {
+          snap('right', 'pushLeft(node.right);',
+            '刚弹的 ' + node.val + ' 有右子树：右孩子的左链压栈，栈顶换成新的最小未访问',
+            [treePanel(null), stackPanel()]);
+        }
+      }
+    } else {
+      var has = stack.length > 0;
+      out.push(has);                       // hasNext 的返回值也要进结果，和 Java 对齐
+      if (!shown.end && !has) {
+        snap('end', 'return !stack.isEmpty();',
+          '栈空：hasNext() = false，' + out.filter(function (v) { return typeof v === 'number'; }).length + ' 个值已全部按中序输出',
+          [treePanel(null), stackPanel()]);
+      }
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

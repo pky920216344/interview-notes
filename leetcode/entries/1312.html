@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>让字符串成为回文串的最少插入次数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 334 / 1159</span>
+  <nav class="pn"><a href="0315.html">上一篇</a><a href="0407.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1312. </span>让字符串成为回文串的最少插入次数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 12</li><li class="algo">动态规划</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">区间 DP：dp[i][j] 是把 s[i..j] 补成回文的最少插入数；两端相等取里面那段，不等就补一端取较小者 +1。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i][j]</code>：把 <code>s[i..j]</code> 补成回文的最少插入数；长度 1 恒为 0。</li><li><code>s[i] == s[j]</code>：两端天然配对，<code>dp[i][j] = dp[i+1][j-1]</code>（区间长 2 时取到 0，默认值正合适）。</li><li>不等：在左端补 <code>s[j]</code> 或在右端补 <code>s[i]</code>，<code>dp[i][j] = min(dp[i+1][j], dp[i][j-1]) + 1</code>。</li><li><code>i</code> 必须倒着扫、<code>j</code> 正着扫，保证算 <code>dp[i][j]</code> 时下边一行和左边一格已就绪；答案 <code>dp[0][n-1]</code>。</li><li>等价视角：答案 = <code>n − 最长回文子序列长度</code>（回文子序列之外的字符都得配对补上）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> minInsertions(<span class="t">String</span> s) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">4</span>        <span class="c">// dp[i][j]：把 s[i..j] 补成回文的最少插入数</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[][] dp = <span class="k">new</span> <span class="k">int</span>[n][n];</span><span class="ln"><span class="no">6</span>        <span class="c">// i 倒着扫：算 dp[i][j] 时 dp[i+1][*] 必须已经填好</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = n - <span class="n">2</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">8</span>            <span class="k">for</span> (<span class="k">int</span> j = i + <span class="n">1</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">9</span>                <span class="c">// 两端相等：不用补，答案就是里面那段</span></span><span class="ln"><span class="no">10</span>                <span class="k">if</span> (s.charAt(i) == s.charAt(j)) dp[i][j] = dp[i + <span class="n">1</span>][j - <span class="n">1</span>];</span><span class="ln"><span class="no">11</span>                <span class="c">// 不等：在左端或右端补一个字符，取较小者再 +1</span></span><span class="ln"><span class="no">12</span>                <span class="k">else</span> dp[i][j] = <span class="t">Math</span>.min(dp[i + <span class="n">1</span>][j], dp[i][j - <span class="n">1</span>]) + <span class="n">1</span>;</span><span class="ln"><span class="no">13</span>            }</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> dp[<span class="n">0</span>][n - <span class="n">1</span>];</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串&nbsp;<code>s</code>&nbsp;，每一次操作你都可以在字符串的任意位置插入任意字符。</p>
+
+<p>请你返回让&nbsp;<code>s</code>&nbsp;成为回文串的&nbsp;<strong>最少操作次数</strong>&nbsp;。</p>
+
+<p>「回文串」是正读和反读都相同的字符串。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "zzazz"
+<strong>输出：</strong>0
+<strong>解释：</strong>字符串 "zzazz" 已经是回文串了，所以不需要做任何插入操作。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "mbadm"
+<strong>输出：</strong>2
+<strong>解释：</strong>字符串可变为 "mbdadbm" 或者 "mdbabdm" 。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "leetcode"
+<strong>输出：</strong>5
+<strong>解释：</strong>插入 5 个字符后字符串变为 "leetcodocteel" 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 500</code></li>
+	<li><code>s</code>&nbsp;中所有字符都是小写字母。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int minInsertions(String s) {", "        int n = s.length();", "        // dp[i][j]：把 s[i..j] 补成回文的最少插入数", "        int[][] dp = new int[n][n];", "        // i 倒着扫：算 dp[i][j] 时 dp[i+1][*] 必须已经填好", "        for (int i = n - 2; i >= 0; i--) {", "            for (int j = i + 1; j < n; j++) {", "                // 两端相等：不用补，答案就是里面那段", "                if (s.charAt(i) == s.charAt(j)) dp[i][j] = dp[i + 1][j - 1];", "                // 不等：在左端或右端补一个字符，取较小者再 +1", "                else dp[i][j] = Math.min(dp[i + 1][j], dp[i][j - 1]) + 1;", "            }", "        }", "        return dp[0][n - 1];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1312. 让字符串成为回文串的最少插入次数 —— 图解：复刻 Solution.java 的区间 DP，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'mbadm' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+  var INIT = 'int[][] dp = new int[n][n];';
+  var SWEEP = 'for (int i = n - 2; i >= 0; i--) {';
+  var EQ = 'if (s.charAt(i) == s.charAt(j)) dp[i][j] = dp[i + 1][j - 1];';
+  var NE = 'else dp[i][j] = Math.min(dp[i + 1][j], dp[i][j - 1]) + 1;';
+  var RET = 'return dp[0][n - 1];';
+
+  var dp = [];
+  for (var r = 0; r < n; r++) { dp.push([]); for (var c = 0; c < n; c++) dp[r].push(0); }
+  var capturedNe = false, capturedEq = false, capturedSweep = false;
+
+  function gridPanel(marks, title) {
+    var rows = dp.map(function (row) { return row.map(String); });
+    return Viz.grid(rows, {
+      title: title || 'dp[i][j]：把 s[i..j] 补成回文的最少插入数（i≥j 恒为 0）',
+      rowLabels: s.split(''), colLabels: s.split(''), corner: 'i＼j',
+      marks: marks || {}
+    });
+  }
+
+  frames.push(Viz.frame(INIT, 'dp[i][j]：把 s[i..j] 补成回文的最少插入数；对角线（单字符）恒为 0',
+    [gridPanel((function () { var m = {}, q; for (q = 0; q < n; q++) m[q + ',' + q] = 'win'; return m; })())]));
+
+  var firstNe = null, firstEq = null;
+  for (var i = n - 2; i >= 0; i--) {
+    if (!capturedSweep && i === n - 2) {
+      capturedSweep = true;
+      var mRow = {};
+      for (var q2 = 0; q2 < n; q2++) mRow[(i + 1) + ',' + q2] = 'win';
+      frames.push(Viz.frame(SWEEP, 'i 倒着扫：算第 i 行时，下面一行 dp[i+1][*] 已就绪',
+        [gridPanel(mRow)]));
+    }
+    for (var j = i + 1; j < n; j++) {
+      if (s[i] === s[j]) {
+        dp[i][j] = dp[i + 1][j - 1];
+        if (!firstEq) firstEq = { i: i, j: j, v: dp[i][j] };
+      } else {
+        dp[i][j] = Math.min(dp[i + 1][j], dp[i][j - 1]) + 1;
+        if (!firstNe) firstNe = { i: i, j: j, v: dp[i][j], a: dp[i + 1][j], b: dp[i][j - 1] };
+      }
+    }
+  }
+
+  if (firstNe) {
+    var mk1 = {};
+    mk1[firstNe.i + ',' + firstNe.j] = 'new';
+    mk1[(firstNe.i + 1) + ',' + firstNe.j] = 'win';
+    mk1[firstNe.i + ',' + (firstNe.j - 1)] = 'win';
+    frames.push(Viz.frame(NE, 's[' + firstNe.i + ']=' + s[firstNe.i] + '≠' + s[firstNe.j] + '=s[' + firstNe.j + ']：'
+      + 'min(' + firstNe.a + ', ' + firstNe.b + ') + 1 = ' + firstNe.v, [gridPanel(mk1)]));
+  }
+  if (firstEq && !(firstEq.i === (firstNe && firstNe.i) && firstEq.j === (firstNe && firstNe.j))) {
+    var mk2 = {};
+    mk2[firstEq.i + ',' + firstEq.j] = 'new';
+    mk2[(firstEq.i + 1) + ',' + (firstEq.j - 1)] = 'win';
+    frames.push(Viz.frame(EQ, 's[' + firstEq.i + ']=' + s[firstEq.i] + '=s[' + firstEq.j + ']：两端不补，取斜下 dp=' + firstEq.v,
+      [gridPanel(mk2)]));
+  }
+
+  var mkEnd = {};
+  mkEnd['0,' + (n - 1)] = 'done';
+  frames.push(Viz.frame(RET, '填完表：dp[0][' + (n - 1) + '] = ' + dp[0][n - 1] + '，补 ' + dp[0][n - 1] + ' 个字符成回文',
+    [gridPanel(mkEnd), Viz.vars([{ name: '答案', v: dp[0][n - 1], cls: 'done' }])]));
+
+  return { frames: frames, result: dp[0][n - 1] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

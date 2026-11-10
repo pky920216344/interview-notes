@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>交替打印 FooBar · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 539 / 1159</span>
+  <nav class="pn"><a href="mianshi-16-26.html">上一篇</a><a href="0269.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1115. </span>交替打印 FooBar</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">并发</li><li class="tag">多线程</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">两个信号量当「通行证」：初始 fooGate=1、barGate=0；谁打印完就把票递给对方，n 轮严格交替。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>fooGate</code> 初始 1 张票、<code>barGate</code> 初始 0 张：天然保证 foo 先打、bar 后打。</li><li><code>foo()</code>：<code>acquire fooGate → printFoo.run() → release barGate</code>；<code>bar()</code> 对称地反过来。</li><li>票在两人手里转一圈正好一轮 <code>foobar</code>；没有票的线程在 <code>acquire</code> 上阻塞，不会忙等。</li><li>两张票永不同时为 1，也就不可能出现 <code>foofoo</code> 或 <code>barbar</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.concurrent.<span class="t">Semaphore</span>;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">FooBar</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span> n;</span><span class="ln"><span class="no">5</span>    <span class="c">// 两个「通行证」：fooGate 有票轮到 foo，barGate 有票轮到 bar；初始只有 foo 有票</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Semaphore</span> fooGate = <span class="k">new</span> <span class="t">Semaphore</span>(<span class="n">1</span>);</span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Semaphore</span> barGate = <span class="k">new</span> <span class="t">Semaphore</span>(<span class="n">0</span>);</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="k">public</span> <span class="t">FooBar</span>(<span class="k">int</span> n) {</span><span class="ln"><span class="no">10</span>        <span class="k">this</span>.n = n;</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="k">public</span> <span class="k">void</span> foo(<span class="t">Runnable</span> printFoo) <span class="k">throws</span> <span class="t">InterruptedException</span> {</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">15</span>            fooGate.acquire();       <span class="c">// 等轮到 foo；第一轮票在构造时已备好</span></span><span class="ln"><span class="no">16</span>            printFoo.run();          <span class="c">// printFoo.run() outputs "foo". Do not change or remove this line.</span></span><span class="ln"><span class="no">17</span>            barGate.release();       <span class="c">// 把通行证递给 bar</span></span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>    <span class="k">public</span> <span class="k">void</span> bar(<span class="t">Runnable</span> printBar) <span class="k">throws</span> <span class="t">InterruptedException</span> {</span><span class="ln"><span class="no">22</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">23</span>            barGate.acquire();       <span class="c">// 等轮到 bar</span></span><span class="ln"><span class="no">24</span>            printBar.run();          <span class="c">// printBar.run() outputs "bar". Do not change or remove this line.</span></span><span class="ln"><span class="no">25</span>            fooGate.release();       <span class="c">// 把通行证还给 foo</span></span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个类：</p>
+
+<pre>
+class FooBar {
+  public void foo() {
+&nbsp; &nbsp; for (int i = 0; i &lt; n; i++) {
+&nbsp; &nbsp; &nbsp; print("foo");
+&nbsp;   }
+  }
+
+  public void bar() {
+&nbsp; &nbsp; for (int i = 0; i &lt; n; i++) {
+&nbsp; &nbsp; &nbsp; print("bar");
+&nbsp; &nbsp; }
+  }
+}
+</pre>
+
+<p>两个不同的线程将会共用一个 <code>FooBar</code>&nbsp;实例：</p>
+
+<ul>
+	<li>线程 A 将会调用&nbsp;<code>foo()</code>&nbsp;方法，而</li>
+	<li>线程 B 将会调用&nbsp;<code>bar()</code>&nbsp;方法</li>
+</ul>
+
+<p>请设计修改程序，以确保 <code>"foobar"</code> 被输出 <code>n</code> 次。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 1
+<strong>输出：</strong>"foobar"
+<strong>解释：</strong>这里有两个线程被异步启动。其中一个调用 foo() 方法, 另一个调用 bar() 方法，"foobar" 将被输出一次。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 2
+<strong>输出：</strong>"foobarfoobar"
+<strong>解释：</strong>"foobar" 将被输出两次。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.concurrent.Semaphore;", "", "class FooBar {", "    private int n;", "    // 两个「通行证」：fooGate 有票轮到 foo，barGate 有票轮到 bar；初始只有 foo 有票", "    private final Semaphore fooGate = new Semaphore(1);", "    private final Semaphore barGate = new Semaphore(0);", "", "    public FooBar(int n) {", "        this.n = n;", "    }", "", "    public void foo(Runnable printFoo) throws InterruptedException {", "        for (int i = 0; i < n; i++) {", "            fooGate.acquire();       // 等轮到 foo；第一轮票在构造时已备好", "            printFoo.run();          // printFoo.run() outputs \"foo\". Do not change or remove this line.", "            barGate.release();       // 把通行证递给 bar", "        }", "    }", "", "    public void bar(Runnable printBar) throws InterruptedException {", "        for (int i = 0; i < n; i++) {", "            barGate.acquire();       // 等轮到 bar", "            printBar.run();          // printBar.run() outputs \"bar\". Do not change or remove this line.", "            fooGate.release();       // 把通行证还给 foo", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1115. 交替打印 FooBar —— 图解：复刻 Solution.java 的双信号量交接，输出确定，按因果链单线程模拟。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 3 };
+
+function trace(input) {
+  var n = input.n;
+  var frames = [];
+  var fooGate = 1, barGate = 0;   // 两个信号量的当前票数，与 Java 构造器一致
+  var out = [];
+
+  function semPanel() {
+    return Viz.table('信号量票数（1 = 该谁打印了）', [
+      { k: 'fooGate', v: String(fooGate), cls: fooGate > 0 ? 'hit' : '' },
+      { k: 'barGate', v: String(barGate), cls: barGate > 0 ? 'hit' : '' }
+    ]);
+  }
+  function outPanel(newIdx) {
+    var marks = {};
+    if (newIdx != null && newIdx >= 0) marks[newIdx] = 'new';
+    return Viz.cells(out.length ? out : ['（还没打印）'], { title: '输出序列', marks: marks });
+  }
+  function snap(at, key, newIdx) {
+    frames.push(Viz.frame(at, key, [semPanel(), outPanel(newIdx)]));
+  }
+
+  snap('private final Semaphore fooGate = new Semaphore(1);',
+    '开局：只有 fooGate 有 1 张票，bar 只能等', null);
+
+  for (var i = 0; i < n; i++) {
+    fooGate--;                          // foo 拿票
+    out.push('foo');
+    if (i === 0) snap('printFoo.run();', 'foo 打印后立刻把票递给 barGate', out.length - 1);
+    barGate++;                          // 放行 bar
+
+    barGate--;                          // bar 拿票
+    out.push('bar');
+    if (i === 0) snap('printBar.run();', 'bar 打印后把票还给 fooGate，如此往复', out.length - 1);
+    fooGate++;
+  }
+
+  snap('fooGate.release();', 'n 轮结束：输出恰好是 n 个 foobar 严格交替', null);
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

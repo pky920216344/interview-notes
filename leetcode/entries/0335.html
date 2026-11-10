@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>路径交叉 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 890 / 1159</span>
+  <nav class="pn"><a href="1386.html">上一篇</a><a href="0535.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">335. </span>路径交叉</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">模拟</li><li class="tag">几何</li><li class="tag">数组</li><li class="tag">数学</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">不相交的路径必是「逆时针螺旋」（先外扩后内收），新边只可能撞上倒数第 3、4、5 条边，三种模式逐条判。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>方向按北→西→南→东逆时针循环：不相交时路径是一条螺旋，<strong>包围盒先单调外扩、再单调内收</strong>，所以老边不可能被隔很多步的新边撞上。</li><li>三种命中模式（<code>i</code> 从 3 起）：① <code>x[i]≥x[i−2] 且 x[i−1]≤x[i−3]</code>，新边横穿倒数第 3 条边；② 倒数第 1、3 条边等长（共线）且 <code>x[i]+x[i−4]≥x[i−2]</code>，新边贴回倒数第 4 条边；③ 卷回一圈撞倒数第 5 条边，四个不等式见代码。</li><li>三个模式都不中就继续走，全程 O(n)；步长可达 <code>10^5</code>、边数 <code>10^5</code>，不能真的画路径。</li><li>相交包含「端点相碰」：回到起点也算（题面示例 <code>[1,1,1,1]</code>）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> isSelfCrossing(<span class="k">int</span>[] distance) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 不相交的路径是一条「逆时针螺旋」：要么一直外扩，要么从某步起一直内收。</span></span><span class="ln"><span class="no">4</span>        <span class="c">// 所以新边只可能撞上倒数第 3、4、5 条边，三种几何模式逐个判一遍即可。</span></span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">3</span>; i &lt; distance.length; i++) {</span><span class="ln"><span class="no">6</span>            <span class="c">// 模式一：新边横穿倒数第 3 条边（内收时最常见，如 [2,1,1,2]）</span></span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (distance[i] &gt;= distance[i - <span class="n">2</span>] &amp;&amp; distance[i - <span class="n">1</span>] &lt;= distance[i - <span class="n">3</span>]) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">8</span>            <span class="c">// 模式二：新边与倒数第 4 条边共线相碰（如 [1,1,2,1,1] 末边回到起点）</span></span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (i &gt;= <span class="n">4</span> &amp;&amp; distance[i - <span class="n">1</span>] == distance[i - <span class="n">3</span>] &amp;&amp; distance[i] + distance[i - <span class="n">4</span>] &gt;= distance[i - <span class="n">2</span>]) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">10</span>            <span class="c">// 模式三：卷了一圈，新边撞回倒数第 5 条边（如 [1,1,2,2,1,1]）</span></span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (i &gt;= <span class="n">5</span> &amp;&amp; distance[i - <span class="n">2</span>] &gt;= distance[i - <span class="n">4</span>] &amp;&amp; distance[i] + distance[i - <span class="n">4</span>] &gt;= distance[i - <span class="n">2</span>]</span><span class="ln"><span class="no">12</span>                    &amp;&amp; distance[i - <span class="n">1</span>] + distance[i - <span class="n">5</span>] &gt;= distance[i - <span class="n">3</span>] &amp;&amp; distance[i - <span class="n">1</span>] &lt;= distance[i - <span class="n">3</span>]) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>distance</code><em> </em>。</p>
+
+<p>从 <strong>X-Y</strong> 平面上的点&nbsp;<code>(0,0)</code>&nbsp;开始，先向北移动 <code>distance[0]</code> 米，然后向西移动 <code>distance[1]</code> 米，向南移动 <code>distance[2]</code> 米，向东移动 <code>distance[3]</code> 米，持续移动。也就是说，每次移动后你的方位会发生逆时针变化。</p>
+
+<p>判断你所经过的路径是否相交。如果相交，返回 <code>true</code> ；否则，返回 <code>false</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/a3061bacde8b.jpg" style="width: 400px; height: 435px;" />
+<pre>
+<strong>输入：</strong>distance = [2,1,1,2]
+<strong>输出：</strong>true
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/a6355925163e.jpg" style="width: 400px; height: 435px;" />
+<pre>
+<strong>输入：</strong>distance = [1,2,3,4]
+<strong>输出：</strong>false
+</pre>
+
+<p><strong>示例 3：</strong></p>
+<img alt="" src="../assets/img/9bd8d5b5b083.jpg" style="width: 400px; height: 435px;" />
+<pre>
+<strong>输入：</strong>distance = [1,1,1,1]
+<strong>输出：</strong>true</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;=&nbsp;distance.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>1 &lt;=&nbsp;distance[i] &lt;= 10<sup>5</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean isSelfCrossing(int[] distance) {", "        // 不相交的路径是一条「逆时针螺旋」：要么一直外扩，要么从某步起一直内收。", "        // 所以新边只可能撞上倒数第 3、4、5 条边，三种几何模式逐个判一遍即可。", "        for (int i = 3; i < distance.length; i++) {", "            // 模式一：新边横穿倒数第 3 条边（内收时最常见，如 [2,1,1,2]）", "            if (distance[i] >= distance[i - 2] && distance[i - 1] <= distance[i - 3]) return true;", "            // 模式二：新边与倒数第 4 条边共线相碰（如 [1,1,2,1,1] 末边回到起点）", "            if (i >= 4 && distance[i - 1] == distance[i - 3] && distance[i] + distance[i - 4] >= distance[i - 2]) return true;", "            // 模式三：卷了一圈，新边撞回倒数第 5 条边（如 [1,1,2,2,1,1]）", "            if (i >= 5 && distance[i - 2] >= distance[i - 4] && distance[i] + distance[i - 4] >= distance[i - 2]", "                    && distance[i - 1] + distance[i - 5] >= distance[i - 3] && distance[i - 1] <= distance[i - 3]) return true;", "        }", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 335. 路径交叉 —— 图解：复刻 Solution.java 的三模式判定，把走过的路径画在网格上拍关键帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { distance: [2, 1, 1, 2] };
+
+function trace(input) {
+  var d = input.distance;
+  var frames = [];
+  var DX = [0, -1, 0, 1], DY = [1, 0, -1, 0];          // 北、西、南、东
+  var ARROW = ['↑', '←', '↓', '→'];
+
+  // --- 顶点：第 i 条边从 P[i] 到 P[i+1] ---
+  var P = [{ x: 0, y: 0 }];
+  var i, v;
+  for (i = 0; i < d.length; i++) {
+    v = P[P.length - 1];
+    P.push({ x: v.x + DX[i & 3] * d[i], y: v.y + DY[i & 3] * d[i] });
+  }
+
+  // --- 跑一遍最优解的三模式判定，记录首个命中的模式和下标 ---
+  var fired = -1, firedAt = -1;
+  for (i = 3; i < d.length && fired < 0; i++) {
+    if (d[i] >= d[i - 2] && d[i - 1] <= d[i - 3]) { fired = 0; firedAt = i; }
+    else if (i >= 4 && d[i - 1] === d[i - 3] && d[i] + d[i - 4] >= d[i - 2]) { fired = 1; firedAt = i; }
+    else if (i >= 5 && d[i - 2] >= d[i - 4] && d[i] + d[i - 4] >= d[i - 2]
+        && d[i - 1] + d[i - 5] >= d[i - 3] && d[i - 1] <= d[i - 3]) { fired = 2; firedAt = i; }
+  }
+
+  // --- 网格面板：把 0..to 这些边画出来 ---
+  function gridPanel(to, curEdge, hitPts) {
+    var minX = 0, maxX = 0, minY = 0, maxY = 0, a, b;
+    for (a = 0; a <= to + 1 && a < P.length; a++) {
+      minX = Math.min(minX, P[a].x); maxX = Math.max(maxX, P[a].x);
+      minY = Math.min(minY, P[a].y); maxY = Math.max(maxY, P[a].y);
+    }
+    var rows = [], marks = {}, r, c;
+    var cell = {}, markSrc = {};                       // "x,y" -> 箭头 / 来源边
+    for (a = 0; a <= to && a < d.length; a++) {
+      var from = P[a], toP = P[a + 1];
+      var sx = Math.min(from.x, toP.x), ex = Math.max(from.x, toP.x);
+      var sy = Math.min(from.y, toP.y), ey = Math.max(from.y, toP.y);
+      for (var xx = sx; xx <= ex; xx++) for (var yy = sy; yy <= ey; yy++) {
+        cell[xx + ',' + yy] = ARROW[a & 3];
+        markSrc[xx + ',' + yy] = a;
+      }
+    }
+    for (r = maxY; r >= minY; r--) {
+      var line = [];
+      for (c = minX; c <= maxX; c++) {
+        var key = c + ',' + r;
+        line.push(cell[key] || '·');
+        var col = c - minX, row = maxY - r;
+        if (hitPts && hitPts[key]) { marks[row + ',' + col] = 'bad'; continue; }
+        if (cell[key]) marks[row + ',' + col] = (markSrc[key] === curEdge && curEdge != null) ? 'cur' : 'win';
+      }
+      rows.push(line);
+    }
+    return Viz.grid(rows, { title: '走过的路径（箭头 = 移动方向；✕ = 交叉点）', marks: marks });
+  }
+
+  // 新边 to 与更早的不相邻线段的交点（含端点相碰、共线重叠）
+  function hitPoints(to) {
+    var hits = {}, a, b;
+    for (a = 0; a <= to - 2; a++) {
+      var pts = segTouch(P[a], P[a + 1], P[to], P[to + 1]);
+      for (b = 0; b < pts.length; b++) hits[pts[b][0] + ',' + pts[b][1]] = true;
+    }
+    return hits;
+  }
+  function segTouch(p1, p2, q1, q2) {                  // 两条整点线段的所有公共点（网格题规模很小，直接枚举）
+    var out = [];
+    var sx = Math.min(p1.x, p2.x), ex = Math.max(p1.x, p2.x);
+    var sy = Math.min(p1.y, p2.y), ey = Math.max(p1.y, p2.y);
+    var tx = Math.min(q1.x, q2.x), ux = Math.max(q1.x, q2.x);
+    var ty = Math.min(q1.y, q2.y), uy = Math.max(q1.y, q2.y);
+    for (var xx = Math.max(sx, tx); xx <= Math.min(ex, ux); xx++) {
+      for (var yy = Math.max(sy, ty); yy <= Math.min(ey, uy); yy++) {
+        if (onLine(p1, p2, xx, yy) && onLine(q1, q2, xx, yy)) out.push([xx, yy]);
+      }
+    }
+    return out;
+  }
+  function onLine(p1, p2, x, y) {                      // 整点是否落在线段上
+    var cross = (p2.x - p1.x) * (y - p1.y) - (p2.y - p1.y) * (x - p1.x);
+    if (cross !== 0) return false;
+    return x >= Math.min(p1.x, p2.x) && x <= Math.max(p1.x, p2.x)
+        && y >= Math.min(p1.y, p2.y) && y <= Math.max(p1.y, p2.y);
+  }
+
+  var MODE = ['倒数第 3 条边', '倒数第 4 条边（共线）', '倒数第 5 条边（卷回一圈）'];
+  var AT = ['if (distance[i] >= distance[i - 2] && distance[i - 1] <= distance[i - 3]) return true;',
+            'if (i >= 4 && distance[i - 1] == distance[i - 3] && distance[i] + distance[i - 4] >= distance[i - 2]) return true;',
+            'if (i >= 5 && distance[i - 2] >= distance[i - 4] && distance[i] + distance[i - 4] >= distance[i - 2]'];
+
+  // 帧 1：开局，画出起步的边
+  frames.push(Viz.frame('for (int i = 3; i < distance.length; i++) {',
+    '从原点出发按 北→西→南→东 循环走，先画出起步的几条边',
+    [gridPanel(Math.min(2, d.length - 1), null, null)]));
+
+  // 帧 2：逐边检查的过程（第一条进入判定的边）
+  var showTo = Math.min(3, d.length - 1);
+  frames.push(Viz.frame(AT[0],
+    d.length >= 4 ? '每画一条新边，就检查它是否撞上倒数第 3、4、5 条边' : '不足 4 条边，不可能相交',
+    [gridPanel(showTo, showTo < d.length ? showTo : null, null)]));
+
+  // 帧 3：命中时展示交叉点
+  if (fired >= 0) {
+    frames.push(Viz.frame(AT[fired],
+      '第 ' + firedAt + ' 条边撞上' + MODE[fired] + '：模式' + (fired + 1) + '成立',
+      [gridPanel(firedAt, firedAt, hitPoints(firedAt))]));
+  }
+
+  // 帧 4：结论
+  var crossed = fired >= 0;
+  frames.push(Viz.frame(crossed ? AT[fired] : 'return false;',
+    crossed ? '相交，返回 true（✕ 就是撞上的位置）' : '一路外扩/内收，没有撞上任何旧边，返回 false',
+    [gridPanel(d.length - 1, null, crossed ? hitPoints(firedAt) : null),
+     Viz.vars([{ name: '结论', v: crossed ? '相交' : '不相交', cls: crossed ? 'bad' : 'done' }])]));
+
+  return { frames: frames, result: crossed };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

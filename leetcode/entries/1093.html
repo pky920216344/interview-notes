@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大样本统计 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 876 / 1159</span>
+  <nav class="pn"><a href="0464.html">上一篇</a><a href="lcp-12.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1093. </span>大样本统计</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">模拟</li><li class="aux">前缀和/差分</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">概率与统计</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">分桶直接累加出 min/max/mean/mode；中位数不用展开样本，按「累计计数够到第 k 名」在桶上定位。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>一遍扫 256 个桶：首个非零桶是 <code>min</code>，末个非零桶是 <code>max</code>，<code>sum += k × count[k]</code>、<code>cnt += count[k]</code>，计数最大的桶是 <code>mode</code>。</li><li><code>cnt</code> 和 <code>sum</code> 都要 <code>long</code>：<code>1e9</code> 个样本的加权总和能到 <code>2.5e11</code>。</li><li>中位数：奇数取第 <code>(cnt+1)/2</code> 名，偶数取第 <code>cnt/2</code> 和 <code>cnt/2+1</code> 名的平均；第 k 名用累计计数扫桶定位，不展开样本。</li><li>输出统一保留到 <code>1e-5</code> 精度，避开浮点尾数比较问题。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(256)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">double</span>[] sampleStats(<span class="k">int</span>[] count) {</span><span class="ln"><span class="no">3</span>        <span class="k">long</span> cnt = <span class="n">0</span>, sum = <span class="n">0</span>;      <span class="c">// 总数和加权总和都可能超 int，用 long</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span> min = <span class="n">0</span>, max = <span class="n">0</span>, mode = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">long</span> bestCnt = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">boolean</span> seen = <span class="k">false</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; <span class="n">256</span>; k++) {</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (count[k] == <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (!seen) { min = k; seen = <span class="k">true</span>; }</span><span class="ln"><span class="no">10</span>            max = k;</span><span class="ln"><span class="no">11</span>            cnt += count[k];</span><span class="ln"><span class="no">12</span>            sum += (<span class="k">long</span>) count[k] * k;</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (count[k] &gt; bestCnt) { bestCnt = count[k]; mode = k; }</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="c">// 中位数：奇数个取第 (cnt+1)/2 名；偶数个取第 cnt/2、cnt/2+1 名的平均</span></span><span class="ln"><span class="no">16</span>        <span class="k">int</span> v1 = kth(count, (cnt + <span class="n">1</span>) / <span class="n">2</span>);</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> v2 = kth(count, cnt / <span class="n">2</span> + <span class="n">1</span>);</span><span class="ln"><span class="no">18</span>        <span class="k">double</span> median = (v1 + v2) / <span class="n">2.0</span>;</span><span class="ln"><span class="no">19</span>        <span class="k">double</span> mean = (<span class="k">double</span>) sum / cnt;</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">double</span>[]{fix(min), fix(max), fix(mean), fix(median), fix(mode)};</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span> </span><span class="ln"><span class="no">23</span>    <span class="c">// 第 k 名（1 起始）的样本值：按累计计数找桶</span></span><span class="ln"><span class="no">24</span>    <span class="k">private</span> <span class="k">int</span> kth(<span class="k">int</span>[] count, <span class="k">long</span> k) {</span><span class="ln"><span class="no">25</span>        <span class="k">long</span> acc = <span class="n">0</span>;</span><span class="ln"><span class="no">26</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; <span class="n">256</span>; i++) {</span><span class="ln"><span class="no">27</span>            acc += count[i];</span><span class="ln"><span class="no">28</span>            <span class="k">if</span> (acc &gt;= k) <span class="k">return</span> i;</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> <span class="n">255</span>;</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span> </span><span class="ln"><span class="no">33</span>    <span class="c">// 统一到 1e-5 精度，避免浮点尾数差异</span></span><span class="ln"><span class="no">34</span>    <span class="k">private</span> <span class="k">double</span> fix(<span class="k">double</span> x) {</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> <span class="t">Math</span>.round(x * <span class="n">100000.0</span>) / <span class="n">100000.0</span>;</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>我们对&nbsp;<code>0</code>&nbsp;到&nbsp;<code>255</code>&nbsp;之间的整数进行采样，并将结果存储在数组&nbsp;<code>count</code>&nbsp;中：<code>count[k]</code>&nbsp;就是整数&nbsp;<code>k</code> 在样本中出现的次数。</p>
+
+<p>计算以下统计数据:</p>
+
+<ul>
+	<li><code>minimum</code>&nbsp;：样本中的最小元素。</li>
+	<li><code>maximum</code>&nbsp;：样品中的最大元素。</li>
+	<li><code>mean</code>&nbsp;：样本的平均值，计算为所有元素的总和除以元素总数。</li>
+	<li><code>median</code>&nbsp;：
+	<ul>
+		<li>如果样本的元素个数是奇数，那么一旦样本排序后，中位数 <code>median</code> 就是中间的元素。</li>
+		<li>如果样本中有偶数个元素，那么中位数<code>median</code> 就是样本排序后中间两个元素的平均值。</li>
+	</ul>
+	</li>
+	<li><code>mode</code>&nbsp;：样本中出现次数最多的数字。保众数是 <strong>唯一</strong> 的。</li>
+</ul>
+
+<p>以浮点数数组的形式返回样本的统计信息<em>&nbsp;</em><code>[minimum, maximum, mean, median, mode]</code>&nbsp;。与真实答案误差在<em>&nbsp;</em><code>10<sup>-5</sup></code><em>&nbsp;</em>内的答案都可以通过。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>count = [0,1,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+<strong>输出：</strong>[1.00000,3.00000,2.37500,2.50000,3.00000]
+<strong>解释：</strong>用count表示的样本为[1,2,2,2,3,3,3,3]。
+最小值和最大值分别为1和3。
+均值是(1+2+2+2+3+3+3+3) / 8 = 19 / 8 = 2.375。
+因为样本的大小是偶数，所以中位数是中间两个元素2和3的平均值，也就是2.5。
+众数为3，因为它在样本中出现的次数最多。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>count = [0,4,3,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+<strong>输出：</strong>[1.00000,4.00000,2.18182,2.00000,1.00000]
+<strong>解释：</strong>用count表示的样本为[1,1,1,1,2,2,3,3,3,4,4]。
+最小值为1，最大值为4。
+平均数是(1+1+1+1+2+2+2+3+3+4+4)/ 11 = 24 / 11 = 2.18181818…(为了显示，输出显示了整数2.18182)。
+因为样本的大小是奇数，所以中值是中间元素2。
+众数为1，因为它在样本中出现的次数最多。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>count.length == 256</code></li>
+	<li><code>0 &lt;= count[i] &lt;= 10<sup>9</sup></code></li>
+	<li><code>1 &lt;= sum(count) &lt;= 10<sup>9</sup></code></li>
+	<li>&nbsp;<code>count</code>&nbsp;的众数是 <strong>唯一</strong> 的</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public double[] sampleStats(int[] count) {", "        long cnt = 0, sum = 0;      // 总数和加权总和都可能超 int，用 long", "        int min = 0, max = 0, mode = 0;", "        long bestCnt = 0;", "        boolean seen = false;", "        for (int k = 0; k < 256; k++) {", "            if (count[k] == 0) continue;", "            if (!seen) { min = k; seen = true; }", "            max = k;", "            cnt += count[k];", "            sum += (long) count[k] * k;", "            if (count[k] > bestCnt) { bestCnt = count[k]; mode = k; }", "        }", "        // 中位数：奇数个取第 (cnt+1)/2 名；偶数个取第 cnt/2、cnt/2+1 名的平均", "        int v1 = kth(count, (cnt + 1) / 2);", "        int v2 = kth(count, cnt / 2 + 1);", "        double median = (v1 + v2) / 2.0;", "        double mean = (double) sum / cnt;", "        return new double[]{fix(min), fix(max), fix(mean), fix(median), fix(mode)};", "    }", "", "    // 第 k 名（1 起始）的样本值：按累计计数找桶", "    private int kth(int[] count, long k) {", "        long acc = 0;", "        for (int i = 0; i < 256; i++) {", "            acc += count[i];", "            if (acc >= k) return i;", "        }", "        return 255;", "    }", "", "    // 统一到 1e-5 精度，避免浮点尾数差异", "    private double fix(double x) {", "        return Math.round(x * 100000.0) / 100000.0;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1093. 大样本统计 —— 图解：复刻 Solution.java 的「分桶扫一遍 + 累计定位中位数」，在关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { count: [0, 1, 3, 4] };
+
+function trace(input) {
+  var count = input.count;
+  var frames = [];
+  var KTH = 'if (acc >= k) return i;';
+  var RET = 'return new double[]{fix(min), fix(max), fix(mean), fix(median), fix(mode)};';
+
+  // 第一遍：min / max / cnt / sum / mode
+  var cnt = 0, sum = 0, min = 0, max = 0, mode = 0, bestCnt = 0, seen = false;
+  for (var k = 0; k < count.length; k++) {
+    if (count[k] === 0) continue;
+    if (!seen) { min = k; seen = true; }
+    max = k;
+    cnt += count[k];
+    sum += count[k] * k;
+    if (count[k] > bestCnt) { bestCnt = count[k]; mode = k; }
+  }
+  var marks1 = {}, nonzero = [];
+  for (var k2 = 0; k2 < count.length; k2++) {
+    if (count[k2] > 0) { marks1[k2] = 'win'; nonzero.push(k2); }
+  }
+  marks1[mode] = 'hit';
+  frames.push(Viz.frame('if (count[k] > bestCnt) { bestCnt = count[k]; mode = k; }',
+    '第一遍扫完：min=' + min + '、max=' + max + '、mode=' + mode + '，共 ' + cnt + ' 个样本、总和 ' + sum,
+    [
+      Viz.cells(count.slice(), { title: 'count：值 -> 出现次数（只标注非零桶）', marks: marks1, hideIndex: true }),
+      Viz.vars([
+        { name: 'min / max', v: min + ' / ' + max },
+        { name: 'cnt（样本总数）', v: cnt },
+        { name: 'sum（加权总和）', v: sum },
+        { name: 'mode', v: mode, cls: 'hit' }
+      ])
+    ]));
+
+  // 第 k 名（1 起始）落在哪个桶：累计计数一超就命中
+  function kth(k, snap) {
+    var acc = 0;
+    for (var i = 0; i < count.length; i++) {
+      acc += count[i];
+      if (acc >= k) {
+        if (snap) {
+          var m = {};
+          m[i] = 'cur';
+          frames.push(Viz.frame(KTH,
+            '中位数取第 ' + k + ' 名：累计计数到桶 ' + i + ' 时已攒够 ' + acc + ' 个',
+            [
+              Viz.cells(count.slice(), { title: 'count（按值递增累计）', marks: m, hideIndex: true }),
+              Viz.vars([
+                { name: '目标排名 k', v: k },
+                { name: '累计 acc', v: acc, cls: 'chg' },
+                { name: '命中桶（样本值）', v: i, cls: 'cur' }
+              ])
+            ]));
+        }
+        return i;
+      }
+    }
+    return count.length - 1;
+  }
+
+  var odd = cnt % 2 === 1;
+  var k1 = Math.floor((cnt + 1) / 2), k2 = Math.floor(cnt / 2) + 1;   // Java 的 long 整除，这里要对齐
+  var v1 = kth(k1, true);
+  var v2 = kth(k2, false);
+  var median = (v1 + v2) / 2;
+  var mean = sum / cnt;
+  function fix(x) { return Math.round(x * 100000) / 100000; }
+  var out = [fix(min), fix(max), fix(mean), fix(median), fix(mode)];
+
+  frames.push(Viz.frame(RET,
+    (odd ? '奇数个样本：中位数就是第 ' + k1 + ' 名 = ' + median
+         : '偶数个样本：中位数 = 第 ' + k1 + '、' + k2 + ' 名的平均 = (' + v1 + '+' + v2 + ')/2 = ' + median),
+    [
+      Viz.vars([
+        { name: 'minimum / maximum', v: min + ' / ' + max },
+        { name: 'mean', v: out[2] },
+        { name: 'median', v: out[3], cls: 'chg' },
+        { name: 'mode', v: out[4] }
+      ])
+    ]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

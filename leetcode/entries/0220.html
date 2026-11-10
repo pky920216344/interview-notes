@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>存在重复元素 III · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 842 / 1159</span>
+  <nav class="pn"><a href="mianshi-16-03.html">上一篇</a><a href="offer-58-ii.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">220. </span>存在重复元素 III</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">哈希表</li><li class="aux">滑动窗口</li><li class="tag">数组</li><li class="tag">桶排序</li><li class="tag">有序集合</li><li class="tag">排序</li><li class="tag">滑动窗口</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">桶分治：桶宽 valueDiff+1，同桶必近；只查左右邻桶；下标差超 indexDiff 就删旧桶。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>把值域切成宽 <code>valueDiff + 1</code> 的桶：<strong>同一桶里任意两数差必 ≤ valueDiff</strong>，同桶命中直接返回 true。</li><li>相邻桶可能出近邻：只查左邻桶里「比自己小多少」、右邻桶里「比自己大多少」，各一次比较。</li><li>用 <code>Map&lt;桶号, 值&gt;</code> + 滑动窗口：下标差超过 <code>indexDiff</code> 的元素把它的桶删掉；桶里同时最多一个数。</li><li>负数桶号用 <code>Math.floorDiv</code>（向负无穷取整），别用 <code>%</code> 截断。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(min(n, indexDiff))</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> containsNearbyAlmostDuplicate(<span class="k">int</span>[] nums, <span class="k">int</span> indexDiff, <span class="k">int</span> valueDiff) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 桶宽 = valueDiff + 1：同一桶内任意两数差最多 valueDiff</span></span><span class="ln"><span class="no">6</span>        <span class="k">long</span> w = (<span class="k">long</span>) valueDiff + <span class="n">1</span>;</span><span class="ln"><span class="no">7</span>        <span class="t">Map</span>&lt;<span class="t">Long</span>, <span class="t">Long</span>&gt; bucket = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();   <span class="c">// 桶号 -&gt; 桶里那个数</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; nums.length; i++) {</span><span class="ln"><span class="no">9</span>            <span class="k">long</span> v = nums[i];</span><span class="ln"><span class="no">10</span>            <span class="k">long</span> id = <span class="t">Math</span>.floorDiv(v, w);</span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (bucket.containsKey(id)) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">12</span>            <span class="t">Long</span> left = bucket.get(id - <span class="n">1</span>);</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (left != <span class="k">null</span> &amp;&amp; v - left &lt;= valueDiff) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">14</span>            <span class="t">Long</span> right = bucket.get(id + <span class="n">1</span>);</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (right != <span class="k">null</span> &amp;&amp; right - v &lt;= valueDiff) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">16</span>            bucket.put(id, v);</span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (i &gt;= indexDiff) bucket.remove(<span class="t">Math</span>.floorDiv((<span class="k">long</span>) nums[i - indexDiff], w));</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> 和两个整数 <code>indexDiff</code> 和 <code>valueDiff</code> 。</p>
+
+<p>找出满足下述条件的下标对 <code>(i, j)</code>：</p>
+
+<ul>
+	<li><code>i != j</code>,</li>
+	<li><code>abs(i - j) &lt;= indexDiff</code></li>
+	<li><code>abs(nums[i] - nums[j]) &lt;= valueDiff</code></li>
+</ul>
+
+<p>如果存在，返回 <code>true</code><em> ；</em>否则，返回<em> </em><code>false</code><em> </em>。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,3,1], indexDiff = 3, valueDiff = 0
+<strong>输出：</strong>true
+<strong>解释：</strong>可以找出 (i, j) = (0, 3) 。
+满足下述 3 个条件：
+i != j --&gt; 0 != 3
+abs(i - j) &lt;= indexDiff --&gt; abs(0 - 3) &lt;= 3
+abs(nums[i] - nums[j]) &lt;= valueDiff --&gt; abs(1 - 1) &lt;= 0
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,5,9,1,5,9], indexDiff = 2, valueDiff = 3
+<strong>输出：</strong>false
+<strong>解释：</strong>尝试所有可能的下标对 (i, j) ，均无法满足这 3 个条件，因此返回 false 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= nums.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>-10<sup>9</sup> &lt;= nums[i] &lt;= 10<sup>9</sup></code></li>
+	<li><code>1 &lt;= indexDiff &lt;= nums.length</code></li>
+	<li><code>0 &lt;= valueDiff &lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean containsNearbyAlmostDuplicate(int[] nums, int indexDiff, int valueDiff) {", "        // 桶宽 = valueDiff + 1：同一桶内任意两数差最多 valueDiff", "        long w = (long) valueDiff + 1;", "        Map<Long, Long> bucket = new HashMap<>();   // 桶号 -> 桶里那个数", "        for (int i = 0; i < nums.length; i++) {", "            long v = nums[i];", "            long id = Math.floorDiv(v, w);", "            if (bucket.containsKey(id)) return true;", "            Long left = bucket.get(id - 1);", "            if (left != null && v - left <= valueDiff) return true;", "            Long right = bucket.get(id + 1);", "            if (right != null && right - v <= valueDiff) return true;", "            bucket.put(id, v);", "            if (i >= indexDiff) bucket.remove(Math.floorDiv((long) nums[i - indexDiff], w));", "        }", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 220. 存在重复元素 III —— 图解：桶宽 valueDiff+1，同桶必近，邻桶逐点查，滑窗删旧桶。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 4, 9, 20, 6], indexDiff: 3, valueDiff: 2 };
+
+function trace(input) {
+  var nums = input.nums;
+  var indexDiff = input.indexDiff, valueDiff = input.valueDiff;
+  var w = valueDiff + 1;
+  var n = nums.length;
+  var frames = [];
+  var W = 'long w = (long) valueDiff + 1;';
+  var ID = 'long id = Math.floorDiv(v, w);';
+  var LEFT = 'if (left != null && v - left <= valueDiff) return true;';
+  var RIGHT = 'if (right != null && right - v <= valueDiff) return true;';
+  var SAME = 'if (bucket.containsKey(id)) return true;';
+  var RM = 'if (i >= indexDiff) bucket.remove(Math.floorDiv((long) nums[i - indexDiff], w));';
+  var NO = 'return false;';
+
+  var bucket = {};   // 桶号 -> 值（与 Java 的 Map 一致）
+  var result = false;
+
+  function bIds() {
+    return Object.keys(bucket).map(Number).sort(function (a, b) { return a - b; });
+  }
+  function tablePanel(curId, hitId) {
+    var rows = bIds().map(function (b) {
+      return { k: '桶 ' + b, v: String(bucket[b]), cls: b === curId ? 'cur' : (b === hitId ? 'hit' : '') };
+    });
+    return Viz.table('哈希表：桶号 → 桶里的数', rows, { hint: '桶 b 覆盖 [b·' + w + ', b·' + w + '+' + (w - 1) + ']' });
+  }
+  function cellsPanel(i, removedIdx) {
+    var marks = {};
+    for (var j = Math.max(0, i - indexDiff); j < i; j++) marks[j] = 'win';
+    if (i < n) marks[i] = 'cur';
+    if (removedIdx != null) marks[removedIdx] = 'bad';
+    var pointers = [];
+    if (i < n) pointers.push({ at: i, label: 'i', cls: 'p-cur' });
+    if (removedIdx != null) pointers.push({ at: removedIdx, label: '出窗', cls: 'p-prev' });
+    return Viz.cells(nums.slice(), { title: 'nums（窗口内 = 桶里还留着的下标）', marks: marks, pointers: pointers });
+  }
+
+  // floorDiv 的精确 JS 版：先截断除（双精度误差远小于 1/b，不会跨整数边界），负数再减 1
+  function floorDiv(a, b) {
+    var q = Math.trunc(a / b);
+    if (a % b !== 0 && (a < 0) !== (b < 0)) q -= 1;
+    return q;
+  }
+
+  function snap(at, key, curId, hitId, removedIdx) {
+    frames.push(Viz.frame(at, key, [cellsPanel(i, removedIdx), tablePanel(curId, hitId)]));
+  }
+
+  // 与 Solution.java 相同的逐元素流程
+  var i = 0;
+  frames.push(Viz.frame(W, '桶宽 w = valueDiff+1 = ' + w + '：同一桶里任意两数差最多 ' + valueDiff, [
+    Viz.vars([
+      { name: 'valueDiff', v: String(valueDiff) },
+      { name: '桶宽 w', v: String(w), cls: 'new' },
+      { name: 'indexDiff', v: String(indexDiff) }
+    ])
+  ]));
+  for (i = 0; i < n && !result; i++) {
+    var v = nums[i];
+    var id = floorDiv(v, w);
+    if (bucket[id] !== undefined) {
+      result = true;
+      snap(SAME, '桶 ' + id + ' 里已有数：同桶必近，|差| ≤ ' + valueDiff + '，找到', id, id, null);
+      break;
+    }
+    var left = bucket[id - 1];
+    if (left !== undefined && v - left <= valueDiff) {
+      result = true;
+      snap(LEFT, v + ' 落桶 ' + id + '：左邻桶 ' + (id - 1) + ' 有 ' + left + '，差 ' + (v - left) + ' ≤ ' + valueDiff, id, id - 1, null);
+      break;
+    }
+    var right = bucket[id + 1];
+    if (right !== undefined && right - v <= valueDiff) {
+      result = true;
+      snap(RIGHT, v + ' 落桶 ' + id + '：右邻桶 ' + (id + 1) + ' 有 ' + right + '，差 ' + (right - v) + ' ≤ ' + valueDiff, id, id + 1, null);
+      break;
+    }
+    bucket[id] = v;
+    if (i >= indexDiff) {
+      var gone = nums[i - indexDiff];
+      var goneId = floorDiv(gone, w);
+      snap(RM, '窗口右移：下标 ' + (i - indexDiff) + ' 的 ' + gone + ' 出窗，从桶 ' + goneId + ' 删除', null, null, i - indexDiff);
+      delete bucket[goneId];
+    }
+  }
+
+  if (!result) {
+    frames.push(Viz.frame(NO, '扫完整个数组都没有近邻：返回 false', [cellsPanel(n, null), tablePanel(null, null)]));
+  }
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>堆箱子 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 584 / 1159</span>
+  <nav class="pn"><a href="0784.html">上一篇</a><a href="0319.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 08.13. </span>堆箱子</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按三边升序排序后做线性 DP：dp[i] = 以箱 i 为底的最大高度，从前面所有「三边严格更小」的箱子转移。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先按（宽、深、高）升序排序：能叠到箱 <code>i</code> 上面的箱子一定排在 <code>i</code> 前面，DP 只需回看。</li><li><code>dp[i] = box[i][2] + max(dp[j])</code>，其中 <code>j</code> 满足三边<strong>严格</strong>小于箱 <code>i</code>——三边相等谁也压不住谁。</li><li>排序保证「三边严格更小 ⇒ 下标更小」，所以从左到右一遍就算完；答案 = <code>max(dp)</code>。</li><li>这是「最长递增子序列」的二维版：把箱子当成可叠的元素序列。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> pileBox(<span class="k">int</span>[][] box) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 按宽、深、高升序排：能叠在箱 i 上面的箱子，排序后一定在 i 前面</span></span><span class="ln"><span class="no">6</span>        <span class="t">Arrays</span>.sort(box, (a, b) -&gt; a[<span class="n">0</span>] != b[<span class="n">0</span>] ? a[<span class="n">0</span>] - b[<span class="n">0</span>]</span><span class="ln"><span class="no">7</span>                : (a[<span class="n">1</span>] != b[<span class="n">1</span>] ? a[<span class="n">1</span>] - b[<span class="n">1</span>] : a[<span class="n">2</span>] - b[<span class="n">2</span>]));</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> n = box.length;</span><span class="ln"><span class="no">9</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[n];   <span class="c">// dp[i]：以箱 i 为底（最下面）的箱堆最大高度</span></span><span class="ln"><span class="no">10</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">12</span>            dp[i] = box[i][<span class="n">2</span>];   <span class="c">// 只有它自己</span></span><span class="ln"><span class="no">13</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; i; j++) {</span><span class="ln"><span class="no">14</span>                <span class="c">// 三边都严格更小才能叠上去；宽相等时谁也压不住谁</span></span><span class="ln"><span class="no">15</span>                <span class="k">if</span> (box[j][<span class="n">0</span>] &lt; box[i][<span class="n">0</span>] &amp;&amp; box[j][<span class="n">1</span>] &lt; box[i][<span class="n">1</span>] &amp;&amp; box[j][<span class="n">2</span>] &lt; box[i][<span class="n">2</span>]) {</span><span class="ln"><span class="no">16</span>                    dp[i] = <span class="t">Math</span>.max(dp[i], dp[j] + box[i][<span class="n">2</span>]);</span><span class="ln"><span class="no">17</span>                }</span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>            ans = <span class="t">Math</span>.max(ans, dp[i]);</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>堆箱子。给你一堆n个箱子，箱子宽 wi、深 di、高 hi。箱子不能翻转，将箱子堆起来时，下面箱子的宽度、高度和深度必须大于上面的箱子。实现一种方法，搭出最高的一堆箱子。箱堆的高度为每个箱子高度的总和。</p>
+
+<p>输入使用数组<code>[wi, di, hi]</code>表示每个箱子。</p>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong> 输入</strong>：box = [[1, 1, 1], [2, 2, 2], [3, 3, 3]]
+<strong> 输出</strong>：6
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong> 输入</strong>：box = [[1, 1, 1], [2, 3, 4], [2, 6, 7], [3, 4, 5]]
+<strong> 输出</strong>：10
+</pre>
+
+<p><strong>提示:</strong></p>
+
+<ol>
+	<li>箱子的数目不大于3000个。</li>
+</ol>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int pileBox(int[][] box) {", "        // 按宽、深、高升序排：能叠在箱 i 上面的箱子，排序后一定在 i 前面", "        Arrays.sort(box, (a, b) -> a[0] != b[0] ? a[0] - b[0]", "                : (a[1] != b[1] ? a[1] - b[1] : a[2] - b[2]));", "        int n = box.length;", "        int[] dp = new int[n];   // dp[i]：以箱 i 为底（最下面）的箱堆最大高度", "        int ans = 0;", "        for (int i = 0; i < n; i++) {", "            dp[i] = box[i][2];   // 只有它自己", "            for (int j = 0; j < i; j++) {", "                // 三边都严格更小才能叠上去；宽相等时谁也压不住谁", "                if (box[j][0] < box[i][0] && box[j][1] < box[i][1] && box[j][2] < box[i][2]) {", "                    dp[i] = Math.max(dp[i], dp[j] + box[i][2]);", "                }", "            }", "            ans = Math.max(ans, dp[i]);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 08.13. 堆箱子 —— 图解：排序后逐个箱子做「以它为底」的 DP，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { box: [[1, 1, 1], [2, 3, 4], [2, 6, 7], [3, 4, 5]] };
+
+function trace(input) {
+  var box = input.box.slice().sort(function (a, b) {
+    return a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+  });
+  var n = box.length;
+  var frames = [];
+  var dp = [];
+  for (var z = 0; z < n; z++) dp.push(null);
+  var ans = 0;
+
+  function label(b) { return b[0] + '×' + b[1] + '×' + b[2]; }
+
+  function boxesPanel(marks) {
+    var mk = {};
+    var k;
+    for (k in (marks || {})) mk[k] = marks[k];
+    return Viz.cells(box.map(label), { title: '箱子（已按宽、深、高升序排好）', marks: mk });
+  }
+  function dpPanel(highlightIdx) {
+    var rows = box.map(function (b, i) {
+      return { k: label(b), v: dp[i] === null ? '·' : String(dp[i]), cls: i === highlightIdx ? 'chg' : '' };
+    });
+    return Viz.table('dp[i]：以箱 i 为底的最大高度', rows, { hint: '排序后只需回看前面的箱子' });
+  }
+  function snap(at, key, boxMarks, hiIdx) {
+    frames.push(Viz.frame(at, key, [boxesPanel(boxMarks), dpPanel(hiIdx)]));
+  }
+
+  if (n === 0) {
+    snap('return ans;', '没有箱子，高度 0', {});
+    return { frames: frames, result: 0 };
+  }
+
+  var sawInit = false, sawFirstFit = false;
+  var lastImp = null;   // 最后一次「踩着别人的 dp 提升」的 (i, j)
+  for (var i = 0; i < n; i++) {
+    dp[i] = box[i][2];
+    var m1 = {};
+    m1[i] = 'cur';
+    if (!sawInit) {
+      sawInit = true;
+      snap('dp[i] = box[i][2];', '逐个箱当底：起步高度就是自己的高 ' + box[i][2], m1, i);
+    }
+    for (var j = 0; j < i; j++) {
+      if (box[j][0] < box[i][0] && box[j][1] < box[i][1] && box[j][2] < box[i][2]) {
+        var improved = dp[j] + box[i][2];
+        if (improved > dp[i]) {
+          dp[i] = improved;
+          var m2 = {};
+          m2[i] = 'cur';
+          m2[j] = 'win';
+          if (!sawFirstFit) {
+            sawFirstFit = true;
+            snap('dp[i] = Math.max(dp[i], dp[j] + box[i][2]);',
+              '箱 ' + label(box[j]) + ' 三边严格更小，它那摞能叠到 ' + label(box[i]) + ' 上面：dp[' + i + '] = dp[' + j + '] + ' + box[i][2] + ' = ' + dp[i],
+              m2, i);
+          }
+          lastImp = { i: i, j: j, val: dp[i] };
+        }
+      }
+    }
+    if (dp[i] > ans) ans = dp[i];
+  }
+
+  if (lastImp) {
+    var m3 = {};
+    m3[lastImp.i] = 'cur';
+    m3[lastImp.j] = 'win';
+    snap('dp[i] = Math.max(dp[i], dp[j] + box[i][2]);',
+      '最后一步提升：以 ' + label(box[lastImp.j]) + ' 为底的摞叠到 ' + label(box[lastImp.i]) + ' 上，dp[' + lastImp.i + '] = ' + lastImp.val,
+      m3, lastImp.i);
+  }
+
+  var doneMarks = {};
+  for (var w = 0; w < n; w++) doneMarks[w] = dp[w] === ans ? 'done' : 'dim';
+  snap('return ans;', '全部当过一遍底：最大高度 ' + ans + '（亮出达到它的那个底箱）', doneMarks);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>交易逆序对的总数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 117 / 1159</span>
+  <nav class="pn"><a href="0040.html">上一篇</a><a href="0402.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 51. </span>交易逆序对的总数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 54</li><li class="algo">分治</li><li class="tag">树状数组</li><li class="tag">线段树</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">分治</li><li class="tag">有序集合</li><li class="tag">归并排序</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">归并排序时顺手统计：合并两段时右段先出队，左段剩下的都更大，一口气加 mid-i+1 个逆序对。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>逆序对只在「合并两个有序段」时跨段产生：右段出一个元素，左段 <code>[i..mid]</code> 就都比它大，一次加 <code>mid-i+1</code> 个。</li><li>递归分别统计左右段内部的逆序对，再加合并时跨段的个数。</li><li>相等（<code>a[i] &lt;= a[j]</code>）不算逆序对，此时左段先出队。</li><li><code>temp</code> 辅助数组只开一次复用。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> reversePairs(<span class="k">int</span>[] <span class="k">record</span>) {</span><span class="ln"><span class="no">3</span>        <span class="c">// temp 只开一次，归并时复用</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] temp = <span class="k">new</span> <span class="k">int</span>[<span class="k">record</span>.length];</span><span class="ln"><span class="no">5</span>        <span class="k">return</span> (<span class="k">int</span>) mergeSort(<span class="k">record</span>, temp, <span class="n">0</span>, <span class="k">record</span>.length - <span class="n">1</span>);</span><span class="ln"><span class="no">6</span>    }</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="c">/** 把 a[l..r] 排好序，返回这段区间里的逆序对个数。 */</span></span><span class="ln"><span class="no">9</span>    <span class="k">private</span> <span class="k">long</span> mergeSort(<span class="k">int</span>[] a, <span class="k">int</span>[] temp, <span class="k">int</span> l, <span class="k">int</span> r) {</span><span class="ln"><span class="no">10</span>        <span class="k">if</span> (l &gt;= r) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> mid = (l + r) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">12</span>        <span class="c">// 左、右两半内部的逆序对先各自统计</span></span><span class="ln"><span class="no">13</span>        <span class="k">long</span> cnt = mergeSort(a, temp, l, mid) + mergeSort(a, temp, mid + <span class="n">1</span>, r);</span><span class="ln"><span class="no">14</span>        <span class="k">int</span> i = l, j = mid + <span class="n">1</span>, k = l;</span><span class="ln"><span class="no">15</span>        <span class="k">while</span> (i &lt;= mid &amp;&amp; j &lt;= r) {</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (a[i] &lt;= a[j]) temp[k++] = a[i++];</span><span class="ln"><span class="no">17</span>            <span class="k">else</span> {</span><span class="ln"><span class="no">18</span>                <span class="c">// 右边先出队：a[i..mid] 全都比 a[j] 大，一口气记 mid-i+1 个</span></span><span class="ln"><span class="no">19</span>                cnt += mid - i + <span class="n">1</span>;</span><span class="ln"><span class="no">20</span>                temp[k++] = a[j++];</span><span class="ln"><span class="no">21</span>            }</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">while</span> (i &lt;= mid) temp[k++] = a[i++];</span><span class="ln"><span class="no">24</span>        <span class="k">while</span> (j &lt;= r) temp[k++] = a[j++];</span><span class="ln"><span class="no">25</span>        <span class="t">System</span>.arraycopy(temp, l, a, l, r - l + <span class="n">1</span>);</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> cnt;</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>在股票交易中，如果前一天的股价高于后一天的股价，则可以认为存在一个「交易逆序对」。请设计一个程序，输入一段时间内的股票交易记录 <code>record</code>，返回其中存在的「交易逆序对」总数。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>record = [9, 7, 5, 4, 6]
+<strong>输出：</strong>8
+<strong>解释：</strong>交易中的逆序对为 (9, 7), (9, 5), (9, 4), (9, 6), (7, 5), (7, 4), (7, 6), (5, 4)。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<p><code>0 &lt;= record.length &lt;= 50000</code></p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int reversePairs(int[] record) {", "        // temp 只开一次，归并时复用", "        int[] temp = new int[record.length];", "        return (int) mergeSort(record, temp, 0, record.length - 1);", "    }", "", "    /** 把 a[l..r] 排好序，返回这段区间里的逆序对个数。 */", "    private long mergeSort(int[] a, int[] temp, int l, int r) {", "        if (l >= r) return 0;", "        int mid = (l + r) >>> 1;", "        // 左、右两半内部的逆序对先各自统计", "        long cnt = mergeSort(a, temp, l, mid) + mergeSort(a, temp, mid + 1, r);", "        int i = l, j = mid + 1, k = l;", "        while (i <= mid && j <= r) {", "            if (a[i] <= a[j]) temp[k++] = a[i++];", "            else {", "                // 右边先出队：a[i..mid] 全都比 a[j] 大，一口气记 mid-i+1 个", "                cnt += mid - i + 1;", "                temp[k++] = a[j++];", "            }", "        }", "        while (i <= mid) temp[k++] = a[i++];", "        while (j <= r) temp[k++] = a[j++];", "        System.arraycopy(temp, l, a, l, r - l + 1);", "        return cnt;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 剑指 Offer 51 / LCR 170. 交易逆序对的总数 —— 图解：复刻 Solution.java 的归并统计，
+// 拍最外层合并的 4 个关键时刻。约定见 site/assets/viz.js，at 必须唯一匹配 Solution.java 的一行。
+
+var STORY_INPUT = { record: [9, 7, 5, 4, 6] };
+
+function trace(input) {
+  var a = input.record.slice();
+  var n = a.length;
+  var frames = [];
+  var total = 0;
+
+  // o: { leftFrom, leftTo, cur, i, j }
+  function snap(at, key, o) {
+    var marks = {};
+    if (o && o.leftFrom != null) {
+      for (var x = o.leftFrom; x <= o.leftTo; x++) marks[x] = 'win';
+    }
+    if (o && o.cur != null) marks[o.cur] = 'cur';
+    var pointers = [];
+    if (o && o.i != null) pointers.push({ at: o.i, label: 'i', cls: 'p-left' });
+    if (o && o.j != null) pointers.push({ at: o.j, label: 'j', cls: 'p-right' });
+    frames.push(Viz.frame(at, key, [
+      Viz.cells(a, { title: 'record（左右两半各自有序）', marks: marks, pointers: pointers }),
+      Viz.vars([{ name: 'cnt 已记逆序对', v: total, cls: 'chg' }])
+    ]));
+  }
+
+  var snapped = 0;   // 最外层合并最多拍两帧计数
+
+  function ms(l, r) {
+    if (l >= r) return;
+    var mid = (l + r) >>> 1;
+    ms(l, mid);
+    ms(mid + 1, r);
+
+    var isTop = l === 0 && r === n - 1 && n > 1;
+    if (isTop) {
+      snap('long cnt = mergeSort(a, temp, l, mid) + mergeSort(a, temp, mid + 1, r);',
+        '两半各自排好：左 [5,7,9]、右 [4,6]，开始合并并数跨段的逆序对',
+        { leftFrom: l, leftTo: mid, i: l, j: mid + 1 });
+    }
+
+    var i = l, j = mid + 1, k = l;
+    var temp = [];
+    while (i <= mid && j <= r) {
+      if (a[i] <= a[j]) {
+        temp[k++] = a[i++];
+      } else {
+        var add = mid - i + 1;
+        total += add;
+        if (isTop && snapped < 2) {
+          snapped++;
+          snap('cnt += mid - i + 1;',
+            a[j] + ' 先出队：左段剩 ' + add + ' 个都比它大，cnt += ' + add,
+            { leftFrom: i, leftTo: mid, cur: j, i: i, j: j });
+        }
+        temp[k++] = a[j++];
+      }
+    }
+    while (i <= mid) temp[k++] = a[i++];
+    while (j <= r) temp[k++] = a[j++];
+    for (var t = l; t <= r; t++) a[t] = temp[t];
+  }
+
+  ms(0, n - 1);
+
+  var done = {};
+  for (var d = 0; d < n; d++) done[d] = 'done';
+  frames.push(Viz.frame('return cnt;', '排完序：全部逆序对共 ' + total + ' 个', [
+    Viz.cells(a, { title: 'record（已排好序）', marks: done }),
+    Viz.vars([{ name: 'cnt 逆序对总数', v: total, cls: 'done' }])
+  ]));
+
+  return { frames: frames, result: total };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

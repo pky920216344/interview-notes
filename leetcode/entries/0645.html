@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>错误的集合 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 966 / 1159</span>
+  <nav class="pn"><a href="mianshi-01-09.html">上一篇</a><a href="0502.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">645. </span>错误的集合</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 1</li><li class="algo">哈希表</li><li class="tag">位运算</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">原地负号标记：值 v 在槽 v−1 翻负表示「出现过」；二次踩到同一槽即重复，扫完还是正数的槽即缺失。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>把值 <code>v</code> 记到下标 <code>v-1</code>：第一次到就把 <code>nums[v-1]</code> 翻成负数。</li><li>第二次走到同一个槽发现已是负数 → <code>v</code> 重复（<code>dup</code>）。</li><li>扫一遍下标，还是正数的槽 <code>i</code> 说明 <code>i+1</code> 从没出现 → <code>miss</code>。</li><li>全程只用数组自身的符号位，O(1) 额外空间；结尾把负号翻回去还原输入。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span>[] findErrorNums(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> dup = <span class="n">0</span>, miss = <span class="n">0</span>;</span><span class="ln"><span class="no">4</span>        <span class="c">// 第一遍：值 v 记到槽 v-1（把槽翻成负数）；</span></span><span class="ln"><span class="no">5</span>        <span class="c">// 发现槽已经是负数，v 就是重复出现的那个</span></span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> v : nums) {</span><span class="ln"><span class="no">7</span>            <span class="k">int</span> slot = <span class="t">Math</span>.abs(v) - <span class="n">1</span>;</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (nums[slot] &lt; <span class="n">0</span>) dup = <span class="t">Math</span>.abs(v);</span><span class="ln"><span class="no">9</span>            <span class="k">else</span> nums[slot] = -nums[slot];</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="c">// 第二遍：还是正数的槽从没被标记，槽号 + 1 就是丢的数</span></span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; nums.length; i++) {</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (nums[i] &gt; <span class="n">0</span>) miss = i + <span class="n">1</span>;</span><span class="ln"><span class="no">14</span>            <span class="k">else</span> nums[i] = -nums[i];      <span class="c">// 顺手把数组还原</span></span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{dup, miss};</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>集合 <code>s</code> 包含从 <code>1</code> 到&nbsp;<code>n</code>&nbsp;的整数。不幸的是，因为数据错误，导致集合里面某一个数字复制成了集合里面的另外一个数字的值，导致集合 <strong>丢失了一个数字</strong> 并且 <strong>有一个数字重复</strong> 。</p>
+
+<p>给定一个数组 <code>nums</code> 代表了该集合发生错误后的结果。</p>
+
+<p>请你找出重复出现的整数，再找到丢失的整数，将它们以数组的形式返回。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,2,4]
+<strong>输出：</strong>[2,3]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,1]
+<strong>输出：</strong>[1,2]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= nums.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= nums[i] &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int[] findErrorNums(int[] nums) {", "        int dup = 0, miss = 0;", "        // 第一遍：值 v 记到槽 v-1（把槽翻成负数）；", "        // 发现槽已经是负数，v 就是重复出现的那个", "        for (int v : nums) {", "            int slot = Math.abs(v) - 1;", "            if (nums[slot] < 0) dup = Math.abs(v);", "            else nums[slot] = -nums[slot];", "        }", "        // 第二遍：还是正数的槽从没被标记，槽号 + 1 就是丢的数", "        for (int i = 0; i < nums.length; i++) {", "            if (nums[i] > 0) miss = i + 1;", "            else nums[i] = -nums[i];      // 顺手把数组还原", "        }", "        return new int[]{dup, miss};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 645. 错误的集合 —— 图解：槽位负号标记法，一遍找重复、一遍找缺失。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 2, 2, 4] };
+
+function trace(input) {
+  var nums = input.nums.slice();      // 复制一份再翻负号，别污染输入
+  var n = nums.length;
+  var frames = [];
+  var dup = 0, miss = 0;
+
+  function panel(arr, title, marks) {
+    return Viz.cells(arr.map(String), { title: title, marks: marks || {} });
+  }
+
+  // 第一遍：边跑边在关键点拍下数组快照
+  var firstFlip = null, dupSnap = null;
+  for (var i = 0; i < n; i++) {
+    var v = Math.abs(nums[i]);
+    var slot = v - 1;
+    if (nums[slot] < 0) {
+      dup = v;
+      if (!dupSnap) dupSnap = { arr: nums.slice(), cur: i, slot: slot };
+    } else {
+      nums[slot] = -nums[slot];
+      if (!firstFlip) firstFlip = { arr: nums.slice() };
+    }
+  }
+  // 第二遍：找还是正数的槽（快照先拍，数组随后统一还原）
+  var missSnap = null;
+  for (var j = 0; j < n; j++) {
+    if (nums[j] > 0) { miss = j + 1; if (!missSnap) missSnap = { arr: nums.slice(), cur: j }; }
+  }
+  for (var r = 0; r < n; r++) if (nums[r] < 0) nums[r] = -nums[r];
+
+  frames.push(Viz.frame('for (int v : nums) {',
+    '值 v 记到槽 v−1：读到 1，把槽 0 翻成负数作「已出现」标记',
+    [panel(firstFlip.arr, 'nums（负数 = 该槽的数已出现过）', (function () {
+      var m = {};
+      for (var k = 0; k < n; k++) if (firstFlip.arr[k] < 0) m[k] = 'new';
+      return m;
+    })())]));
+
+  if (dupSnap) {
+    var m = {};
+    for (var k1 = 0; k1 < n; k1++) if (dupSnap.arr[k1] < 0) m[k1] = 'win';
+    m[dupSnap.slot] = 'bad';
+    m[dupSnap.cur] = 'cur';
+    frames.push(Viz.frame('if (nums[slot] < 0) dup = Math.abs(v);',
+      '再读到 ' + dup + '：槽 ' + dupSnap.slot + ' 已是负数 → 它出现两次，dup=' + dup,
+      [panel(dupSnap.arr, 'nums（负数 = 该槽的数已出现过）', m)]));
+  }
+
+  if (missSnap) {
+    var m2 = {};
+    for (var k2 = 0; k2 < n; k2++) if (missSnap.arr[k2] < 0) m2[k2] = 'win';
+    m2[missSnap.cur] = 'cur';
+    frames.push(Viz.frame('if (nums[i] > 0) miss = i + 1;',
+      '扫槽：只有槽 ' + missSnap.cur + ' 没人标记 → 丢的是 ' + miss + '，miss=' + miss,
+      [panel(missSnap.arr, 'nums（正数 = 该槽的数从没出现）', m2)]));
+  }
+
+  frames.push(Viz.frame('return new int[]{dup, miss};',
+    '数组还原，答案 [' + dup + ', ' + miss + ']：重复 ' + dup + '、缺失 ' + miss,
+    [panel(nums, 'nums（已还原）', (function () {
+      var m3 = {};
+      for (var k3 = 0; k3 < n; k3++) m3[k3] = 'done';
+      return m3;
+    })()), Viz.vars([
+      { name: 'dup（重复）', v: String(dup) },
+      { name: 'miss（缺失）', v: String(miss) }
+    ])]));
+
+  return { frames: frames, result: [dup, miss] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

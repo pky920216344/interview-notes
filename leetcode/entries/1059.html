@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>从起点到终点的所有路径 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 802 / 1159</span>
+  <nav class="pn"><a href="offer-32-i.html">上一篇</a><a href="offer-55-ii.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1059. </span>从起点到终点的所有路径</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">深度优先搜索/递归</li><li class="tag">图</li><li class="tag">拓扑排序</li><li class="tag">kosarajus-algorithm</li><li class="tag">tarjans-scc-algorithm</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">DFS 三色标记：出度为 0 的结点必须是终点；撞到「还在栈上」的灰点说明有环；某结点所有出边都验证通过就染黑，之后不再重看。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>建邻接表，从 <code>source</code> DFS；<code>color</code> 三态：<code>0</code> 没访问、<code>1</code> 在递归栈上、<code>2</code> 已确认通向终点。</li><li><strong>出度为 0 的结点</strong>：只有它本身就是 <code>destination</code> 才算这条路通，否则直接 <code>false</code>。</li><li>递归中撞到灰点 = 有环（路径会无限绕圈），<code>false</code>；黑点直接放行，白点才递归。</li><li>某结点的所有出边都验证通过就染黑回传；<code>source == destination</code> 且无出边是合法的平凡情形。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + m)，空间复杂度 O(n + m)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> leadsToDestination(<span class="k">int</span> n, <span class="k">int</span>[][] edges, <span class="k">int</span> source, <span class="k">int</span> destination) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 邻接表：adj[u] 存 u 的所有出边终点</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; adj = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) adj.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;());</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span>[] e : edges) adj.get(e[<span class="n">0</span>]).add(e[<span class="n">1</span>]);</span><span class="ln"><span class="no">9</span>        <span class="c">// color：0 没访问、1 在递归栈上、2 已确认出边全通向终点</span></span><span class="ln"><span class="no">10</span>        <span class="k">return</span> dfs(source, destination, adj, <span class="k">new</span> <span class="k">int</span>[n]);</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="k">private</span> <span class="k">boolean</span> dfs(<span class="k">int</span> node, <span class="k">int</span> destination, <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; adj, <span class="k">int</span>[] color) {</span><span class="ln"><span class="no">14</span>        <span class="c">// 路走到头（出度为 0）：必须正好停在终点，否则这条路不通</span></span><span class="ln"><span class="no">15</span>        <span class="k">if</span> (adj.get(node).isEmpty()) <span class="k">return</span> node == destination;</span><span class="ln"><span class="no">16</span>        color[node] = <span class="n">1</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">for</span> (<span class="k">int</span> next : adj.get(node)) {</span><span class="ln"><span class="no">18</span>            <span class="c">// 撞见还在栈上的结点 = 有环，这条路会无限绕圈</span></span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (color[next] == <span class="n">1</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">20</span>            <span class="c">// 已确认的黑点直接放行，没访问过的才递归</span></span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (color[next] == <span class="n">0</span> &amp;&amp; !dfs(next, destination, adj, color)) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        color[node] = <span class="n">2</span>;   <span class="c">// 所有出边都验证通过，回传给父结点</span></span><span class="ln"><span class="no">24</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean leadsToDestination(int n, int[][] edges, int source, int destination) {", "        // 邻接表：adj[u] 存 u 的所有出边终点", "        List<List<Integer>> adj = new ArrayList<>();", "        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());", "        for (int[] e : edges) adj.get(e[0]).add(e[1]);", "        // color：0 没访问、1 在递归栈上、2 已确认出边全通向终点", "        return dfs(source, destination, adj, new int[n]);", "    }", "", "    private boolean dfs(int node, int destination, List<List<Integer>> adj, int[] color) {", "        // 路走到头（出度为 0）：必须正好停在终点，否则这条路不通", "        if (adj.get(node).isEmpty()) return node == destination;", "        color[node] = 1;", "        for (int next : adj.get(node)) {", "            // 撞见还在栈上的结点 = 有环，这条路会无限绕圈", "            if (color[next] == 1) return false;", "            // 已确认的黑点直接放行，没访问过的才递归", "            if (color[next] == 0 && !dfs(next, destination, adj, color)) return false;", "        }", "        color[node] = 2;   // 所有出边都验证通过，回传给父结点", "        return true;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1059. 从始点到终点的所有路径 —— 图解：复刻 Solution.java 的「DFS 三色标记」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 4, edges: [[0, 1], [0, 2], [1, 3], [2, 3]], source: 0, destination: 3 };
+
+function trace(input) {
+  var n = input.n, edges = input.edges, source = input.source, destination = input.destination;
+  var frames = [];
+
+  // 邻接表：adj[u] 存 u 的所有出边终点
+  var adj = [];
+  for (var v = 0; v < n; v++) adj.push([]);
+  edges.forEach(function (e) { adj[e[0]].push(e[1]); });
+
+  var color = [];
+  for (v = 0; v < n; v++) color.push(0);
+  var path = [];          // 当前递归栈上的结点序列
+  var sinkSeen = false, blackSeen = false;
+
+  var COLOR_NAME = ['白（没访问）', '灰（在栈上）', '黑（已确认）'];
+  var COLOR_CLS = ['', 'cur', 'done'];
+
+  function colorPanel(hit) {
+    return Viz.table('color：结点 → 状态', color.map(function (c, i) {
+      return { k: String(i), v: COLOR_NAME[c], cls: (i === hit ? 'hit ' : '') + COLOR_CLS[c] };
+    }), { hint: '0 没访问 / 1 在递归栈上 / 2 已确认全通向终点' });
+  }
+  function pathPanel() {
+    var edgesDrawn = [];
+    for (var i = 0; i + 1 < path.length; i++) edgesDrawn.push([i, i + 1, 'win']);
+    var pointers = path.length ? [{ at: path.length - 1, label: 'node=' + path[path.length - 1], cls: 'p-cur' }] : [];
+    return Viz.list(path.map(String), { title: '当前递归路径（从 source 一路往下）', edges: edgesDrawn, nulls: [], pointers: pointers });
+  }
+  function snap(at, key, hit) { frames.push(Viz.frame(at, key, [pathPanel(), colorPanel(hit)])); }
+
+  function dfs(node) {
+    // 路走到头（出度为 0）：必须正好停在终点，否则这条路不通
+    if (adj[node].length === 0) {
+      if (!sinkSeen) {
+        sinkSeen = true;
+        path.push(node);
+        snap('if (adj.get(node).isEmpty()) return node == destination;',
+          '走到出度为 0 的结点 ' + node + '：它' + (node === destination ? '正是终点，这条路通过' : '不是终点，直接判负'),
+          node);
+        path.pop();
+      }
+      return node === destination;
+    }
+    color[node] = 1;
+    path.push(node);
+    var ok = true;
+    for (var i = 0; i < adj[node].length; i++) {
+      var next = adj[node][i];
+      if (color[next] === 1) { ok = false; break; }          // 有环
+      if (color[next] === 0 && !dfs(next)) { ok = false; break; }
+    }
+    path.pop();
+    if (ok) {
+      color[node] = 2;
+      if (!blackSeen) {
+        blackSeen = true;
+        snap('color[node] = 2;', '结点 ' + node + ' 的所有出边都验证通过，染黑回传', node);
+      }
+    } else {
+      color[node] = 0;
+    }
+    return ok;
+  }
+
+  frames.push(Viz.frame('return dfs(source, destination, adj, new int[n]);',
+    '开局：全部结点还是白的，从 source=' + source + ' 出发逐条验证', [colorPanel(source)]));
+
+  var ans = dfs(source);
+
+  frames.push(Viz.frame('return dfs(source, destination, adj, new int[n]);',
+    ans ? '全部验证完：从 ' + source + ' 出发的每条路都停在 ' + destination + '，返回 true'
+        : '有路到不了 ' + destination + '（断在别处或绕圈），返回 false',
+    [colorPanel(source)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>消失的两个数字 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 570 / 1159</span>
+  <nav class="pn"><a href="1360.html">上一篇</a><a href="1062.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 17.19. </span>消失的两个数字</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">位运算</li><li class="tag">位运算</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">全集 1..n 与数组互相异或得到 x^y；取最低位的 1 把全集和数组各分两组，两组各自再异或出 x、y。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>全集 <code>1..n</code> 异或一遍再异或数组：现身的数两两抵消，剩下两个缺失数的异或 <code>x^y</code>（<code>x≠y</code>，非零）。</li><li><code>x^y</code> 的最低位 1 那一位上，<code>x</code>、<code>y</code> 必定一个 0 一个 1——这是把它俩分开的唯一依据。</li><li>全集和数组都按「这一位是否为 1」分两组各自异或：每组里现身的抵消，剩下一个缺失数。</li><li>两组结果排序后输出（题面说任意顺序都行，固定排序好对拍）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span>[] missingTwo(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = nums.length + <span class="n">2</span>;               <span class="c">// 全集是 1..n，缺了两个</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span> xy = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= n; i++) xy ^= i;  <span class="c">// 全集异或一遍</span></span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) xy ^= x;            <span class="c">// 再异或数组：现身的全部抵消，剩下 x^y</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> low = xy &amp; -xy;                    <span class="c">// x^y 的最低位 1：x、y 在这一位必定不同</span></span><span class="ln"><span class="no">8</span>        <span class="k">int</span> a = <span class="n">0</span>, b = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= n; i++) {         <span class="c">// 全集和数组都按这一位分成两组</span></span><span class="ln"><span class="no">10</span>            <span class="k">if</span> ((i &amp; low) != <span class="n">0</span>) a ^= i;</span><span class="ln"><span class="no">11</span>            <span class="k">else</span> b ^= i;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) {</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> ((x &amp; low) != <span class="n">0</span>) a ^= x;</span><span class="ln"><span class="no">15</span>            <span class="k">else</span> b ^= x;</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="c">// 每组里现身的数又全部抵消，各剩一个缺失的数</span></span><span class="ln"><span class="no">18</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{<span class="t">Math</span>.min(a, b), <span class="t">Math</span>.max(a, b)};</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个数组，包含从 1 到 N 所有的整数，但其中缺了两个数字。你能在 O(N) 时间内只用 O(1) 的空间找到它们吗？</p>
+
+<p>以任意顺序返回这两个数字均可。</p>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong><code>[1]</code>
+<strong>输出：</strong>[2,3]</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong><code>[2,3]</code>
+<strong>输出：</strong>[1,4]</pre>
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>nums.length &lt;=&nbsp;30000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int[] missingTwo(int[] nums) {", "        int n = nums.length + 2;               // 全集是 1..n，缺了两个", "        int xy = 0;", "        for (int i = 1; i <= n; i++) xy ^= i;  // 全集异或一遍", "        for (int x : nums) xy ^= x;            // 再异或数组：现身的全部抵消，剩下 x^y", "        int low = xy & -xy;                    // x^y 的最低位 1：x、y 在这一位必定不同", "        int a = 0, b = 0;", "        for (int i = 1; i <= n; i++) {         // 全集和数组都按这一位分成两组", "            if ((i & low) != 0) a ^= i;", "            else b ^= i;", "        }", "        for (int x : nums) {", "            if ((x & low) != 0) a ^= x;", "            else b ^= x;", "        }", "        // 每组里现身的数又全部抵消，各剩一个缺失的数", "        return new int[]{Math.min(a, b), Math.max(a, b)};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 17.19. 消失的两个数字 —— 图解：复刻 Solution.java 的「异或 + 按最低位分组」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 2, 4, 6] };
+
+function trace(input) {
+  var nums = input.nums;
+  var n = nums.length + 2;
+  var frames = [];
+  var full = [];
+  for (var i = 1; i <= n; i++) full.push(i);
+
+  var ALL = 'for (int i = 1; i <= n; i++) xy ^= i;';
+  var LOW = 'int low = xy & -xy;';
+  var GRP = 'if ((i & low) != 0) a ^= i;';
+  var RET = 'return new int[]{Math.min(a, b), Math.max(a, b)};';
+
+  function fullPanel(bitOn) {
+    var marks = {}, items = [];
+    for (var i = 1; i <= n; i++) {
+      items.push(String(i));
+      if (bitOn != null) marks[i - 1] = (i & bitOn) !== 0 ? 'win' : 'dim';
+    }
+    return Viz.cells(items, { title: '全集 1..n' + (bitOn != null ? '（win = 这一位是 1 的组）' : ''), marks: marks });
+  }
+  function numsPanel(marks) {
+    return Viz.cells(nums, { title: '数组 nums（win = 分进 1 组，dim = 分进 0 组）', marks: marks || {} });
+  }
+
+  // 1) 全集 ⊕ 数组：现身的抵消，剩下 x^y
+  var xy = 0;
+  for (i = 1; i <= n; i++) xy ^= i;
+  var xyAfterFull = xy;
+  for (i = 0; i < nums.length; i++) xy ^= nums[i];
+  frames.push(Viz.frame(ALL, '全集 1..' + n + ' 异或一遍，再异或数组：现身的数两两抵消，剩下缺的两个数的异或 x^y=' + xy,
+    [fullPanel(), numsPanel(), Viz.vars([{ name: '全集异或到一半', v: xyAfterFull }, { name: '再异或数组后 x^y', v: xy, cls: 'chg' }])]));
+
+  // 2) lowbit：x、y 在这一位必定不同
+  var low = xy & -xy;
+  frames.push(Viz.frame(LOW, 'x^y=' + xy + ' 的最低位 1 在第 ' + Math.log2(low) + ' 位：缺的两个数这位必定一个 0 一个 1',
+    [fullPanel(low), numsPanel(), Viz.vars([{ name: 'low = x^y & -x^y', v: low, cls: 'chg' }])]));
+
+  // 3) 分组异或：两组各剩一个缺失的数
+  var a = 0, b = 0;
+  for (i = 1; i <= n; i++) { if ((i & low) !== 0) a ^= i; else b ^= i; }
+  var numsMarks = {};
+  for (i = 0; i < nums.length; i++) numsMarks[i] = (nums[i] & low) !== 0 ? 'win' : 'dim';
+  for (i = 0; i < nums.length; i++) { if ((nums[i] & low) !== 0) a ^= nums[i]; else b ^= nums[i]; }
+  frames.push(Viz.frame(GRP, '按这位把全集和数组各分两组、组内异或：现身的又抵消，两组分别剩 ' + Math.min(a, b) + ' 和 ' + Math.max(a, b),
+    [fullPanel(low), numsPanel(numsMarks), Viz.vars([
+      { name: '这一位是 1 的组 a', v: a, cls: 'chg' },
+      { name: '这一位是 0 的组 b', v: b, cls: 'chg' }])]));
+
+  // 4) 排序输出
+  var ans = [Math.min(a, b), Math.max(a, b)];
+  frames.push(Viz.frame(RET, '缺的两个数就是 ' + ans[0] + ' 和 ' + ans[1] + '，排序输出',
+    [fullPanel(low), numsPanel(numsMarks), Viz.vars([{ name: '答案', v: '[' + ans.join(',') + ']', cls: 'done' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

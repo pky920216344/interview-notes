@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最大得分的路径数目 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 961 / 1159</span>
+  <nav class="pn"><a href="1289.html">上一篇</a><a href="1449.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1301. </span>最大得分的路径数目</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">从 S 出发反向 DP：best 记到每格的最大得分、cnt 记方案数；走进数字格才计分，得分并列时方案数相加。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>best[i][j]</code> = 从 S 走到 <code>(i,j)</code> 的最大得分，<code>-1</code> 表示到不了；S 初始 <code>best=0, cnt=1</code>。</li><li>每步只能上 / 左 / 左上，坐标严格变小 → 按 <code>i,j</code> 从大到小扫一遍就是拓扑序。</li><li>扩展到新格时把<strong>新格的数字</strong>计入（<code>E</code> 计 0，<code>X</code> 直接跳过）；<code>v</code> 更大则覆盖并继承 cnt，相等则 <code>cnt</code> 相加取模。</li><li>到不了 E（<code>best[0][0] &lt; 0</code>）返回 <code>[0,0]</code>；注意得分 0 但可达时要返回 <code>[0, 方案数]</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] pathsWithMaxScore(<span class="t">List</span>&lt;<span class="t">String</span>&gt; board) {</span><span class="ln"><span class="no">5</span>        <span class="k">final</span> <span class="k">int</span> MOD = <span class="n">1_000_000_007</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> n = board.size(), m = board.get(<span class="n">0</span>).length();</span><span class="ln"><span class="no">7</span>        <span class="k">long</span>[][] best = <span class="k">new</span> <span class="k">long</span>[n][m];   <span class="c">// best[i][j]：从 S 走到 (i,j) 的最大得分，-1 表示到不了</span></span><span class="ln"><span class="no">8</span>        <span class="k">long</span>[][] cnt = <span class="k">new</span> <span class="k">long</span>[n][m];    <span class="c">// 取到最大得分的方案数（mod 1e9+7）</span></span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">long</span>[] row : best) <span class="t">Arrays</span>.fill(row, -<span class="n">1</span>);</span><span class="ln"><span class="no">10</span>        best[n - <span class="n">1</span>][m - <span class="n">1</span>] = <span class="n">0</span>;   <span class="c">// 起点自己不计分</span></span><span class="ln"><span class="no">11</span>        cnt[n - <span class="n">1</span>][m - <span class="n">1</span>] = <span class="n">1</span>;</span><span class="ln"><span class="no">12</span>        <span class="k">int</span>[][] dirs = {{-<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">0</span>, -<span class="n">1</span>}, {-<span class="n">1</span>, -<span class="n">1</span>}};   <span class="c">// 从 S 出发是往上、左、左上走</span></span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> i = n - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> j = m - <span class="n">1</span>; j &gt;= <span class="n">0</span>; j--) {</span><span class="ln"><span class="no">15</span>                <span class="k">if</span> (best[i][j] &lt; <span class="n">0</span>) <span class="k">continue</span>;   <span class="c">// X 格和到不了的格子没法向外扩展</span></span><span class="ln"><span class="no">16</span>                <span class="k">for</span> (<span class="k">int</span>[] d : dirs) {</span><span class="ln"><span class="no">17</span>                    <span class="k">int</span> ni = i + d[<span class="n">0</span>], nj = j + d[<span class="n">1</span>];</span><span class="ln"><span class="no">18</span>                    <span class="k">if</span> (ni &lt; <span class="n">0</span> || nj &lt; <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">19</span>                    <span class="k">char</span> c = board.get(ni).charAt(nj);</span><span class="ln"><span class="no">20</span>                    <span class="k">if</span> (c == <span class="s">'X'</span>) <span class="k">continue</span>;   <span class="c">// 障碍进不去</span></span><span class="ln"><span class="no">21</span>                    <span class="k">long</span> v = best[i][j] + (c == <span class="s">'E'</span> ? <span class="n">0</span> : c - <span class="s">'0'</span>);   <span class="c">// 走进新格子才把它的数字计入</span></span><span class="ln"><span class="no">22</span>                    <span class="k">if</span> (v &gt; best[ni][nj]) {</span><span class="ln"><span class="no">23</span>                        best[ni][nj] = v;</span><span class="ln"><span class="no">24</span>                        cnt[ni][nj] = cnt[i][j];</span><span class="ln"><span class="no">25</span>                    } <span class="k">else</span> <span class="k">if</span> (v == best[ni][nj]) {</span><span class="ln"><span class="no">26</span>                        cnt[ni][nj] = (cnt[ni][nj] + cnt[i][j]) % MOD;   <span class="c">// 得分并列：方案数相加</span></span><span class="ln"><span class="no">27</span>                    }</span><span class="ln"><span class="no">28</span>                }</span><span class="ln"><span class="no">29</span>            }</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>        <span class="k">if</span> (best[<span class="n">0</span>][<span class="n">0</span>] &lt; <span class="n">0</span>) <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{<span class="n">0</span>, <span class="n">0</span>};</span><span class="ln"><span class="no">32</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{(<span class="k">int</span>) (best[<span class="n">0</span>][<span class="n">0</span>] % MOD), (<span class="k">int</span>) cnt[<span class="n">0</span>][<span class="n">0</span>]};</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个正方形字符数组&nbsp;<code>board</code>&nbsp;，你从数组最右下方的字符&nbsp;<code>&#39;S&#39;</code>&nbsp;出发。</p>
+
+<p>你的目标是到达数组最左上角的字符&nbsp;<code>&#39;E&#39;</code> ，数组剩余的部分为数字字符&nbsp;<code>1, 2, ..., 9</code>&nbsp;或者障碍 <code>&#39;X&#39;</code>。在每一步移动中，你可以向上、向左或者左上方移动，可以移动的前提是到达的格子没有障碍。</p>
+
+<p>一条路径的 「得分」 定义为：路径上所有数字的和。</p>
+
+<p>请你返回一个列表，包含两个整数：第一个整数是 「得分」 的最大值，第二个整数是得到最大得分的方案数，请把结果对&nbsp;<strong><code>10^9 + 7</code></strong> <strong>取余</strong>。</p>
+
+<p>如果没有任何路径可以到达终点，请返回&nbsp;<code>[0, 0]</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>board = [&quot;E23&quot;,&quot;2X2&quot;,&quot;12S&quot;]
+<strong>输出：</strong>[7,1]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>board = [&quot;E12&quot;,&quot;1X1&quot;,&quot;21S&quot;]
+<strong>输出：</strong>[4,2]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>board = [&quot;E11&quot;,&quot;XXX&quot;,&quot;11S&quot;]
+<strong>输出：</strong>[0,0]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= board.length == board[i].length &lt;= 100</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] pathsWithMaxScore(List<String> board) {", "        final int MOD = 1_000_000_007;", "        int n = board.size(), m = board.get(0).length();", "        long[][] best = new long[n][m];   // best[i][j]：从 S 走到 (i,j) 的最大得分，-1 表示到不了", "        long[][] cnt = new long[n][m];    // 取到最大得分的方案数（mod 1e9+7）", "        for (long[] row : best) Arrays.fill(row, -1);", "        best[n - 1][m - 1] = 0;   // 起点自己不计分", "        cnt[n - 1][m - 1] = 1;", "        int[][] dirs = {{-1, 0}, {0, -1}, {-1, -1}};   // 从 S 出发是往上、左、左上走", "        for (int i = n - 1; i >= 0; i--) {", "            for (int j = m - 1; j >= 0; j--) {", "                if (best[i][j] < 0) continue;   // X 格和到不了的格子没法向外扩展", "                for (int[] d : dirs) {", "                    int ni = i + d[0], nj = j + d[1];", "                    if (ni < 0 || nj < 0) continue;", "                    char c = board.get(ni).charAt(nj);", "                    if (c == 'X') continue;   // 障碍进不去", "                    long v = best[i][j] + (c == 'E' ? 0 : c - '0');   // 走进新格子才把它的数字计入", "                    if (v > best[ni][nj]) {", "                        best[ni][nj] = v;", "                        cnt[ni][nj] = cnt[i][j];", "                    } else if (v == best[ni][nj]) {", "                        cnt[ni][nj] = (cnt[ni][nj] + cnt[i][j]) % MOD;   // 得分并列：方案数相加", "                    }", "                }", "            }", "        }", "        if (best[0][0] < 0) return new int[]{0, 0};", "        return new int[]{(int) (best[0][0] % MOD), (int) cnt[0][0]};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1301. 最大得分的路径数目 —— 图解：复刻 Solution.java 的「从 S 反推 best/cnt 两张表」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { board: ['E12', '1X1', '21S'] };
+
+function trace(input) {
+  var board = input.board;
+  var n = board.length, m = board[0].length;
+  var best = [], cnt = [];
+  var i, j;
+  for (i = 0; i < n; i++) {
+    best.push(new Array(m).fill(-1));
+    cnt.push(new Array(m).fill(0));
+  }
+  var frames = [];
+  var firedExpand = false, firedMerge = false;
+
+  function boardPanel(marks) {
+    return Viz.grid(board.map(function (row) { return row.split(''); }),
+      { title: 'board（cur=正在扩展的格子）', marks: marks || {} });
+  }
+  function bestPanel(marks) {
+    return Viz.grid(best.map(function (row) {
+      return row.map(function (v) { return v < 0 ? '' : String(v); });
+    }), { title: 'best：到这格的最大得分', marks: marks || {} });
+  }
+  function cntPanel(marks) {
+    return Viz.grid(cnt.map(function (row) { return row.map(String); }),
+      { title: 'cnt：取到最大得分的方案数', marks: marks || {} });
+  }
+  function snap(at, key, bm, bem, cm, items) {
+    var panels = [boardPanel(bm), bestPanel(bem), cntPanel(cm)];
+    if (items) panels.push(Viz.vars(items));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  best[n - 1][m - 1] = 0;
+  cnt[n - 1][m - 1] = 1;
+  var startKey = (n - 1) + ',' + (m - 1);
+  var sm = {}; sm[startKey] = 'cur';
+  var sem = {}; sem[startKey] = 'new';
+  var scm = {}; scm[startKey] = 'new';
+  snap('cnt[n - 1][m - 1] = 1;',
+    '从右下 S 出发：得分 0、方案 1，往左/上/左上铺表', sm, sem, scm,
+    [{ name: 'S 的 best', v: '0' }, { name: 'S 的 cnt', v: '1' }]);
+
+  var dirs = [[-1, 0], [0, -1], [-1, -1]];
+  for (i = n - 1; i >= 0; i--) {
+    for (j = m - 1; j >= 0; j--) {
+      if (best[i][j] < 0) continue;
+      for (var d = 0; d < 3; d++) {
+        var ni = i + dirs[d][0], nj = j + dirs[d][1];
+        if (ni < 0 || nj < 0) continue;
+        var c = board[ni].charAt(nj);
+        if (c === 'X') continue;
+        var v = best[i][j] + (c === 'E' ? 0 : Number(c));
+        var first = !firedExpand && i === n - 1 && j === m - 1 && d === 0;
+        if (first) {
+          firedExpand = true;
+          var bm = {}; bm[i + ',' + j] = 'cur';
+          var em = {}; em[ni + ',' + nj] = 'new';
+          var cm = {}; cm[ni + ',' + nj] = 'new';
+          snap("long v = best[i][j] + (c == 'E' ? 0 : c - '0');",
+            '从 S 走进 ' + c + '：把它的数字计进得分，best=' + v, bm, em, cm,
+            [{ name: 'v', v: String(v) }, { name: '写入格', v: '(' + ni + ',' + nj + ')' }]);
+        }
+        if (v > best[ni][nj]) { best[ni][nj] = v; cnt[ni][nj] = cnt[i][j]; }
+        else if (v === best[ni][nj]) {
+          cnt[ni][nj] = (cnt[ni][nj] + cnt[i][j]) % 1000000007;
+          if (!firedMerge && i === 0 && j === 1 && ni === 0 && nj === 0) {
+            firedMerge = true;
+            var bm2 = {}; bm2[i + ',' + j] = 'cur'; bm2[ni + ',' + nj] = 'hit';
+            var em2 = {}; em2[ni + ',' + nj] = 'cur';
+            var cm2 = {}; cm2[ni + ',' + nj] = 'chg';
+            snap('cnt[ni][nj] = (cnt[ni][nj] + cnt[i][j]) % MOD;',
+              '两条路得分并列 ' + v + '：cnt 相加成 ' + cnt[ni][nj], bm2, em2, cm2,
+              [{ name: 'E 的 cnt', v: String(cnt[0][0]) }]);
+          }
+        }
+      }
+    }
+  }
+
+  var fm = {};
+  if (best[0][0] >= 0) fm['0,0'] = 'done';
+  snap('return new int[]{(int) (best[0][0] % MOD), (int) cnt[0][0]};',
+    best[0][0] < 0 ? 'E 到不了：返回 [0, 0]' : '终点 E：最大得分 ' + best[0][0] + '、方案 ' + cnt[0][0],
+    fm, {}, {},
+    [{ name: '结果', v: best[0][0] < 0 ? '[0,0]' : '[' + best[0][0] + ',' + cnt[0][0] + ']' }]);
+
+  return { frames: frames, result: best[0][0] < 0 ? [0, 0] : [best[0][0] % 1000000007, cnt[0][0] % 1000000007] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>找出最具竞争力的子序列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 670 / 1159</span>
+  <nav class="pn"><a href="offer-55-i.html">上一篇</a><a href="mianshi-10-01.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1673. </span>找出最具竞争力的子序列</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">单调栈</li><li class="aux">贪心</li><li class="tag">栈</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">单调栈：新数更小就弹栈顶换成它，但弹出前必须确认「剩下的数还够凑满 k 个」；栈满后小的照样能弹。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>栈里维护「目前最优的开头」，遇到更小的 <code>nums[i]</code> 就把更大的栈顶弹掉，答案字典序更小。</li><li>弹出条件 <code>top + n - i &gt;= k</code>：弹掉后栈里剩 <code>top</code> 个，加上还未读的 <code>n-i</code> 个仍能凑满 k，才允许弹。</li><li>栈满 k 个后不再入栈，但遇到更小的数仍可先弹再补；最后栈里正好是答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(k)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span>[] mostCompetitive(<span class="k">int</span>[] nums, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] stack = <span class="k">new</span> <span class="k">int</span>[k];   <span class="c">// 数组当栈，最后正好就是答案</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span> top = -<span class="n">1</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">7</span>            <span class="c">// 栈顶比当前大就弹它换当前；前提是弹掉后剩下的数仍够凑满 k 个</span></span><span class="ln"><span class="no">8</span>            <span class="k">while</span> (top &gt;= <span class="n">0</span> &amp;&amp; stack[top] &gt; nums[i] &amp;&amp; top + n - i &gt;= k) top--;</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (top &lt; k - <span class="n">1</span>) stack[++top] = nums[i];</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="k">return</span> stack;</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> 和一个正整数 <code>k</code> ，返回长度为 <code>k</code> 且最具 <strong>竞争力</strong> 的<em> </em><code>nums</code> 子序列。</p>
+
+<p>数组的子序列是从数组中删除一些元素（可能不删除元素）得到的序列。</p>
+
+<p>在子序列 <code>a</code> 和子序列 <code>b</code> 第一个不相同的位置上，如果 <code>a</code> 中的数字小于 <code>b</code> 中对应的数字，那么我们称子序列 <code>a</code> 比子序列 <code>b</code>（相同长度下）更具 <strong>竞争力</strong> 。 例如，<code>[1,3,4]</code> 比 <code>[1,3,5]</code> 更具竞争力，在第一个不相同的位置，也就是最后一个位置上， <code>4</code> 小于 <code>5</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [3,5,2,6], k = 2
+<strong>输出：</strong>[2,6]
+<strong>解释：</strong>在所有可能的子序列集合 {[3,5], [3,2], [3,6], [5,2], [5,6], [2,6]} 中，[2,6] 最具竞争力。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [2,4,3,3,5,4,9,6], k = 4
+<strong>输出：</strong>[2,3,3,4]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= nums.length <= 10<sup>5</sup></code></li>
+	<li><code>0 <= nums[i] <= 10<sup>9</sup></code></li>
+	<li><code>1 <= k <= nums.length</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int[] mostCompetitive(int[] nums, int k) {", "        int n = nums.length;", "        int[] stack = new int[k];   // 数组当栈，最后正好就是答案", "        int top = -1;", "        for (int i = 0; i < n; i++) {", "            // 栈顶比当前大就弹它换当前；前提是弹掉后剩下的数仍够凑满 k 个", "            while (top >= 0 && stack[top] > nums[i] && top + n - i >= k) top--;", "            if (top < k - 1) stack[++top] = nums[i];", "        }", "        return stack;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1673 找出最具竞争力的子序列 —— 图解：复刻 Solution.java 的「单调栈 + 保底计数」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [3, 5, 2, 6], k: 2 };
+
+function trace(input) {
+  var nums = input.nums;
+  var n = nums.length;
+  var k = input.k;
+  var frames = [];
+  var stack = [], stackIdx = [];   // 栈里的值与对应的原始下标
+  var dropped = {};                // 被弹掉/没进栈的原下标
+  var f2 = false, f3 = false;
+
+  var POP = 'while (top >= 0 && stack[top] > nums[i] && top + n - i >= k) top--;';
+
+  function numsPanel(marks) {
+    return Viz.cells(nums, { title: 'nums（dim = 已淘汰，win = 进了答案）', marks: marks || {} });
+  }
+  function stackPanel(marks) {
+    var ptr = stack.length ? [{ at: stack.length - 1, label: 'top', cls: 'p-right' }] : [];
+    return Viz.cells(stack.slice(), { title: '栈 stack（左底右顶，装满 k 个就是答案）', marks: marks || {}, pointers: ptr });
+  }
+  function snap(at, key, nMarks, sMarks, vars) {
+    frames.push(Viz.frame(at, key, [numsPanel(nMarks), stackPanel(sMarks), Viz.vars(vars || [])]));
+  }
+
+  snap('int[] stack = new int[k];', '开局：栈最后正好装 k 个数；每个新数只要更小就可能把栈顶顶掉', {}, {}, [{ name: 'k', v: k }]);
+
+  for (var i = 0; i < n; i++) {
+    var pops = 0;
+    while (stack.length && stack[stack.length - 1] > nums[i] && stack.length - 1 + n - i >= k) {
+      dropped[stackIdx.pop()] = true;
+      stack.pop();
+      pops++;
+    }
+    if (stack.length < k) {
+      stack.push(nums[i]);
+      stackIdx.push(i);
+    }
+    if (pops && !f2) {
+      f2 = true;
+      var nm = {};
+      Object.keys(dropped).forEach(function (d) { nm[d] = 'dim'; });
+      stackIdx.forEach(function (d) { nm[d] = 'win'; });
+      nm[i] = 'cur';
+      var sm = {};
+      for (var s = 0; s < stack.length; s++) sm[s] = 'win';
+      snap(POP, '读到 ' + nums[i] + '：栈顶比它大、且剩下的数还够凑满 k，弹掉换成它', nm, sm,
+        [{ name: 'i', v: i }, { name: '刚弹出', v: pops + ' 个' }, { name: '保底条件', v: '栈剩' + stack.length + '+剩数' + (n - i) + '≥k' }]);
+    }
+    if (i === n - 1 && stack.length === k && !f3) {
+      f3 = true;
+      var nm2 = {};
+      Object.keys(dropped).forEach(function (d) { nm2[d] = 'dim'; });
+      stackIdx.forEach(function (d) { nm2[d] = 'win'; });
+      snap('if (top < k - 1) stack[++top] = nums[i];', '栈没满就入栈：' + nums[i] + ' 进栈后正好凑满 k 个', nm2, {}, []);
+    }
+  }
+  var nm3 = {}, sm3 = {};
+  stackIdx.forEach(function (d) { nm3[d] = 'win'; });
+  Object.keys(dropped).forEach(function (d) { nm3[d] = 'dim'; });
+  for (var t = 0; t < stack.length; t++) sm3[t] = 'done';
+  snap('return stack;', '答案 [' + stack.join(', ') + ']：所有长度 ' + k + ' 子序列里字典序最小的', nm3, sm3, []);
+
+  return { frames: frames, result: stack };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

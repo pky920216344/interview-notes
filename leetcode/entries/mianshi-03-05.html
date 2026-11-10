@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>栈排序 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1063 / 1159</span>
+  <nav class="pn"><a href="0308.html">上一篇</a><a href="1690.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 03.05. </span>栈排序</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">栈</li><li class="aux">设计</li><li class="tag">栈</li><li class="tag">设计</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">一个辅助栈做「插入排序」：push 时把主栈顶上比新值小的元素暂时搬到辅助栈，压入新值再搬回来，主栈始终保持栈顶最小。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>主栈从顶到底递增，<code>peek</code>/<code>pop</code> 直接操作栈顶就是当前最小值，均为 O(1)。</li><li><code>push(val)</code>：把主栈顶上比 <code>val</code> 小的元素弹到辅助栈，压入 <code>val</code>，再把辅助栈元素依次压回。</li><li>压回时顺序不变：最先搬走的（最小的）最后压回，仍在 <code>val</code> 上方，主栈恢复有序。</li><li>题面限制只能再用一个临时栈，所以不能用数组/堆；空栈 <code>peek</code> 返回 −1、<code>pop</code> 是空操作。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 push 最坏 O(n)，其余 O(1)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">ArrayDeque</span>;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.<span class="t">Deque</span>;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span><span class="k">class</span> <span class="t">SortedStack</span> {</span><span class="ln"><span class="no">5</span>    <span class="c">// 主栈：从顶到底递增，栈顶永远存着当前最小值</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; s = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>    <span class="c">// 辅助栈：插入时暂时存放挡路的小元素</span></span><span class="ln"><span class="no">8</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; t = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">public</span> <span class="t">SortedStack</span>() {</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="k">public</span> <span class="k">void</span> push(<span class="k">int</span> val) {</span><span class="ln"><span class="no">14</span>        <span class="c">// 比 val 小的都聚在栈顶附近：先搬开，val 才能落到它们下面</span></span><span class="ln"><span class="no">15</span>        <span class="k">while</span> (!s.isEmpty() &amp;&amp; s.peek() &lt; val) t.push(s.pop());</span><span class="ln"><span class="no">16</span>        s.push(val);</span><span class="ln"><span class="no">17</span>        <span class="c">// 搬走的小元素依次压回，正好落回 val 上方，恢复有序</span></span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (!t.isEmpty()) s.push(t.pop());</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>    <span class="k">public</span> <span class="k">void</span> pop() {</span><span class="ln"><span class="no">22</span>        <span class="k">if</span> (!s.isEmpty()) s.pop();</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span> </span><span class="ln"><span class="no">25</span>    <span class="k">public</span> <span class="k">int</span> peek() {</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> s.isEmpty() ? -<span class="n">1</span> : s.peek();</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span> </span><span class="ln"><span class="no">29</span>    <span class="k">public</span> <span class="k">boolean</span> isEmpty() {</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> s.isEmpty();</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>栈排序。 编写程序，对栈进行排序使最小元素位于栈顶。最多只能使用一个其他的临时栈存放数据，但不得将元素复制到别的数据结构（如数组）中。该栈支持如下操作：<code>push</code>、<code>pop</code>、<code>peek</code> 和 <code>isEmpty</code>。当栈为空时，<code>peek</code>&nbsp;返回 -1。</p>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong> 输入</strong>：
+["SortedStack", "push", "push", "peek", "pop", "peek"]
+[[], [1], [2], [], [], []]
+<strong> 输出</strong>：
+[null,null,null,1,null,2]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong> 输入</strong>： 
+["SortedStack", "pop", "pop", "push", "pop", "isEmpty"]
+[[], [], [], [1], [], []]
+<strong> 输出</strong>：
+[null,null,null,null,null,true]
+</pre>
+
+<p><strong>提示：</strong></p>
+
+<ol>
+	<li>栈中的元素数目在[0, 5000]范围内。</li>
+</ol>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.ArrayDeque;", "import java.util.Deque;", "", "class SortedStack {", "    // 主栈：从顶到底递增，栈顶永远存着当前最小值", "    private final Deque<Integer> s = new ArrayDeque<>();", "    // 辅助栈：插入时暂时存放挡路的小元素", "    private final Deque<Integer> t = new ArrayDeque<>();", "", "    public SortedStack() {", "    }", "", "    public void push(int val) {", "        // 比 val 小的都聚在栈顶附近：先搬开，val 才能落到它们下面", "        while (!s.isEmpty() && s.peek() < val) t.push(s.pop());", "        s.push(val);", "        // 搬走的小元素依次压回，正好落回 val 上方，恢复有序", "        while (!t.isEmpty()) s.push(t.pop());", "    }", "", "    public void pop() {", "        if (!s.isEmpty()) s.pop();", "    }", "", "    public int peek() {", "        return s.isEmpty() ? -1 : s.peek();", "    }", "", "    public boolean isEmpty() {", "        return s.isEmpty();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 03.05. 栈排序 —— 图解：复刻 Solution.java 的「主栈 + 辅助栈插入式 push」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { ops: [['push', 3], ['push', 1], ['push', 2], ['peek'], ['pop'], ['peek']] };
+
+function trace(input) {
+  var s = [];    // 主栈：末尾是栈顶，从顶到底递增（栈顶最小）
+  var t = [];    // 辅助栈：插入时暂存
+  var out = [];
+  var frames = [];
+  var movedOnce = false;   // 是否已拍过「搬开小元素」的关键帧
+
+  var A_MOV = 'while (!s.isEmpty() && s.peek() < val) t.push(s.pop());';
+  var A_BACK = 'while (!t.isEmpty()) s.push(t.pop());';
+  var A_POP = 'if (!s.isEmpty()) s.pop();';
+  var A_PEEK = 'return s.isEmpty() ? -1 : s.peek();';
+
+  // 主栈面板：左端栈底、右端栈顶；hit 标刚被 peek 的栈顶
+  function sPanel(marks) {
+    var pointers = [];
+    if (s.length) {
+      pointers.push({ at: 0, label: '栈底', cls: 'p-tail' });
+      pointers.push({ at: s.length - 1, label: '栈顶', cls: 'p-head' });
+    }
+    return Viz.list(s.map(String), { title: '主栈（栈顶是最小值）', marks: marks || {}, pointers: pointers });
+  }
+  function tPanel(marks) {
+    var pointers = t.length ? [{ at: t.length - 1, label: '栈顶', cls: 'p-head' }] : [];
+    return Viz.list(t.map(String), { title: '辅助栈（暂存）', marks: marks || {}, pointers: pointers });
+  }
+  function varsPanel(opText) {
+    var items = [];
+    if (opText) items.push({ name: '当前操作', v: opText, cls: 'cur' });
+    items.push({ name: 'peek/isEmpty 的返回', v: out.length ? out.join(', ') : '—' });
+    return Viz.vars(items);
+  }
+  function snap(at, key, opText, ms, mt) {
+    frames.push(Viz.frame(at, key, [sPanel(ms), tPanel(mt), varsPanel(opText)]));
+  }
+
+  function keyOf(op) {
+    if (op[0] === 'push') return 'push(' + op[1] + ') 完成：主栈恢复有序，栈顶最小';
+    if (op[0] === 'pop') return 'pop()：弹出栈顶（当前最小值）';
+    if (op[0] === 'peek') return 'peek()：栈顶就是当前最小值';
+    return 'isEmpty()：主栈是否为空';
+  }
+
+  input.ops.forEach(function (op, i) {
+    var act = op[0];
+    if (act === 'push') {
+      var v = op[1];
+      var displaced = null;
+      while (s.length && s[s.length - 1] < v) {
+        var top = s.pop();
+        t.push(top);
+        if (displaced === null) displaced = top;
+      }
+      // 关键一步：压入比它大的新值前，先把挡路的更小元素搬到辅助栈
+      if (displaced !== null && !movedOnce && i === 2) {
+        movedOnce = true;
+        var ms = {}; ms[s.length - 1] = 'cur';
+        var mt = {}; mt[t.length - 1] = 'new';
+        snap(A_MOV, 'push(' + v + ')：栈顶 ' + displaced + ' 比 ' + v + ' 小，先搬到辅助栈', 'push(' + v + ')', ms, mt);
+      }
+      s.push(v);
+      while (t.length) s.push(t.pop());
+      if (i < 3) snap(A_BACK, keyOf(op), 'push(' + v + ')', { 0: 'new' }, {});
+    } else if (act === 'pop') {
+      if (s.length) {
+        var gone = s.pop();
+        if (i < 3) snap(A_POP, keyOf(op), 'pop() 弹出 ' + gone, {}, {});
+      }
+    } else if (act === 'peek') {
+      var topV = s.length ? s[s.length - 1] : -1;
+      out.push(topV);
+      if (i === 3 && s.length) {
+        var mh = {}; mh[s.length - 1] = 'hit';
+        snap(A_PEEK, keyOf(op), 'peek() → ' + topV, mh, {});
+      }
+    } else {
+      out.push(s.length === 0);
+    }
+  });
+
+  snap(A_PEEK, '这一串操作做完：每次 peek/pop 拿到的都是当前最小值', null, {}, {});
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

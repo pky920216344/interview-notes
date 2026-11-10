@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>划分字母区间 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 218 / 1159</span>
+  <nav class="pn"><a href="0086.html">上一篇</a><a href="offer-61.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">763. </span>划分字母区间</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 22</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">哈希表</li><li class="tag">双指针</li><li class="tag">字符串</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">先记每个字母最后出现的下标；扫描时 end = max(end, last[c]) 把段撑到最远，i 追上 end 就切一段。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>预扫一遍记 <code>last[c]</code>；段 <code>[start, end]</code> 的含义：段内每个字母都不会再出现在段外。</li><li>扫描时 <code>end = max(end, last[c])</code> 只增不减——重复读到旧字母时 <code>max</code> 保住已撑到的边界（直接赋值会回退）。</li><li><code>i == end</code> 说明段闭合成形，切下 <code>i - start + 1</code>，<code>start = i + 1</code> 开新段。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)（26 大小的数组；不计返回值）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; partitionLabels(<span class="t">String</span> s) {</span><span class="ln"><span class="no">5</span>        <span class="c">// last[c]：字母 c 最后一次出现的下标</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] last = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) last[s.charAt(i) - <span class="s">'a'</span>] = i;</span><span class="ln"><span class="no">8</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        <span class="c">// 当前段的边界：段内每个字母都必须在段内最后出现</span></span><span class="ln"><span class="no">10</span>        <span class="k">int</span> start = <span class="n">0</span>, end = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) {</span><span class="ln"><span class="no">12</span>            end = <span class="t">Math</span>.max(end, last[s.charAt(i) - <span class="s">'a'</span>]);</span><span class="ln"><span class="no">13</span>            <span class="c">// i 追上 end：段里字母都不会再出现，切一段</span></span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (i == end) {</span><span class="ln"><span class="no">15</span>                ans.add(i - start + <span class="n">1</span>);</span><span class="ln"><span class="no">16</span>                start = i + <span class="n">1</span>;</span><span class="ln"><span class="no">17</span>            }</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串 <code>s</code> 。我们要把这个字符串划分为尽可能多的片段，同一字母最多出现在一个片段中。例如，字符串&nbsp;<code>"ababcc"</code> 能够被分为 <code>["abab", "cc"]</code>，但类似&nbsp;<code>["aba", "bcc"]</code> 或&nbsp;<code>["ab", "ab", "cc"]</code> 的划分是非法的。</p>
+
+<p>注意，划分结果需要满足：将所有划分结果按顺序连接，得到的字符串仍然是 <code>s</code> 。</p>
+
+<p>返回一个表示每个字符串片段的长度的列表。</p>
+
+
+<strong class="example">示例 1：</strong>
+
+<pre>
+<strong>输入：</strong>s = "ababcbacadefegdehijhklij"
+<strong>输出：</strong>[9,7,8]
+<strong>解释：</strong>
+划分结果为 "ababcbaca"、"defegde"、"hijhklij" 。
+每个字母最多出现在一个片段中。
+像 "ababcbacadefegde", "hijhklij" 这样的划分是错误的，因为划分的片段数较少。 </pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "eccbbbbdec"
+<strong>输出：</strong>[10]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 500</code></li>
+	<li><code>s</code> 仅由小写英文字母组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> partitionLabels(String s) {", "        // last[c]：字母 c 最后一次出现的下标", "        int[] last = new int[26];", "        for (int i = 0; i < s.length(); i++) last[s.charAt(i) - 'a'] = i;", "        List<Integer> ans = new ArrayList<>();", "        // 当前段的边界：段内每个字母都必须在段内最后出现", "        int start = 0, end = 0;", "        for (int i = 0; i < s.length(); i++) {", "            end = Math.max(end, last[s.charAt(i) - 'a']);", "            // i 追上 end：段里字母都不会再出现，切一段", "            if (i == end) {", "                ans.add(i - start + 1);", "                start = i + 1;", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 763. 划分字母区间 —— 图解：复刻 Solution.java 的「最后出现位置 + 段边界」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'ababcc' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+  var last = {}, order = [];   // 字母 → 最后出现下标；order 按首现顺序摆，表格才稳定
+  for (var w = 0; w < n; w++) {
+    if (!(s[w] in last)) order.push(s[w]);
+    last[s[w]] = w;
+  }
+  var ans = [];
+  var shot = { grow: false, steady: false, cut: false };
+
+  var PRE = 'int[] last = new int[26];';
+  var GROW = "end = Math.max(end, last[s.charAt(i) - 'a']);";
+  var CUT = 'if (i == end) {';
+
+  // 字符串面板：[start, end] 是当前段（win），切走的段 done，i 是扫描指针
+  function cellsPanel(i, start, end) {
+    var marks = {};
+    var k;
+    for (k = 0; k < start; k++) marks[k] = 'done';
+    if (end >= start && i < n) for (k = start; k <= end; k++) marks[k] = 'win';
+    if (i < n) marks[i] = 'cur';
+    var pointers = i < n ? [{ at: i, label: 'i', cls: 'p-right' }] : [];
+    var range = i < n && end >= start ? { from: start, to: end, label: '当前段' } : null;
+    return Viz.cells(s.split(''), { title: '字符串 s', marks: marks, pointers: pointers, range: range });
+  }
+  function tablePanel(hit) {
+    var rows = order.map(function (c) { return { k: c, v: String(last[c]), cls: c === hit ? 'hit' : '' }; });
+    return Viz.table('last[c]：字母 → 最后出现的下标', rows);
+  }
+
+  frames.push(Viz.frame(PRE, '先扫一遍，记下每个字母最后一次出现的下标',
+    [cellsPanel(0, 0, -1), tablePanel(null)]));
+
+  var start = 0, end = 0;
+  for (var i = 0; i < n; i++) {
+    var c = s[i];
+    var oldEnd = end;
+    end = Math.max(end, last[c]);
+    if (i === 1 && end > oldEnd && !shot.grow) {
+      shot.grow = true;
+      frames.push(Viz.frame(GROW, '读「' + c + '」：end 抬到 last[' + c + ']=' + last[c] + '，段被撑长',
+        [cellsPanel(i, start, end), tablePanel(c)]));
+    }
+    if (i === 2 && end === oldEnd && !shot.steady) {
+      shot.steady = true;
+      frames.push(Viz.frame(GROW, '再读「' + c + '」：last[' + c + ']=' + last[c] + ' ≤ end，end 不回退（所以要取 max）',
+        [cellsPanel(i, start, end), tablePanel(c)]));
+    }
+    if (i === end) {
+      ans.push(i - start + 1);
+      if (!shot.cut) {
+        shot.cut = true;
+        frames.push(Viz.frame(CUT, 'i 追上 end=' + end + '：段里字母都不会再出现，切下长 ' + (i - start + 1),
+          [cellsPanel(i, start, end), tablePanel(null)]));
+      }
+      start = i + 1;
+    }
+  }
+
+  frames.push(Viz.frame('return ans;', '切完：共 ' + ans.length + ' 段，长度 [' + ans.join(', ') + ']',
+    [Viz.cells(s.split(''), { title: '字符串 s', marks: {} }),
+     Viz.table('段长', ans.map(function (v, k) { return { k: '第 ' + (k + 1) + ' 段', v: String(v), cls: '' }; }))]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

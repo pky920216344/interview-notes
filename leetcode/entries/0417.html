@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>太平洋大西洋水流问题 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 598 / 1159</span>
+  <nav class="pn"><a href="0934.html">上一篇</a><a href="0997.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">417. </span>太平洋大西洋水流问题</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">深度优先搜索/递归</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">水往低处流难逐格判断，反过来：从两片海的边界「逆流而上」（只走高处）各做一次 DFS 标可达格，两张标记表的交集就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>逐格正向 BFS 太慢；反向只做两遍：从海的边界出发，逆流而上走到 <code>&gt;=</code> 当前高度的邻居。</li><li>太平洋从上、左边界出发，大西洋从下、右边界出发，各标一张 <code>boolean</code> 表。</li><li>两表都为真的格就是答案，按行优先顺序输出。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">int</span>[] DR = {<span class="n">1</span>, -<span class="n">1</span>, <span class="n">0</span>, <span class="n">0</span>}, DC = {<span class="n">0</span>, <span class="n">0</span>, <span class="n">1</span>, -<span class="n">1</span>};</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">int</span> m, n;</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">int</span>[][] h;</span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="k">boolean</span>[][] pac, atl;</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; pacificAtlantic(<span class="k">int</span>[][] heights) {</span><span class="ln"><span class="no">10</span>        h = heights;</span><span class="ln"><span class="no">11</span>        m = heights.length;</span><span class="ln"><span class="no">12</span>        n = heights[<span class="n">0</span>].length;</span><span class="ln"><span class="no">13</span>        pac = <span class="k">new</span> <span class="k">boolean</span>[m][n];</span><span class="ln"><span class="no">14</span>        atl = <span class="k">new</span> <span class="k">boolean</span>[m][n];</span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; m; r++) { dfs(r, <span class="n">0</span>, pac); dfs(r, n - <span class="n">1</span>, atl); }</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; n; c++) { dfs(<span class="n">0</span>, c, pac); dfs(m - <span class="n">1</span>, c, atl); }</span><span class="ln"><span class="no">17</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; m; r++) {</span><span class="ln"><span class="no">19</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; n; c++) {</span><span class="ln"><span class="no">20</span>                <span class="k">if</span> (pac[r][c] &amp;&amp; atl[r][c]) ans.add(<span class="t">Arrays</span>.asList(r, c));</span><span class="ln"><span class="no">21</span>            }</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span> </span><span class="ln"><span class="no">26</span>    <span class="c">/** 从海洋边界「逆流而上」：只走到高度 &gt;= 当前格的相邻格（显式栈，避免大图递归爆栈）。 */</span></span><span class="ln"><span class="no">27</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span> r, <span class="k">int</span> c, <span class="k">boolean</span>[][] sea) {</span><span class="ln"><span class="no">28</span>        <span class="k">if</span> (sea[r][c]) <span class="k">return</span>;</span><span class="ln"><span class="no">29</span>        sea[r][c] = <span class="k">true</span>;</span><span class="ln"><span class="no">30</span>        <span class="t">Deque</span>&lt;<span class="k">int</span>[]&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">31</span>        stack.push(<span class="k">new</span> <span class="k">int</span>[]{r, c});</span><span class="ln"><span class="no">32</span>        <span class="k">while</span> (!stack.isEmpty()) {</span><span class="ln"><span class="no">33</span>            <span class="k">int</span>[] cur = stack.pop();</span><span class="ln"><span class="no">34</span>            <span class="k">for</span> (<span class="k">int</span> d = <span class="n">0</span>; d &lt; <span class="n">4</span>; d++) {</span><span class="ln"><span class="no">35</span>                <span class="k">int</span> nr = cur[<span class="n">0</span>] + DR[d], nc = cur[<span class="n">1</span>] + DC[d];</span><span class="ln"><span class="no">36</span>                <span class="k">boolean</span> in = nr &gt;= <span class="n">0</span> &amp;&amp; nr &lt; m &amp;&amp; nc &gt;= <span class="n">0</span> &amp;&amp; nc &lt; n;</span><span class="ln"><span class="no">37</span>                <span class="k">if</span> (in &amp;&amp; !sea[nr][nc] &amp;&amp; h[nr][nc] &gt;= h[cur[<span class="n">0</span>]][cur[<span class="n">1</span>]]) {</span><span class="ln"><span class="no">38</span>                    sea[nr][nc] = <span class="k">true</span>;</span><span class="ln"><span class="no">39</span>                    stack.push(<span class="k">new</span> <span class="k">int</span>[]{nr, nc});</span><span class="ln"><span class="no">40</span>                }</span><span class="ln"><span class="no">41</span>            }</span><span class="ln"><span class="no">42</span>        }</span><span class="ln"><span class="no">43</span>    }</span><span class="ln"><span class="no">44</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>有一个 <code>m × n</code> 的矩形岛屿，与 <strong>太平洋</strong> 和 <strong>大西洋</strong> 相邻。&nbsp;<strong>“太平洋”&nbsp;</strong>处于大陆的左边界和上边界，而 <strong>“大西洋”</strong> 处于大陆的右边界和下边界。</p>
+
+<p>这个岛被分割成一个由若干方形单元格组成的网格。给定一个 <code>m x n</code> 的整数矩阵&nbsp;<code>heights</code>&nbsp;，&nbsp;<code>heights[r][c]</code>&nbsp;表示坐标 <code>(r, c)</code> 上单元格 <strong>高于海平面的高度</strong> 。</p>
+
+<p>岛上雨水较多，如果相邻单元格的高度 <strong>小于或等于</strong> 当前单元格的高度，雨水可以直接向北、南、东、西流向相邻单元格。水可以从海洋附近的任何单元格流入海洋。</p>
+
+<p>返回网格坐标 <code>result</code>&nbsp;的 <strong>2D 列表</strong> ，其中&nbsp;<code>result[i] = [r<sub>i</sub>, c<sub>i</sub>]</code>&nbsp;表示雨水从单元格 <code>(ri, ci)</code> 流动 <strong>既可流向太平洋也可流向大西洋</strong> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/280d1ac27a80.jpg" /></p>
+
+<pre>
+<strong>输入:</strong> heights = [[1,2,2,3,5],[3,2,3,4,4],[2,4,5,3,1],[6,7,1,4,5],[5,1,1,2,4]]
+<strong>输出:</strong> [[0,4],[1,3],[1,4],[2,2],[3,0],[3,1],[4,0]]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入:</strong> heights = [[2,1],[1,2]]
+<strong>输出:</strong> [[0,0],[0,1],[1,0],[1,1]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == heights.length</code></li>
+	<li><code>n == heights[r].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 200</code></li>
+	<li><code>0 &lt;= heights[r][c] &lt;= 10<sup>5</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private static final int[] DR = {1, -1, 0, 0}, DC = {0, 0, 1, -1};", "    private int m, n;", "    private int[][] h;", "    private boolean[][] pac, atl;", "", "    public List<List<Integer>> pacificAtlantic(int[][] heights) {", "        h = heights;", "        m = heights.length;", "        n = heights[0].length;", "        pac = new boolean[m][n];", "        atl = new boolean[m][n];", "        for (int r = 0; r < m; r++) { dfs(r, 0, pac); dfs(r, n - 1, atl); }", "        for (int c = 0; c < n; c++) { dfs(0, c, pac); dfs(m - 1, c, atl); }", "        List<List<Integer>> ans = new ArrayList<>();", "        for (int r = 0; r < m; r++) {", "            for (int c = 0; c < n; c++) {", "                if (pac[r][c] && atl[r][c]) ans.add(Arrays.asList(r, c));", "            }", "        }", "        return ans;", "    }", "", "    /** 从海洋边界「逆流而上」：只走到高度 >= 当前格的相邻格（显式栈，避免大图递归爆栈）。 */", "    private void dfs(int r, int c, boolean[][] sea) {", "        if (sea[r][c]) return;", "        sea[r][c] = true;", "        Deque<int[]> stack = new ArrayDeque<>();", "        stack.push(new int[]{r, c});", "        while (!stack.isEmpty()) {", "            int[] cur = stack.pop();", "            for (int d = 0; d < 4; d++) {", "                int nr = cur[0] + DR[d], nc = cur[1] + DC[d];", "                boolean in = nr >= 0 && nr < m && nc >= 0 && nc < n;", "                if (in && !sea[nr][nc] && h[nr][nc] >= h[cur[0]][cur[1]]) {", "                    sea[nr][nc] = true;", "                    stack.push(new int[]{nr, nc});", "                }", "            }", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 417. 太平洋大西洋水流问题 —— 图解：复刻 Solution.java 的「两次反向 DFS + 求交集」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { heights: [[1, 2, 2, 3], [3, 2, 3, 4], [2, 4, 5, 3], [6, 7, 1, 4]] };
+
+function trace(input) {
+  var h = input.heights;
+  var m = h.length, n = h[0].length;
+  var DR = [1, -1, 0, 0], DC = [0, 0, 1, -1];
+  var pac = zeros(), atl = zeros();
+  var frames = [];
+
+  function zeros() {
+    var a = [];
+    for (var r = 0; r < m; r++) {
+      var row = [];
+      for (var c = 0; c < n; c++) row.push(false);
+      a.push(row);
+    }
+    return a;
+  }
+
+  function gridPanel(title) {
+    var marks = {};
+    for (var r = 0; r < m; r++) {
+      for (var c = 0; c < n; c++) {
+        if (pac[r][c] && atl[r][c]) marks[r + ',' + c] = 'done';
+        else if (pac[r][c]) marks[r + ',' + c] = 'win';
+        else if (atl[r][c]) marks[r + ',' + c] = 'new';
+      }
+    }
+    return Viz.grid(h, { title: title, marks: marks });
+  }
+
+  function dfs(r, c, sea) {
+    if (sea[r][c]) return;
+    sea[r][c] = true;
+    for (var d = 0; d < 4; d++) {
+      var nr = r + DR[d], nc = c + DC[d];
+      if (nr >= 0 && nr < m && nc >= 0 && nc < n && h[nr][nc] >= h[r][c]) dfs(nr, nc, sea);
+    }
+  }
+
+  for (var r = 0; r < m; r++) { dfs(r, 0, pac); dfs(r, n - 1, atl); }
+  for (var c = 0; c < n; c++) { dfs(0, c, pac); dfs(m - 1, c, atl); }
+  frames.push(Viz.frame('dfs(0, c, pac);',
+    '从上、左边界逆流而上（只走高处），标出能到太平洋的格', [gridPanel('heights：蓝=能到太平洋')]));
+  frames.push(Viz.frame('dfs(m - 1, c, atl);',
+    '再从下、右边界逆流而上，标出能到大西洋的格', [gridPanel('heights：蓝=太平洋，绿=大西洋')]));
+
+  var ans = [];
+  for (var r2 = 0; r2 < m; r2++) {
+    for (var c2 = 0; c2 < n; c2++) {
+      if (pac[r2][c2] && atl[r2][c2]) ans.push([r2, c2]);
+    }
+  }
+  frames.push(Viz.frame('if (pac[r][c] && atl[r][c]) ans.add(Arrays.asList(r, c));',
+    '两边都标到的格子（红）就是答案，共 ' + ans.length + ' 个', [gridPanel('heights：红=两片海都能到')]));
+  frames.push(Viz.frame('return ans;', '按行优先输出，共 ' + ans.length + ' 个坐标（右侧为 ans）', [
+    gridPanel('heights：红=两片海都能到'),
+    Viz.vars([{ name: 'ans', v: JSON.stringify(ans), cls: 'done' }])
+  ]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

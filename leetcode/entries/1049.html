@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最后一块石头的重量 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 409 / 1159</span>
+  <nav class="pn"><a href="0424.html">上一篇</a><a href="1288.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1049. </span>最后一块石头的重量 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 7</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">knapsack-problem</li><li class="tag">0-1-knapsack</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">转化成 01 背包：把石头分成两堆，一堆和 s、另一堆 total−s，答案 = total − 2s；DP 求 ≤ half 的最大可达 s。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>粉碎 x、y 剩 |x−y|，等价于给每块石头选 ± 号：最后剩的重量就是两堆之差，要它最小。</li><li>即把总和 <code>total</code> 分成两堆，一堆和 <code>s ≤ total/2</code>，答案 <code>total − 2s</code>；<code>s</code> 越接近 <code>half = total/2</code> 越好。</li><li>01 背包：<code>dp[s]</code> = 能否凑出和 <code>s</code>；每块石头<strong>倒序</strong>扫 <code>s</code>（正序会让同一块被用两次）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·total/2)，空间复杂度 O(total/2)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> lastStoneWeightII(<span class="k">int</span>[] stones) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> total = <span class="n">0</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">for</span> (<span class="k">int</span> x : stones) total += x;</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> half = total / <span class="n">2</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">boolean</span>[] dp = <span class="k">new</span> <span class="k">boolean</span>[half + <span class="n">1</span>];      <span class="c">// dp[s]：能否凑出和恰为 s 的一堆</span></span><span class="ln"><span class="no">7</span>        dp[<span class="n">0</span>] = <span class="k">true</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> x : stones) {</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> s = half; s &gt;= x; s--) {      <span class="c">// 倒序：保证每块石头只用一次</span></span><span class="ln"><span class="no">10</span>                dp[s] = dp[s] || dp[s - x];</span><span class="ln"><span class="no">11</span>            }</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="c">// 一堆 s、另一堆 total - s；s 越接近 half，差值越小</span></span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> s = half; s &gt;= <span class="n">0</span>; s--) {</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (dp[s]) <span class="k">return</span> total - <span class="n">2</span> * s;</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> <span class="n">0</span>;                                  <span class="c">// 走不到：dp[0] 恒为 true</span></span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>有一堆石头，用整数数组&nbsp;<code>stones</code> 表示。其中&nbsp;<code>stones[i]</code> 表示第 <code>i</code> 块石头的重量。</p>
+
+<p>每一回合，从中选出<strong>任意两块石头</strong>，然后将它们一起粉碎。假设石头的重量分别为&nbsp;<code>x</code> 和&nbsp;<code>y</code>，且&nbsp;<code>x &lt;= y</code>。那么粉碎的可能结果如下：</p>
+
+<ul>
+	<li>如果&nbsp;<code>x == y</code>，那么两块石头都会被完全粉碎；</li>
+	<li>如果&nbsp;<code>x != y</code>，那么重量为&nbsp;<code>x</code>&nbsp;的石头将会完全粉碎，而重量为&nbsp;<code>y</code>&nbsp;的石头新重量为&nbsp;<code>y-x</code>。</li>
+</ul>
+
+<p>最后，<strong>最多只会剩下一块 </strong>石头。返回此石头 <strong>最小的可能重量 </strong>。如果没有石头剩下，就返回 <code>0</code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>stones = [2,7,4,1,8,1]
+<strong>输出：</strong>1
+<strong>解释：</strong>
+组合 2 和 4，得到 2，所以数组转化为 [2,7,1,8,1]，
+组合 7 和 8，得到 1，所以数组转化为 [2,1,1,1]，
+组合 2 和 1，得到 1，所以数组转化为 [1,1,1]，
+组合 1 和 1，得到 0，所以数组转化为 [1]，这就是最优值。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>stones = [31,26,33,21,40]
+<strong>输出：</strong>5
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= stones.length &lt;= 30</code></li>
+	<li><code>1 &lt;= stones[i] &lt;= 100</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int lastStoneWeightII(int[] stones) {", "        int total = 0;", "        for (int x : stones) total += x;", "        int half = total / 2;", "        boolean[] dp = new boolean[half + 1];      // dp[s]：能否凑出和恰为 s 的一堆", "        dp[0] = true;", "        for (int x : stones) {", "            for (int s = half; s >= x; s--) {      // 倒序：保证每块石头只用一次", "                dp[s] = dp[s] || dp[s - x];", "            }", "        }", "        // 一堆 s、另一堆 total - s；s 越接近 half，差值越小", "        for (int s = half; s >= 0; s--) {", "            if (dp[s]) return total - 2 * s;", "        }", "        return 0;                                  // 走不到：dp[0] 恒为 true", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1049. 最后一块石头的重量 II —— 图解：复刻 Solution.java 的「01 背包凑半堆」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { stones: [2, 7, 4, 1, 8, 1] };
+
+function trace(input) {
+  var stones = input.stones;
+  var total = 0;
+  for (var i = 0; i < stones.length; i++) total += stones[i];
+  var half = Math.floor(total / 2);
+  var dp = [];                     // dp[s] = true 表示能凑出和 s
+  for (i = 0; i <= half; i++) dp.push(false);
+  dp[0] = true;
+  var frames = [];
+  var shown = {};
+
+  function dpPanel(newMarks) {
+    var marks = newMarks || {};
+    return Viz.cells(dp.map(function (ok) { return ok ? '✓' : '·'; }),
+      { title: 'dp：和 s 能否凑出（s = 0..' + half + '）', marks: marks });
+  }
+  function stonesPanel(i) {
+    var marks = {}, x;
+    for (x = 0; x < i; x++) marks[x] = 'dim';
+    if (i < stones.length) marks[i] = 'cur';
+    return Viz.cells(stones, { title: 'stones（total = ' + total + '，half = ' + half + '）', marks: marks,
+      pointers: i < stones.length ? [{ at: i, label: 'x=' + stones[i], cls: 'p-cur' }] : [] });
+  }
+  function snap(tag, at, key, panels) {
+    if (shown[tag]) return;
+    shown[tag] = true;
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  snap('init', 'dp[0] = true;',
+    '开局：空堆和为 0 可行；之后每块石头要么进堆、要么不进',
+    [stonesPanel(0), dpPanel()]);
+
+  for (i = 0; i < stones.length; i++) {
+    var x = stones[i], news = {};
+    for (var s = half; s >= x; s--) {
+      if (!dp[s] && dp[s - x]) news[s] = 'new';
+      dp[s] = dp[s] || dp[s - x];
+    }
+    if (i === 1 || i === 2) {      // 第 2、3 块石头的更新各拍一张
+      snap('upd' + i, 'dp[s] = dp[s] || dp[s - x];',
+        '石头 ' + x + '：倒序扫 s，dp[s−' + x + '] 成立就把 s 点亮（倒序 = 每块石头只用一次）',
+        [stonesPanel(i), dpPanel(news)]);
+    }
+  }
+
+  var best = 0;
+  for (s = half; s >= 0; s--) {
+    if (dp[s]) { best = s; break; }
+  }
+  var finalMarks = {};
+  for (i = 0; i <= half; i++) if (dp[i]) finalMarks[i] = 'win';
+  finalMarks[best] = 'done';
+  snap('end', 'if (dp[s]) return total - 2 * s;',
+    '从 half 往下找最大可达 s = ' + best + '：答案 total − 2×' + best + ' = ' + (total - 2 * best),
+    [stonesPanel(stones.length), dpPanel(finalMarks)]);
+
+  return { frames: frames, result: total - 2 * best };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

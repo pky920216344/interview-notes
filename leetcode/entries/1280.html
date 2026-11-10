@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>学生们参加各科测试的次数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 420 / 1159</span>
+  <nav class="pn"><a href="mianshi-02-02.html">上一篇</a><a href="0350.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1280. </span>学生们参加各科测试的次数</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 7</li><li class="algo">SQL</li><li class="tag">数据库</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">先 CROSS JOIN 补全「每个学生 × 每个出现过的科目」的全部组合，再 LEFT JOIN 统计每人每科考试次数，COUNT 只数匹配行所以没考就是 0。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>难点不是计数，是<strong>补全</strong>：没参加考试的学生×科目组合也要输出 0 行。</li><li>科目清单来自 <strong>Subjects 表</strong>（不是 Examinations 里出现的科目——从没被考过的科目也要输出），<code>CROSS JOIN Subjects</code> 把（学生, 科目）展开成全部组合。</li><li><code>LEFT JOIN Examinations</code> 按（学生, 科目）双键连表，<code>COUNT(e.subject_name)</code> 只数连上的行——<code>COUNT(*)</code> 会把没考试的行也算成 1，这是本题最大的坑。</li><li><code>GROUP BY</code> 学生 + 科目后计数，最后按 student_id、subject_name 排序。</li></ul></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(S×E)，空间复杂度 O(S×E)</span><button type="button" class="btn" id="copy-code">复制 SQL 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span>-- 1415（codetop 1280）学生们参加各科测试的次数（MySQL）</span><span class="ln"><span class="no">2</span>-- 题意：Students(student_id, student_name)、Subjects(subject_name)、Examinations(student_id, subject_name)。</span><span class="ln"><span class="no">3</span>-- 对每个学生 × Subjects 表里的每个科目，报告参加考试次数（0 也要报），按 student_id、subject_name 排序。</span><span class="ln"><span class="no">4</span>-- 注意科目清单来自 Subjects 表（不是 Examinations 里的 DISTINCT——没被考过的科目也要输出 0 行）。</span><span class="ln"><span class="no">5</span>SELECT s.student_id,</span><span class="ln"><span class="no">6</span>       s.student_name,</span><span class="ln"><span class="no">7</span>       sub.subject_name,</span><span class="ln"><span class="no">8</span>       COUNT(e.subject_name) AS attended_exams</span><span class="ln"><span class="no">9</span>FROM Students s</span><span class="ln"><span class="no">10</span>CROSS JOIN Subjects sub</span><span class="ln"><span class="no">11</span>LEFT JOIN Examinations e</span><span class="ln"><span class="no">12</span>       ON s.student_id = e.student_id</span><span class="ln"><span class="no">13</span>      AND sub.subject_name = e.subject_name</span><span class="ln"><span class="no">14</span>GROUP BY s.student_id, s.student_name, sub.subject_name</span><span class="ln"><span class="no">15</span>ORDER BY s.student_id, sub.subject_name;</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>学生表: <code>Students</code></p>
+
+<pre>
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| student_id    | int     |
+| student_name  | varchar |
++---------------+---------+
+在 SQL 中，主键为 student_id（学生ID）。
+该表内的每一行都记录有学校一名学生的信息。
+</pre>
+
+
+
+<p>科目表: <code>Subjects</code></p>
+
+<pre>
++--------------+---------+
+| Column Name  | Type    |
++--------------+---------+
+| subject_name | varchar |
++--------------+---------+
+在 SQL 中，主键为 subject_name（科目名称）。
+每一行记录学校的一门科目名称。
+</pre>
+
+
+
+<p>考试表: <code>Examinations</code></p>
+
+<pre>
++--------------+---------+
+| Column Name  | Type    |
++--------------+---------+
+| student_id   | int     |
+| subject_name | varchar |
++--------------+---------+
+这个表可能包含重复数据（换句话说，在 SQL 中，这个表没有主键）。
+学生表里的一个学生修读科目表里的每一门科目。
+这张考试表的每一行记录就表示学生表里的某个学生参加了一次科目表里某门科目的测试。
+</pre>
+
+
+
+<p>查询出每个学生参加每一门科目测试的次数，结果按 <code>student_id</code> 和 <code>subject_name</code> 排序。</p>
+
+<p>查询结构格式如下所示。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+Students table:
++------------+--------------+
+| student_id | student_name |
++------------+--------------+
+| 1          | Alice        |
+| 2          | Bob          |
+| 13         | John         |
+| 6          | Alex         |
++------------+--------------+
+Subjects table:
++--------------+
+| subject_name |
++--------------+
+| Math         |
+| Physics      |
+| Programming  |
++--------------+
+Examinations table:
++------------+--------------+
+| student_id | subject_name |
++------------+--------------+
+| 1          | Math         |
+| 1          | Physics      |
+| 1          | Programming  |
+| 2          | Programming  |
+| 1          | Physics      |
+| 1          | Math         |
+| 13         | Math         |
+| 13         | Programming  |
+| 13         | Physics      |
+| 2          | Math         |
+| 1          | Math         |
++------------+--------------+
+<strong>输出：</strong>
++------------+--------------+--------------+----------------+
+| student_id | student_name | subject_name | attended_exams |
++------------+--------------+--------------+----------------+
+| 1          | Alice        | Math         | 3              |
+| 1          | Alice        | Physics      | 2              |
+| 1          | Alice        | Programming  | 1              |
+| 2          | Bob          | Math         | 1              |
+| 2          | Bob          | Physics      | 0              |
+| 2          | Bob          | Programming  | 1              |
+| 6          | Alex         | Math         | 0              |
+| 6          | Alex         | Physics      | 0              |
+| 6          | Alex         | Programming  | 0              |
+| 13         | John         | Math         | 1              |
+| 13         | John         | Physics      | 1              |
+| 13         | John         | Programming  | 1              |
++------------+--------------+--------------+----------------+
+<strong>解释：</strong>
+结果表需包含所有学生和所有科目（即便测试次数为0）：
+Alice 参加了 3 次数学测试, 2 次物理测试，以及 1 次编程测试；
+Bob 参加了 1 次数学测试, 1 次编程测试，没有参加物理测试；
+Alex 啥测试都没参加；
+John  参加了数学、物理、编程测试各 1 次。
+</pre>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["-- 1415（codetop 1280）学生们参加各科测试的次数（MySQL）", "-- 题意：Students(student_id, student_name)、Subjects(subject_name)、Examinations(student_id, subject_name)。", "-- 对每个学生 × Subjects 表里的每个科目，报告参加考试次数（0 也要报），按 student_id、subject_name 排序。", "-- 注意科目清单来自 Subjects 表（不是 Examinations 里的 DISTINCT——没被考过的科目也要输出 0 行）。", "SELECT s.student_id,", "       s.student_name,", "       sub.subject_name,", "       COUNT(e.subject_name) AS attended_exams", "FROM Students s", "CROSS JOIN Subjects sub", "LEFT JOIN Examinations e", "       ON s.student_id = e.student_id", "      AND sub.subject_name = e.subject_name", "GROUP BY s.student_id, s.student_name, sub.subject_name", "ORDER BY s.student_id, sub.subject_name;"]}</script>
+
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

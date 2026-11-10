@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>餐盘栈 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 764 / 1159</span>
+  <nav class="pn"><a href="1614.html">上一篇</a><a href="0707.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1172. </span>餐盘栈</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">设计</li><li class="aux">堆</li><li class="aux">栈</li><li class="tag">栈</li><li class="tag">设计</li><li class="tag">哈希表</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">push 去最左未满栈、pop 从最右非空栈拿：用小顶堆维护「未满栈编号」，过期编号惰性清理。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>push</code> 的目标 = 编号最小的未满栈 → 小顶堆 <code>notFull</code> 存未满栈编号，堆顶即答案。</li><li>过期编号（栈被删、或已被填满）在 push 前统一弹出；<code>popAtStack</code>/<code>pop</code> 让满栈变未满时把编号塞回堆。</li><li><code>pop</code> 先把尾部空栈删掉再取最右栈顶；被删栈的编号留在堆里，下次 push 当过期清走。</li><li>编号可能因栈被删而失效，所以每次 push 都要先清理堆顶，保证拿到的是真实未满栈。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 均摊 O(log n) 每次操作，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">DinnerPlates</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span> cap;</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">List</span>&lt;<span class="t">ArrayDeque</span>&lt;<span class="t">Integer</span>&gt;&gt; stacks = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>    <span class="c">// 小顶堆存「未满栈」的编号；push 前先清掉过期编号（栈已删或已满）</span></span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">PriorityQueue</span>&lt;<span class="t">Integer</span>&gt; notFull = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="k">public</span> <span class="t">DinnerPlates</span>(<span class="k">int</span> capacity) {</span><span class="ln"><span class="no">10</span>        cap = capacity;</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="k">public</span> <span class="k">void</span> push(<span class="k">int</span> val) {</span><span class="ln"><span class="no">14</span>        <span class="k">while</span> (!notFull.isEmpty() &amp;&amp; (notFull.peek() &gt;= stacks.size() || stacks.get(notFull.peek()).size() == cap)) {</span><span class="ln"><span class="no">15</span>            notFull.poll();</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (notFull.isEmpty()) {</span><span class="ln"><span class="no">18</span>            stacks.add(<span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;());</span><span class="ln"><span class="no">19</span>            notFull.add(stacks.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">int</span> i = notFull.peek();</span><span class="ln"><span class="no">22</span>        stacks.get(i).push(val);</span><span class="ln"><span class="no">23</span>        <span class="k">if</span> (stacks.get(i).size() == cap) notFull.poll();   <span class="c">// 刚好填满，编号出堆</span></span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span> </span><span class="ln"><span class="no">26</span>    <span class="k">public</span> <span class="k">int</span> pop() {</span><span class="ln"><span class="no">27</span>        <span class="c">// 尾部的空栈没有意义，直接删掉；被删编号留在堆里，push 时会当过期清走</span></span><span class="ln"><span class="no">28</span>        <span class="k">while</span> (!stacks.isEmpty() &amp;&amp; stacks.get(stacks.size() - <span class="n">1</span>).isEmpty()) {</span><span class="ln"><span class="no">29</span>            stacks.remove(stacks.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>        <span class="k">return</span> stacks.isEmpty() ? -<span class="n">1</span> : popAtStack(stacks.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span> </span><span class="ln"><span class="no">34</span>    <span class="k">public</span> <span class="k">int</span> popAtStack(<span class="k">int</span> index) {</span><span class="ln"><span class="no">35</span>        <span class="k">if</span> (index &gt;= stacks.size() || stacks.get(index).isEmpty()) <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">36</span>        <span class="t">ArrayDeque</span>&lt;<span class="t">Integer</span>&gt; s = stacks.get(index);</span><span class="ln"><span class="no">37</span>        <span class="k">boolean</span> wasFull = s.size() == cap;</span><span class="ln"><span class="no">38</span>        <span class="k">int</span> v = s.pop();</span><span class="ln"><span class="no">39</span>        <span class="k">if</span> (wasFull) notFull.add(index);   <span class="c">// 满栈变未满，编号回堆</span></span><span class="ln"><span class="no">40</span>        <span class="k">return</span> v;</span><span class="ln"><span class="no">41</span>    }</span><span class="ln"><span class="no">42</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>我们把无限数量 &infin; 的栈排成一行，按从左到右的次序从 0 开始编号。每个栈的的最大容量&nbsp;<code>capacity</code> 都相同。</p>
+
+<p>实现一个叫「餐盘」的类&nbsp;<code>DinnerPlates</code>：</p>
+
+<ul>
+	<li><code>DinnerPlates(int capacity)</code>&nbsp;- 给出栈的最大容量&nbsp;<code>capacity</code>。</li>
+	<li><code>void push(int val)</code>&nbsp;- 将给出的正整数&nbsp;<code>val</code>&nbsp;推入&nbsp;<strong>从左往右第一个&nbsp;</strong>没有满的栈。</li>
+	<li><code>int pop()</code>&nbsp;- 返回&nbsp;<strong>从右往左第一个&nbsp;</strong>非空栈顶部的值，并将其从栈中删除；如果所有的栈都是空的，请返回&nbsp;<code>-1</code>。</li>
+	<li><code>int popAtStack(int index)</code>&nbsp;- 返回编号&nbsp;<code>index</code>&nbsp;的栈顶部的值，并将其从栈中删除；如果编号&nbsp;<code>index</code>&nbsp;的栈是空的，请返回 <code>-1</code>。</li>
+</ul>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre><strong>输入： </strong>
+[&quot;DinnerPlates&quot;,&quot;push&quot;,&quot;push&quot;,&quot;push&quot;,&quot;push&quot;,&quot;push&quot;,&quot;popAtStack&quot;,&quot;push&quot;,&quot;push&quot;,&quot;popAtStack&quot;,&quot;popAtStack&quot;,&quot;pop&quot;,&quot;pop&quot;,&quot;pop&quot;,&quot;pop&quot;,&quot;pop&quot;]
+[[2],[1],[2],[3],[4],[5],[0],[20],[21],[0],[2],[],[],[],[],[]]
+<strong>输出：</strong>
+[null,null,null,null,null,null,2,null,null,20,21,5,4,3,1,-1]
+
+<strong>解释：</strong>
+DinnerPlates D = DinnerPlates(2);  // 初始化，栈最大容量 capacity = 2
+D.push(1);
+D.push(2);
+D.push(3);
+D.push(4);
+D.push(5);         // 栈的现状为：    2 &nbsp;4
+&nbsp;                                   1 &nbsp;3 &nbsp;5
+                                    ﹈ ﹈ ﹈
+D.popAtStack(0);   // 返回 2。栈的现状为：     &nbsp;4
+            &nbsp;                             1 &nbsp;3 &nbsp;5
+                                          ﹈ ﹈ ﹈
+D.push(20);        // 栈的现状为：  20  4
+&nbsp;                                  1 &nbsp;3 &nbsp;5
+                                   ﹈ ﹈ ﹈
+D.push(21);        // 栈的现状为：  20  4 21
+&nbsp;                                  1 &nbsp;3 &nbsp;5
+                                   ﹈ ﹈ ﹈
+D.popAtStack(0);   // 返回 20。栈的现状为：       4 21
+             &nbsp;                              1 &nbsp;3 &nbsp;5
+                                            ﹈ ﹈ ﹈
+D.popAtStack(2);   // 返回 21。栈的现状为：       4
+             &nbsp;                              1 &nbsp;3 &nbsp;5
+                                            ﹈ ﹈ ﹈ 
+D.pop()            // 返回 5。栈的现状为：        4
+             &nbsp;                              1 &nbsp;3 
+                                            ﹈ ﹈  
+D.pop()            // 返回 4。栈的现状为：    1  3 
+                                           ﹈ ﹈   
+D.pop()            // 返回 3。栈的现状为：    1 
+                                           ﹈   
+D.pop()            // 返回 1。现在没有栈。
+D.pop()            // 返回 -1。仍然没有栈。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= capacity&nbsp;&lt;= 20000</code></li>
+	<li><code>1 &lt;= val&nbsp;&lt;= 20000</code></li>
+	<li><code>0 &lt;= index&nbsp;&lt;= 100000</code></li>
+	<li>最多会对&nbsp;<code>push</code>，<code>pop</code>，和&nbsp;<code>popAtStack</code>&nbsp;进行 <code>200000</code> 次调用。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class DinnerPlates {", "    private final int cap;", "    private final List<ArrayDeque<Integer>> stacks = new ArrayList<>();", "    // 小顶堆存「未满栈」的编号；push 前先清掉过期编号（栈已删或已满）", "    private final PriorityQueue<Integer> notFull = new PriorityQueue<>();", "", "    public DinnerPlates(int capacity) {", "        cap = capacity;", "    }", "", "    public void push(int val) {", "        while (!notFull.isEmpty() && (notFull.peek() >= stacks.size() || stacks.get(notFull.peek()).size() == cap)) {", "            notFull.poll();", "        }", "        if (notFull.isEmpty()) {", "            stacks.add(new ArrayDeque<>());", "            notFull.add(stacks.size() - 1);", "        }", "        int i = notFull.peek();", "        stacks.get(i).push(val);", "        if (stacks.get(i).size() == cap) notFull.poll();   // 刚好填满，编号出堆", "    }", "", "    public int pop() {", "        // 尾部的空栈没有意义，直接删掉；被删编号留在堆里，push 时会当过期清走", "        while (!stacks.isEmpty() && stacks.get(stacks.size() - 1).isEmpty()) {", "            stacks.remove(stacks.size() - 1);", "        }", "        return stacks.isEmpty() ? -1 : popAtStack(stacks.size() - 1);", "    }", "", "    public int popAtStack(int index) {", "        if (index >= stacks.size() || stacks.get(index).isEmpty()) return -1;", "        ArrayDeque<Integer> s = stacks.get(index);", "        boolean wasFull = s.size() == cap;", "        int v = s.pop();", "        if (wasFull) notFull.add(index);   // 满栈变未满，编号回堆", "        return v;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1172. 餐盘栈 —— 图解：复刻 Solution.java 的「未满栈小顶堆 + 尾部空栈清理」，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  cap: 2,
+  ops: [['push', 1], ['push', 2], ['push', 3], ['popAtStack', 0], ['push', 20], ['pop'], ['pop'], ['pop']],
+};
+
+function trace(input) {
+  var cap = input.cap;
+  var ops = input.ops;
+  var stacks = [];   // 每个栈用数组模拟，末尾是栈顶
+  var heap = [];     // 小顶堆：未满栈编号
+  var out = [];
+  var frames = [];
+
+  function hpush(x) {
+    heap.push(x);
+    var i = heap.length - 1;
+    while (i > 0) {
+      var p = (i - 1) >> 1;
+      if (heap[p] <= heap[i]) break;
+      var t = heap[p]; heap[p] = heap[i]; heap[i] = t;
+      i = p;
+    }
+  }
+  function hpop() {
+    var top = heap[0];
+    var last = heap.pop();
+    if (heap.length) {
+      heap[0] = last;
+      var i = 0;
+      for (;;) {
+        var l = 2 * i + 1, r = l + 1, m = i;
+        if (l < heap.length && heap[l] < heap[m]) m = l;
+        if (r < heap.length && heap[r] < heap[m]) m = r;
+        if (m === i) break;
+        var t2 = heap[m]; heap[m] = heap[i]; heap[i] = t2;
+        i = m;
+      }
+    }
+    return top;
+  }
+
+  // hiLevels: [{ lvl, col, cls }]，lvl 是离栈底的高度，画成网格时行号要上下翻转；
+  // extraLvl：被弹出/标记的格子可能高于当前所有栈，把网格高度撑到它为止
+  function gridPanel(hiLevels) {
+    var h = 0;
+    for (var s = 0; s < stacks.length; s++) h = Math.max(h, stacks[s].length);
+    (hiLevels || []).forEach(function (hl) { h = Math.max(h, hl.lvl + 1); });
+    if (stacks.length && h === 0) h = 1;
+    var rows = [];
+    for (var lvl = h - 1; lvl >= 0; lvl--) {
+      var row = [];
+      for (var s2 = 0; s2 < stacks.length; s2++) row.push(lvl < stacks[s2].length ? String(stacks[s2][lvl]) : '');
+      rows.push(row);
+    }
+    var marks = {};
+    (hiLevels || []).forEach(function (hl) {
+      marks[(h - 1 - hl.lvl) + ',' + hl.col] = hl.cls;
+    });
+    var colLabels = [];
+    for (var c = 0; c < stacks.length; c++) colLabels.push('栈' + c);
+    return Viz.grid(rows, { title: '餐盘栈（每列一个栈，栈底在下）', marks: marks, colLabels: colLabels });
+  }
+  function heapPanel(hi) {
+    var sorted = heap.slice().sort(function (a, b) { return a - b; });
+    var rows = sorted.map(function (i) {
+      var alive = i < stacks.length;
+      return { k: '栈' + i, v: alive ? stacks[i].length + '/' + cap + ' 未满' : '已删（过期编号）', cls: i === hi ? 'cur' : (!alive ? 'dim' : '') };
+    });
+    return Viz.table('未满栈编号堆（堆顶 = 最左未满栈）', rows);
+  }
+  function varsPanel(fresh) {
+    return Viz.vars([{ name: 'pop 系列的返回值', v: '[' + out.join(',') + ']', cls: fresh ? 'new' : '' }]);
+  }
+
+  function doPush(val) {
+    while (heap.length && (heap[0] >= stacks.length || stacks[heap[0]].length === cap)) hpop();
+    if (!heap.length) {
+      stacks.push([]);
+      hpush(stacks.length - 1);
+    }
+    var i = heap[0];
+    stacks[i].push(val);
+    if (stacks[i].length === cap) hpop();
+    return i;
+  }
+  function doPopAt(index) {
+    if (index >= stacks.length || stacks[index].length === 0) return -1;
+    var wasFull = stacks[index].length === cap;
+    var v = stacks[index].pop();
+    if (wasFull) hpush(index);
+    return v;
+  }
+  function doPop() {
+    while (stacks.length && stacks[stacks.length - 1].length === 0) stacks.pop();
+    return stacks.length ? doPopAt(stacks.length - 1) : -1;
+  }
+
+  frames.push(Viz.frame('public DinnerPlates(int capacity) {',
+    '一开始一个栈都没有：push 会找最左未满栈，没有就新开一个',
+    [gridPanel([]), heapPanel(null), varsPanel(false)]));
+
+  for (var i = 0; i < ops.length; i++) {
+    var op = ops[i];
+    if (op[0] === 'push') {
+      var at = doPush(op[1]);
+      if (i === 2) {
+        frames.push(Viz.frame('stacks.get(i).push(val);',
+          'push(' + op[1] + ')：落进最左未满的栈 ' + at + '（比它靠左的都满了）',
+          [gridPanel([{ lvl: stacks[at].length - 1, col: at, cls: 'new' }]), heapPanel(at), varsPanel(false)]));
+      }
+      if (i === 4) {
+        frames.push(Viz.frame('stacks.get(i).push(val);',
+          '堆顶回到最左未满栈 ' + at + '：' + op[1] + ' 补进 popAtStack 弄出的空位',
+          [gridPanel([{ lvl: stacks[at].length - 1, col: at, cls: 'new' }]), heapPanel(at), varsPanel(false)]));
+      }
+    } else if (op[0] === 'popAtStack') {
+      var v1 = doPopAt(op[1]);
+      out.push(v1);
+      if (i === 3 && v1 >= 0) {
+        frames.push(Viz.frame('int v = s.pop();',
+          'popAtStack(' + op[1] + ') 弹出 ' + v1 + '：栈 ' + op[1] + ' 从满变未满，编号回堆等复用',
+          [gridPanel([{ lvl: stacks[op[1]].length, col: op[1], cls: 'bad' }]), heapPanel(op[1]), varsPanel(true)]));
+      }
+    } else {
+      var v2 = doPop();
+      out.push(v2);
+      if (i === 5 && v2 >= 0) {
+        var m4 = [];
+        for (var s3 = 0; s3 < stacks.length; s3++) {
+          if (stacks[s3].length) m4.push({ lvl: stacks[s3].length - 1, col: s3, cls: 'bad' });
+        }
+        frames.push(Viz.frame('return stacks.isEmpty() ? -1 : popAtStack(stacks.size() - 1);',
+          'pop 从最右非空栈拿：弹出 ' + v2,
+          [gridPanel(m4), heapPanel(null), varsPanel(true)]));
+      }
+    }
+  }
+
+  frames.push(Viz.frame('while (!stacks.isEmpty() && stacks.get(stacks.size() - 1).isEmpty()) {',
+    '尾部空栈顺手删掉；返回值序列见下面的变量面板',
+    [gridPanel([]), heapPanel(null), varsPanel(true)]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

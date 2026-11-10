@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>设计浏览器历史记录 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 922 / 1159</span>
+  <nav class="pn"><a href="1163.html">上一篇</a><a href="1170.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1472. </span>设计浏览器历史记录</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">设计</li><li class="tag">栈</li><li class="tag">设计</li><li class="tag">数组</li><li class="tag">链表</li><li class="tag">数据流</li><li class="tag">双向链表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">数组按访问顺序存历史 + 指针 cur 指当前页：visit 先删 cur 之后的再追加，back/forward 移 cur 并一步夹到边界。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>hist</code> 按访问顺序存页面，<code>cur</code> 指向当前页；后退/前进就是数组下标左移/右移。</li><li><code>back</code>/<code>forward</code>：<code>cur = max(0, cur - steps)</code> / <code>min(末尾, cur + steps)</code>，一条语句夹到边界，不用循环。</li><li><code>visit</code>：先 <code>cur++</code>，把 <code>cur</code> 之后的前进记录整段删掉再追加——这正是「访问新页会清空前进历史」；被删的每项只删一次，均摊 O(1)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1) 均摊，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">BrowserHistory</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; hist = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">int</span> cur;    <span class="c">// 当前页面在 hist 里的下标</span></span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">BrowserHistory</span>(<span class="t">String</span> homepage) {</span><span class="ln"><span class="no">8</span>        hist.add(homepage);</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="k">void</span> visit(<span class="t">String</span> url) {</span><span class="ln"><span class="no">12</span>        cur++;</span><span class="ln"><span class="no">13</span>        <span class="c">// cur 之后的整段前进记录作废，删掉后再追加新页面</span></span><span class="ln"><span class="no">14</span>        <span class="k">while</span> (hist.size() &gt; cur) hist.remove(hist.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">15</span>        hist.add(url);</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="k">public</span> <span class="t">String</span> back(<span class="k">int</span> steps) {</span><span class="ln"><span class="no">19</span>        cur = <span class="t">Math</span>.max(<span class="n">0</span>, cur - steps);</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> hist.get(cur);</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span> </span><span class="ln"><span class="no">23</span>    <span class="k">public</span> <span class="t">String</span> forward(<span class="k">int</span> steps) {</span><span class="ln"><span class="no">24</span>        cur = <span class="t">Math</span>.min(hist.size() - <span class="n">1</span>, cur + steps);</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> hist.get(cur);</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你有一个只支持单个标签页的 <strong>浏览器</strong>&nbsp;，最开始你浏览的网页是&nbsp;<code>homepage</code>&nbsp;，你可以访问其他的网站&nbsp;<code>url</code>&nbsp;，也可以在浏览历史中后退&nbsp;<code>steps</code>&nbsp;步或前进&nbsp;<code>steps</code>&nbsp;步。</p>
+
+<p>请你实现&nbsp;<code>BrowserHistory</code> 类：</p>
+
+<ul>
+	<li><code>BrowserHistory(string homepage)</code>&nbsp;，用&nbsp;<code>homepage</code>&nbsp;初始化浏览器类。</li>
+	<li><code>void visit(string url)</code>&nbsp;从当前页跳转访问 <code>url</code> 对应的页面&nbsp;&nbsp;。执行此操作会把浏览历史前进的记录全部删除。</li>
+	<li><code>string back(int steps)</code>&nbsp;在浏览历史中后退&nbsp;<code>steps</code>&nbsp;步。如果你只能在浏览历史中后退至多&nbsp;<code>x</code> 步且&nbsp;<code>steps &gt; x</code>&nbsp;，那么你只后退&nbsp;<code>x</code>&nbsp;步。请返回后退 <strong>至多</strong> <code>steps</code>&nbsp;步以后的&nbsp;<code>url</code>&nbsp;。</li>
+	<li><code>string forward(int steps)</code>&nbsp;在浏览历史中前进&nbsp;<code>steps</code>&nbsp;步。如果你只能在浏览历史中前进至多&nbsp;<code>x</code>&nbsp;步且&nbsp;<code>steps &gt; x</code>&nbsp;，那么你只前进 <code>x</code>&nbsp;步。请返回前进&nbsp;<strong>至多</strong>&nbsp;<code>steps</code>步以后的 <code>url</code>&nbsp;。</li>
+</ul>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre><strong>输入：</strong>
+[&quot;BrowserHistory&quot;,&quot;visit&quot;,&quot;visit&quot;,&quot;visit&quot;,&quot;back&quot;,&quot;back&quot;,&quot;forward&quot;,&quot;visit&quot;,&quot;forward&quot;,&quot;back&quot;,&quot;back&quot;]
+[[&quot;leetcode.com&quot;],[&quot;google.com&quot;],[&quot;facebook.com&quot;],[&quot;youtube.com&quot;],[1],[1],[1],[&quot;linkedin.com&quot;],[2],[2],[7]]
+<strong>输出：</strong>
+[null,null,null,null,&quot;facebook.com&quot;,&quot;google.com&quot;,&quot;facebook.com&quot;,null,&quot;linkedin.com&quot;,&quot;google.com&quot;,&quot;leetcode.com&quot;]
+
+<strong>解释：</strong>
+BrowserHistory browserHistory = new BrowserHistory(&quot;leetcode.com&quot;);
+browserHistory.visit(&quot;google.com&quot;);       // 你原本在浏览 &quot;leetcode.com&quot; 。访问 &quot;google.com&quot;
+browserHistory.visit(&quot;facebook.com&quot;);     // 你原本在浏览 &quot;google.com&quot; 。访问 &quot;facebook.com&quot;
+browserHistory.visit(&quot;youtube.com&quot;);      // 你原本在浏览 &quot;facebook.com&quot; 。访问 &quot;youtube.com&quot;
+browserHistory.back(1);                   // 你原本在浏览 &quot;youtube.com&quot; ，后退到 &quot;facebook.com&quot; 并返回 &quot;facebook.com&quot;
+browserHistory.back(1);                   // 你原本在浏览 &quot;facebook.com&quot; ，后退到 &quot;google.com&quot; 并返回 &quot;google.com&quot;
+browserHistory.forward(1);                // 你原本在浏览 &quot;google.com&quot; ，前进到 &quot;facebook.com&quot; 并返回 &quot;facebook.com&quot;
+browserHistory.visit(&quot;linkedin.com&quot;);     // 你原本在浏览 &quot;facebook.com&quot; 。 访问 &quot;linkedin.com&quot;
+browserHistory.forward(2);                // 你原本在浏览 &quot;linkedin.com&quot; ，你无法前进任何步数。
+browserHistory.back(2);                   // 你原本在浏览 &quot;linkedin.com&quot; ，后退两步依次先到 &quot;facebook.com&quot; ，然后到 &quot;google.com&quot; ，并返回 &quot;google.com&quot;
+browserHistory.back(7);                   // 你原本在浏览 &quot;google.com&quot;， 你只能后退一步到 &quot;leetcode.com&quot; ，并返回 &quot;leetcode.com&quot;
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= homepage.length &lt;= 20</code></li>
+	<li><code>1 &lt;= url.length &lt;= 20</code></li>
+	<li><code>1 &lt;= steps &lt;= 100</code></li>
+	<li><code>homepage</code> 和&nbsp;<code>url</code>&nbsp;都只包含&nbsp;&#39;.&#39; 或者小写英文字母。</li>
+	<li>最多调用&nbsp;<code>5000</code>&nbsp;次&nbsp;<code>visit</code>，&nbsp;<code>back</code>&nbsp;和&nbsp;<code>forward</code>&nbsp;函数。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class BrowserHistory {", "    private final List<String> hist = new ArrayList<>();", "    private int cur;    // 当前页面在 hist 里的下标", "", "    public BrowserHistory(String homepage) {", "        hist.add(homepage);", "    }", "", "    public void visit(String url) {", "        cur++;", "        // cur 之后的整段前进记录作废，删掉后再追加新页面", "        while (hist.size() > cur) hist.remove(hist.size() - 1);", "        hist.add(url);", "    }", "", "    public String back(int steps) {", "        cur = Math.max(0, cur - steps);", "        return hist.get(cur);", "    }", "", "    public String forward(int steps) {", "        cur = Math.min(hist.size() - 1, cur + steps);", "        return hist.get(cur);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1472. 设计浏览器历史记录 —— 图解：复刻 Solution.java 的「数组 + 指针」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { home: 'a', ops: [['visit', 'b'], ['visit', 'c'], ['visit', 'd'], ['back', 2], ['visit', 'e'], ['back', 2]] };
+
+function trace(input) {
+  var hist = [input.home];  // 对应 Java 的 hist
+  var cur = 0;              // 对应 Java 的 cur
+  var out = [];
+  var frames = [];
+
+  function histPanel(marks) {
+    var m = marks || {};
+    var pointers = [{ at: Math.min(cur, hist.length - 1), label: 'cur', cls: 'p-cur' }];
+    return Viz.cells(hist.slice(), { title: 'hist：按访问顺序存页面', marks: m, pointers: pointers });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: '当前页 hist[cur]', v: hist[cur] },
+      { name: 'back/forward 已返回', v: out.length ? out.join(' , ') : '—' }
+    ]);
+  }
+  function snap(at, key, marks) { frames.push(Viz.frame(at, key, [histPanel(marks), varsPanel()])); }
+
+  for (var i = 0; i < input.ops.length; i++) {
+    var op = input.ops[i];
+    if (op[0] === 'visit') {
+      cur++;
+      if (i === 4) {                       // 图解时刻：visit 前先把 cur 之后标成作废
+        var m = {};
+        for (var j = cur; j < hist.length; j++) m[j] = 'bad';
+        snap('while (hist.size() > cur) hist.remove(hist.size() - 1);', 'visit(e)：cur++ 之后，前进记录整段作废', m);
+      }
+      while (hist.length > cur) hist.pop();
+      hist.push(op[1]);
+      if (i === 2) snap('hist.add(url);', 'visit 依次追加：cur 永远指向最新页面', null);
+      if (i === 4) snap('hist.add(url);', 'visit 覆盖式前进：历史截断成 [a,b,e]', (function () { var m = {}; m[cur] = 'new'; return m; })());
+    } else if (op[0] === 'back') {
+      cur = Math.max(0, cur - op[1]);
+      out.push(hist[cur]);
+      if (i === 3) snap('cur = Math.max(0, cur - steps);', 'back(2)：cur 左移 2 步，前进记录还留着', (function () { var m = {}; m[cur] = 'cur'; return m; })());
+      if (i === input.ops.length - 1) snap('cur = Math.max(0, cur - steps);', '最后一步 back(2)：一步夹到首页并返回', (function () { var m = {}; m[cur] = 'cur'; return m; })());
+    } else {
+      cur = Math.min(hist.length - 1, cur + op[1]);
+      out.push(hist[cur]);
+    }
+  }
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

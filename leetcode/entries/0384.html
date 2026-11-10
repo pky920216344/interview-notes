@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>打乱数组 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 169 / 1159</span>
+  <nav class="pn"><a href="0106.html">上一篇</a><a href="0009.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">384. </span>打乱数组</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 33</li><li class="algo">模拟</li><li class="tag">设计</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">随机化</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">Fisher-Yates：i 从 n−1 往前，每个 i 与 [0, i] 里随机挑的 j 原地交换；reset 靠一份初始底版。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>存两份：<code>origin</code> 底版 + <code>cur</code> 工作数组；<code>reset()</code> 从底版再拷一份返回，<code>shuffle()</code> 直接在 <code>cur</code> 上原地交换。</li><li><code>shuffle()</code>：<code>for i = n−1 … 1</code>，<code>j = rnd.nextInt(i + 1)</code>，交换 <code>cur[i]</code> 与 <code>cur[j]</code>——每个位置恰好被定一次，共 <code>n−1</code> 次交换。</li><li>关键是范围含 <code>i</code> 自己（<code>nextInt(i + 1)</code>、<code>j</code> 可以等于 <code>i</code>）：写成 <code>j ∈ [0, i−1]</code> 漏掉自己，<code>[1,2,3,4]</code> 的恒等排列概率会直接变 0，排列不再等可能。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n) 每次 shuffle，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span>[] origin;   <span class="c">// 初始数组，reset 用的底版</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">int</span>[] cur;            <span class="c">// 当前数组，shuffle 在它上面原地交换</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Random</span> rnd = <span class="k">new</span> <span class="t">Random</span>();</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">Solution</span>(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">9</span>        origin = <span class="t">Arrays</span>.copyOf(nums, nums.length);</span><span class="ln"><span class="no">10</span>        cur = <span class="t">Arrays</span>.copyOf(nums, nums.length);</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="k">public</span> <span class="k">int</span>[] reset() {</span><span class="ln"><span class="no">14</span>        <span class="c">// 回到初始状态：从底版再拷一份，别把底版本身交出去</span></span><span class="ln"><span class="no">15</span>        cur = <span class="t">Arrays</span>.copyOf(origin, origin.length);</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> cur;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    <span class="k">public</span> <span class="k">int</span>[] shuffle() {</span><span class="ln"><span class="no">20</span>        <span class="c">// Fisher-Yates：从后往前，i 与 [0, i] 里随机挑的 j 交换</span></span><span class="ln"><span class="no">21</span>        <span class="k">for</span> (<span class="k">int</span> i = cur.length - <span class="n">1</span>; i &gt; <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">22</span>            <span class="k">int</span> j = rnd.nextInt(i + <span class="n">1</span>);</span><span class="ln"><span class="no">23</span>            <span class="k">int</span> t = cur[i]; cur[i] = cur[j]; cur[j] = t;</span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> cur;   <span class="c">// cur 就是打乱后的数组</span></span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> ，设计算法来打乱一个没有重复元素的数组。打乱后，数组的所有排列应该是&nbsp;<strong>等可能</strong>&nbsp;的。</p>
+
+<p>实现 <code>Solution</code> class:</p>
+
+<ul>
+	<li><code>Solution(int[] nums)</code> 使用整数数组 <code>nums</code> 初始化对象</li>
+	<li><code>int[] reset()</code> 重设数组到它的初始状态并返回</li>
+	<li><code>int[] shuffle()</code> 返回数组随机打乱后的结果</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入</strong>
+["Solution", "shuffle", "reset", "shuffle"]
+[[[1, 2, 3]], [], [], []]
+<strong>输出</strong>
+[null, [3, 1, 2], [1, 2, 3], [1, 3, 2]]
+
+<strong>解释</strong>
+Solution solution = new Solution([1, 2, 3]);
+solution.shuffle();    // 打乱数组 [1,2,3] 并返回结果。任何 [1,2,3]的排列返回的概率应该相同。例如，返回 [3, 1, 2]
+solution.reset();      // 重设数组到它的初始状态 [1, 2, 3] 。返回 [1, 2, 3]
+solution.shuffle();    // 随机返回数组 [1, 2, 3] 打乱后的结果。例如，返回 [1, 3, 2]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 50</code></li>
+	<li><code>-10<sup>6</sup> &lt;= nums[i] &lt;= 10<sup>6</sup></code></li>
+	<li><code>nums</code> 中的所有元素都是 <strong>唯一的</strong></li>
+	<li>最多可以调用 <code>10<sup>4</sup></code> 次 <code>reset</code> 和 <code>shuffle</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private final int[] origin;   // 初始数组，reset 用的底版", "    private int[] cur;            // 当前数组，shuffle 在它上面原地交换", "    private final Random rnd = new Random();", "", "    public Solution(int[] nums) {", "        origin = Arrays.copyOf(nums, nums.length);", "        cur = Arrays.copyOf(nums, nums.length);", "    }", "", "    public int[] reset() {", "        // 回到初始状态：从底版再拷一份，别把底版本身交出去", "        cur = Arrays.copyOf(origin, origin.length);", "        return cur;", "    }", "", "    public int[] shuffle() {", "        // Fisher-Yates：从后往前，i 与 [0, i] 里随机挑的 j 交换", "        for (int i = cur.length - 1; i > 0; i--) {", "            int j = rnd.nextInt(i + 1);", "            int t = cur[i]; cur[i] = cur[j]; cur[j] = t;", "        }", "        return cur;   // cur 就是打乱后的数组", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 384. 打乱数组 —— 图解：复刻 Solution.java 的 Fisher-Yates（从后往前，i 与 [0,i] 里随机 j 交换），在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 洗牌的随机选择不可复现，用例里附上 swaps（每次 [i, j] 的实际取值），trace 按它重放出同一个排列。
+
+var STORY_INPUT = { nums: [1, 2, 3, 4, 5], swaps: [[4, 1], [3, 3], [2, 0], [1, 0]] };
+
+function trace(input) {
+  var cur = input.nums.slice();
+  var swaps = input.swaps || [];
+  var frames = [];
+
+  var NEW = 'origin = Arrays.copyOf(nums, nums.length);';
+  var PICK = 'int j = rnd.nextInt(i + 1);';
+  var SWAP = 'int t = cur[i]; cur[i] = cur[j]; cur[j] = t;';
+  var RET = 'return cur;   // cur 就是打乱后的数组';
+
+  function cellsPanel(marks, i, j) {
+    var pointers = [];
+    if (i !== undefined && i >= 0 && i < cur.length) pointers.push({ at: i, label: 'i', cls: 'p-cur' });
+    if (j !== undefined && j !== i && j >= 0 && j < cur.length) pointers.push({ at: j, label: 'j', cls: 'p-next' });
+    return Viz.cells(cur, { title: 'cur（原地交换）', marks: marks || {}, pointers: pointers });
+  }
+
+  frames.push(Viz.frame(NEW,
+    cur.length > 1
+      ? '开局：i 从 ' + (cur.length - 1) + ' 往前、每个 i 与 [0,i] 里随机 j 交换'
+      : '开局：只有 ' + cur.length + ' 个元素，循环一次都不用跑',
+    [cellsPanel({}, undefined, undefined)]));
+
+  var firedSelf = false;
+  for (var s = 0; s < swaps.length; s++) {
+    var i = swaps[s][0], j = swaps[s][1];
+    var isLast = s === swaps.length - 1, isFirst = s === 0;
+    var isSelf = i === j;
+    // 拍三类帧：第一次交换、（若有）自交换、最后一次交换
+    if (isFirst || (isSelf && !firedSelf) || isLast) {
+      if (isSelf) firedSelf = true;
+      var m = {};
+      m[i] = 'chg';
+      if (j !== i) m[j] = 'chg';
+      var t = cur[i]; cur[i] = cur[j]; cur[j] = t;
+      var anchor = isFirst ? PICK : SWAP;
+      var what = isSelf
+        ? 'i=' + i + '：挑中 j=' + j + '（自己）——范围含 i，可能原地不动，排列才等可能'
+        : 'i=' + i + '：挑中 j=' + j + '，' + t + ' 和 ' + cur[i] + ' 交换，位置 ' + i + ' 定为 ' + cur[i];
+      frames.push(Viz.frame(anchor, what, [cellsPanel(m, i, j)]));
+    } else {
+      var tmp = cur[i]; cur[i] = cur[j]; cur[j] = tmp;
+    }
+  }
+
+  frames.push(Viz.frame(RET,
+    swaps.length ? '换到 i=1 为止共 ' + swaps.length + ' 次：每个位置恰好定一次，结果 [' + brief() + ']'
+                 : '无需交换：结果不变 [' + brief() + ']',
+    [cellsPanel(allDone(), undefined, undefined)]));
+
+  function brief() {
+    var vals = cur.slice(0, 6).join('、');
+    return cur.length > 6 ? vals + '…' : vals;
+  }
+  function allDone() {
+    var m = {};
+    for (var k = 0; k < cur.length; k++) m[k] = 'done';
+    return m;
+  }
+
+  return { frames: frames, result: cur };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

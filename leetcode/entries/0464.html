@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>我能赢吗 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 875 / 1159</span>
+  <nav class="pn"><a href="0920.html">上一篇</a><a href="1093.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">464. </span>我能赢吗</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">动态规划</li><li class="aux">位运算</li><li class="aux">深度优先搜索/递归</li><li class="tag">位运算</li><li class="tag">记忆化</li><li class="tag">数学</li><li class="tag">动态规划</li><li class="tag">位掩码</li><li class="tag">博弈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">博弈搜索 + 位掩码记忆化：状态就是「用掉哪些数」的 bitmask，当前行动方存在一步让对方必败就赢。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>两个预判先挡住：<code>total ≤ 0</code> 直接赢；<code>1..n</code> 全加起来 <code>&lt; total</code> 则谁都到不了，返回 <code>false</code>。</li><li>状态 <code>(mask, remaining)</code> 里 remaining 由 mask 唯一决定（用掉的数决定已凑的和），所以 memo 只用 <code>mask</code> 当键。</li><li>转移：当前方任选一个没用过的数 <code>i</code>；若 <code>i ≥ remaining</code> 直接赢，否则看对方从新局面出发是否必败，有一条这样的路就赢。</li><li><code>n ≤ 20</code>，<code>2^20</code> 个状态各算一遍，暴力穷举靠记忆化才跑得动。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(2^n · n)，空间复杂度 O(2^n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">int</span> n;</span><span class="ln"><span class="no">3</span>    <span class="k">private</span> <span class="k">int</span>[] memo;   <span class="c">// 0 没算过，1 当前行动方必胜，-1 必败</span></span><span class="ln"><span class="no">4</span> </span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="k">boolean</span> canIWin(<span class="k">int</span> maxChoosableInteger, <span class="k">int</span> desiredTotal) {</span><span class="ln"><span class="no">6</span>        <span class="c">// 全部数加起来都够不到：谁都赢不了，先手算输</span></span><span class="ln"><span class="no">7</span>        <span class="k">if</span> ((<span class="k">long</span>) maxChoosableInteger * (maxChoosableInteger + <span class="n">1</span>) / <span class="n">2</span> &lt; desiredTotal) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">8</span>        n = maxChoosableInteger;</span><span class="ln"><span class="no">9</span>        memo = <span class="k">new</span> <span class="k">int</span>[<span class="n">1</span> &lt;&lt; n];</span><span class="ln"><span class="no">10</span>        <span class="k">return</span> dfs(<span class="n">0</span>, desiredTotal);</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="c">// remaining：还差多少分到 desiredTotal；返回当前行动方是否必胜。</span></span><span class="ln"><span class="no">14</span>    <span class="c">// 用掉的数由 mask 决定，剩余和也随之确定，所以 memo 只用 mask 做键</span></span><span class="ln"><span class="no">15</span>    <span class="k">private</span> <span class="k">boolean</span> dfs(<span class="k">int</span> mask, <span class="k">int</span> remaining) {</span><span class="ln"><span class="no">16</span>        <span class="k">if</span> (memo[mask] != <span class="n">0</span>) <span class="k">return</span> memo[mask] &gt; <span class="n">0</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">18</span>            <span class="k">if</span> ((mask &amp; (<span class="n">1</span> &lt;&lt; i)) == <span class="n">0</span> &amp;&amp; ((i + <span class="n">1</span> &gt;= remaining) || !dfs(mask | (<span class="n">1</span> &lt;&lt; i), remaining - (i + <span class="n">1</span>)))) {</span><span class="ln"><span class="no">19</span>                memo[mask] = <span class="n">1</span>;</span><span class="ln"><span class="no">20</span>                <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">21</span>            }</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        memo[mask] = -<span class="n">1</span>;</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>在 "100 game" 这个游戏中，两名玩家轮流选择从 <code>1</code> 到 <code>10</code> 的任意整数，累计整数和，先使得累计整数和 <strong>达到或超过</strong>&nbsp; 100 的玩家，即为胜者。</p>
+
+<p>如果我们将游戏规则改为 “玩家 <strong>不能</strong> 重复使用整数” 呢？</p>
+
+<p>例如，两个玩家可以轮流从公共整数池中抽取从 1 到 15 的整数（不放回），直到累计整数和 &gt;= 100。</p>
+
+<p>给定两个整数&nbsp;<code>maxChoosableInteger</code>&nbsp;（整数池中可选择的最大数）和&nbsp;<code>desiredTotal</code>（累计和），若先出手的玩家能稳赢则返回 <code>true</code>&nbsp;，否则返回 <code>false</code> 。假设两位玩家游戏时都表现 <strong>最佳</strong> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>maxChoosableInteger = 10, desiredTotal = 11
+<strong>输出：</strong>false
+<strong>解释：
+</strong>无论第一个玩家选择哪个整数，他都会失败。
+第一个玩家可以选择从 1 到 10 的整数。
+如果第一个玩家选择 1，那么第二个玩家只能选择从 2 到 10 的整数。
+第二个玩家可以通过选择整数 10（那么累积和为 11 &gt;= desiredTotal），从而取得胜利.
+同样地，第一个玩家选择任意其他整数，第二个玩家都会赢。
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<b>输入：</b>maxChoosableInteger = 10, desiredTotal = 0
+<b>输出：</b>true
+</pre>
+
+<p><strong>示例 3:</strong></p>
+
+<pre>
+<strong>输入：</strong>maxChoosableInteger = 10, desiredTotal = 1
+<strong>输出：</strong>true
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= maxChoosableInteger &lt;= 20</code></li>
+	<li><code>0 &lt;= desiredTotal &lt;= 300</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private int n;", "    private int[] memo;   // 0 没算过，1 当前行动方必胜，-1 必败", "", "    public boolean canIWin(int maxChoosableInteger, int desiredTotal) {", "        // 全部数加起来都够不到：谁都赢不了，先手算输", "        if ((long) maxChoosableInteger * (maxChoosableInteger + 1) / 2 < desiredTotal) return false;", "        n = maxChoosableInteger;", "        memo = new int[1 << n];", "        return dfs(0, desiredTotal);", "    }", "", "    // remaining：还差多少分到 desiredTotal；返回当前行动方是否必胜。", "    // 用掉的数由 mask 决定，剩余和也随之确定，所以 memo 只用 mask 做键", "    private boolean dfs(int mask, int remaining) {", "        if (memo[mask] != 0) return memo[mask] > 0;", "        for (int i = 0; i < n; i++) {", "            if ((mask & (1 << i)) == 0 && ((i + 1 >= remaining) || !dfs(mask | (1 << i), remaining - (i + 1)))) {", "                memo[mask] = 1;", "                return true;", "            }", "        }", "        memo[mask] = -1;", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 464. 我能赢吗 —— 图解：复刻 Solution.java 的「位掩码记忆化博弈搜索」，在关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { max: 3, total: 5 };
+
+function trace(input) {
+  var n = input.max, total = input.total;
+  var frames = [];
+  var PRE = 'maxChoosableInteger * (maxChoosableInteger + 1) / 2 < desiredTotal';
+  var START = 'return dfs(0, desiredTotal);';
+  var WIN = 'memo[mask] = 1;';
+  var LOSE = 'memo[mask] = -1;';
+
+  // 与 Java 一致的预剪枝：总和都不够，谁也赢不了
+  if (n * (n + 1) / 2 < total) {
+    frames.push(Viz.frame(PRE, '1..max 全加起来也到不了 total：谁都赢不了，先手算输', [
+      Viz.cells(range(n), { title: '可选的数', marks: {}, hideIndex: true }),
+      Viz.vars([{ name: 'total', v: total }, { name: '总和', v: n * (n + 1) / 2, cls: 'bad' }])
+    ]));
+    return { frames: frames, result: false };
+  }
+
+  var memo = {};
+  var lostSnapped = false;
+
+  function range(k) {
+    var a = [];
+    for (var i = 1; i <= k; i++) a.push(i);
+    return a;
+  }
+  function mover(mask) {
+    var bits = 0, m = mask;
+    while (m) { bits += m & 1; m >>= 1; }
+    return bits % 2 === 0 ? '先手' : '对方';
+  }
+  function cellsPanel(mask, hot) {
+    var marks = {};
+    for (var i = 0; i < n; i++) if (mask & (1 << i)) marks[i] = 'dim';
+    if (hot != null) marks[hot] = 'cur';
+    return Viz.cells(range(n), { title: '可选的数（灰 = 已被用掉）', marks: marks, hideIndex: true });
+  }
+  function varsPanel(mask, remaining) {
+    return Viz.vars([
+      { name: '轮到', v: mover(mask) },
+      { name: '还差', v: remaining + ' 分到 total' }
+    ]);
+  }
+
+  frames.push(Viz.frame(START, '开局：还差 ' + total + ' 分，先手从 1..' + n + ' 里挑', [cellsPanel(0), varsPanel(0, total)]));
+
+  function dfs(mask, remaining) {
+    if (memo[mask] !== undefined) return memo[mask] > 0;
+    for (var i = 0; i < n; i++) {
+      if ((mask & (1 << i)) === 0 && ((i + 1 >= remaining) || !dfs(mask | (1 << i), remaining - (i + 1)))) {
+        memo[mask] = 1;
+        if (mask === 0) {
+          frames.push(Viz.frame(WIN, '先手挑 ' + (i + 1) + ' 后对方必败：存在必胜一步，先手赢', [cellsPanel(0, i), varsPanel(mask, remaining)]));
+        }
+        return true;
+      }
+    }
+    memo[mask] = -1;
+    if (!lostSnapped) {
+      lostSnapped = true;
+      frames.push(Viz.frame(LOSE, '这个局面轮到谁走都输（还差 ' + remaining + ' 分）——递归穷举证实', [cellsPanel(mask), varsPanel(mask, remaining)]));
+    }
+    return false;
+  }
+
+  var verdict = dfs(0, total);
+  frames.push(Viz.frame(START, '搜索结束：先手' + (verdict ? '必胜' : '必败'), [
+    Viz.vars([{ name: '结论', v: String(verdict), cls: verdict ? 'done' : 'bad' }])
+  ]));
+  return { frames: frames, result: verdict };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

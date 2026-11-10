@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>打印零与奇偶数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 719 / 1159</span>
+  <nav class="pn"><a href="0859.html">上一篇</a><a href="1087.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1116. </span>打印零与奇偶数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">并发</li><li class="tag">多线程</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">三张 Semaphore 通行证轮转：zero 打完 0 按下一个数的奇偶放行 odd/even，数字线程打完把证还给 zero。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>用「通行证」消灭竞态：初始只有 <code>z=1</code>，谁 acquire 到证谁打印，另两条线程阻塞等待，不忙等。</li><li><code>zero</code> 打完 0 后看下一个数 <code>i</code> 的奇偶，把证交给 <code>odd</code> 或 <code>even</code>；数字线程打完一律 <code>z.release()</code> 还给 <code>zero</code>。</li><li>三个循环各打各的（<code>1,3,5…</code> / <code>2,4,6…</code>），证的数量天然对齐，线程晚启动也不会丢信号。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.concurrent.<span class="t">Semaphore</span>;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.function.<span class="t">IntConsumer</span>;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span><span class="k">class</span> <span class="t">ZeroEvenOdd</span> {</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">int</span> n;</span><span class="ln"><span class="no">6</span>    <span class="c">// 三张通行证：谁持有谁打印，打完转交给下家</span></span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Semaphore</span> z = <span class="k">new</span> <span class="t">Semaphore</span>(<span class="n">1</span>);</span><span class="ln"><span class="no">8</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Semaphore</span> odd = <span class="k">new</span> <span class="t">Semaphore</span>(<span class="n">0</span>);</span><span class="ln"><span class="no">9</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Semaphore</span> even = <span class="k">new</span> <span class="t">Semaphore</span>(<span class="n">0</span>);</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="t">ZeroEvenOdd</span>(<span class="k">int</span> n) {</span><span class="ln"><span class="no">12</span>        <span class="k">this</span>.n = n;</span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span>    <span class="c">// printNumber.accept(x) outputs "x", where x is an integer.</span></span><span class="ln"><span class="no">16</span>    <span class="k">public</span> <span class="k">void</span> zero(<span class="t">IntConsumer</span> printNumber) <span class="k">throws</span> <span class="t">InterruptedException</span> {</span><span class="ln"><span class="no">17</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= n; i++) {</span><span class="ln"><span class="no">18</span>            z.acquire();</span><span class="ln"><span class="no">19</span>            printNumber.accept(<span class="n">0</span>);</span><span class="ln"><span class="no">20</span>            <span class="c">// 下一个数是 i：奇数放行 odd，偶数放行 even</span></span><span class="ln"><span class="no">21</span>            (i % <span class="n">2</span> == <span class="n">1</span> ? odd : even).release();</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span> </span><span class="ln"><span class="no">25</span>    <span class="k">public</span> <span class="k">void</span> even(<span class="t">IntConsumer</span> printNumber) <span class="k">throws</span> <span class="t">InterruptedException</span> {</span><span class="ln"><span class="no">26</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">2</span>; i &lt;= n; i += <span class="n">2</span>) {</span><span class="ln"><span class="no">27</span>            even.acquire();</span><span class="ln"><span class="no">28</span>            printNumber.accept(i);</span><span class="ln"><span class="no">29</span>            z.release();   <span class="c">// 偶数打完，放行 zero</span></span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span> </span><span class="ln"><span class="no">33</span>    <span class="k">public</span> <span class="k">void</span> odd(<span class="t">IntConsumer</span> printNumber) <span class="k">throws</span> <span class="t">InterruptedException</span> {</span><span class="ln"><span class="no">34</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= n; i += <span class="n">2</span>) {</span><span class="ln"><span class="no">35</span>            odd.acquire();</span><span class="ln"><span class="no">36</span>            printNumber.accept(i);</span><span class="ln"><span class="no">37</span>            z.release();   <span class="c">// 奇数打完，放行 zero</span></span><span class="ln"><span class="no">38</span>        }</span><span class="ln"><span class="no">39</span>    }</span><span class="ln"><span class="no">40</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>现有函数 <code>printNumber</code> 可以用一个整数参数调用，并输出该整数到控制台。</p>
+
+<ul>
+	<li>例如，调用 <code>printNumber(7)</code> 将会输出 <code>7</code> 到控制台。</li>
+</ul>
+
+<p>给你类 <code>ZeroEvenOdd</code> 的一个实例，该类中有三个函数：<code>zero</code>、<code>even</code> 和 <code>odd</code> 。<code>ZeroEvenOdd</code> 的相同实例将会传递给三个不同线程：</p>
+
+<ul>
+	<li><strong>线程 A：</strong>调用 <code>zero()</code> ，只输出 <code>0</code></li>
+	<li><strong>线程 B：</strong>调用 <code>even()</code> ，只输出偶数</li>
+	<li><strong>线程 C：</strong>调用 <code>odd()</code> ，只输出奇数</li>
+</ul>
+
+<p>修改给出的类，以输出序列 <code>"010203040506..."</code> ，其中序列的长度必须为 <code>2n</code> 。</p>
+
+<p>实现 <code>ZeroEvenOdd</code> 类：</p>
+
+<ul>
+	<li><code>ZeroEvenOdd(int n)</code> 用数字 <code>n</code> 初始化对象，表示需要输出的数。</li>
+	<li><code>void zero(printNumber)</code> 调用 <code>printNumber</code> 以输出一个 0 。</li>
+	<li><code>void even(printNumber)</code> 调用<code>printNumber</code> 以输出偶数。</li>
+	<li><code>void odd(printNumber)</code> 调用 <code>printNumber</code> 以输出奇数。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 2
+<strong>输出：</strong>"0102"
+<strong>解释：</strong>三条线程异步执行，其中一个调用 zero()，另一个线程调用 even()，最后一个线程调用odd()。正确的输出为 "0102"。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 5
+<strong>输出：</strong>"0102030405"
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.concurrent.Semaphore;", "import java.util.function.IntConsumer;", "", "class ZeroEvenOdd {", "    private int n;", "    // 三张通行证：谁持有谁打印，打完转交给下家", "    private final Semaphore z = new Semaphore(1);", "    private final Semaphore odd = new Semaphore(0);", "    private final Semaphore even = new Semaphore(0);", "", "    public ZeroEvenOdd(int n) {", "        this.n = n;", "    }", "", "    // printNumber.accept(x) outputs \"x\", where x is an integer.", "    public void zero(IntConsumer printNumber) throws InterruptedException {", "        for (int i = 1; i <= n; i++) {", "            z.acquire();", "            printNumber.accept(0);", "            // 下一个数是 i：奇数放行 odd，偶数放行 even", "            (i % 2 == 1 ? odd : even).release();", "        }", "    }", "", "    public void even(IntConsumer printNumber) throws InterruptedException {", "        for (int i = 2; i <= n; i += 2) {", "            even.acquire();", "            printNumber.accept(i);", "            z.release();   // 偶数打完，放行 zero", "        }", "    }", "", "    public void odd(IntConsumer printNumber) throws InterruptedException {", "        for (int i = 1; i <= n; i += 2) {", "            odd.acquire();", "            printNumber.accept(i);", "            z.release();   // 奇数打完，放行 zero", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1116 打印零与奇偶数 —— 图解：三张「通行证」在三条线程间交接，谁持证谁打印。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 5 };
+
+function trace(input) {
+  var n = input.n;
+  var frames = [];
+
+  var ZERO = 'printNumber.accept(0);';
+  var HAND = '(i % 2 == 1 ? odd : even).release();';
+  var ODD = 'odd.acquire();';
+  var EVEN = 'even.acquire();';
+  var LOOP = 'for (int i = 1; i <= n; i++) {';
+
+  var z = 1, oddP = 0, evenP = 0;   // 对应 Java 三个 Semaphore 的可用许可数
+  var printed = [];
+
+  function permPanel() {
+    return Viz.table('三张通行证（许可数）', [
+      { k: 'z（打 0）', v: String(z) },
+      { k: 'odd（打奇数）', v: String(oddP) },
+      { k: 'even（打偶数）', v: String(evenP) }
+    ]);
+  }
+  function printedPanel() {
+    return Viz.cells(printed.map(String), { title: '已打印的序列', hideIndex: true });
+  }
+
+  // 唯一可行的次序：zero 打 0 → 按下一个数的奇偶放行 odd/even → 打完还给 zero
+  for (var i = 1; i <= n; i++) {
+    z--;                        // zero.acquire()
+    printed.push(0);
+    if (i === 1) {
+      frames.push(Viz.frame(ZERO, 'zero 持证打 0：下一个数 1 是奇数，该把证交给 odd',
+        [permPanel(), printedPanel()]));
+    }
+    if (i % 2 === 1) oddP++; else evenP++;
+    if (i === 1) {
+      frames.push(Viz.frame(HAND, '证交出去：odd=1、z=0，此刻只有 odd 线程能走',
+        [permPanel(), printedPanel()]));
+    }
+    if (i % 2 === 1) oddP--; else evenP--;   // odd/even.acquire()
+    printed.push(i);
+    z++;                        // z.release()
+    if (i === 1) {
+      frames.push(Viz.frame(ODD, 'odd 打 1 后把证还给 zero：一张证在流动，次序锁死',
+        [permPanel(), printedPanel()]));
+    }
+    if (i === 2) {
+      frames.push(Viz.frame(EVEN, '下一个数 2 是偶数：zero 这次把证交给 even',
+        [permPanel(), printedPanel()]));
+    }
+  }
+
+  var shown = printed.slice(0, 24).join('') + (printed.length > 24 ? '…' : '');
+  frames.push(Viz.frame(LOOP, '三条线程各自循环、靠证次序咬合：输出恰好是 ' + shown,
+    [permPanel(), printedPanel()]));
+
+  return { frames: frames, result: printed.join('') };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

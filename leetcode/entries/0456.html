@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>132 模式 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 350 / 1159</span>
+  <nav class="pn"><a href="0073.html">上一篇</a><a href="0907.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">456. </span>132 模式</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 11</li><li class="algo">单调栈</li><li class="tag">栈</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">有序集合</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">从右往左扫 + 单调栈：third 维护目前最好（最大）的「2」，栈里存被弹掉的更小值；有数比 third 小就是 132。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>倒着扫，栈从底到顶<strong>递增</strong>；<code>third</code> 记录「目前为止当过 2 的最大值」。</li><li>遇到 <code>nums[i]</code>：先判 <code>nums[i] &lt; third</code>（它就是 1，且右边有更大的 3 压着 2）→ 直接 true。</li><li>否则把栈里所有 <code>&lt; nums[i]</code> 的弹出，<strong>最后一个弹出的就是新的 <code>third</code></strong>（它比其他弹出值大，是最优的 2）；然后 <code>nums[i]</code> 入栈当候选 3。</li><li>关键：<code>third</code> 只增不减——弹出次序保证最后弹出的最大，不用额外比较。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> find132pattern(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 从右往左扫：third 是目前最好（最大）的「2」，栈里是被弹掉的更小值</span></span><span class="ln"><span class="no">6</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> third = <span class="t">Integer</span>.MIN_VALUE;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = nums.length - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">9</span>            <span class="c">// nums[i] 比 third 还小：它当「1」，右边已有「3」&gt;「2」&gt; 它，成立</span></span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (nums[i] &lt; third) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">11</span>            <span class="c">// nums[i] 当候选「3」：把栈里比它小的都弹掉，最后一个弹出的就是新的「2」</span></span><span class="ln"><span class="no">12</span>            <span class="k">while</span> (!stack.isEmpty() &amp;&amp; stack.peek() &lt; nums[i]) {</span><span class="ln"><span class="no">13</span>                third = stack.pop();</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>            stack.push(nums[i]);</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> ，数组中共有 <code>n</code> 个整数。<strong>132 模式的子序列</strong> 由三个整数 <code>nums[i]</code>、<code>nums[j]</code> 和 <code>nums[k]</code> 组成，并同时满足：<code>i < j < k</code> 和 <code>nums[i] < nums[k] < nums[j]</code> 。</p>
+
+<p>如果 <code>nums</code> 中存在 <strong>132 模式的子序列</strong> ，返回 <code>true</code> ；否则，返回 <code>false</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,3,4]
+<strong>输出：</strong>false
+<strong>解释：</strong>序列中不存在 132 模式的子序列。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [3,1,4,2]
+<strong>输出：</strong>true
+<strong>解释：</strong>序列中有 1 个 132 模式的子序列： [1, 4, 2] 。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [-1,3,2,0]
+<strong>输出：</strong>true
+<strong>解释：</strong>序列中有 3 个 132 模式的的子序列：[-1, 3, 2]、[-1, 3, 0] 和 [-1, 2, 0] 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == nums.length</code></li>
+	<li><code>1 <= n <= 2 * 10<sup>5</sup></code></li>
+	<li><code>-10<sup>9</sup> <= nums[i] <= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean find132pattern(int[] nums) {", "        // 从右往左扫：third 是目前最好（最大）的「2」，栈里是被弹掉的更小值", "        Deque<Integer> stack = new ArrayDeque<>();", "        int third = Integer.MIN_VALUE;", "        for (int i = nums.length - 1; i >= 0; i--) {", "            // nums[i] 比 third 还小：它当「1」，右边已有「3」>「2」> 它，成立", "            if (nums[i] < third) return true;", "            // nums[i] 当候选「3」：把栈里比它小的都弹掉，最后一个弹出的就是新的「2」", "            while (!stack.isEmpty() && stack.peek() < nums[i]) {", "                third = stack.pop();", "            }", "            stack.push(nums[i]);", "        }", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 456. 132 模式 —— 图解：从右往左扫 + 单调栈维护「中间数 j」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [-1, 3, 2, 0] };
+
+function trace(input) {
+  var a = input.nums;
+  var frames = [];
+
+  function numsPanel(marks, i) {
+    var pointers = (i != null && i >= 0 && i < a.length) ? [{ at: i, label: 'i', cls: 'p-right' }] : [];
+    return Viz.cells(a.slice(), { title: '数组 nums（从右往左扫）', marks: marks || {}, pointers: pointers });
+  }
+  // 栈：底在左、顶在右
+  function stackPanel(marks) {
+    var pointers = stack.length ? [{ at: stack.length - 1, label: '顶', cls: 'p-tail' }] : [];
+    return Viz.cells(stack.slice(), {
+      title: '单调栈（底 → 顶，被弹掉的更小值都进过这里）',
+      marks: marks || {}, pointers: pointers, hideIndex: true
+    });
+  }
+  function varsPanel(third, msg) {
+    return Viz.vars([
+      { name: 'third（最好的「2」）', v: third === -Infinity ? '−∞' : third, cls: third !== -Infinity ? 'cur' : '' },
+      { name: '结论', v: msg, cls: 'cur' }
+    ]);
+  }
+  function snap(at, key, nMarks, i, sMarks, third, msg) {
+    frames.push(Viz.frame(at, key, [numsPanel(nMarks, i), stackPanel(sMarks), varsPanel(third, msg)]));
+  }
+
+  var stack = [];
+  var third = -Infinity;
+  var pops = 0, found = -1;
+
+  snap('int third = Integer.MIN_VALUE;',
+    '开局：从最后一个数开始往左扫，third 还是 −∞',
+    {}, a.length - 1, {}, third, '开始扫描');
+
+  for (var i = a.length - 1; i >= 0; i--) {
+    if (a[i] < third) {
+      var fm = {};
+      fm[i] = 'cur';
+      found = i;
+      snap('if (nums[i] < third) return true;',
+        'nums[' + i + ']=' + a[i] + ' < third=' + third + '：它当「1」，1-3-2 成立 → true',
+        fm, i, {}, third, '找到 132');
+      break;
+    }
+    var popped = 0;
+    var lastPop = null;
+    while (stack.length && stack[stack.length - 1] < a[i]) {
+      lastPop = stack.pop();
+      third = lastPop;
+      popped++;
+    }
+    stack.push(a[i]);
+    if (popped > 0 && pops < 2) {
+      var sm = {};
+      sm[stack.length - 1] = 'new';   // 刚入栈的 nums[i] 就是新的栈顶
+      var nm = {};
+      nm[i] = 'cur';
+      pops++;
+      snap('third = stack.pop();',
+        'nums[' + i + ']=' + a[i] + ' 当候选「3」：弹出更小的' + (lastPop != null ? ' ' + lastPop : '') + '，third=' + (third === -Infinity ? '−∞' : third) + '，自己入栈',
+        nm, i, sm, third, '弹出 → 更新 third');
+    }
+  }
+
+  if (found < 0) {
+    var em = {};
+    for (var k = 0; k < a.length; k++) em[k] = 'win';
+    snap('return false;',
+      '扫到头：third 停在 ' + (third === -Infinity ? '−∞' : third) + '，没人比它小 → false',
+      em, null, {}, third, '不存在 132');
+  }
+
+  return { frames: frames, result: found >= 0 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>设计有限阻塞队列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1011 / 1159</span>
+  <nav class="pn"><a href="1566.html">上一篇</a><a href="0659.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1188. </span>设计有限阻塞队列</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">并发</li><li class="aux">设计</li><li class="tag">多线程</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">循环数组 + 一把 ReentrantLock、两个 Condition：队满生产者等 notFull，队空消费者等 notEmpty，操作完唤醒对方一个。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>循环数组存元素：<code>head</code> 指向下一个出队位置，<code>tail</code> 指向下一个写入位置，下标用 <code>% capacity</code> 回绕。</li><li><code>enqueue</code>：满了就在 <code>notFull</code> 上 <code>await</code>；写入后 <code>signal</code> 一个 <code>notEmpty</code>（只腾出一个元素，唤醒一个消费者就够）。</li><li><code>dequeue</code>：空了就在 <code>notEmpty</code> 上 <code>await</code>；取走后 <code>signal</code> 一个 <code>notFull</code>。<code>await</code> 必须放在 <code>while</code> 里：被唤醒后条件可能又被其他线程抢走。</li><li>所有读写都在同一把锁里，<code>size()</code> 也要持锁读，才能保证可见性和一致性。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1)，空间复杂度 O(capacity)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.concurrent.locks.<span class="t">Condition</span>;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.concurrent.locks.<span class="t">ReentrantLock</span>;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span><span class="k">class</span> <span class="t">BoundedBlockingQueue</span> {</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span>[] buf;   <span class="c">// 循环数组：head 读、tail 写</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">int</span> head, tail, size;</span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">ReentrantLock</span> lock = <span class="k">new</span> <span class="t">ReentrantLock</span>();</span><span class="ln"><span class="no">8</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Condition</span> notFull = lock.newCondition();</span><span class="ln"><span class="no">9</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Condition</span> notEmpty = lock.newCondition();</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="t">BoundedBlockingQueue</span>(<span class="k">int</span> capacity) {</span><span class="ln"><span class="no">12</span>        buf = <span class="k">new</span> <span class="k">int</span>[capacity];</span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span>    <span class="k">public</span> <span class="k">void</span> enqueue(<span class="k">int</span> element) <span class="k">throws</span> <span class="t">InterruptedException</span> {</span><span class="ln"><span class="no">16</span>        lock.lock();</span><span class="ln"><span class="no">17</span>        <span class="k">try</span> {</span><span class="ln"><span class="no">18</span>            <span class="c">// 用 while 而不是 if：被唤醒后条件可能又被别人抢走</span></span><span class="ln"><span class="no">19</span>            <span class="k">while</span> (size == buf.length) notFull.await();</span><span class="ln"><span class="no">20</span>            buf[tail] = element;</span><span class="ln"><span class="no">21</span>            tail = (tail + <span class="n">1</span>) % buf.length;</span><span class="ln"><span class="no">22</span>            size++;</span><span class="ln"><span class="no">23</span>            notEmpty.signal();   <span class="c">// 腾出了一个元素，唤醒一个消费者即可</span></span><span class="ln"><span class="no">24</span>        } <span class="k">finally</span> {</span><span class="ln"><span class="no">25</span>            lock.unlock();</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span> </span><span class="ln"><span class="no">29</span>    <span class="k">public</span> <span class="k">int</span> dequeue() <span class="k">throws</span> <span class="t">InterruptedException</span> {</span><span class="ln"><span class="no">30</span>        lock.lock();</span><span class="ln"><span class="no">31</span>        <span class="k">try</span> {</span><span class="ln"><span class="no">32</span>            <span class="k">while</span> (size == <span class="n">0</span>) notEmpty.await();</span><span class="ln"><span class="no">33</span>            <span class="k">int</span> v = buf[head];</span><span class="ln"><span class="no">34</span>            head = (head + <span class="n">1</span>) % buf.length;</span><span class="ln"><span class="no">35</span>            size--;</span><span class="ln"><span class="no">36</span>            notFull.signal();   <span class="c">// 腾出了一个空位，唤醒一个生产者即可</span></span><span class="ln"><span class="no">37</span>            <span class="k">return</span> v;</span><span class="ln"><span class="no">38</span>        } <span class="k">finally</span> {</span><span class="ln"><span class="no">39</span>            lock.unlock();</span><span class="ln"><span class="no">40</span>        }</span><span class="ln"><span class="no">41</span>    }</span><span class="ln"><span class="no">42</span> </span><span class="ln"><span class="no">43</span>    <span class="k">public</span> <span class="k">int</span> size() {</span><span class="ln"><span class="no">44</span>        lock.lock();</span><span class="ln"><span class="no">45</span>        <span class="k">try</span> {</span><span class="ln"><span class="no">46</span>            <span class="k">return</span> size;</span><span class="ln"><span class="no">47</span>        } <span class="k">finally</span> {</span><span class="ln"><span class="no">48</span>            lock.unlock();</span><span class="ln"><span class="no">49</span>        }</span><span class="ln"><span class="no">50</span>    }</span><span class="ln"><span class="no">51</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.concurrent.locks.Condition;", "import java.util.concurrent.locks.ReentrantLock;", "", "class BoundedBlockingQueue {", "    private final int[] buf;   // 循环数组：head 读、tail 写", "    private int head, tail, size;", "    private final ReentrantLock lock = new ReentrantLock();", "    private final Condition notFull = lock.newCondition();", "    private final Condition notEmpty = lock.newCondition();", "", "    public BoundedBlockingQueue(int capacity) {", "        buf = new int[capacity];", "    }", "", "    public void enqueue(int element) throws InterruptedException {", "        lock.lock();", "        try {", "            // 用 while 而不是 if：被唤醒后条件可能又被别人抢走", "            while (size == buf.length) notFull.await();", "            buf[tail] = element;", "            tail = (tail + 1) % buf.length;", "            size++;", "            notEmpty.signal();   // 腾出了一个元素，唤醒一个消费者即可", "        } finally {", "            lock.unlock();", "        }", "    }", "", "    public int dequeue() throws InterruptedException {", "        lock.lock();", "        try {", "            while (size == 0) notEmpty.await();", "            int v = buf[head];", "            head = (head + 1) % buf.length;", "            size--;", "            notFull.signal();   // 腾出了一个空位，唤醒一个生产者即可", "            return v;", "        } finally {", "            lock.unlock();", "        }", "    }", "", "    public int size() {", "        lock.lock();", "        try {", "            return size;", "        } finally {", "            lock.unlock();", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1188. 设计有限阻塞队列 —— 图解：循环数组，入队写到 tail、出队取 head，走到头就回绕复用。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { cap: 3, ops: [['en', 1], ['en', 2], ['en', 3], ['de'], ['en', 4], ['de'], ['de'], ['de']] };
+
+function trace(input) {
+  var cap = input.cap;
+  var buf = [];                    // 槽位：数字或 null（空槽画成 ·）
+  for (var i = 0; i < cap; i++) buf.push(null);
+  var head = 0, tail = 0, size = 0;
+  var out = [];
+  var frames = [];
+  var didFirstEn = false, didFull = false, didFirstDe = false, didWrap = false;
+
+  function bufPanel(marks, extraPtr) {
+    var items = buf.map(function (v) { return v === null ? '·' : v; });
+    var pointers = [{ at: head, label: 'head', cls: 'p-head' }, { at: tail, label: 'tail', cls: 'p-tail' }];
+    if (extraPtr) pointers = pointers.concat(extraPtr);
+    return Viz.cells(items, { title: '循环数组（· 是空槽，head 读 tail 写）', marks: marks || {}, pointers: pointers });
+  }
+  function varsPanel(extra) {
+    var items = [
+      { name: 'size', v: String(size) },
+      { name: 'head（下一个出）', v: String(head) },
+      { name: 'tail（下一个写）', v: String(tail) }
+    ];
+    return Viz.vars(extra ? items.concat(extra) : items);
+  }
+  function snap(at, key, marks, extraVars, extraPtr) {
+    frames.push(Viz.frame(at, key, [bufPanel(marks, extraPtr), varsPanel(extraVars)]));
+  }
+
+  input.ops.forEach(function (op) {
+    var kind = op[0];
+    if (kind === 'en') {
+      var v = op[1];
+      var wrapped = tail === 0 && size > 0;              // 写前 tail 已回绕到 0
+      buf[tail] = v;
+      tail = (tail + 1) % cap;
+      size++;
+      out.push(null);                                    // 入队不产生结果，占位 null
+      if (!didFirstEn) {
+        didFirstEn = true;
+        snap('buf[tail] = element;', '入队写到 tail 指向的空槽，然后 tail 前移一格', (function () { var m = {}; m[0] = 'new'; return m; })());
+      } else if (!didWrap && wrapped) {
+        didWrap = true;
+        snap('tail = (tail + 1) % buf.length;', 'tail 走到末尾后回绕到 0：循环数组复用前面的空槽', (function () { var m = {}; m[0] = 'new'; return m; })());
+      }
+    } else if (kind === 'de') {
+      if (!didFull && size === cap) {
+        didFull = true;
+        snap('while (size == buf.length) notFull.await();',
+          '队满 size == cap：此后生产者在 notFull 上等待，直到有出队腾出空位', (function () { var m = {}; m[head] = 'win'; return m; })());
+      }
+      if (!didFirstDe) {
+        didFirstDe = true;
+        snap('int v = buf[head];', '出队取 head 指向的元素 ' + buf[head] + '，然后 head 前移', (function () { var m = {}; m[head] = 'cur'; return m; })());
+      }
+      var taken = buf[head];
+      buf[head] = null;
+      head = (head + 1) % cap;
+      size--;
+      out.push(taken);
+    } else {
+      out.push(size);
+    }
+  });
+
+  if (!didFull && size === cap) {
+    snap('while (size == buf.length) notFull.await();', '队满 size == cap：再入队就要等 notFull', (function () { var m = {}; m[head] = 'win'; return m; })());
+  }
+  if (!didFirstDe && size > 0) {
+    snap('int v = buf[head];', '出队取 head 指向的元素 ' + buf[head], (function () { var m = {}; m[head] = 'cur'; return m; })());
+  }
+  var marks = {};
+  for (var k = 0; k < cap; k++) if (buf[k] === null) marks[k] = 'dim';
+  snap('return v;', '跑完所有操作：head 追上 tail，size=' + size + '，槽位可复用', marks,
+    [{ name: '结果 out', v: JSON.stringify(out) }]);
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

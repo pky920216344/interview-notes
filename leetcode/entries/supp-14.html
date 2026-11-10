@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>阿拉伯数字转中文数字 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 210 / 1159</span>
+  <nav class="pn"><a href="offer-39.html">上一篇</a><a href="0018.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">补充题14. </span>阿拉伯数字转中文数字</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 24</li><li class="algo">模拟</li><li class="st-warn" title="codetop 自行补充的条目，力扣上没有对应页面，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">按「亿 / 万 / 个」三节转换：节内从千位往低位拼，中间的零合并成一个，节首「一十」省略「一」。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>拆三节：<code>亿 = n/1e8</code>、<code>万 = n/1e4 % 1e4</code>、<code>个 = n%1e4</code>，各自是 0..9999 的数；整节为零就跳过。</li><li>节内从千到个：非零位拼「数字 + 单位」；前面跳过的零位合并成一个「零」垫在下一组前。</li><li>补零两个时机：节内有跳过的零位；跨节时中间隔了零节或本节不满千（如 <code>1000001 → 一百万零一</code>）。</li><li>「一十」只在整串最开头省成「十」（<code>10→十</code>、<code>110000→十一万</code>）；零后面要念全（<code>1000010→一百万零一十</code>）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1)（最多 10 位），空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="t">String</span>[] D = {<span class="s">""</span>, <span class="s">"一"</span>, <span class="s">"二"</span>, <span class="s">"三"</span>, <span class="s">"四"</span>, <span class="s">"五"</span>, <span class="s">"六"</span>, <span class="s">"七"</span>, <span class="s">"八"</span>, <span class="s">"九"</span>};</span><span class="ln"><span class="no">3</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="t">String</span>[] U = {<span class="s">""</span>, <span class="s">"十"</span>, <span class="s">"百"</span>, <span class="s">"千"</span>};   <span class="c">// 个、十、百、千的单位</span></span><span class="ln"><span class="no">4</span> </span><span class="ln"><span class="no">5</span>    <span class="c">// 0 ≤ n ≤ int 上限：按「亿/万/个」三节转换，输出小写中文</span></span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="t">String</span> convert(<span class="k">int</span> n) {</span><span class="ln"><span class="no">7</span>        <span class="k">if</span> (n == <span class="n">0</span>) <span class="k">return</span> <span class="s">"零"</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">int</span>[] secs = {n / <span class="n">100_000_000</span>, n / <span class="n">10_000</span> % <span class="n">10_000</span>, n % <span class="n">10_000</span>};</span><span class="ln"><span class="no">9</span>        <span class="t">String</span>[] units = {<span class="s">"亿"</span>, <span class="s">"万"</span>, <span class="s">""</span>};</span><span class="ln"><span class="no">10</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">11</span>        <span class="k">boolean</span> emitted = <span class="k">false</span>, pendingZero = <span class="k">false</span>;</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; <span class="n">3</span>; k++) {</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (secs[k] == <span class="n">0</span>) {   <span class="c">// 整节为零先跳过，但它隔出了中间的零</span></span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (emitted) pendingZero = <span class="k">true</span>;</span><span class="ln"><span class="no">15</span>                <span class="k">continue</span>;</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>            <span class="c">// 补零：中间隔了零节，或本节不满一千</span></span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (emitted &amp;&amp; (pendingZero || secs[k] &lt; <span class="n">1000</span>)) sb.append(<span class="s">'零'</span>);</span><span class="ln"><span class="no">19</span>            appendSection(sb, secs[k], !emitted);</span><span class="ln"><span class="no">20</span>            sb.append(units[k]);</span><span class="ln"><span class="no">21</span>            emitted = <span class="k">true</span>;</span><span class="ln"><span class="no">22</span>            pendingZero = <span class="k">false</span>;</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span> </span><span class="ln"><span class="no">27</span>    <span class="c">// 一节（1..9999）从千位往个位拼，中间的零合并成一个</span></span><span class="ln"><span class="no">28</span>    <span class="c">// omitShi：本节是整串开头时，节首「一十」省略成「十」</span></span><span class="ln"><span class="no">29</span>    <span class="k">private</span> <span class="k">void</span> appendSection(<span class="t">StringBuilder</span> sb, <span class="k">int</span> x, <span class="k">boolean</span> omitShi) {</span><span class="ln"><span class="no">30</span>        <span class="k">int</span>[] d = {x % <span class="n">10</span>, x / <span class="n">10</span> % <span class="n">10</span>, x / <span class="n">100</span> % <span class="n">10</span>, x / <span class="n">1000</span>};   <span class="c">// 个、十、百、千</span></span><span class="ln"><span class="no">31</span>        <span class="k">boolean</span> emitted = <span class="k">false</span>, pendingZero = <span class="k">false</span>;</span><span class="ln"><span class="no">32</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">3</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">33</span>            <span class="k">if</span> (d[i] == <span class="n">0</span>) {</span><span class="ln"><span class="no">34</span>                <span class="k">if</span> (emitted) pendingZero = <span class="k">true</span>;   <span class="c">// 后面还有数字才真的要补零</span></span><span class="ln"><span class="no">35</span>                <span class="k">continue</span>;</span><span class="ln"><span class="no">36</span>            }</span><span class="ln"><span class="no">37</span>            <span class="k">if</span> (pendingZero) sb.append(<span class="s">'零'</span>);</span><span class="ln"><span class="no">38</span>            <span class="k">if</span> (omitShi &amp;&amp; i == <span class="n">1</span> &amp;&amp; d[i] == <span class="n">1</span> &amp;&amp; !emitted) sb.append(<span class="s">'十'</span>);</span><span class="ln"><span class="no">39</span>            <span class="k">else</span> sb.append(D[d[i]]).append(U[i]);</span><span class="ln"><span class="no">40</span>            emitted = <span class="k">true</span>;</span><span class="ln"><span class="no">41</span>            pendingZero = <span class="k">false</span>;</span><span class="ln"><span class="no">42</span>        }</span><span class="ln"><span class="no">43</span>    }</span><span class="ln"><span class="no">44</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>这个条目没有现成的题面。</p></div></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private static final String[] D = {\"\", \"一\", \"二\", \"三\", \"四\", \"五\", \"六\", \"七\", \"八\", \"九\"};", "    private static final String[] U = {\"\", \"十\", \"百\", \"千\"};   // 个、十、百、千的单位", "", "    // 0 ≤ n ≤ int 上限：按「亿/万/个」三节转换，输出小写中文", "    public String convert(int n) {", "        if (n == 0) return \"零\";", "        int[] secs = {n / 100_000_000, n / 10_000 % 10_000, n % 10_000};", "        String[] units = {\"亿\", \"万\", \"\"};", "        StringBuilder sb = new StringBuilder();", "        boolean emitted = false, pendingZero = false;", "        for (int k = 0; k < 3; k++) {", "            if (secs[k] == 0) {   // 整节为零先跳过，但它隔出了中间的零", "                if (emitted) pendingZero = true;", "                continue;", "            }", "            // 补零：中间隔了零节，或本节不满一千", "            if (emitted && (pendingZero || secs[k] < 1000)) sb.append('零');", "            appendSection(sb, secs[k], !emitted);", "            sb.append(units[k]);", "            emitted = true;", "            pendingZero = false;", "        }", "        return sb.toString();", "    }", "", "    // 一节（1..9999）从千位往个位拼，中间的零合并成一个", "    // omitShi：本节是整串开头时，节首「一十」省略成「十」", "    private void appendSection(StringBuilder sb, int x, boolean omitShi) {", "        int[] d = {x % 10, x / 10 % 10, x / 100 % 10, x / 1000};   // 个、十、百、千", "        boolean emitted = false, pendingZero = false;", "        for (int i = 3; i >= 0; i--) {", "            if (d[i] == 0) {", "                if (emitted) pendingZero = true;   // 后面还有数字才真的要补零", "                continue;", "            }", "            if (pendingZero) sb.append('零');", "            if (omitShi && i == 1 && d[i] == 1 && !emitted) sb.append('十');", "            else sb.append(D[d[i]]).append(U[i]);", "            emitted = true;", "            pendingZero = false;", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 补充题14. 阿拉伯数字转中文数字 —— 图解：复刻 Solution.java 的「亿/万/个」三节转换，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 1000010 };
+
+function trace(input) {
+  var n = input.n;
+  if (n === 0) return { frames: [], result: '零' };
+
+  var D = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  var U = ['', '十', '百', '千'];
+  var frames = [];
+  var SECS = 'int[] secs = {n / 100_000_000, n / 10_000 % 10_000, n % 10_000};';
+  var ZERO = "if (emitted && (pendingZero || secs[k] < 1000)) sb.append('零');";
+  var UNIT = 'sb.append(units[k]);';
+  var DIGIT = 'else sb.append(D[d[i]]).append(U[i]);';
+  var RET = 'return sb.toString();';
+
+  var secs = [Math.floor(n / 100000000), Math.floor(n / 10000) % 10000, n % 10000];
+  var units = ['亿', '万', ''];
+  var names = ['亿节', '万节', '个节'];
+  var sb = [];
+  var emitted = false, pendingZero = false;
+  var captured = {};
+  var firstK = -1, k, i;
+  for (k = 0; k < 3; k++) if (secs[k] > 0) { firstK = k; break; }
+
+  // 三节的取值：按 4 位补零展示（亿节用原值）；cur=正在处理的节，零节且已开拼则 dim
+  function varsPanel(cur) {
+    var items = [], q;
+    for (q = 0; q < 3; q++) {
+      var v = q === 0 ? String(secs[q]) : ('0000' + secs[q]).slice(-4);
+      var cls = q === cur ? 'cur' : (secs[q] === 0 && emitted ? 'dim' : '');
+      items.push({ name: names[q], v: v, cls: cls });
+    }
+    return Viz.vars(items);
+  }
+  function sbPanel(done) {
+    var marks = {}, j;
+    if (done) { for (j = 0; j < sb.length; j++) marks[j] = 'done'; }
+    else for (j = 0; j < sb.length; j++) marks[j] = 'win';
+    if (!done && sb.length) marks[sb.length - 1] = 'new';
+    return Viz.cells(sb.length ? sb.slice() : ['（还没拼出字）'], { title: '拼出的中文 sb', marks: marks });
+  }
+  function push(tag, at, key, panels) {
+    if (tag) { if (captured[tag]) return; captured[tag] = true; }
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  push('init', SECS, '拆成三节：' + names[0] + ' ' + secs[0] + '、' + names[1] + ' ' + secs[1] + '、' + names[2] + ' ' + secs[2],
+    [varsPanel(-1), sbPanel(false)]);
+
+  var shiShown = false;
+  for (k = 0; k < 3; k++) {
+    if (secs[k] === 0) {
+      if (emitted) pendingZero = true;
+      continue;
+    }
+    if (emitted && (pendingZero || secs[k] < 1000)) {
+      sb.push('零');
+      push('zero', ZERO, names[k] + ' ' + ('0000' + secs[k]).slice(-4) + ' 不满千：节间补一个「零」',
+        [varsPanel(k), sbPanel(false)]);
+    }
+    // 节内：从千位往个位拼（复刻 appendSection）
+    var d = [secs[k] % 10, Math.floor(secs[k] / 10) % 10, Math.floor(secs[k] / 100) % 10, Math.floor(secs[k] / 1000)];
+    var emitted0 = false, pending0 = false, omitShi = !emitted;
+    for (i = 3; i >= 0; i--) {
+      if (d[i] === 0) {
+        if (emitted0) pending0 = true;
+        continue;
+      }
+      if (pending0) sb.push('零');
+      if (omitShi && i === 1 && d[i] === 1 && !emitted0) {
+        sb.push('十');
+        if (!shiShown) {
+          shiShown = true;
+          push('shi', DIGIT, '整串以「一十」开头：省略「一」，只拼「十」', [varsPanel(k), sbPanel(false)]);
+        }
+      } else {
+        sb.push(D[d[i]] + U[i]);
+        if (i === 1 && d[i] === 1 && !shiShown) {
+          shiShown = true;
+          push('shi', DIGIT, '这个「一十」不在整串开头（前面有字或隔着零）：「一」不能省',
+            [varsPanel(k), sbPanel(false)]);
+        }
+      }
+      emitted0 = true;
+      pending0 = false;
+    }
+    sb.push(units[k]);
+    emitted = true;
+    pendingZero = false;
+    if (k === firstK) {
+      push('first', UNIT, names[k] + ' ' + ('0000' + secs[k]).slice(-4) + ' 拼完，接上节单位「' + units[k] + '」',
+        [varsPanel(k), sbPanel(false)]);
+    }
+  }
+
+  push('ret', RET, '三节拼完：' + sb.join(''), [sbPanel(true)]);
+
+  return { frames: frames, result: sb.join('') };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

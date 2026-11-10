@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>形成三的最大倍数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 657 / 1159</span>
+  <nav class="pn"><a href="1060.html">上一篇</a><a href="0564.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1363. </span>形成三的最大倍数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">贪心</li><li class="aux">数学</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">动态规划</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">数字和 %3 决定删谁：余 1 删一个 1/4/7（没有就删两个 2/5/8），余 2 对称；剩下降序拼接，全 0 输出 &quot;0&quot;。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>一个数是 3 的倍数 ⟺ 数字和是 3 的倍数，所以问题变成「删最少的数字使余数归零」。</li><li>余 1：优先删<strong>最小</strong>的 1/4/7；一个都没有就删两个最小的 2/5/8（余 2 对称；由同余式 <code>#1 − #2 ≡ r (mod 3)</code> 保证第二次必有得删）。</li><li>删完后数字从大到小拼接即最大；降序首位是 0 说明全是 0，直接返回 <code>"0"</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">String</span> largestMultipleOfThree(<span class="k">int</span>[] digits) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span>[] cnt = <span class="k">new</span> <span class="k">int</span>[<span class="n">10</span>];</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> sum = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> d : digits) { cnt[d]++; sum += d; }</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] one = {<span class="n">1</span>, <span class="n">4</span>, <span class="n">7</span>}, two = {<span class="n">2</span>, <span class="n">5</span>, <span class="n">8</span>};   <span class="c">// 升序：要删就先删小的</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> r = sum % <span class="n">3</span>;</span><span class="ln"><span class="no">8</span>        <span class="c">// 余 1：删一个余 1 的数；一个都没有就删两个余 2 的（个数满足同余式，必有得删）</span></span><span class="ln"><span class="no">9</span>        <span class="k">if</span> (r == <span class="n">1</span> &amp;&amp; take(cnt, one, <span class="n">1</span>) == <span class="n">0</span>) take(cnt, two, <span class="n">2</span>);</span><span class="ln"><span class="no">10</span>        <span class="k">if</span> (r == <span class="n">2</span> &amp;&amp; take(cnt, two, <span class="n">1</span>) == <span class="n">0</span>) take(cnt, one, <span class="n">2</span>);</span><span class="ln"><span class="no">11</span>        <span class="c">// 从大到小拼；降序后首位是 0 说明全是 0，答案就是 "0"</span></span><span class="ln"><span class="no">12</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> d = <span class="n">9</span>; d &gt;= <span class="n">0</span>; d--) {</span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> t = <span class="n">0</span>; t &lt; cnt[d]; t++) sb.append((<span class="k">char</span>) (<span class="s">'0'</span> + d));</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">if</span> (sb.length() &gt; <span class="n">0</span> &amp;&amp; sb.charAt(<span class="n">0</span>) == <span class="s">'0'</span>) <span class="k">return</span> <span class="s">"0"</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span> </span><span class="ln"><span class="no">20</span>    <span class="c">/** 从 cnt 里删掉 need 个 mods 组里最小的数，返回实际删掉几个。 */</span></span><span class="ln"><span class="no">21</span>    <span class="k">private</span> <span class="k">int</span> take(<span class="k">int</span>[] cnt, <span class="k">int</span>[] mods, <span class="k">int</span> need) {</span><span class="ln"><span class="no">22</span>        <span class="k">int</span> took = <span class="n">0</span>;</span><span class="ln"><span class="no">23</span>        <span class="k">for</span> (<span class="k">int</span> d : mods) {</span><span class="ln"><span class="no">24</span>            <span class="k">int</span> t = <span class="t">Math</span>.min(cnt[d], need - took);</span><span class="ln"><span class="no">25</span>            cnt[d] -= t;</span><span class="ln"><span class="no">26</span>            took += t;</span><span class="ln"><span class="no">27</span>            <span class="k">if</span> (took == need) <span class="k">break</span>;</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> took;</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组&nbsp;<code>digits</code>，你可以通过按 <strong>任意顺序</strong> 连接其中某些数字来形成 <strong>3</strong> 的倍数，请你返回所能得到的最大的 3 的倍数。</p>
+
+<p>由于答案可能不在整数数据类型范围内，请以字符串形式返回答案。如果无法得到答案，请返回一个空字符串。返回的结果不应包含不必要的前导零。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>digits = [8,1,9]
+<strong>输出：</strong>"981"
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>digits = [8,6,7,1,0]
+<strong>输出：</strong>"8760"
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>digits = [1]
+<strong>输出：</strong>""
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre>
+<strong>输入：</strong>digits = [0,0,0,0,0,0]
+<strong>输出：</strong>"0"
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= digits.length &lt;= 10^4</code></li>
+	<li><code>0 &lt;= digits[i] &lt;= 9</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public String largestMultipleOfThree(int[] digits) {", "        int[] cnt = new int[10];", "        int sum = 0;", "        for (int d : digits) { cnt[d]++; sum += d; }", "        int[] one = {1, 4, 7}, two = {2, 5, 8};   // 升序：要删就先删小的", "        int r = sum % 3;", "        // 余 1：删一个余 1 的数；一个都没有就删两个余 2 的（个数满足同余式，必有得删）", "        if (r == 1 && take(cnt, one, 1) == 0) take(cnt, two, 2);", "        if (r == 2 && take(cnt, two, 1) == 0) take(cnt, one, 2);", "        // 从大到小拼；降序后首位是 0 说明全是 0，答案就是 \"0\"", "        StringBuilder sb = new StringBuilder();", "        for (int d = 9; d >= 0; d--) {", "            for (int t = 0; t < cnt[d]; t++) sb.append((char) ('0' + d));", "        }", "        if (sb.length() > 0 && sb.charAt(0) == '0') return \"0\";", "        return sb.toString();", "    }", "", "    /** 从 cnt 里删掉 need 个 mods 组里最小的数，返回实际删掉几个。 */", "    private int take(int[] cnt, int[] mods, int need) {", "        int took = 0;", "        for (int d : mods) {", "            int t = Math.min(cnt[d], need - took);", "            cnt[d] -= t;", "            took += t;", "            if (took == need) break;", "        }", "        return took;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1363. 形成三的最大倍数 —— 图解：复刻 Solution.java 的「数位计数 + 按余数删最小」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { digits: [8, 6, 7, 1, 0] };
+
+function trace(input) {
+  var digits = input.digits;
+  var cnt = [];
+  for (var d = 0; d <= 9; d++) cnt[d] = 0;
+  var sum = 0;
+  digits.forEach(function (x) { cnt[x]++; sum += x; });
+  var r = sum % 3;
+  var frames = [];
+  var removed = [];   // 被删掉的数字（含重复）
+
+  function countPanel() {
+    var rows = [];
+    for (var d = 0; d <= 9; d++) {
+      var cls = '';
+      var k = String(d);
+      var v = '×' + cnt[d];
+      for (var q = 0; q < removed.length; q++) if (removed[q] === d) { cls = 'bad'; k = d + '（删）'; v = '×' + cnt[d]; }
+      rows.push({ k: k, v: v, cls: cls });
+    }
+    return Viz.table('数字 0~9 的计数（红 = 已删掉）', rows);
+  }
+  function varsPanel(word) {
+    var items = [
+      { name: 'sum（数字和）', v: sum, cls: '' },
+      { name: 'sum % 3', v: r, cls: r !== 0 ? 'bad' : '' },
+      { name: '删除方案', v: word, cls: word !== '不删' ? 'cur' : '' }
+    ];
+    return Viz.vars(items);
+  }
+  function resultPanel(marks) {
+    var vals = [];
+    for (var d = 9; d >= 0; d--) for (var t = 0; t < cnt[d]; t++) vals.push(d);
+    var m = {};
+    for (var i = 0; i < vals.length; i++) m[i] = 'win';
+    if (marks) m = marks;
+    return Viz.cells(vals.length ? vals : ['（空）'], { title: '剩下的数字（降序）', marks: m });
+  }
+  function snap(at, key, word, useResult) {
+    var panels = [countPanel(), varsPanel(word)];
+    if (useResult) panels.push(resultPanel(null));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  var plan = r === 0 ? '不删' : (r === 1 ? '删一个 1/4/7（不够则删两个 2/5/8）' : '删一个 2/5/8（不够则删两个 1/4/7）');
+  snap('int r = sum % 3;', '开局：数位计数，sum=' + sum + '，余 ' + r + '——' + (r === 0 ? '数字和已是 3 的倍数，不用删' : '要让剩下的数字和 %3 == 0'), plan, false);
+
+  var one = [1, 4, 7], two = [2, 5, 8];
+  var need = r === 1 ? 1 : (r === 2 ? 1 : 0);
+  var pool = r === 0 ? null : (r === 1 ? one : two);
+  if (need > 0) {
+    var took = 0;
+    for (var q = 0; q < pool.length && took < need; q++) {
+      while (took < need && cnt[pool[q]] > 0) { cnt[pool[q]]--; removed.push(pool[q]); took++; }
+    }
+    if (took < need) {   // 降级方案：删另一组两个
+      var pool2 = r === 1 ? two : one;
+      need = 2;
+      for (var q2 = 0; q2 < pool2.length && took < need; q2++) {
+        while (took < need && cnt[pool2[q2]] > 0) { cnt[pool2[q2]]--; removed.push(pool2[q2]); took++; }
+      }
+    }
+    var word = removed.length ? '删 ' + removed.join(' 和 ') : '';
+    snap('if (r == 1 && take(cnt, one, 1) == 0) take(cnt, two, 2);',
+      '执行删除：' + (removed.length ? '删掉最小的 ' + removed.join(' 和 ') + '（删小的，留下的才大）' : '没有可删的，跳过'), word, true);
+  }
+
+  snap('for (int d = 9; d >= 0; d--) {', '剩下的数字从大到小拼：数字和 %3 == 0 了，越大的数字放越高位', plan, true);
+
+  var sb = [];
+  for (var d2 = 9; d2 >= 0; d2--) for (var t = 0; t < cnt[d2]; t++) sb.push(d2);
+  var result;
+  if (sb.length > 0 && sb[0] === 0) result = '0';
+  else result = sb.join('');
+  var marks = {};
+  for (var i2 = 0; i2 < sb.length; i2++) marks[i2] = sb.length && sb[0] === 0 ? 'done' : 'win';
+  snap('return sb.toString();', '答案 ' + (result === '' ? '为空串（一个数字都留不下）' : result === '0' ? '是 "0"（降序首位是 0，说明全是 0）' : '是 ' + result),
+    plan, false);
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

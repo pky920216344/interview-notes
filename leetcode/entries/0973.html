@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最接近原点的 K 个点 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 653 / 1159</span>
+  <nav class="pn"><a href="1155.html">上一篇</a><a href="1302.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">973. </span>最接近原点的 K 个点</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">分治</li><li class="tag">几何</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">分治</li><li class="tag">快速选择</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="tag">k-d-tree</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">快速选择：按距离平方（免开方）划分，让下标 k-1 归位，左边就是答案；平均 O(n)，不用全排序。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>只需要「前 k 近」这个集合，不必排序：把下标 <code>k-1</code> 归位的快速选择即可。</li><li>每轮随机选基准换到末尾，扫一遍把距离平方更小的换到左边，基准落到 <code>p</code>：左边全 ≤ 基准。</li><li><code>p</code> 与 <code>target</code> 比较：相等收工；小了递归右段，大了递归左段，只走一边。</li><li>返回 <code>points[0..k-1]</code>（顺序任意都合法）；距离平方用 <code>long</code> 存，免开方也免溢出。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n) 平均，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Random</span> rnd = <span class="k">new</span> <span class="t">Random</span>();</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="k">int</span>[][] kClosest(<span class="k">int</span>[][] points, <span class="k">int</span> k) {</span><span class="ln"><span class="no">7</span>        quickSelect(points, <span class="n">0</span>, points.length - <span class="n">1</span>, k - <span class="n">1</span>);</span><span class="ln"><span class="no">8</span>        <span class="k">return</span> <span class="t">Arrays</span>.copyOfRange(points, <span class="n">0</span>, k);</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="c">// 迭代式快速选择：让下标 target（第 k 近 = 下标 k-1）归位，左边全部 ≤ 它</span></span><span class="ln"><span class="no">12</span>    <span class="k">private</span> <span class="k">void</span> quickSelect(<span class="k">int</span>[][] a, <span class="k">int</span> lo, <span class="k">int</span> hi, <span class="k">int</span> target) {</span><span class="ln"><span class="no">13</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">14</span>            <span class="k">int</span> p = partition(a, lo, hi);</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (p == target) <span class="k">return</span>;</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (p &lt; target) lo = p + <span class="n">1</span>;   <span class="c">// 第 k 近在右段</span></span><span class="ln"><span class="no">17</span>            <span class="k">else</span> hi = p - <span class="n">1</span>;              <span class="c">// 第 k 近在左段</span></span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>    <span class="c">// 随机选基准换到末尾；扫一遍把比它近的换到左边，返回基准最终落点的下标</span></span><span class="ln"><span class="no">22</span>    <span class="k">private</span> <span class="k">int</span> partition(<span class="k">int</span>[][] a, <span class="k">int</span> lo, <span class="k">int</span> hi) {</span><span class="ln"><span class="no">23</span>        <span class="k">int</span> r = lo + rnd.nextInt(hi - lo + <span class="n">1</span>);</span><span class="ln"><span class="no">24</span>        swap(a, r, hi);</span><span class="ln"><span class="no">25</span>        <span class="k">long</span> pivot = dist2(a[hi]);</span><span class="ln"><span class="no">26</span>        <span class="k">int</span> i = lo;</span><span class="ln"><span class="no">27</span>        <span class="k">for</span> (<span class="k">int</span> j = lo; j &lt; hi; j++) {</span><span class="ln"><span class="no">28</span>            <span class="k">if</span> (dist2(a[j]) &lt; pivot) swap(a, i++, j);</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        swap(a, i, hi);</span><span class="ln"><span class="no">31</span>        <span class="k">return</span> i;</span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span> </span><span class="ln"><span class="no">34</span>    <span class="c">// 用距离平方比较，免开方；坐标 ≤ 10^4，平方和用 long 更稳</span></span><span class="ln"><span class="no">35</span>    <span class="k">private</span> <span class="k">long</span> dist2(<span class="k">int</span>[] p) {</span><span class="ln"><span class="no">36</span>        <span class="k">return</span> (<span class="k">long</span>) p[<span class="n">0</span>] * p[<span class="n">0</span>] + (<span class="k">long</span>) p[<span class="n">1</span>] * p[<span class="n">1</span>];</span><span class="ln"><span class="no">37</span>    }</span><span class="ln"><span class="no">38</span> </span><span class="ln"><span class="no">39</span>    <span class="k">private</span> <span class="k">void</span> swap(<span class="k">int</span>[][] a, <span class="k">int</span> i, <span class="k">int</span> j) {</span><span class="ln"><span class="no">40</span>        <span class="k">int</span>[] t = a[i];</span><span class="ln"><span class="no">41</span>        a[i] = a[j];</span><span class="ln"><span class="no">42</span>        a[j] = t;</span><span class="ln"><span class="no">43</span>    }</span><span class="ln"><span class="no">44</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个数组 <code>points</code>&nbsp;，其中&nbsp;<code>points[i] = [x<sub>i</sub>, y<sub>i</sub>]</code>&nbsp;表示 <strong>X-Y</strong> 平面上的一个点，并且是一个整数 <code>k</code> ，返回离原点 <code>(0,0)</code> 最近的 <code>k</code> 个点。</p>
+
+<p>这里，平面上两点之间的距离是&nbsp;<strong>欧几里德距离</strong>（&nbsp;<code>√(x<sub>1</sub>&nbsp;- x<sub>2</sub>)<sup>2</sup>&nbsp;+ (y<sub>1</sub>&nbsp;- y<sub>2</sub>)<sup>2</sup></code>&nbsp;）。</p>
+
+<p>你可以按 <strong>任何顺序</strong> 返回答案。除了点坐标的顺序之外，答案 <strong>确保</strong> 是 <strong>唯一</strong> 的。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<p><img src="../assets/img/9f6e07b98e8d.jpg" style="height: 400px; width: 400px;" /></p>
+
+<pre>
+<strong>输入：</strong>points = [[1,3],[-2,2]], k = 1
+<strong>输出：</strong>[[-2,2]]
+<strong>解释： </strong>
+(1, 3) 和原点之间的距离为 sqrt(10)，
+(-2, 2) 和原点之间的距离为 sqrt(8)，
+由于 sqrt(8) &lt; sqrt(10)，(-2, 2) 离原点更近。
+我们只需要距离原点最近的 K = 1 个点，所以答案就是 [[-2,2]]。
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>points = [[3,3],[5,-1],[-2,4]], k = 2
+<strong>输出：</strong>[[3,3],[-2,4]]
+（答案 [[-2,4],[3,3]] 也会被接受。）
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= k &lt;= points.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>-10<sup>4</sup>&nbsp;&lt; x<sub>i</sub>, y<sub>i</sub>&nbsp;&lt; 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private final Random rnd = new Random();", "", "    public int[][] kClosest(int[][] points, int k) {", "        quickSelect(points, 0, points.length - 1, k - 1);", "        return Arrays.copyOfRange(points, 0, k);", "    }", "", "    // 迭代式快速选择：让下标 target（第 k 近 = 下标 k-1）归位，左边全部 ≤ 它", "    private void quickSelect(int[][] a, int lo, int hi, int target) {", "        while (lo < hi) {", "            int p = partition(a, lo, hi);", "            if (p == target) return;", "            if (p < target) lo = p + 1;   // 第 k 近在右段", "            else hi = p - 1;              // 第 k 近在左段", "        }", "    }", "", "    // 随机选基准换到末尾；扫一遍把比它近的换到左边，返回基准最终落点的下标", "    private int partition(int[][] a, int lo, int hi) {", "        int r = lo + rnd.nextInt(hi - lo + 1);", "        swap(a, r, hi);", "        long pivot = dist2(a[hi]);", "        int i = lo;", "        for (int j = lo; j < hi; j++) {", "            if (dist2(a[j]) < pivot) swap(a, i++, j);", "        }", "        swap(a, i, hi);", "        return i;", "    }", "", "    // 用距离平方比较，免开方；坐标 ≤ 10^4，平方和用 long 更稳", "    private long dist2(int[] p) {", "        return (long) p[0] * p[0] + (long) p[1] * p[1];", "    }", "", "    private void swap(int[][] a, int i, int j) {", "        int[] t = a[i];", "        a[i] = a[j];", "        a[j] = t;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 973. 最接近原点的 K 个点 —— 图解：复刻 Solution.java 的快速选择，在 4~5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { points: [[1, 3], [-2, 2], [5, -1], [2, 0], [-3, -4]], k: 2 };
+
+function trace(input) {
+  var a = input.points.map(function (p) { return p.slice(); });   // 与 Java 一样原地划分，这里只改自己的拷贝
+  var n = a.length, k = input.k, target = k - 1;
+  var frames = [];
+  var rounds = 0;
+
+  function d2(p) { return p[0] * p[0] + p[1] * p[1]; }
+
+  function distPanel(marks, pointers, range) {
+    var vals = a.map(function (p) { return d2(p); });
+    var label = '距离平方（target = k-1 = ' + k + '-1 = ' + target + '，找它的位置归位）';
+    return Viz.cells(vals, { title: label, marks: marks || {}, pointers: pointers || [], range: range || null });
+  }
+  function pointsPanel() {
+    return Viz.table('points → 距离平方', a.map(function (p, i) {
+      return { k: '(' + p[0] + ',' + p[1] + ')', v: String(d2(p)), cls: '' };
+    }));
+  }
+  function snap(at, key, marks, pointers, range) {
+    frames.push(Viz.frame(at, key, [distPanel(marks, pointers, range), pointsPanel()]));
+  }
+
+  function rangeMarks(lo, hi, p, dir) {
+    var marks = {};
+    for (var x = 0; x < n; x++) {
+      if (x < lo || x > hi) marks[x] = 'dim';
+      else if (x === p) marks[x] = 'done';
+      else if (dir === 'L' && x <= p - 1) marks[x] = 'win';
+      else if (dir === 'R' && x >= p + 1) marks[x] = 'win';
+      else if (dir === 'E' && x < p) marks[x] = 'win';
+      else marks[x] = 'bad';
+    }
+    return marks;
+  }
+
+  snap('quickSelect(points, 0, points.length - 1, k - 1);',
+    '开局：算出每个点到原点的距离平方，只要把下标 target=' + target + ' 的元素归位，前 k 个就是答案',
+    {}, [{ at: target, label: 'target', cls: 'p-tail' }], null);
+
+  var lo = 0, hi = n - 1;
+  while (lo < hi) {
+    // 图解固定取范围末尾当基准（Java 里是随机挑一个再换到末尾，形状相同）
+    var pv = d2(a[hi]);
+    var i = lo;
+    for (var j = lo; j < hi; j++) {
+      if (d2(a[j]) < pv) { var t = a[i]; a[i] = a[j]; a[j] = t; i++; }
+    }
+    var t2 = a[i]; a[i] = a[hi]; a[hi] = t2;
+    var p = i;
+    rounds++;
+    var dir = p === target ? 'E' : (p < target ? 'R' : 'L');
+    var pointers = [{ at: p, label: 'p（基准落点）', cls: 'p-cur' }, { at: target, label: 'target', cls: 'p-tail' }];
+    if (lo > 0 || hi < n - 1) pointers.push({ at: lo, label: 'lo', cls: 'p-left' });
+    if (lo > 0 || hi < n - 1) pointers.push({ at: hi, label: 'hi', cls: 'p-right' });
+    var rng = dir === 'L' ? { from: lo, to: p - 1, label: '只找左段' } : dir === 'R' ? { from: p + 1, to: hi, label: '只找右段' } : null;
+    if (rounds <= 2 || p === target) {
+      var word = dir === 'E' ? '基准落点正好是 target：它和左边全 ≤ 它，前 k 个就是答案'
+        : '基准 ' + pv + ' 归位到下标 ' + p + '：target 在' + (dir === 'L' ? '左' : '右') + '段，只找' + (dir === 'L' ? '左' : '右') + '段';
+      snap('return i;', '第 ' + rounds + ' 轮划分：' + word, rangeMarks(lo, hi, p, dir), pointers, rng);
+    }
+    if (p === target) break;
+    if (p < target) lo = p + 1;
+    else hi = p - 1;
+  }
+
+  var res = [];
+  for (var x = 0; x < k; x++) res.push(a[x]);
+  res.sort(function (u, v) { return u[0] !== v[0] ? u[0] - v[0] : u[1] - v[1]; });
+  var doneMarks = {};
+  for (var y = 0; y < k; y++) doneMarks[y] = 'done';
+  snap('return Arrays.copyOfRange(points, 0, k);', '收工：下标 0..k-1 的 ' + k + ' 个点就是离原点最近的（顺序任意，这里按坐标排序输出）',
+    doneMarks, [{ at: k - 1, label: 'k-1', cls: 'p-tail' }], { from: 0, to: k - 1, label: '答案' });
+  return { frames: frames, result: res };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

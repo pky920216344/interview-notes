@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>填充书架 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 930 / 1159</span>
+  <nav class="pn"><a href="1010.html">上一篇</a><a href="1103.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1105. </span>填充书架</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">DP：dp[i] = 前 i 本的最小总高度；枚举最后一层从第 j 本开始，宽度不超 shelfWidth，层高取段内最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>书必须按顺序摆，所以「最后一层放了哪些书」能划清子问题：<code>dp[i]</code> 只依赖更早的 <code>dp[j−1]</code>。</li><li>内层从 <code>j=i</code> 向左扩：累加厚度，一超 <code>shelfWidth</code> 就 <code>break</code>（再往前必然更宽）。</li><li>转移 <code>dp[i] = min(dp[j−1] + 段内最大高度)</code>；塞得满不等于更优，最后一层可能只放一本。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> minHeightShelves(<span class="k">int</span>[][] books, <span class="k">int</span> shelfWidth) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = books.length;</span><span class="ln"><span class="no">6</span>        <span class="c">// dp[i]：前 i 本书的最小总高度</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">8</span>        <span class="t">Arrays</span>.fill(dp, <span class="t">Integer</span>.MAX_VALUE);</span><span class="ln"><span class="no">9</span>        dp[<span class="n">0</span>] = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= n; i++) {</span><span class="ln"><span class="no">11</span>            <span class="c">// 枚举最后一层从第 j 本摆到第 i 本：w 层宽，h 层高</span></span><span class="ln"><span class="no">12</span>            <span class="k">int</span> w = <span class="n">0</span>, h = <span class="n">0</span>;</span><span class="ln"><span class="no">13</span>            <span class="k">for</span> (<span class="k">int</span> j = i; j &gt;= <span class="n">1</span>; j--) {</span><span class="ln"><span class="no">14</span>                w += books[j - <span class="n">1</span>][<span class="n">0</span>];</span><span class="ln"><span class="no">15</span>                <span class="k">if</span> (w &gt; shelfWidth) <span class="k">break</span>;   <span class="c">// 第 j 本装不下，更前面的更装不下</span></span><span class="ln"><span class="no">16</span>                h = <span class="t">Math</span>.max(h, books[j - <span class="n">1</span>][<span class="n">1</span>]);</span><span class="ln"><span class="no">17</span>                dp[i] = <span class="t">Math</span>.min(dp[i], dp[j - <span class="n">1</span>] + h);</span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> dp[n];</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个数组 <code>books</code> ，其中&nbsp;<code>books[i] = [thickness<sub>i</sub>, height<sub>i</sub>]</code>&nbsp;表示第 <code>i</code> 本书的厚度和高度。你也会得到一个整数 <code>shelfWidth</code> 。</p>
+
+<p><strong>按顺序</strong>&nbsp;将这些书摆放到总宽度为 <code>shelfWidth</code> 的书架上。</p>
+
+<p>先选几本书放在书架上（它们的厚度之和小于等于书架的宽度 <code>shelfWidth</code> ），然后再建一层书架。重复这个过程，直到把所有的书都放在书架上。</p>
+
+<p>需要注意的是，在上述过程的每个步骤中，<strong>摆放书的顺序与给定图书数组 </strong><code>books</code><strong> 顺序相同</strong>。</p>
+
+<ul>
+	<li>例如，如果这里有 5 本书，那么可能的一种摆放情况是：第一和第二本书放在第一层书架上，第三本书放在第二层书架上，第四和第五本书放在最后一层书架上。</li>
+</ul>
+
+<p>每一层所摆放的书的最大高度就是这一层书架的层高，书架整体的高度为各层高之和。</p>
+
+<p>以这种方式布置书架，返回书架整体可能的最小高度。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<p><img src="../assets/img/e6306a0327aa.png" style="width: 337px; height: 500px;" /></p>
+
+<pre>
+<strong>输入：</strong>books = [[1,1],[2,3],[2,3],[1,1],[1,1],[1,1],[1,2]], shelfWidth = 4
+<strong>输出：</strong>6
+<strong>解释：</strong>
+3 层书架的高度和为 1 + 3 + 2 = 6 。
+第 2 本书不必放在第一层书架上。
+</pre>
+
+<p><strong class="example">示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> books = [[1,3],[2,4],[3,2]], shelfWidth = 6
+<strong>输出:</strong> 4
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= books.length &lt;= 1000</code></li>
+	<li><code>1 &lt;= thickness<sub>i</sub>&nbsp;&lt;= shelfWidth &lt;= 1000</code></li>
+	<li><code>1 &lt;= height<sub>i</sub>&nbsp;&lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int minHeightShelves(int[][] books, int shelfWidth) {", "        int n = books.length;", "        // dp[i]：前 i 本书的最小总高度", "        int[] dp = new int[n + 1];", "        Arrays.fill(dp, Integer.MAX_VALUE);", "        dp[0] = 0;", "        for (int i = 1; i <= n; i++) {", "            // 枚举最后一层从第 j 本摆到第 i 本：w 层宽，h 层高", "            int w = 0, h = 0;", "            for (int j = i; j >= 1; j--) {", "                w += books[j - 1][0];", "                if (w > shelfWidth) break;   // 第 j 本装不下，更前面的更装不下", "                h = Math.max(h, books[j - 1][1]);", "                dp[i] = Math.min(dp[i], dp[j - 1] + h);", "            }", "        }", "        return dp[n];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1105. 填充书架 —— 图解：dp[i]=前 i 本的最小总高度，枚举最后一层从哪本开始，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { shelfWidth: 4, books: [[1, 1], [2, 3], [2, 3], [1, 1]] };
+
+function trace(input) {
+  var books = input.books;
+  var W = input.shelfWidth;
+  var n = books.length;
+  var dp = new Array(n + 1);
+  dp[0] = 0;
+  for (var i = 1; i <= n; i++) dp[i] = Infinity;
+  var frames = [];
+
+  // 书本网格：每行 [厚, 高]；from..to 是正考虑的最后一层（0 起始），cur 是刚加入的书
+  function booksPanel(from, to, cur) {
+    var marks = {};
+    var i;
+    if (from != null) for (i = from; i <= to; i++) { marks[i + ',0'] = 'win'; marks[i + ',1'] = 'win'; }
+    if (cur != null && cur >= 0) { marks[cur + ',0'] = 'cur'; marks[cur + ',1'] = 'cur'; }
+    return Viz.grid(books.map(function (b) { return [b[0], b[1]]; }),
+      { title: 'books：每行 = [厚, 高]', marks: marks, colLabels: ['厚', '高'] });
+  }
+  // dp 表：0..n；newIdx 是刚写入的格
+  function dpPanel(newIdx) {
+    var marks = {};
+    for (var i = 0; i <= n; i++) if (dp[i] !== Infinity) marks[i] = 'done';
+    if (newIdx != null) marks[newIdx] = 'new';
+    return Viz.cells(dp.map(function (v) { return v === Infinity ? '∞' : v; }),
+      { title: 'dp[i]：前 i 本的最小总高度', marks: marks });
+  }
+
+  frames.push(Viz.frame('dp[0] = 0;', '开局：dp[0]=0，dp 从左往右逐本算', [booksPanel(null), dpPanel()]));
+
+  for (var i = 1; i <= n; i++) {
+    var w = 0, h = 0;
+    for (var j = i; j >= 1; j--) {
+      w += books[j - 1][0];
+      if (w > W) break;
+      if (books[j - 1][1] > h) h = books[j - 1][1];
+      var cand = dp[j - 1] + h;
+      if (cand < dp[i]) dp[i] = cand;
+      // 故事输入的关键帧：展示「最后一层从 j 开始」的三种典型取舍
+      if (i === 2 && j === 1)
+        frames.push(Viz.frame('dp[i] = Math.min(dp[i], dp[j - 1] + h);',
+          '算 dp[2]：第 1、2 本同层宽 3，层高 3，dp[0]+3=3', [booksPanel(0, 1, 1), dpPanel(2)]));
+      if (i === 3 && j === 2)
+        frames.push(Viz.frame('dp[i] = Math.min(dp[i], dp[j - 1] + h);',
+          '算 dp[3]：最后一层放第 2、3 本（宽恰 4），dp[1]+3=4', [booksPanel(1, 2, 2), dpPanel(3)]));
+      if (i === 4 && j === 3)
+        frames.push(Viz.frame('dp[i] = Math.min(dp[i], dp[j - 1] + h);',
+          '算 dp[4]：第 3、4 本同层总高 6，不如第 4 本单放 5', [booksPanel(2, 3, 3), dpPanel(4)]));
+    }
+  }
+  frames.push(Viz.frame('return dp[n];', '答案：dp[' + n + '] = ' + dp[n], [booksPanel(null), dpPanel()]));
+  return { frames: frames, result: dp[n] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

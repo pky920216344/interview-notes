@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>回文排列 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 996 / 1159</span>
+  <nav class="pn"><a href="0276.html">上一篇</a><a href="1344.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">267. </span>回文排列 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">回溯</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">回溯</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">先数个数：奇数次字符超过 1 个直接空表；否则取每字符的一半做去重全排列，每个半排列拼 中位 + 反转 成回文。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>回文能对折：<code>cnt[c] / 2</code> 个进左半边，最多一个字符留单个当中间。</li><li>奇数字符数 &gt; 1 时<strong>无解</strong>，返回空表，别进回溯。</li><li>左半边天然按字符升序生成，去重全排列用「同层跳过重复字符」的经典剪枝。</li><li>每个半排列 <code>h</code> 输出 <code>h + mid + reverse(h)</code>；结果顺序不影响判定，可排序。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n × 结果数)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; generatePalindromes(<span class="t">String</span> s) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] cnt = <span class="k">new</span> <span class="k">int</span>[<span class="n">128</span>];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">char</span> c : s.toCharArray()) cnt[c]++;</span><span class="ln"><span class="no">7</span>        <span class="c">// 奇数次字符最多 1 个（当回文中位）；每个字符取一半拼成左半边</span></span><span class="ln"><span class="no">8</span>        <span class="k">int</span> odd = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">char</span> mid = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="t">StringBuilder</span> half = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">char</span> c = <span class="n">0</span>; c &lt; <span class="n">128</span>; c++) {</span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (cnt[c] % <span class="n">2</span> == <span class="n">1</span>) { odd++; mid = c; }</span><span class="ln"><span class="no">13</span>            <span class="k">for</span> (<span class="k">int</span> t = <span class="n">0</span>; t &lt; cnt[c] / <span class="n">2</span>; t++) half.append(c);</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="k">if</span> (odd &gt; <span class="n">1</span>) <span class="k">return</span> <span class="t">Collections</span>.emptyList();</span><span class="ln"><span class="no">16</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; out = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">17</span>        dfs(half, <span class="k">new</span> <span class="k">boolean</span>[half.length()], <span class="k">new</span> <span class="t">StringBuilder</span>(), out, mid);</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>    <span class="c">// 对左半边做去重全排列（已按字符升序，遇重复跳过同层分支）；每个排列接上中位 + 反转</span></span><span class="ln"><span class="no">22</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="t">StringBuilder</span> half, <span class="k">boolean</span>[] used, <span class="t">StringBuilder</span> cur, <span class="t">List</span>&lt;<span class="t">String</span>&gt; out, <span class="k">char</span> mid) {</span><span class="ln"><span class="no">23</span>        <span class="k">if</span> (cur.length() == half.length()) {</span><span class="ln"><span class="no">24</span>            <span class="t">String</span> h = cur.toString();</span><span class="ln"><span class="no">25</span>            <span class="t">String</span> rev = <span class="k">new</span> <span class="t">StringBuilder</span>(h).reverse().toString();</span><span class="ln"><span class="no">26</span>            out.add(mid == <span class="n">0</span> ? h + rev : h + mid + rev);</span><span class="ln"><span class="no">27</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; half.length(); i++) {</span><span class="ln"><span class="no">30</span>            <span class="k">if</span> (used[i]) <span class="k">continue</span>;</span><span class="ln"><span class="no">31</span>            <span class="k">if</span> (i &gt; <span class="n">0</span> &amp;&amp; half.charAt(i) == half.charAt(i - <span class="n">1</span>) &amp;&amp; !used[i - <span class="n">1</span>]) <span class="k">continue</span>;</span><span class="ln"><span class="no">32</span>            used[i] = <span class="k">true</span>;</span><span class="ln"><span class="no">33</span>            cur.append(half.charAt(i));</span><span class="ln"><span class="no">34</span>            dfs(half, used, cur, out, mid);</span><span class="ln"><span class="no">35</span>            cur.deleteCharAt(cur.length() - <span class="n">1</span>);</span><span class="ln"><span class="no">36</span>            used[i] = <span class="k">false</span>;</span><span class="ln"><span class="no">37</span>        }</span><span class="ln"><span class="no">38</span>    }</span><span class="ln"><span class="no">39</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<String> generatePalindromes(String s) {", "        int[] cnt = new int[128];", "        for (char c : s.toCharArray()) cnt[c]++;", "        // 奇数次字符最多 1 个（当回文中位）；每个字符取一半拼成左半边", "        int odd = 0;", "        char mid = 0;", "        StringBuilder half = new StringBuilder();", "        for (char c = 0; c < 128; c++) {", "            if (cnt[c] % 2 == 1) { odd++; mid = c; }", "            for (int t = 0; t < cnt[c] / 2; t++) half.append(c);", "        }", "        if (odd > 1) return Collections.emptyList();", "        List<String> out = new ArrayList<>();", "        dfs(half, new boolean[half.length()], new StringBuilder(), out, mid);", "        return out;", "    }", "", "    // 对左半边做去重全排列（已按字符升序，遇重复跳过同层分支）；每个排列接上中位 + 反转", "    private void dfs(StringBuilder half, boolean[] used, StringBuilder cur, List<String> out, char mid) {", "        if (cur.length() == half.length()) {", "            String h = cur.toString();", "            String rev = new StringBuilder(h).reverse().toString();", "            out.add(mid == 0 ? h + rev : h + mid + rev);", "            return;", "        }", "        for (int i = 0; i < half.length(); i++) {", "            if (used[i]) continue;", "            if (i > 0 && half.charAt(i) == half.charAt(i - 1) && !used[i - 1]) continue;", "            used[i] = true;", "            cur.append(half.charAt(i));", "            dfs(half, used, cur, out, mid);", "            cur.deleteCharAt(cur.length() - 1);", "            used[i] = false;", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 267. 回文排列 II —— 图解：复刻 Solution.java 的「半排列去重全排列 + 镜像拼接」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'aabb' };
+
+function trace(input) {
+  var s = input.s;
+  var frames = [];
+  var cnt = {};   // 字符 -> 次数
+  var order = [];
+  var i;
+  for (i = 0; i < s.length; i++) {
+    if (!(s[i] in cnt)) { cnt[s[i]] = 0; order.push(s[i]); }
+    cnt[s[i]]++;
+  }
+
+  var odd = 0, mid = '';
+  var half = [];
+  for (i = 0; i < order.length; i++) {
+    var c = order[i];
+    if (cnt[c] % 2 === 1) { odd++; mid = c; }
+    for (var t = 0; t < Math.floor(cnt[c] / 2); t++) half.push(c);
+  }
+  frames.push(Viz.frame('for (int t = 0; t < cnt[c] / 2; t++) half.append(c);',
+    '数完了：奇数次字符 ' + odd + ' 个（≤1 可行），左半边取每字符的一半 → ' + half.join(''),
+    [Viz.table('cnt[c]：字符 → 次数', order.map(function (ch) {
+      return { k: ch, v: '×' + cnt[ch], cls: cnt[ch] % 2 === 1 ? 'bad' : 'win' };
+    }), { hint: 'bad = 奇数次，当中位' }),
+    Viz.cells(half, { title: '左半边 half（升序）', marks: (function () { var m = {}; for (i = 0; i < half.length; i++) m[i] = 'win'; return m; })() })]));
+
+  if (odd > 1) {
+    frames.push(Viz.frame('if (odd > 1) return Collections.emptyList();',
+      '奇数次字符超过 1 个：回文最多容一个中位，直接返回空表',
+      [Viz.table('cnt[c]：字符 → 次数', order.map(function (ch) {
+        return { k: ch, v: '×' + cnt[ch], cls: cnt[ch] % 2 === 1 ? 'bad' : 'win' };
+      }), { hint: 'bad = 奇数次' })]));
+    return { frames: frames, result: [] };
+  }
+
+  var used = new Array(half.length).fill(false);
+  var cur = [];
+
+  function dfs() {
+    if (cur.length === half.length) {
+      var h = cur.join('');
+      var rev = h.split('').reverse().join('');
+      var pal = mid ? h + mid + rev : h + rev;
+      if (out.length < 2) {
+        frames.push(Viz.frame('out.add(mid == 0 ? h + rev : h + mid + rev);',
+          '半排列 ' + h + ' 拼镜像：' + h + ' + ' + (mid || '无中位') + ' + ' + rev + ' = ' + pal,
+          [Viz.cells(cur, { title: '当前半排列 cur', marks: (function () { var m = {}; for (var q = 0; q < cur.length; q++) m[q] = 'done'; return m; })() }),
+           Viz.cells(pal.split(''), { title: '拼出的回文', marks: (function () {
+             var m = {};
+             for (var q = 0; q < cur.length; q++) m[q] = 'win';
+             if (mid) m[cur.length] = 'chg';
+             for (q = 0; q < rev.length; q++) m[cur.length + (mid ? 1 : 0) + q] = 'new';
+             return m; })() })]));
+      }
+      out.push(pal);
+      return;
+    }
+    for (var p = 0; p < half.length; p++) {   // 循环变量必须是局部的，递归不能共用
+      if (used[p]) continue;
+      if (p > 0 && half[p] === half[p - 1] && !used[p - 1]) continue;   // 同层去重
+      used[p] = true;
+      cur.push(half[p]);
+      dfs();
+      cur.pop();
+      used[p] = false;
+    }
+  }
+
+  var out = [];
+  dfs();
+  out.sort();
+
+  frames.push(Viz.frame('return out;',
+    '全部半排列拼完、排序：共 ' + out.length + ' 个回文', [Viz.vars([{ name: '结果', v: out.join('、') }])]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

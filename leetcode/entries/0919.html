@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>完全二叉树插入器 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1153 / 1159</span>
+  <nav class="pn"><a href="1314.html">上一篇</a><a href="0865.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">919. </span>完全二叉树插入器</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">广度优先搜索</li><li class="aux">设计</li><li class="tag">树</li><li class="tag">广度优先搜索</li><li class="tag">设计</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">候选父队列：层序收集「还有空位」的结点，insert 永远挂到队头的空位上，父结点满了才出队。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>构造时层序遍历一遍，把缺左孩子或缺右孩子的结点按层序放进候选队列；队头就是下一个插入位置的父结点。</li><li><code>insert</code>：新结点挂到队头的第一个空位（先左后右），新结点自己也入队尾；队头两个空位都满了才出队。</li><li>按层序排候选，保证新结点总落在整棵树最左的空位上，完全二叉树形状不破。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 构造 O(n)，insert/get_root O(1)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">CBTInserter</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">TreeNode</span> root;</span><span class="ln"><span class="no">5</span>    <span class="c">// 候选父队列：还没满（缺左或缺右孩子）的结点，按层序排，队头就是下一个插入点</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Deque</span>&lt;<span class="t">TreeNode</span>&gt; candidates = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">CBTInserter</span>(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">9</span>        <span class="k">this</span>.root = root;</span><span class="ln"><span class="no">10</span>        <span class="t">Queue</span>&lt;<span class="t">TreeNode</span>&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        q.add(root);</span><span class="ln"><span class="no">12</span>        <span class="k">while</span> (!q.isEmpty()) {</span><span class="ln"><span class="no">13</span>            <span class="t">TreeNode</span> node = q.poll();</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (node.left != <span class="k">null</span>) q.add(node.left);</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (node.right != <span class="k">null</span>) q.add(node.right);</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (node.left == <span class="k">null</span> || node.right == <span class="k">null</span>) candidates.add(node);</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span> </span><span class="ln"><span class="no">20</span>    <span class="k">public</span> <span class="k">int</span> insert(<span class="k">int</span> val) {</span><span class="ln"><span class="no">21</span>        <span class="t">TreeNode</span> parent = candidates.peek();</span><span class="ln"><span class="no">22</span>        <span class="t">TreeNode</span> node = <span class="k">new</span> <span class="t">TreeNode</span>(val);</span><span class="ln"><span class="no">23</span>        <span class="k">if</span> (parent.left == <span class="k">null</span>) parent.left = node;</span><span class="ln"><span class="no">24</span>        <span class="k">else</span> parent.right = node;</span><span class="ln"><span class="no">25</span>        candidates.add(node);                      <span class="c">// 新结点以后也是候选父，排到队尾</span></span><span class="ln"><span class="no">26</span>        <span class="k">if</span> (parent.right != <span class="k">null</span>) candidates.poll();   <span class="c">// 父结点满了才出队</span></span><span class="ln"><span class="no">27</span>        <span class="k">return</span> parent.val;</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span> </span><span class="ln"><span class="no">30</span>    <span class="k">public</span> <span class="t">TreeNode</span> get_root() {</span><span class="ln"><span class="no">31</span>        <span class="k">return</span> root;</span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p><strong>完全二叉树</strong> 是每一层（除最后一层外）都是完全填充（即，节点数达到最大）的，并且所有的节点都尽可能地集中在左侧。</p>
+
+<p>设计一种算法，将一个新节点插入到一棵完全二叉树中，并在插入后保持其完整。</p>
+
+<p>实现 <code>CBTInserter</code> 类:</p>
+
+<ul>
+	<li><code>CBTInserter(TreeNode root)</code>&nbsp;使用头节点为&nbsp;<code>root</code>&nbsp;的给定树初始化该数据结构；</li>
+	<li><code>CBTInserter.insert(int v)</code>&nbsp; 向树中插入一个值为&nbsp;<code>Node.val == val</code>的新节点&nbsp;<code>TreeNode</code>。使树保持完全二叉树的状态，<strong>并返回插入节点</strong>&nbsp;<code>TreeNode</code>&nbsp;<strong>的父节点的值</strong>；</li>
+	<li><code>CBTInserter.get_root()</code> 将返回树的头节点。</li>
+</ul>
+
+
+
+<ol>
+</ol>
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/44da34bdd6e9.jpg" style="height: 143px; width: 500px;" /></p>
+
+<pre>
+<strong>输入</strong>
+["CBTInserter", "insert", "insert", "get_root"]
+[[[1, 2]], [3], [4], []]
+<strong>输出</strong>
+[null, 1, 2, [1, 2, 3, 4]]
+
+<strong>解释</strong>
+CBTInserter cBTInserter = new CBTInserter([1, 2]);
+cBTInserter.insert(3);  // 返回 1
+cBTInserter.insert(4);  // 返回 2
+cBTInserter.get_root(); // 返回 [1, 2, 3, 4]</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中节点数量范围为&nbsp;<code>[1, 1000]</code>&nbsp;</li>
+	<li><code>0 &lt;= Node.val &lt;= 5000</code></li>
+	<li><code>root</code>&nbsp;是完全二叉树</li>
+	<li><code>0 &lt;= val &lt;= 5000</code>&nbsp;</li>
+	<li>每个测试用例最多调用&nbsp;<code>insert</code>&nbsp;和&nbsp;<code>get_root</code>&nbsp;操作&nbsp;<code>10<sup>4</sup></code>&nbsp;次</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class CBTInserter {", "    private final TreeNode root;", "    // 候选父队列：还没满（缺左或缺右孩子）的结点，按层序排，队头就是下一个插入点", "    private final Deque<TreeNode> candidates = new ArrayDeque<>();", "", "    public CBTInserter(TreeNode root) {", "        this.root = root;", "        Queue<TreeNode> q = new ArrayDeque<>();", "        q.add(root);", "        while (!q.isEmpty()) {", "            TreeNode node = q.poll();", "            if (node.left != null) q.add(node.left);", "            if (node.right != null) q.add(node.right);", "            if (node.left == null || node.right == null) candidates.add(node);", "        }", "    }", "", "    public int insert(int val) {", "        TreeNode parent = candidates.peek();", "        TreeNode node = new TreeNode(val);", "        if (parent.left == null) parent.left = node;", "        else parent.right = node;", "        candidates.add(node);                      // 新结点以后也是候选父，排到队尾", "        if (parent.right != null) candidates.poll();   // 父结点满了才出队", "        return parent.val;", "    }", "", "    public TreeNode get_root() {", "        return root;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 919. 完全二叉树插入器 —— 图解：复刻 Solution.java 的「候选父队列」，5 张关键帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, 2], ops: [['insert', 3], ['insert', 4], ['get_root']] };
+
+function trace(input) {
+  var arr = input.root || [], ops = input.ops || [];
+  var frames = [];
+
+  // 建树：与 lib/Trees.of 同一套规则（队列紧凑式），结点带层序号 ord
+  var nodes = [];
+  if (arr.length) {
+    var root = { val: arr[0], left: null, right: null, ord: 0 };
+    nodes.push(root);
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var nd = q.shift();
+      if (i < arr.length) { if (arr[i] != null) { nd.left = { val: arr[i], left: null, right: null, ord: nodes.length }; nodes.push(nd.left); q.push(nd.left); } i++; }
+      if (i < arr.length) { if (arr[i] != null) { nd.right = { val: arr[i], left: null, right: null, ord: nodes.length }; nodes.push(nd.right); q.push(nd.right); } i++; }
+    }
+  }
+
+  // 构造函数：层序收集「还有空位」的候选父结点
+  var cands = [];
+  var bq = nodes.length ? [nodes[0]] : [];
+  while (bq.length) {
+    var nd = bq.shift();
+    if (nd.left) bq.push(nd.left);
+    if (nd.right) bq.push(nd.right);
+    if (!nd.left || !nd.right) cands.push(nd);
+  }
+
+  function treePanel(marks) {
+    return Viz.tree(nodes.map(function (n) { return n.val; }),
+      { title: '当前完全二叉树（层序）', marks: marks || {}, corner: '' });
+  }
+  function queuePanel(frontCls) {
+    var items = cands.map(function (n) { return n.val; });
+    var pointers = items.length ? [{ at: 0, label: '队头', cls: frontCls || 'p-head' }] : [];
+    return Viz.cells(items, { title: '候选父队列 cands（还没满的结点，按层序）', pointers: pointers });
+  }
+  function snap(at, key, marks, frontCls) {
+    frames.push(Viz.frame(at, key, [treePanel(marks), queuePanel(frontCls)]));
+  }
+
+  if (nodes.length) {
+    snap('public int insert(int val) {', '开局：候选父队列的队头 = 下一个插入位置的父结点', {}, 'p-head');
+  }
+
+  var firstInsert = -1, secondInsert = -1, cnt = 0;
+  ops.forEach(function (o, idx) { if (o[0] === 'insert') { if (cnt === 0) firstInsert = idx; if (cnt === 1) secondInsert = idx; cnt++; } });
+
+  var polledOnce = false;
+  var out = [];
+  ops.forEach(function (op, idx) {
+    if (op[0] === 'get_root') {
+      out.push(nodes.map(function (n) { return n.val; }));
+      return;
+    }
+    var parent = cands[0];
+    var node = { val: op[1], left: null, right: null, ord: nodes.length };
+    var toLeft = parent.left === null;
+    if (toLeft) parent.left = node; else parent.right = node;
+    nodes.push(node);
+    cands.push(node);
+
+    var marks = {};
+    marks[parent.ord] = 'cur';
+    marks[node.ord] = 'new';
+    if (idx === firstInsert) {
+      snap('if (parent.left == null) parent.left = node;',
+        'insert(' + op[1] + ')：挂到队头结点 ' + parent.val + (toLeft ? ' 的左空位' : ' 的右空位') + '，返回父值 ' + parent.val, marks, 'p-head');
+    } else if (idx === secondInsert) {
+      snap('if (parent.left == null) parent.left = node;',
+        '再次 insert(' + op[1] + ')：还是挂队头 ' + parent.val + (toLeft ? ' 的左空位' : ' 的右空位'), marks, 'p-head');
+    }
+    out.push(parent.val);
+
+    if (parent.right !== null) {
+      cands.shift();
+      if (!polledOnce) {
+        polledOnce = true;
+        snap('if (parent.right != null) candidates.poll();',
+          '父结点 ' + parent.val + ' 两个空位都满了 → 出队，下一个队头顶上', marks, 'p-head');
+      }
+    }
+  });
+
+  if (nodes.length) {
+    var done = {};
+    for (var k = 0; k < nodes.length; k++) done[k] = 'done';
+    frames.push(Viz.frame('return root;', 'get_root：树始终保持完全二叉树形状，层序即结果',
+      [Viz.tree(nodes.map(function (n) { return n.val; }), { title: '最终树', marks: done }), queuePanel('p-head')]));
+  }
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

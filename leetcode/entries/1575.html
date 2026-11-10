@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>统计所有可行路径 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 958 / 1159</span>
+  <nav class="pn"><a href="1046.html">上一篇</a><a href="0576.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1575. </span>统计所有可行路径</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">记忆化</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">每走一步油严格变少 → 按剩余油量从小到大填 dp[i][f]：终点自带的 1 条加上各邻居「花掉油钱后」的路径数。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i][f]</code> = 从城市 <code>i</code>、剩 <code>f</code> 单位油出发到达 <code>finish</code> 的路径数；答案 <code>dp[start][fuel]</code>。</li><li>转移：<code>dp[i][f] = (i==finish) + Σ dp[j][f − |loc[i]−loc[j]|]</code>，只对 <code>cost ≤ f</code> 的 <code>j≠i</code> 累加。</li><li>油每步严格变少 → <code>f</code> 从小到大填表即可，无需记忆化递归；<code>finish</code> 在任何 <code>f</code> 都自带 1 条「就地结束」。</li><li>累加用 <code>long</code>（最多 100 项 × 1e9），最后取模。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²·fuel)，空间复杂度 O(n·fuel)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> countRoutes(<span class="k">int</span>[] locations, <span class="k">int</span> start, <span class="k">int</span> finish, <span class="k">int</span> fuel) {</span><span class="ln"><span class="no">3</span>        <span class="k">final</span> <span class="k">int</span> MOD = <span class="n">1_000_000_007</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> n = locations.length;</span><span class="ln"><span class="no">5</span>        <span class="c">// dp[i][f]：从城市 i、剩 f 单位油出发，到达 finish 的路径数</span></span><span class="ln"><span class="no">6</span>        <span class="c">// 每走一步油严格变少 → 小 f 不依赖大 f，按 f 从小到大填表</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[][] dp = <span class="k">new</span> <span class="k">int</span>[n][fuel + <span class="n">1</span>];</span><span class="ln"><span class="no">8</span>        dp[finish][<span class="n">0</span>] = <span class="n">1</span>;   <span class="c">// 一动不动站在终点，也算 1 条路径</span></span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> f = <span class="n">1</span>; f &lt;= fuel; f++) {</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">11</span>                <span class="k">long</span> ways = i == finish ? <span class="n">1</span> : <span class="n">0</span>;   <span class="c">// 终点随时可以「就地结束」</span></span><span class="ln"><span class="no">12</span>                <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">13</span>                    <span class="k">int</span> cost = <span class="t">Math</span>.abs(locations[i] - locations[j]);</span><span class="ln"><span class="no">14</span>                    <span class="k">if</span> (j != i &amp;&amp; cost &lt;= f) ways += dp[j][f - cost];</span><span class="ln"><span class="no">15</span>                }</span><span class="ln"><span class="no">16</span>                dp[i][f] = (<span class="k">int</span>) (ways % MOD);</span><span class="ln"><span class="no">17</span>            }</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> dp[start][fuel];</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个 <strong>互不相同</strong>&nbsp;的整数数组，其中&nbsp;<code>locations[i]</code>&nbsp;表示第&nbsp;<code>i</code>&nbsp;个城市的位置。同时给你&nbsp;<code>start</code>，<code>finish</code>&nbsp;和&nbsp;<code>fuel</code>&nbsp;分别表示出发城市、目的地城市和你初始拥有的汽油总量</p>
+
+<p>每一步中，如果你在城市 <code>i</code>&nbsp;，你可以选择任意一个城市 <code>j</code>&nbsp;，满足 &nbsp;<code>j != i</code>&nbsp;且&nbsp;<code>0 &lt;= j &lt; locations.length</code>&nbsp;，并移动到城市&nbsp;<code>j</code>&nbsp;。从城市&nbsp;<code>i</code>&nbsp;移动到&nbsp;<code>j</code>&nbsp;消耗的汽油量为&nbsp;<code>|locations[i] - locations[j]|</code>，<code>|x|</code>&nbsp;表示&nbsp;<code>x</code>&nbsp;的绝对值。</p>
+
+<p>请注意，&nbsp;<code>fuel</code>&nbsp;任何时刻都&nbsp;<strong>不能</strong>&nbsp;为负，且你&nbsp;<strong>可以</strong>&nbsp;经过任意城市超过一次（包括&nbsp;<code>start</code>&nbsp;和&nbsp;<code>finish</code>&nbsp;）。</p>
+
+<p>请你返回从<em>&nbsp;</em><code>start</code>&nbsp;到&nbsp;<code>finish</code>&nbsp;所有可能路径的数目。</p>
+
+<p>由于答案可能很大， 请将它对&nbsp;<code>10^9 + 7</code>&nbsp;取余后返回。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>locations = [2,3,6,8,4], start = 1, finish = 3, fuel = 5
+<strong>输出：</strong>4
+<strong>解释：</strong>以下为所有可能路径，每一条都用了 5 单位的汽油：
+1 -&gt; 3
+1 -&gt; 2 -&gt; 3
+1 -&gt; 4 -&gt; 3
+1 -&gt; 4 -&gt; 2 -&gt; 3
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>locations = [4,3,1], start = 1, finish = 0, fuel = 6
+<strong>输出：</strong>5
+<strong>解释：</strong>以下为所有可能的路径：
+1 -&gt; 0，使用汽油量为 fuel = 1
+1 -&gt; 2 -&gt; 0，使用汽油量为 fuel = 5
+1 -&gt; 2 -&gt; 1 -&gt; 0，使用汽油量为 fuel = 5
+1 -&gt; 0 -&gt; 1 -&gt; 0，使用汽油量为 fuel = 3
+1 -&gt; 0 -&gt; 1 -&gt; 0 -&gt; 1 -&gt; 0，使用汽油量为 fuel = 5
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>locations = [5,2,1], start = 0, finish = 2, fuel = 3
+<strong>输出：</strong>0
+<strong>解释：</strong>没有办法只用 3 单位的汽油从 0 到达 2 。因为最短路径需要 4 单位的汽油。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= locations.length &lt;= 100</code></li>
+	<li><code>1 &lt;= locations[i] &lt;= 10<sup>9</sup></code></li>
+	<li>所有&nbsp;<code>locations</code>&nbsp;中的整数 <strong>互不相同</strong>&nbsp;。</li>
+	<li><code>0 &lt;= start, finish &lt;&nbsp;locations.length</code></li>
+	<li><code>1 &lt;= fuel &lt;= 200</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int countRoutes(int[] locations, int start, int finish, int fuel) {", "        final int MOD = 1_000_000_007;", "        int n = locations.length;", "        // dp[i][f]：从城市 i、剩 f 单位油出发，到达 finish 的路径数", "        // 每走一步油严格变少 → 小 f 不依赖大 f，按 f 从小到大填表", "        int[][] dp = new int[n][fuel + 1];", "        dp[finish][0] = 1;   // 一动不动站在终点，也算 1 条路径", "        for (int f = 1; f <= fuel; f++) {", "            for (int i = 0; i < n; i++) {", "                long ways = i == finish ? 1 : 0;   // 终点随时可以「就地结束」", "                for (int j = 0; j < n; j++) {", "                    int cost = Math.abs(locations[i] - locations[j]);", "                    if (j != i && cost <= f) ways += dp[j][f - cost];", "                }", "                dp[i][f] = (int) (ways % MOD);", "            }", "        }", "        return dp[start][fuel];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1575. 统计所有可行路径 —— 图解：复刻 Solution.java 的「按剩余油量从小到大填 dp 表」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { locations: [2, 3, 6, 4], start: 1, finish: 2, fuel: 4 };
+
+function trace(input) {
+  var loc = input.locations, start = input.start, finish = input.finish, fuel = input.fuel;
+  var n = loc.length;
+  var dp = [];
+  for (var i = 0; i < n; i++) dp.push(new Array(fuel + 1).fill(null));   // null = 还没算
+  var frames = [];
+  var colLabels = [];
+  for (i = 0; i <= fuel; i++) colLabels.push(String(i));
+
+  function gridPanel(marks) {
+    return Viz.grid(dp.map(function (row) {
+      return row.map(function (v) { return v === null ? '' : String(v); });
+    }), { title: 'dp[城市][剩余油]：到达终点的路径数', marks: marks || {},
+         rowLabels: loc.map(String), colLabels: colLabels, corner: '油→' });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+  function snap(at, key, marks, items) {
+    frames.push(Viz.frame(at, key, [gridPanel(marks), varsPanel(items)]));
+  }
+
+  dp[finish][0] = 1;
+  var m0 = {};
+  m0[finish + ',0'] = 'new';
+  snap('dp[finish][0] = 1;',
+    '初始化：终点在油 0 处放 1——原地不动也算 1 条路', m0,
+    [{ name: 'start', v: '城市 ' + start + '（位置 ' + loc[start] + '）' },
+     { name: 'finish', v: '城市 ' + finish + '（位置 ' + loc[finish] + '）' }]);
+
+  for (var f = 1; f <= fuel; f++) {
+    for (i = 0; i < n; i++) {
+      var ways = i === finish ? 1 : 0;
+      var sources = [];
+      for (var j = 0; j < n; j++) {
+        var cost = Math.abs(loc[i] - loc[j]);
+        if (j !== i && cost <= f) {
+          var prev = dp[j][f - cost] || 0;
+          ways += prev;
+          if (i === start && f === fuel) sources.push([j, f - cost]);
+        }
+      }
+      dp[i][f] = ways % 1000000007;
+      if (i === finish && f === 2 && fuel >= 2) {
+        var mf = {};
+        mf[finish + ',2'] = 'cur';
+        snap('long ways = i == finish ? 1 : 0;',
+          '终点格也要算：先放「就地结束」的 1，再加邻居带来的', mf,
+          [{ name: '正在算', v: 'dp[' + finish + '][2]' }, { name: 'ways', v: String(ways) }]);
+      }
+      if (i === start && f === fuel) {
+        var ma = {};
+        ma[start + ',' + fuel] = 'cur';
+        for (var sIdx = 0; sIdx < sources.length; sIdx++) ma[sources[sIdx][0] + ',' + sources[sIdx][1]] = 'hit';
+        snap('if (j != i && cost <= f) ways += dp[j][f - cost];',
+          '答案格：终点自带的 1 + 各邻居「花掉油钱后」的路径数', ma,
+          [{ name: 'dp[' + start + '][' + fuel + ']', v: String(dp[start][fuel]) },
+           { name: '油够的邻居', v: String(sources.length) + ' 个' }]);
+      }
+    }
+  }
+
+  var mr = {};
+  if (dp[start][fuel] !== null) mr[start + ',' + fuel] = 'done';
+  snap('return dp[start][fuel];',
+    '起点在满油时的方案数就是答案：' + (dp[start][fuel] === null ? 0 : dp[start][fuel]), mr,
+    [{ name: '答案', v: String(dp[start][fuel] === null ? 0 : dp[start][fuel]) }]);
+
+  return { frames: frames, result: dp[start][fuel] === null ? (start === finish ? 1 : 0) : dp[start][fuel] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

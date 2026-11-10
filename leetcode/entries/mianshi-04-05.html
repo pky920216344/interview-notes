@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>合法二叉搜索树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 968 / 1159</span>
+  <nav class="pn"><a href="0502.html">上一篇</a><a href="0937.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 04.05. </span>合法二叉搜索树</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉搜索树</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">递归传开区间 (lo, hi)：每个结点必须严格落在祖先们共同收紧的界内，越界即假。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>只查「孩子 &lt; 父」不够：非法结构可能藏在孙子层（例题里 <code>4</code> 是根的右孩子但小于根）。</li><li>递归携带 <code>(lo, hi)</code>：进左子树把上界收紧为 <code>node.val</code>，进右子树把下界收紧为 <code>node.val</code>；<code>val ≤ lo</code> 或 <code>val ≥ hi</code> 直接 <code>false</code>。</li><li>BST 定义是<strong>严格</strong>大于/小于，相等也非法（<code>[2,2,2]</code> 是 false）。</li><li>界用 <code>long</code>：结点值可能是 <code>Integer.MIN_VALUE / MAX_VALUE</code>，用 int 当界会先把它们误判非法。</li><li>短路：<code>check(左) &amp;&amp; check(右)</code>，左边一假右边不再进。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> isValidBST(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 每个结点都必须落在开区间 (lo, hi) 里；</span></span><span class="ln"><span class="no">4</span>        <span class="c">// 用 long 当界，免得 ±21 亿的结点值被 int 界误判</span></span><span class="ln"><span class="no">5</span>        <span class="k">return</span> check(root, <span class="t">Long</span>.MIN_VALUE, <span class="t">Long</span>.MAX_VALUE);</span><span class="ln"><span class="no">6</span>    }</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="c">// 子树里所有值都要严格落在 (lo, hi) 内</span></span><span class="ln"><span class="no">9</span>    <span class="k">private</span> <span class="k">boolean</span> check(<span class="t">TreeNode</span> node, <span class="k">long</span> lo, <span class="k">long</span> hi) {</span><span class="ln"><span class="no">10</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">if</span> (node.val &lt;= lo || node.val &gt;= hi) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">12</span>        <span class="c">// 左子树的上界收紧为 node.val；右子树的下界收紧为 node.val</span></span><span class="ln"><span class="no">13</span>        <span class="k">return</span> check(node.left, lo, node.val) &amp;&amp; check(node.right, node.val, hi);</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>实现一个函数，检查一棵二叉树是否为二叉搜索树。</p>
+<strong>示例 1：</strong>
+
+<pre>
+<strong>输入：</strong>
+    2
+   / \
+  1   3
+<strong>输出：</strong>true
+</pre>
+<strong>示例 2：</strong>
+
+<pre>
+<strong>输入：</strong>
+    5
+   / \
+  1   4
+&nbsp;    / \
+&nbsp;   3   6
+<strong>输出：</strong>false
+<strong>解释：</strong>输入为: [5,1,4,null,null,3,6]。
+&nbsp;    根节点的值为 5 ，但是其右子节点值为 4 。</pre>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean isValidBST(TreeNode root) {", "        // 每个结点都必须落在开区间 (lo, hi) 里；", "        // 用 long 当界，免得 ±21 亿的结点值被 int 界误判", "        return check(root, Long.MIN_VALUE, Long.MAX_VALUE);", "    }", "", "    // 子树里所有值都要严格落在 (lo, hi) 内", "    private boolean check(TreeNode node, long lo, long hi) {", "        if (node == null) return true;", "        if (node.val <= lo || node.val >= hi) return false;", "        // 左子树的上界收紧为 node.val；右子树的下界收紧为 node.val", "        return check(node.left, lo, node.val) && check(node.right, node.val, hi);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 04.05. 合法二叉搜索树 —— 图解：递归带上下界，越界即假。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { tree: [5, 1, 4, null, null, 3, 6] };
+
+function trace(input) {
+  var arr = input.tree;
+  var frames = [];
+  var result = true;
+
+  // 层序数组 → 结点（与 story.js 的 parseTree 同规则）
+  var nodes = [];                     // {idx, val, l, r, parent, isLeft}
+  if (arr.length && arr[0] !== null) {
+    var root = { idx: 0, val: arr[0] };
+    var q = [root];
+    nodes.push(root);
+    var i = 1;
+    while (q.length && i < arr.length) {
+      var cur = q.shift();
+      if (i < arr.length && arr[i] !== null) { cur.l = { idx: i, val: arr[i], parent: cur, isLeft: true }; q.push(cur.l); nodes.push(cur.l); }
+      i++;
+      if (i < arr.length && arr[i] !== null) { cur.r = { idx: i, val: arr[i], parent: cur, isLeft: false }; q.push(cur.r); nodes.push(cur.r); }
+      i++;
+    }
+  }
+
+  function treePanel(marks, labels) {
+    return Viz.tree(arr, { title: '整棵树的合法值域由所有祖先共同收紧', marks: marks || {}, labels: labels || [] });
+  }
+  function fmt(b) { return b === -Infinity ? '-∞' : (b === Infinity ? '+∞' : String(b)); }
+
+  var badNode = null, leftSnap = null, rootSnap = null;
+  var calls = 0;
+
+  // 与 Java 相同的递归；在关键调用点拍快照
+  function check(node, lo, hi) {
+    if (node == null) return true;
+    if (node.val <= lo || node.val >= hi) {
+      if (!badNode) badNode = { node: node, lo: lo, hi: hi };
+      result = false;
+      return false;
+    }
+    if (!rootSnap) rootSnap = { node: node, lo: lo, hi: hi };
+    else if (!leftSnap && node.isLeft && node.parent === rootSnap.node) leftSnap = { node: node, lo: lo, hi: hi };
+    calls++;
+    return check(node.l, lo, node.val) && check(node.r, node.val, hi);
+  }
+  check(nodes.length ? nodes[0] : null, -Infinity, Infinity);
+
+  function snap(s, cls) {
+    var marks = {}, labels = [];
+    nodes.forEach(function (nd) {
+      if (nd === s.node) { marks[nd.idx] = cls; labels.push({ at: nd.idx, label: '(' + fmt(s.lo) + ', ' + fmt(s.hi) + ')', cls: cls }); }
+      else if (rootSnap && nd === rootSnap.node) labels.push({ at: nd.idx, label: '(' + fmt(rootSnap.lo) + ', ' + fmt(rootSnap.hi) + ')' });
+    });
+    return [treePanel(marks, labels), Viz.vars([
+      { name: '当前结点', v: String(s.node.val) },
+      { name: '合法区间 (lo, hi)', v: '(' + fmt(s.lo) + ', ' + fmt(s.hi) + ')' }
+    ])];
+  }
+
+  if (rootSnap) {
+    frames.push(Viz.frame('return check(root, Long.MIN_VALUE, Long.MAX_VALUE);',
+      '根 ' + rootSnap.node.val + ' 进入：整棵树先只受开区间 (-∞, +∞) 约束',
+      snap(rootSnap, 'cur')));
+  }
+  if (leftSnap) {
+    frames.push(Viz.frame('return check(node.left, lo, node.val) && check(node.right, node.val, hi);',
+      '进左子树 ' + leftSnap.node.val + '：上界收紧成父值 → 区间 (' + fmt(leftSnap.lo) + ', ' + fmt(leftSnap.hi) + ')，合法',
+      snap(leftSnap, 'cur')));
+  }
+  if (badNode) {
+    frames.push(Viz.frame('if (node.val <= lo || node.val >= hi) return false;',
+      badNode.node.val + ' 落不进 (' + fmt(badNode.lo) + ', ' + fmt(badNode.hi) + ') → 非法，直接短路返回 false',
+      snap(badNode, 'bad')));
+  }
+  frames.push(Viz.frame('return check(root, Long.MIN_VALUE, Long.MAX_VALUE);',
+    '全部结点检查完 → ' + result,
+    [Viz.tree(arr, { title: '判定结果', marks: (function () {
+      var m = {};
+      if (badNode) m[badNode.node.idx] = 'bad';
+      else for (var k = 0; k < nodes.length; k++) m[k] = 'done';
+      return m;
+    })() }), Viz.vars([{ name: '结果', v: String(result), cls: 'done' }])]));
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

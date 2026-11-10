@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>重新排列日志文件 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 969 / 1159</span>
+  <nav class="pn"><a href="mianshi-04-05.html">上一篇</a><a href="1204.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">937. </span>重新排列日志文件</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 1</li><li class="algo">模拟</li><li class="tag">数组</li><li class="tag">字符串</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">先把日志按「第一个空格后是数字还是字母」分两桶；字母桶按内容（再标识符）排序，数字桶原样保序，字母在前拼接。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>分拣看第一个空格后的首字符：<code>Character.isDigit</code> → 数字日志，否则字母日志。</li><li>字母日志排序键 = 「内容，再标识符」：内容比较用 <code>substring(第一个空格后)</code>；并列时直接整串 <code>compareTo</code> 恰好就是「先标识符后内容」的顺序。</li><li><code>List.sort</code> 是稳定排序，数字桶不参与排序即可天然保持相对顺序。</li><li>最后 <code>letters.addAll(digits)</code> 一次拼接，字母日志全部在前。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m × n log n)（n 条日志、每条长 m），空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span>[] reorderLogFiles(<span class="t">String</span>[] logs) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 第一个空格后的首字符是数字 → 数字日志；否则字母日志</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; letters = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(), digits = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="t">String</span> log : logs) {</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (<span class="t">Character</span>.isDigit(log.charAt(log.indexOf(<span class="s">' '</span>) + <span class="n">1</span>))) digits.add(log);</span><span class="ln"><span class="no">9</span>            <span class="k">else</span> letters.add(log);</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="c">// 字母日志按「内容、再标识符」排：整体 compareTo 恰好就是这个顺序</span></span><span class="ln"><span class="no">12</span>        letters.sort((a, b) -&gt; {</span><span class="ln"><span class="no">13</span>            <span class="k">int</span> body = a.substring(a.indexOf(<span class="s">' '</span>) + <span class="n">1</span>).compareTo(b.substring(b.indexOf(<span class="s">' '</span>) + <span class="n">1</span>));</span><span class="ln"><span class="no">14</span>            <span class="k">return</span> body != <span class="n">0</span> ? body : a.compareTo(b);</span><span class="ln"><span class="no">15</span>        });</span><span class="ln"><span class="no">16</span>        letters.addAll(digits);       <span class="c">// 数字日志保持原有相对顺序</span></span><span class="ln"><span class="no">17</span>        <span class="k">return</span> letters.toArray(<span class="k">new</span> <span class="t">String</span>[<span class="n">0</span>]);</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个日志数组 <code>logs</code>。每条日志都是以空格分隔的字串，其第一个字为字母与数字混合的<em> </em><strong>标识符 </strong>。</p>
+
+<p>有两种不同类型的日志：</p>
+
+<ul>
+	<li><strong>字母日志</strong>：除标识符之外，所有字均由小写字母组成</li>
+	<li><strong>数字日志</strong>：除标识符之外，所有字均由数字组成</li>
+</ul>
+
+<p>请按下述规则将日志重新排序：</p>
+
+<ul>
+	<li>所有 <strong>字母日志</strong> 都排在 <strong>数字日志</strong> 之前。</li>
+	<li><strong>字母日志</strong> 在内容不同时，忽略标识符后，按内容 <strong>字典顺序</strong> 排序；在内容相同时，按标识符排序。</li>
+	<li><strong>数字日志</strong> 应该保留原来的相对顺序。</li>
+</ul>
+
+<p>返回日志的 <strong>最终</strong> 顺序。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>logs = ["dig1 8 1 5 1","let1 art can","dig2 3 6","let2 own kit dig","let3 art zero"]
+<strong>输出：</strong>["let1 art can","let3 art zero","let2 own kit dig","dig1 8 1 5 1","dig2 3 6"]
+<strong>解释：</strong>
+字母日志的内容都不同，所以顺序为 "art can", "art zero", "own kit dig" 。
+数字日志保留原来的相对顺序 "dig1 8 1 5 1", "dig2 3 6" 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>logs = ["a1 9 2 3 1","g1 act car","zo4 4 7","ab1 off key dog","a8 act zoo"]
+<strong>输出：</strong>["g1 act car","a8 act zoo","ab1 off key dog","a1 9 2 3 1","zo4 4 7"]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= logs.length &lt;= 100</code></li>
+	<li><code>3 &lt;= logs[i].length &lt;= 100</code></li>
+	<li><code>logs[i]</code> 中，字与字之间都用 <strong>单个</strong> 空格分隔</li>
+	<li>题目数据保证 <code>logs[i]</code> 都有一个标识符，并且在标识符之后至少存在一个字</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String[] reorderLogFiles(String[] logs) {", "        // 第一个空格后的首字符是数字 → 数字日志；否则字母日志", "        List<String> letters = new ArrayList<>(), digits = new ArrayList<>();", "        for (String log : logs) {", "            if (Character.isDigit(log.charAt(log.indexOf(' ') + 1))) digits.add(log);", "            else letters.add(log);", "        }", "        // 字母日志按「内容、再标识符」排：整体 compareTo 恰好就是这个顺序", "        letters.sort((a, b) -> {", "            int body = a.substring(a.indexOf(' ') + 1).compareTo(b.substring(b.indexOf(' ') + 1));", "            return body != 0 ? body : a.compareTo(b);", "        });", "        letters.addAll(digits);       // 数字日志保持原有相对顺序", "        return letters.toArray(new String[0]);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 937. 重新排列日志文件 —— 图解：先分拣两类日志，字母日志按内容排序，数字日志保序接尾。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { logs: ['dig1 8 1 5 1', 'let1 art can', 'dig2 3 6', 'let2 own kit dig', 'let3 art zero'] };
+
+function trace(input) {
+  var logs = input.logs;
+  var frames = [];
+
+  // 与 Java 相同的分拣与比较
+  var letters = [], digits = [];
+  var bodyOf = function (log) { return log.slice(log.indexOf(' ') + 1); };
+  logs.forEach(function (log) {
+    var c = log.charAt(log.indexOf(' ') + 1);
+    (c >= '0' && c <= '9' ? digits : letters).push(log);
+  });
+  letters.sort(function (a, b) {
+    var ba = bodyOf(a), bb = bodyOf(b);
+    var body = ba < bb ? -1 : ba > bb ? 1 : 0;
+    return body !== 0 ? body : (a < b ? -1 : a > b ? 1 : 0);
+  });
+  var merged = letters.concat(digits);
+
+  function cells(list, title, marks) {
+    return Viz.cells(list, { title: title, marks: marks || {} });
+  }
+  function markAll(list, cls) {
+    var m = {};
+    list.forEach(function (_, i) { m[i] = cls; });
+    return m;
+  }
+
+  frames.push(Viz.frame('digits.add(log);',
+    '看第一个空格后的字符：数字开头进数字桶，字母开头进字母桶',
+    [cells(letters, '字母日志（原顺序）'), cells(digits, '数字日志（原顺序）')]));
+
+  frames.push(Viz.frame('int body = a.substring',
+    '字母日志按内容字典序排（内容并列再比标识符），数字桶不动',
+    [cells(letters, '字母日志（已排序）', markAll(letters, 'win')), cells(digits, '数字日志（原顺序）')]));
+
+  frames.push(Viz.frame('letters.addAll(digits);',
+    '数字日志保持原相对顺序，整个接到字母日志后面',
+    [cells(merged, '拼接结果', markAll(letters, 'done'))]));
+
+  frames.push(Viz.frame('return letters.toArray(new String[0]);',
+    '最终顺序：字母日志在前（已排序），数字日志殿后（原顺序）',
+    [cells(merged, '最终顺序', markAll(merged, 'done'))]));
+
+  return { frames: frames, result: merged };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

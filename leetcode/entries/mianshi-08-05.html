@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>递归乘法 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 491 / 1159</span>
+  <nav class="pn"><a href="0393.html">上一篇</a><a href="0513.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 08.05. </span>递归乘法</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">位运算</li><li class="tag">位运算</li><li class="tag">递归</li><li class="tag">数学</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">二进制乘：把 b 拆成二进制位，某位是 1 就补一份「翻了 k 倍的 a」，递归里 a 翻倍、b 减半。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>乘法分配到二进制位上：<code>A×B = Σ b 的第 k 位是 1 ? A·2^k : 0</code>，只用加法和移位。</li><li>递归 <code>mul(a, b)</code>：<code>b</code> 最低位是 1 就多加一份 <code>a</code>，然后 <code>a&lt;&lt;1</code>、<code>b&gt;&gt;1</code> 进下一层，<code>b=0</code> 收工。</li><li>判奇偶不用取模：<code>(b&gt;&gt;1)&lt;&lt;1</code> 把最低位抹成 0，和 <code>b</code> 不等就说明最低位是 1。</li><li>负数先统一转正、记下符号，算完再变号；中间用 <code>long</code> 防止取负溢出。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log|B|)，空间复杂度 O(log|B|)（递归栈）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> multiply(<span class="k">int</span> A, <span class="k">int</span> B) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 符号先记下，两个数都转正数算，最后再变号</span></span><span class="ln"><span class="no">4</span>        <span class="k">boolean</span> neg = (A &lt; <span class="n">0</span>) != (B &lt; <span class="n">0</span>);</span><span class="ln"><span class="no">5</span>        <span class="k">long</span> a = A &lt; <span class="n">0</span> ? -(<span class="k">long</span>) A : A;</span><span class="ln"><span class="no">6</span>        <span class="k">long</span> b = B &lt; <span class="n">0</span> ? -(<span class="k">long</span>) B : B;</span><span class="ln"><span class="no">7</span>        <span class="k">long</span> ans = mul(a, b);</span><span class="ln"><span class="no">8</span>        <span class="k">return</span> (<span class="k">int</span>) (neg ? -ans : ans);</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="c">// 二进制乘：b 的最低位是 1 就补一份 a，其余交给 a 翻倍、b 减半的下一层</span></span><span class="ln"><span class="no">12</span>    <span class="k">private</span> <span class="k">long</span> mul(<span class="k">long</span> a, <span class="k">long</span> b) {</span><span class="ln"><span class="no">13</span>        <span class="k">if</span> (b == <span class="n">0</span>) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>        <span class="c">// (b&gt;&gt;1)&lt;&lt;1 把最低位抹成 0：与 b 不等就说明最低位是 1</span></span><span class="ln"><span class="no">15</span>        <span class="k">if</span> (((b &gt;&gt; <span class="n">1</span>) &lt;&lt; <span class="n">1</span>) != b) <span class="k">return</span> mul(a &lt;&lt; <span class="n">1</span>, b &gt;&gt; <span class="n">1</span>) + a;</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> mul(a &lt;&lt; <span class="n">1</span>, b &gt;&gt; <span class="n">1</span>);</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>递归乘法。 写一个递归函数，不使用 * 运算符， 实现两个正整数的相乘。可以使用加号、减号、位移，但要吝啬一些。</p>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong> 输入</strong>：A = 1, B = 10
+<strong> 输出</strong>：10
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong> 输入</strong>：A = 3, B = 4
+<strong> 输出</strong>：12
+</pre>
+
+<p><strong>提示：</strong></p>
+
+<ol>
+	<li>保证乘法范围不会溢出</li>
+</ol>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int multiply(int A, int B) {", "        // 符号先记下，两个数都转正数算，最后再变号", "        boolean neg = (A < 0) != (B < 0);", "        long a = A < 0 ? -(long) A : A;", "        long b = B < 0 ? -(long) B : B;", "        long ans = mul(a, b);", "        return (int) (neg ? -ans : ans);", "    }", "", "    // 二进制乘：b 的最低位是 1 就补一份 a，其余交给 a 翻倍、b 减半的下一层", "    private long mul(long a, long b) {", "        if (b == 0) return 0;", "        // (b>>1)<<1 把最低位抹成 0：与 b 不等就说明最低位是 1", "        if (((b >> 1) << 1) != b) return mul(a << 1, b >> 1) + a;", "        return mul(a << 1, b >> 1);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 08.05 递归乘法 —— 图解：二进制乘，b 的每一位决定补不补一份 a。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { A: 3, B: 5 };
+
+function trace(input) {
+  var A = input.A, B = input.B;
+  var neg = (A < 0) !== (B < 0);
+  var a = A < 0 ? -A : A, b = B < 0 ? -B : B;
+  var frames = [];
+  var rows = [];   // b 的二进制位，从低位到高位：每层递归补一行
+
+  var START = 'long ans = mul(a, b);';
+  var ODD = 'if (((b >> 1) << 1) != b) return mul(a << 1, b >> 1) + a;';
+  var EVEN = 'return mul(a << 1, b >> 1);';
+  var END = 'return (int) (neg ? -ans : ans);';
+
+  function varsPanel(a, b) {
+    return Viz.vars([
+      { name: 'a（本层）', v: a, cls: 'cur' },
+      { name: 'b（本层）', v: b, cls: 'cur' },
+      { name: 'b 的最低位', v: b - ((b >> 1) << 1), cls: 'chg' }
+    ]);
+  }
+  // 位表：2^k 位上翻倍后的 a 是多少、要不要加
+  function tablePanel() {
+    return Viz.table('b 的每个二进制位（低位 → 高位）', rows.slice(), { hint: '✓ = 这一位是 1，要加这份 a' });
+  }
+  function snap(at, key, a, b) { frames.push(Viz.frame(at, key, [varsPanel(a, b), tablePanel()])); }
+
+  snap(START, '先转正数：3×5 进 mul(3, 5)，把 b=5 按二进制位拆开', a, b);
+
+  function mul(a, b, depth) {
+    if (b === 0) return 0;
+    var low = b - ((b >> 1) << 1);   // 最低位（只用移位和减法）
+    rows.push({ k: '2^' + depth + ' 位', v: 'a=' + a + (low === 1 ? ' ✓' : ' ✗'), cls: low === 1 ? 'hit' : '' });
+    if (depth < 3 && frames.length < 5) {
+      snap(low === 1 ? ODD : EVEN,
+        'mul(' + a + ', ' + b + ')：最低位 ' + low + (low === 1 ? '，补一份 a=' + a + '，递归 mul(' + (a * 2) + ', ' + (b >> 1) + ')' : '，只翻倍减半，递归 mul(' + (a * 2) + ', ' + (b >> 1) + ')'),
+        a, b);
+    }
+    var sub = mul(a << 1, b >> 1, depth + 1);
+    return low === 1 ? sub + a : sub;
+  }
+
+  var ans = mul(a, b, 0);
+  snap(END, 'b 减到 0 开始回溯：' + (neg ? '异号取负 → ' : '各层补的 a 累加 = ') + (neg ? -ans : ans), a, 0);
+
+  return { frames: frames, result: neg ? -ans : ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

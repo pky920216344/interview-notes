@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>设计循环队列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 249 / 1159</span>
+  <nav class="pn"><a href="0242.html">上一篇</a><a href="offer-48.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">622. </span>设计循环队列</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 18</li><li class="algo">设计</li><li class="aux">模拟</li><li class="tag">设计</li><li class="tag">队列</li><li class="tag">数组</li><li class="tag">链表</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">数组 + front + count：判空判满只看 count（不用留空位），入队写 (front+count)%k，出队只挪 front。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>只存 <code>front</code>（队首下标）和 <code>count</code>（元素个数）：<code>count == 0</code> 空、<code>count == k</code> 满，不用牺牲空位。</li><li>入队写到 <code>(front + count) % k</code>——队尾的下一格，越过末尾自动绕回开头。</li><li>出队只把 <code>front</code> 挪到 <code>(front + 1) % k</code>，元素不搬动。</li><li><code>Front</code> 读 <code>a[front]</code>，<code>Rear</code> 读 <code>a[(front + count - 1) % k]</code>，空队都返回 -1。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 每个操作 O(1)，空间复杂度 O(k)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">MyCircularQueue</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span>[] a;</span><span class="ln"><span class="no">3</span>    <span class="k">private</span> <span class="k">int</span> front = <span class="n">0</span>, count = <span class="n">0</span>;   <span class="c">// front：队首下标；count：元素个数，判空判满都看它</span></span><span class="ln"><span class="no">4</span> </span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="t">MyCircularQueue</span>(<span class="k">int</span> k) {</span><span class="ln"><span class="no">6</span>        a = <span class="k">new</span> <span class="k">int</span>[k];</span><span class="ln"><span class="no">7</span>    }</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="k">public</span> <span class="k">boolean</span> enQueue(<span class="k">int</span> value) {</span><span class="ln"><span class="no">10</span>        <span class="k">if</span> (isFull()) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">11</span>        a[(front + count) % a.length] = value;   <span class="c">// 写到队尾的下一格，绕回开头靠取模</span></span><span class="ln"><span class="no">12</span>        count++;</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="k">public</span> <span class="k">boolean</span> deQueue() {</span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (isEmpty()) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">18</span>        front = (front + <span class="n">1</span>) % a.length;   <span class="c">// 只挪队首下标，元素不用搬</span></span><span class="ln"><span class="no">19</span>        count--;</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span> </span><span class="ln"><span class="no">23</span>    <span class="k">public</span> <span class="k">int</span> <span class="t">Front</span>() {</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> isEmpty() ? -<span class="n">1</span> : a[front];</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span> </span><span class="ln"><span class="no">27</span>    <span class="k">public</span> <span class="k">int</span> <span class="t">Rear</span>() {</span><span class="ln"><span class="no">28</span>        <span class="k">return</span> isEmpty() ? -<span class="n">1</span> : a[(front + count - <span class="n">1</span>) % a.length];</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span> </span><span class="ln"><span class="no">31</span>    <span class="k">public</span> <span class="k">boolean</span> isEmpty() {</span><span class="ln"><span class="no">32</span>        <span class="k">return</span> count == <span class="n">0</span>;</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span> </span><span class="ln"><span class="no">35</span>    <span class="k">public</span> <span class="k">boolean</span> isFull() {</span><span class="ln"><span class="no">36</span>        <span class="k">return</span> count == a.length;</span><span class="ln"><span class="no">37</span>    }</span><span class="ln"><span class="no">38</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>设计你的循环队列实现。 循环队列是一种线性数据结构，其操作表现基于 FIFO（先进先出）原则并且队尾被连接在队首之后以形成一个循环。它也被称为&ldquo;环形缓冲器&rdquo;。</p>
+
+<p>循环队列的一个好处是我们可以利用这个队列之前用过的空间。在一个普通队列里，一旦一个队列满了，我们就不能插入下一个元素，即使在队列前面仍有空间。但是使用循环队列，我们能使用这些空间去存储新的值。</p>
+
+<p>你的实现应该支持如下操作：</p>
+
+<ul>
+	<li><code>MyCircularQueue(k)</code>: 构造器，设置队列长度为 k 。</li>
+	<li><code>Front</code>: 从队首获取元素。如果队列为空，返回 -1 。</li>
+	<li><code>Rear</code>: 获取队尾元素。如果队列为空，返回 -1 。</li>
+	<li><code>enQueue(value)</code>: 向循环队列插入一个元素。如果成功插入则返回真。</li>
+	<li><code>deQueue()</code>: 从循环队列中删除一个元素。如果成功删除则返回真。</li>
+	<li><code>isEmpty()</code>: 检查循环队列是否为空。</li>
+	<li><code>isFull()</code>: 检查循环队列是否已满。</li>
+</ul>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>MyCircularQueue circularQueue = new MyCircularQueue(3); // 设置长度为 3
+circularQueue.enQueue(1); &nbsp;// 返回 true
+circularQueue.enQueue(2); &nbsp;// 返回 true
+circularQueue.enQueue(3); &nbsp;// 返回 true
+circularQueue.enQueue(4); &nbsp;// 返回 false，队列已满
+circularQueue.Rear(); &nbsp;// 返回 3
+circularQueue.isFull(); &nbsp;// 返回 true
+circularQueue.deQueue(); &nbsp;// 返回 true
+circularQueue.enQueue(4); &nbsp;// 返回 true
+circularQueue.Rear(); &nbsp;// 返回 4</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>所有的值都在 0&nbsp;至 1000 的范围内；</li>
+	<li>操作数将在 1 至 1000 的范围内；</li>
+	<li>请不要使用内置的队列库。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class MyCircularQueue {", "    private final int[] a;", "    private int front = 0, count = 0;   // front：队首下标；count：元素个数，判空判满都看它", "", "    public MyCircularQueue(int k) {", "        a = new int[k];", "    }", "", "    public boolean enQueue(int value) {", "        if (isFull()) return false;", "        a[(front + count) % a.length] = value;   // 写到队尾的下一格，绕回开头靠取模", "        count++;", "        return true;", "    }", "", "    public boolean deQueue() {", "        if (isEmpty()) return false;", "        front = (front + 1) % a.length;   // 只挪队首下标，元素不用搬", "        count--;", "        return true;", "    }", "", "    public int Front() {", "        return isEmpty() ? -1 : a[front];", "    }", "", "    public int Rear() {", "        return isEmpty() ? -1 : a[(front + count - 1) % a.length];", "    }", "", "    public boolean isEmpty() {", "        return count == 0;", "    }", "", "    public boolean isFull() {", "        return count == a.length;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 622. 设计循环队列 —— 图解：复刻 Solution.java 的「数组 + front + count」，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { k: 3, ops: [['enQueue', 1], ['enQueue', 2], ['enQueue', 3], ['enQueue', 4], ['Rear'], ['isFull'], ['deQueue'], ['enQueue', 4], ['Rear']] };
+
+function trace(input) {
+  var k = input.k, ops = input.ops;
+  var a = new Array(k);        // 物理数组，undefined = 空位
+  var front = 0, count = 0;
+  var out = [];
+  var frames = [];
+  var shotFull = false, shotDeq = false, shotWrap = false;
+
+  function queuePanel(extra) {
+    var marks = {};
+    for (var i = 0; i < k; i++) if (a[i] !== undefined) marks[i] = 'win';
+    if (extra) for (var key in extra) marks[key] = extra[key];
+    var pointers = [{ at: front, label: 'front', cls: 'p-left' }];
+    if (count > 0) pointers.push({ at: (front + count - 1) % k, label: 'rear', cls: 'p-tail' });
+    return Viz.cells(a.map(function (v) { return v === undefined ? '·' : String(v); }),
+      { title: '底层数组（k = ' + k + '）', marks: marks, pointers: pointers });
+  }
+  function varsPanel() {
+    return Viz.vars([{ name: 'front', v: String(front) }, { name: 'count', v: String(count) }]);
+  }
+
+  // 帧 1：开局
+  frames.push(Viz.frame('public MyCircularQueue(int k) {',
+    '数组 + front + count：判空判满只看 count，不用牺牲一个空位来区分',
+    [queuePanel(), varsPanel()]));
+
+  for (var oi = 0; oi < ops.length; oi++) {
+    var op = ops[oi], name = op[0];
+    if (name === 'enQueue') {
+      var v = op[1];
+      if (count === k) {
+        out.push(false);
+        if (!shotFull) {
+          shotFull = true;
+          frames.push(Viz.frame('if (isFull()) return false;',
+            'count == ' + k + ' 已满：enQueue(' + v + ') 被拒，返回 false',
+            [queuePanel(), varsPanel()]));
+        }
+      } else {
+        var pos = (front + count) % k;
+        a[pos] = v;
+        count++;
+        out.push(true);
+        if (pos < front && !shotWrap) {
+          shotWrap = true;
+          var m = {}; m[pos] = 'new';
+          frames.push(Viz.frame('a[(front + count) % a.length] = value;',
+            '入队写到 (front+count)%k = ' + pos + '：绕回数组开头，这就是「循环」',
+            [queuePanel(m), varsPanel()]));
+        }
+      }
+    } else if (name === 'deQueue') {
+      if (count === 0) {
+        out.push(false);
+      } else {
+        var freed = front;
+        front = (front + 1) % k;
+        count--;
+        out.push(true);
+        if (!shotDeq) {
+          shotDeq = true;
+          var dm = {}; dm[freed] = 'dim';
+          frames.push(Viz.frame('front = (front + 1) % a.length;',
+            '出队只挪 front（→' + front + '）：下标 ' + freed + ' 逻辑上出队，值还留在数组里',
+            [queuePanel(dm), varsPanel()]));
+        }
+      }
+    } else if (name === 'Front') {
+      out.push(count === 0 ? -1 : a[front]);
+    } else if (name === 'Rear') {
+      out.push(count === 0 ? -1 : a[(front + count - 1) % k]);
+    } else if (name === 'isEmpty') {
+      out.push(count === 0);
+    } else {
+      out.push(count === k);
+    }
+  }
+
+  var fm = {};
+  for (i = 0; i < k; i++) if (a[i] !== undefined) fm[i] = 'win';
+  frames.push(Viz.frame('return isEmpty() ? -1 : a[(front + count - 1) % a.length];',
+    '终态：物理顺序 ' + a.map(function (x) { return x === undefined ? '·' : x; }).join(',')
+      + '，逻辑队列从 front 起；Rear() 读 (front+count-1)%k',
+    [queuePanel(fm), varsPanel()]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

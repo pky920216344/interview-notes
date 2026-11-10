@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最小高度树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 508 / 1159</span>
+  <nav class="pn"><a href="0713.html">上一篇</a><a href="0992.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">310. </span>最小高度树</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">图算法</li><li class="aux">广度优先搜索</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="tag">拓扑排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">拓扑剥叶：每轮剥掉所有度为 1 的叶子，最后剩下 1~2 个结点就是最小高度树的根。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>直觉：叶子一层层向内剥，树向「中心」收缩；放在正中的根让两边最长链最平衡，所以最后剩的 1~2 个就是答案。</li><li>建邻接表记度数；度为 <code>≤ 1</code> 的先入叶子列表，每轮把叶子的邻居度数减一，减到 1 的成为新一轮叶子。</li><li><code>remain &gt; 2</code> 才继续剥；剩 1~2 个时停止（<code>n=1</code> 直接返回 <code>[0]</code>）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; findMinHeightTrees(<span class="k">int</span> n, <span class="k">int</span>[][] edges) {</span><span class="ln"><span class="no">5</span>        <span class="k">if</span> (n == <span class="n">1</span>) <span class="k">return</span> <span class="t">List</span>.of(<span class="n">0</span>);   <span class="c">// 单结点：自己就是根</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt;[] adj = <span class="k">new</span> <span class="t">List</span>[n];</span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] deg = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">8</span>        <span class="t">Arrays</span>.setAll(adj, k -&gt; <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;());</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span>[] e : edges) {</span><span class="ln"><span class="no">10</span>            adj[e[<span class="n">0</span>]].add(e[<span class="n">1</span>]);</span><span class="ln"><span class="no">11</span>            adj[e[<span class="n">1</span>]].add(e[<span class="n">0</span>]);</span><span class="ln"><span class="no">12</span>            deg[e[<span class="n">0</span>]]++;</span><span class="ln"><span class="no">13</span>            deg[e[<span class="n">1</span>]]++;</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; leaves = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) <span class="k">if</span> (deg[i] &lt;= <span class="n">1</span>) leaves.add(i);</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> remain = n;</span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (remain &gt; <span class="n">2</span>) {   <span class="c">// 一层层向内剥，最后剩下的 1~2 个就是中心</span></span><span class="ln"><span class="no">19</span>            remain -= leaves.size();</span><span class="ln"><span class="no">20</span>            <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; next = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">21</span>            <span class="k">for</span> (<span class="k">int</span> u : leaves) {</span><span class="ln"><span class="no">22</span>                <span class="k">for</span> (<span class="k">int</span> v : adj[u]) {</span><span class="ln"><span class="no">23</span>                    <span class="k">if</span> (--deg[v] == <span class="n">1</span>) next.add(v);   <span class="c">// 邻居减到 1 就成了新叶子</span></span><span class="ln"><span class="no">24</span>                }</span><span class="ln"><span class="no">25</span>            }</span><span class="ln"><span class="no">26</span>            leaves = next;</span><span class="ln"><span class="no">27</span>        }</span><span class="ln"><span class="no">28</span>        <span class="k">return</span> leaves;</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>树是一个无向图，其中任何两个顶点只通过一条路径连接。 换句话说，任何一个没有简单环路的连通图都是一棵树。</p>
+
+<p>给你一棵包含&nbsp;<code>n</code>&nbsp;个节点的树，标记为&nbsp;<code>0</code>&nbsp;到&nbsp;<code>n - 1</code> 。给定数字&nbsp;<code>n</code>&nbsp;和一个有 <code>n - 1</code> 条无向边的 <code>edges</code>&nbsp;列表（每一个边都是一对标签），其中 <code>edges[i] = [a<sub>i</sub>, b<sub>i</sub>]</code> 表示树中节点 <code>a<sub>i</sub></code> 和 <code>b<sub>i</sub></code> 之间存在一条无向边。</p>
+
+<p>可选择树中任何一个节点作为根。当选择节点 <code>x</code> 作为根节点时，设结果树的高度为 <code>h</code> 。在所有可能的树中，具有最小高度的树（即，<code>min(h)</code>）被称为 <strong>最小高度树</strong> 。</p>
+
+<p>请你找到所有的 <strong>最小高度树</strong> 并按 <strong>任意顺序</strong> 返回它们的根节点标签列表。</p>
+树的 <strong>高度</strong> 是指根节点和叶子节点之间最长向下路径上边的数量。
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/6ce4275d3706.jpg" style="height: 213px; width: 800px;" />
+<pre>
+<strong>输入：</strong>n = 4, edges = [[1,0],[1,2],[1,3]]
+<strong>输出：</strong>[1]
+<strong>解释：</strong>如图所示，当根是标签为 1 的节点时，树的高度是 1 ，这是唯一的最小高度树。</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/2b119015ef06.jpg" style="height: 321px; width: 800px;" />
+<pre>
+<strong>输入：</strong>n = 6, edges = [[3,0],[3,1],[3,2],[3,4],[5,4]]
+<strong>输出：</strong>[3,4]
+</pre>
+
+
+
+<ul>
+</ul>
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>edges.length == n - 1</code></li>
+	<li><code>0 &lt;= a<sub>i</sub>, b<sub>i</sub> &lt; n</code></li>
+	<li><code>a<sub>i</sub> != b<sub>i</sub></code></li>
+	<li>所有 <code>(a<sub>i</sub>, b<sub>i</sub>)</code> 互不相同</li>
+	<li>给定的输入 <strong>保证</strong> 是一棵树，并且 <strong>不会有重复的边</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> findMinHeightTrees(int n, int[][] edges) {", "        if (n == 1) return List.of(0);   // 单结点：自己就是根", "        List<Integer>[] adj = new List[n];", "        int[] deg = new int[n];", "        Arrays.setAll(adj, k -> new ArrayList<>());", "        for (int[] e : edges) {", "            adj[e[0]].add(e[1]);", "            adj[e[1]].add(e[0]);", "            deg[e[0]]++;", "            deg[e[1]]++;", "        }", "        List<Integer> leaves = new ArrayList<>();", "        for (int i = 0; i < n; i++) if (deg[i] <= 1) leaves.add(i);", "        int remain = n;", "        while (remain > 2) {   // 一层层向内剥，最后剩下的 1~2 个就是中心", "            remain -= leaves.size();", "            List<Integer> next = new ArrayList<>();", "            for (int u : leaves) {", "                for (int v : adj[u]) {", "                    if (--deg[v] == 1) next.add(v);   // 邻居减到 1 就成了新叶子", "                }", "            }", "            leaves = next;", "        }", "        return leaves;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 310. 最小高度树 —— 图解：复刻 Solution.java 的拓扑剥叶，在关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 6, edges: [[3, 0], [3, 1], [3, 2], [3, 4], [5, 4]] };
+
+function trace(input) {
+  var n = input.n, edges = input.edges;
+  var adj = [], deg = [];
+  for (var k = 0; k < n; k++) { adj.push([]); deg.push(0); }
+  edges.forEach(function (e) {
+    adj[e[0]].push(e[1]);
+    adj[e[1]].push(e[0]);
+    deg[e[0]]++; deg[e[1]]++;
+  });
+
+  function levelOrder() {   // 从 0 号 BFS 得层序，用于画这棵树
+    var seen = [], out = [], q = [0];
+    seen[0] = true;
+    while (q.length) {
+      var u = q.shift();
+      out.push(u);
+      adj[u].forEach(function (v) { if (!seen[v]) { seen[v] = true; q.push(v); } });
+    }
+    return out;
+  }
+  var order = levelOrder();
+  var idx = {};
+  order.forEach(function (v, i) { idx[v] = i; });
+
+  var frames = [];
+  var peeled = [];
+  for (var k5 = 0; k5 < n; k5++) peeled.push(false);
+
+  function treePanel(marks, labels) {
+    return Viz.tree(order.map(String), { title: '这棵树（从 0 号看）', marks: marks || {}, labels: labels || [] });
+  }
+  function degPanel(mk) {
+    var rows = [];
+    for (var v = 0; v < n; v++) rows.push({ k: String(v), v: String(deg[v]), cls: (mk && mk[v]) || '' });
+    return Viz.table('deg：剩余度数', rows);
+  }
+  function snap(at, key, tm, dm, labels) {
+    frames.push(Viz.frame(at, key, [treePanel(tm, labels), degPanel(dm)]));
+  }
+
+  if (n === 1) {
+    snap('if (n == 1) return List.of(0);', '只有一个结点：它自己就是根', { 0: 'done' }, { 0: 'done' });
+    return { frames: frames, result: [0] };
+  }
+
+  var leafTm = {}, leafDm = {};
+  for (var v = 0; v < n; v++) if (deg[v] <= 1) { leafTm[idx[v]] = 'bad'; leafDm[v] = 'bad'; }
+  snap('for (int i = 0; i < n; i++) if (deg[i] <= 1) leaves.add(i);',
+    '开局：度为 1 的都是叶子，先剥它们', leafTm, leafDm);
+
+  var leaves = [];
+  for (var v2 = 0; v2 < n; v2++) if (deg[v2] <= 1) leaves.push(v2);
+  var remain = n;
+  var sawPeel = false, sawRound = false;
+  while (remain > 2) {
+    remain -= leaves.length;
+    var next = [];
+    for (var li = 0; li < leaves.length; li++) {
+      var u = leaves[li];
+      peeled[u] = true;
+      for (var ai = 0; ai < adj[u].length; ai++) {
+        var w = adj[u][ai];
+        deg[w]--;
+        if (!sawPeel) {
+          sawPeel = true;
+          var tm = {}, dm = {};
+          for (var v3 = 0; v3 < n; v3++) {
+            if (peeled[v3]) { tm[idx[v3]] = 'dim'; dm[v3] = 'dim'; }
+            else if (deg[v3] <= 1) { tm[idx[v3]] = 'bad'; dm[v3] = 'bad'; }
+          }
+          tm[idx[w]] = 'cur'; dm[w] = 'cur';
+          snap('if (--deg[v] == 1) next.add(v);',
+            '剥掉叶子 ' + u + '：邻居 ' + w + ' 的度减到 ' + deg[w], tm, dm);
+        }
+        if (deg[w] === 1) next.push(w);
+      }
+    }
+    leaves = next;
+    if (!sawRound) {
+      sawRound = true;
+      var tm2 = {}, dm2 = {};
+      for (var v4 = 0; v4 < n; v4++) {
+        if (peeled[v4]) { tm2[idx[v4]] = 'dim'; dm2[v4] = 'dim'; }
+        else if (deg[v4] <= 1) { tm2[idx[v4]] = 'cur'; dm2[v4] = 'cur'; }
+      }
+      snap('if (--deg[v] == 1) next.add(v);',
+        '第一轮剥完：新叶子是 ' + leaves.join('、'), tm2, dm2);
+    }
+  }
+
+  var finT = {}, finD = [], labels = [];
+  for (var v6 = 0; v6 < n; v6++) {
+    if (!peeled[v6]) {
+      finT[idx[v6]] = 'done';
+      finD.push({ k: String(v6), v: String(deg[v6]), cls: 'done' });
+      labels.push({ at: idx[v6], label: '根', cls: 'p-cur' });
+    }
+  }
+  var out = leaves.slice().sort(function (a, b) { return a - b; });
+  snap('return leaves;', '剥到剩 ≤ 2 个：它们就是所有最小高度树的根 [' + out.join(', ') + ']', finT, finD, labels);
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

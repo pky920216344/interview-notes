@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>矩阵的最大非负积 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 586 / 1159</span>
+  <nav class="pn"><a href="0319.html">上一篇</a><a href="0841.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1594. </span>矩阵的最大非负积</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">路径 DP 同时维护到每格的最大积和最小积：负数乘负数会翻正，最小值也可能是将来的最大值。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>只能右/下走，到 <code>(i,j)</code> 的候选来自上、左两格；每格先各算 <code>mx×v</code>、<code>mn×v</code>，共最多 4 个候选。</li><li>新的 <code>mx = 候选最大</code>，<code>mn = 候选最小</code>——<strong>两个都必须留</strong>：负数格子会让最小积翻正（负负得正）。</li><li>路径最长 29 格、<code>|v| ≤ 4</code>，<code>|积| ≤ 4^29</code> 在 <code>long</code> 范围内，所以<strong>过程中不取模</strong>，最后才 <code>% 1e9+7</code>。</li><li>终点 <code>mx &lt; 0</code> 说明所有路径积都是负数，返回 <code>-1</code>；<code>mx = 0</code> 是合法非负积。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maxProductPath(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">3</span>        <span class="k">final</span> <span class="k">long</span> MOD = <span class="n">1_000_000_007L</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> m = grid.length, n = grid[<span class="n">0</span>].length;</span><span class="ln"><span class="no">5</span>        <span class="c">// 路径最多 29 格，|积| ≤ 4^29，long 装得下，所以过程中不取模</span></span><span class="ln"><span class="no">6</span>        <span class="c">// mx/mn：到 (i,j) 的最大、最小路径积——负数乘负数会翻正，两个都得留</span></span><span class="ln"><span class="no">7</span>        <span class="k">long</span>[][] mx = <span class="k">new</span> <span class="k">long</span>[m][n], mn = <span class="k">new</span> <span class="k">long</span>[m][n];</span><span class="ln"><span class="no">8</span>        mx[<span class="n">0</span>][<span class="n">0</span>] = mn[<span class="n">0</span>][<span class="n">0</span>] = grid[<span class="n">0</span>][<span class="n">0</span>];</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">11</span>                <span class="k">if</span> (i == <span class="n">0</span> &amp;&amp; j == <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">12</span>                <span class="k">long</span> v = grid[i][j];</span><span class="ln"><span class="no">13</span>                <span class="k">long</span> hi = <span class="t">Long</span>.MIN_VALUE, lo = <span class="t">Long</span>.MAX_VALUE;   <span class="c">// 上/左两格各带两个候选</span></span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (i &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">15</span>                    hi = <span class="t">Math</span>.max(hi, <span class="t">Math</span>.max(mx[i - <span class="n">1</span>][j] * v, mn[i - <span class="n">1</span>][j] * v));</span><span class="ln"><span class="no">16</span>                    lo = <span class="t">Math</span>.min(lo, <span class="t">Math</span>.min(mx[i - <span class="n">1</span>][j] * v, mn[i - <span class="n">1</span>][j] * v));</span><span class="ln"><span class="no">17</span>                }</span><span class="ln"><span class="no">18</span>                <span class="k">if</span> (j &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">19</span>                    hi = <span class="t">Math</span>.max(hi, <span class="t">Math</span>.max(mx[i][j - <span class="n">1</span>] * v, mn[i][j - <span class="n">1</span>] * v));</span><span class="ln"><span class="no">20</span>                    lo = <span class="t">Math</span>.min(lo, <span class="t">Math</span>.min(mx[i][j - <span class="n">1</span>] * v, mn[i][j - <span class="n">1</span>] * v));</span><span class="ln"><span class="no">21</span>                }</span><span class="ln"><span class="no">22</span>                mx[i][j] = hi;</span><span class="ln"><span class="no">23</span>                mn[i][j] = lo;</span><span class="ln"><span class="no">24</span>            }</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="c">// 最大积是负的说明所有路径都是负积</span></span><span class="ln"><span class="no">27</span>        <span class="k">if</span> (mx[m - <span class="n">1</span>][n - <span class="n">1</span>] &lt; <span class="n">0</span>) <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">28</span>        <span class="k">return</span> (<span class="k">int</span>) (mx[m - <span class="n">1</span>][n - <span class="n">1</span>] % MOD);</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个大小为 <code>m x n</code> 的矩阵 <code>grid</code> 。最初，你位于左上角 <code>(0, 0)</code> ，每一步，你可以在矩阵中 <strong>向右</strong> 或 <strong>向下</strong> 移动。</p>
+
+<p>在从左上角 <code>(0, 0)</code> 开始到右下角 <code>(m - 1, n - 1)</code> 结束的所有路径中，找出具有 <strong>最大非负积</strong> 的路径。路径的积是沿路径访问的单元格中所有整数的乘积。</p>
+
+<p>返回 <strong>最大非负积 </strong>对<strong><em> </em><code>10<sup>9</sup>&nbsp;+ 7</code></strong> <strong>取余</strong> 的结果。如果最大积为 <strong>负数</strong> ，则返回<em> </em><code>-1</code> 。</p>
+
+<p><strong>注意，</strong>取余是在得到最大积之后执行的。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/def6b8127bc7.jpg" style="width: 244px; height: 245px;" />
+<pre>
+<strong>输入：</strong>grid = [[-1,-2,-3],[-2,-3,-3],[-3,-3,-2]]
+<strong>输出：</strong>-1
+<strong>解释：</strong>从 (0, 0) 到 (2, 2) 的路径中无法得到非负积，所以返回 -1 。</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/9904b751a81f.jpg" style="width: 244px; height: 245px;" />
+<pre>
+<strong>输入：</strong>grid = [[1,-2,1],[1,-2,1],[3,-4,1]]
+<strong>输出：</strong>8
+<strong>解释：</strong>最大非负积对应的路径如图所示 (1 * 1 * -2 * -4 * 1 = 8)
+</pre>
+
+<p><strong>示例 3：</strong></p>
+<img alt="" src="../assets/img/5c290e556755.jpg" style="width: 164px; height: 165px;" />
+<pre>
+<strong>输入：</strong>grid = [[1,3],[0,-4]]
+<strong>输出：</strong>0
+<strong>解释：</strong>最大非负积对应的路径如图所示 (1 * 0 * -4 = 0)
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == grid.length</code></li>
+	<li><code>n == grid[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 15</code></li>
+	<li><code>-4 &lt;= grid[i][j] &lt;= 4</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maxProductPath(int[][] grid) {", "        final long MOD = 1_000_000_007L;", "        int m = grid.length, n = grid[0].length;", "        // 路径最多 29 格，|积| ≤ 4^29，long 装得下，所以过程中不取模", "        // mx/mn：到 (i,j) 的最大、最小路径积——负数乘负数会翻正，两个都得留", "        long[][] mx = new long[m][n], mn = new long[m][n];", "        mx[0][0] = mn[0][0] = grid[0][0];", "        for (int i = 0; i < m; i++) {", "            for (int j = 0; j < n; j++) {", "                if (i == 0 && j == 0) continue;", "                long v = grid[i][j];", "                long hi = Long.MIN_VALUE, lo = Long.MAX_VALUE;   // 上/左两格各带两个候选", "                if (i > 0) {", "                    hi = Math.max(hi, Math.max(mx[i - 1][j] * v, mn[i - 1][j] * v));", "                    lo = Math.min(lo, Math.min(mx[i - 1][j] * v, mn[i - 1][j] * v));", "                }", "                if (j > 0) {", "                    hi = Math.max(hi, Math.max(mx[i][j - 1] * v, mn[i][j - 1] * v));", "                    lo = Math.min(lo, Math.min(mx[i][j - 1] * v, mn[i][j - 1] * v));", "                }", "                mx[i][j] = hi;", "                mn[i][j] = lo;", "            }", "        }", "        // 最大积是负的说明所有路径都是负积", "        if (mx[m - 1][n - 1] < 0) return -1;", "        return (int) (mx[m - 1][n - 1] % MOD);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1594. 矩阵的最大非负积 —— 图解：mx/mn 双状态逐格递推，负负得正是关键，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[1, -2, 1], [1, -2, 1], [3, -4, 1]] };
+
+function trace(input) {
+  var grid = input.grid;
+  var m = grid.length, n = grid[0].length;
+  var frames = [];
+  var MOD = 1000000007;
+  var mx = [], mn = [];
+  for (var r = 0; r < m; r++) {
+    mx.push([]); mn.push([]);
+    for (var c = 0; c < n; c++) { mx[r].push(null); mn[r].push(null); }
+  }
+
+  var TOP_HI = 'hi = Math.max(hi, Math.max(mx[i - 1][j] * v, mn[i - 1][j] * v));';
+  var LEFT_HI = 'hi = Math.max(hi, Math.max(mx[i][j - 1] * v, mn[i][j - 1] * v));';
+
+  function dpPanel(tab, title, cur, marks) {
+    var rows = [];
+    var mk = {};
+    var k;
+    for (k in (marks || {})) mk[k] = marks[k];
+    for (var i = 0; i < m; i++) {
+      var row = [];
+      for (var j = 0; j < n; j++) row.push(tab[i][j] === null ? '·' : String(tab[i][j]));
+      rows.push(row);
+    }
+    if (cur) mk[cur[0] + ',' + cur[1]] = 'cur';
+    return Viz.grid(rows, { title: title, marks: mk });
+  }
+  function snap(at, key, cur, varsItems) {
+    var panels = [
+      dpPanel(mx, 'mx：到每格的最大路径积', cur),
+      dpPanel(mn, 'mn：到每格的最小路径积', cur)
+    ];
+    if (varsItems) panels.push(Viz.vars(varsItems));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  mx[0][0] = mn[0][0] = grid[0][0];
+  snap('mx[0][0] = mn[0][0] = grid[0][0];',
+    '起点：最大、最小积都是 grid[0][0]，只能从它开始走', null);
+
+  var sawFromTop = false, sawFlip = false;
+  for (var i = 0; i < m; i++) {
+    for (var j = 0; j < n; j++) {
+      if (i === 0 && j === 0) continue;
+      var v = grid[i][j];
+      var cands = [];
+      if (i > 0) {
+        cands.push({ src: '上', which: 'mx', val: mx[i - 1][j] * v });
+        cands.push({ src: '上', which: 'mn', val: mn[i - 1][j] * v });
+      }
+      if (j > 0) {
+        cands.push({ src: '左', which: 'mx', val: mx[i][j - 1] * v });
+        cands.push({ src: '左', which: 'mn', val: mn[i][j - 1] * v });
+      }
+      var hi = -Infinity, lo = Infinity;
+      cands.forEach(function (cd) { hi = Math.max(hi, cd.val); lo = Math.min(lo, cd.val); });
+      mx[i][j] = hi;
+      mn[i][j] = lo;
+
+      if (!sawFromTop && i > 0) {
+        sawFromTop = true;
+        snap(TOP_HI,
+          '到 (' + i + ',' + j + ')：从上来，候选是上格 mx、mn 各乘 v',
+          [i, j], [
+            { name: 'v', v: String(v) },
+            { name: '上格 mx×v', v: String(mx[i - 1][j] * v) },
+            { name: '上格 mn×v', v: String(mn[i - 1][j] * v) },
+            { name: '结果 mx / mn', v: hi + ' / ' + lo, cls: 'chg' }
+          ]);
+      } else if (!sawFlip && v < 0 && hi > 0) {
+        sawFlip = true;
+        var win = null;
+        cands.forEach(function (cd) { if (win === null && cd.val === hi) win = cd; });
+        snap(win.src === '上' ? TOP_HI : LEFT_HI,
+          '负负得正：' + win.src + '格 mn 的负积 × ' + v + ' 翻成最大 ' + hi,
+          [i, j], cands.map(function (cd, idx) {
+            return { name: '候选' + (idx + 1) + ' ' + cd.src + '·' + cd.which, v: String(cd.val), cls: cd === win ? 'done' : '' };
+          }));
+      }
+    }
+  }
+
+  var finalVal = mx[m - 1][n - 1];
+  snap('return (int) (mx[m - 1][n - 1] % MOD);',
+    finalVal < 0 ? '终点最大积 ' + finalVal + ' 是负数 → 返回 -1' : '终点最大积 ' + finalVal + ' ≥ 0，取模返回 ' + (finalVal % MOD),
+    null);
+
+  return { frames: frames, result: finalVal < 0 ? -1 : finalVal % MOD };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

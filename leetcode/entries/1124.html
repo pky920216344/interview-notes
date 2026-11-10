@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>表现良好的最长时间段 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 767 / 1159</span>
+  <nav class="pn"><a href="0353.html">上一篇</a><a href="1345.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1124. </span>表现良好的最长时间段</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">单调栈</li><li class="aux">前缀和/差分</li><li class="tag">栈</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">前缀和</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">劳累日记 +1、不累日记 −1 做前缀和，问题变成找最长「和 &gt; 0」的区间；单调栈存候选左端点，从右往左配对。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>区间 <code>(i, j]</code> 表现良好 ⟺ <code>pre[j] &gt; pre[i]</code>，要找最大的 <code>j − i</code>。</li><li>单调栈从左往右只存<strong>前缀和的新低点</strong>：不是新低点的下标当左端点，一定不如前面某个更低（或相等）的下标，直接舍弃。</li><li><code>j</code> 从右往左扫：<code>pre[j]</code> 高过栈顶就把栈顶弹出来配对，<code>j − i</code> 是这个左端点能配到的最长长度（第一次配上的 <code>j</code> 最大）。弹出即作废，每个下标只进出栈一次。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> longestWPI(<span class="k">int</span>[] hours) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = hours.length;</span><span class="ln"><span class="no">6</span>        <span class="c">// 劳累日 +1、不累日 −1，pre[i] = 前 i 天的净劳累数；区间 (i, j] 良好 ⟺ pre[j] &gt; pre[i]</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] pre = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) pre[i + <span class="n">1</span>] = pre[i] + (hours[i] &gt; <span class="n">8</span> ? <span class="n">1</span> : -<span class="n">1</span>);</span><span class="ln"><span class="no">9</span>        <span class="c">// 单调栈只留「前缀和新低点」的下标：它们才是值得当左端点的位置</span></span><span class="ln"><span class="no">10</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt;= n; i++) {</span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (stack.isEmpty() || pre[i] &lt; pre[stack.peek()]) stack.push(i);</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="c">// j 从右往左：pre[j] 高过栈顶 pre[i] 时，(i, j] 是良好时段，且这是 i 能配到的最长 j</span></span><span class="ln"><span class="no">15</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> j = n; j &gt;= <span class="n">0</span> &amp;&amp; !stack.isEmpty(); j--) {</span><span class="ln"><span class="no">17</span>            <span class="k">while</span> (!stack.isEmpty() &amp;&amp; pre[stack.peek()] &lt; pre[j]) {</span><span class="ln"><span class="no">18</span>                ans = <span class="t">Math</span>.max(ans, j - stack.pop());</span><span class="ln"><span class="no">19</span>            }</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一份工作时间表&nbsp;<code>hours</code>，上面记录着某一位员工每天的工作小时数。</p>
+
+<p>我们认为当员工一天中的工作小时数大于&nbsp;<code>8</code> 小时的时候，那么这一天就是「<strong>劳累的一天</strong>」。</p>
+
+<p>所谓「表现良好的时间段」，意味在这段时间内，「劳累的天数」是严格<strong> 大于</strong>「不劳累的天数」。</p>
+
+<p>请你返回「表现良好时间段」的最大长度。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>hours = [9,9,6,0,6,6,9]
+<strong>输出：</strong>3
+<strong>解释：</strong>最长的表现良好时间段是 [9,9,6]。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>hours = [6,6,6]
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= hours.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= hours[i] &lt;= 16</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int longestWPI(int[] hours) {", "        int n = hours.length;", "        // 劳累日 +1、不累日 −1，pre[i] = 前 i 天的净劳累数；区间 (i, j] 良好 ⟺ pre[j] > pre[i]", "        int[] pre = new int[n + 1];", "        for (int i = 0; i < n; i++) pre[i + 1] = pre[i] + (hours[i] > 8 ? 1 : -1);", "        // 单调栈只留「前缀和新低点」的下标：它们才是值得当左端点的位置", "        Deque<Integer> stack = new ArrayDeque<>();", "        for (int i = 0; i <= n; i++) {", "            if (stack.isEmpty() || pre[i] < pre[stack.peek()]) stack.push(i);", "        }", "        // j 从右往左：pre[j] 高过栈顶 pre[i] 时，(i, j] 是良好时段，且这是 i 能配到的最长 j", "        int ans = 0;", "        for (int j = n; j >= 0 && !stack.isEmpty(); j--) {", "            while (!stack.isEmpty() && pre[stack.peek()] < pre[j]) {", "                ans = Math.max(ans, j - stack.pop());", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1124. 表现良好的最长时间段 —— 图解：复刻 Solution.java 的「前缀和 + 单调栈」，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { hours: [9, 9, 6, 0, 6, 6, 9] };
+
+function trace(input) {
+  var hours = input.hours;
+  var n = hours.length;
+  var pre = [0];
+  for (var i = 0; i < n; i++) pre.push(pre[i] + (hours[i] > 8 ? 1 : -1));
+
+  // 与 Solution.java 相同：单调栈只留前缀和的新低点（数组末尾是栈顶）
+  var st = [];
+  for (var i2 = 0; i2 <= n; i2++) if (st.length === 0 || pre[i2] < pre[st[st.length - 1]]) st.push(i2);
+  var stackBuilt = st.slice();
+
+  // j 从右往左配对；把每次弹出记成事件（带弹出后剩下的栈与当时的 ans），出帧时回放
+  var events = [];
+  var ans = 0;
+  for (var j = n; j >= 0 && st.length > 0; j--) {
+    while (st.length > 0 && pre[st[st.length - 1]] < pre[j]) {
+      var left = st.pop();
+      var improved = j - left > ans;
+      if (improved) ans = j - left;
+      events.push({ j: j, i: left, valid: j > left, improved: improved, rest: st.slice(), ansNow: ans });
+    }
+  }
+
+  var firstValid = null, bestEvent = null;
+  for (var e = 0; e < events.length; e++) {
+    if (!events[e].valid) continue;
+    if (!firstValid) firstValid = events[e];
+    if (events[e].improved) bestEvent = events[e];
+  }
+
+  var frames = [];
+  frames.push(Viz.frame('pre[i + 1] = pre[i] + (hours[i] > 8 ? 1 : -1);',
+    '先换成 ±1 再做前缀和：一段良好 ⟺ 这段的和 > 0', [deltaPanel(), prePanel({}, null)]));
+
+  var mPre = {};
+  for (var k = 0; k < stackBuilt.length; k++) mPre[stackBuilt[k]] = 'win';
+  frames.push(Viz.frame('if (stack.isEmpty() || pre[i] < pre[stack.peek()]) stack.push(i);',
+    '单调栈只留前缀和的新低点 ' + stackBuilt.join('、') + '：其余下标当左端点不如它们', [prePanel(mPre, null), varsPanel('[' + stackBuilt.join(',') + ']', 0, false)]));
+
+  if (firstValid) {
+    var m1 = {};
+    for (var k1 = 0; k1 < firstValid.rest.length; k1++) m1[firstValid.rest[k1]] = 'win';
+    m1[firstValid.i] = 'bad';
+    frames.push(Viz.frame('ans = Math.max(ans, j - stack.pop());',
+      'j=' + firstValid.j + '：pre[' + firstValid.j + ']=' + pre[firstValid.j] + ' 高过栈顶 pre[' + firstValid.i + ']=' + pre[firstValid.i] + '，弹出，长度 ' + firstValid.len,
+      [prePanel(m1, firstValid.j), varsPanel('[' + firstValid.rest.join(',') + ']', firstValid.ansNow, false)]));
+  }
+  if (bestEvent && bestEvent !== firstValid) {
+    var m2 = {};
+    for (var k2 = 0; k2 < bestEvent.rest.length; k2++) m2[bestEvent.rest[k2]] = 'win';
+    m2[bestEvent.i] = 'bad';
+    m2[bestEvent.j] = 'cur';
+    frames.push(Viz.frame('ans = Math.max(ans, j - stack.pop());',
+      '最关键的一配：pre[' + bestEvent.j + '] > pre[' + bestEvent.i + ']，区间 (' + bestEvent.i + ',' + bestEvent.j + '] 长 ' + bestEvent.len,
+      [prePanel(m2, bestEvent.j), varsPanel('[' + bestEvent.rest.join(',') + ']', bestEvent.ansNow, true)]));
+  }
+
+  frames.push(Viz.frame('return ans;', '配对结束：最长表现良好的时间段是 ' + ans + ' 天', [prePanel({}, null), varsPanel('[' + st.join(',') + ']', ans, true)]));
+
+  function deltaPanel() {
+    var items = [];
+    for (var i3 = 0; i3 < n; i3++) items.push(hours[i3] > 8 ? '+1' : '-1');
+    return Viz.cells(items, { title: '劳累日 +1、不累日 −1', hideIndex: true });
+  }
+  function prePanel(marks, ptr) {
+    var pointers = ptr == null ? [] : [{ at: ptr, label: 'j=' + ptr, cls: 'p-right' }];
+    return Viz.cells(pre, { title: 'pre：前缀和（区间良好 ⟺ pre[j] > pre[i]）', marks: marks || {}, pointers: pointers });
+  }
+  function varsPanel(stackText, a, fresh) {
+    return Viz.vars([
+      { name: '栈（候选左端点）', v: stackText, cls: '' },
+      { name: 'ans（最长良好时段）', v: a, cls: fresh ? 'new' : '' },
+    ]);
+  }
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

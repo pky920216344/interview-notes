@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>堆盘子 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1128 / 1159</span>
+  <nav class="pn"><a href="0367.html">上一篇</a><a href="lcp-04.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 03.03. </span>堆盘子</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">栈</li><li class="aux">设计</li><li class="tag">栈</li><li class="tag">设计</li><li class="tag">链表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">List&lt;栈&gt; 管理多摞：push 进最后一摞、满了开新摞；pop/popAt 弹空一摞就整摞删除，下标前移。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>push</code>：容量 ≤0 直接忽略；最后一摞没满就压入，满了新开一摞。</li><li><code>pop</code> 等价于 <code>popAt(最后一摞的下标)</code>；<code>popAt(index)</code> 越界或该摞空返回 −1。</li><li>关键：某摞弹空后<strong>整摞从列表删除</strong>，<code>popAt</code> 的下标永远对着删除后的当前列表。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 均摊 O(1)（删除摞时 O(摞数)），空间复杂度 O(元素总数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">ArrayDeque</span>;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.<span class="t">ArrayList</span>;</span><span class="ln"><span class="no">3</span><span class="k">import</span> java.util.<span class="t">Deque</span>;</span><span class="ln"><span class="no">4</span><span class="k">import</span> java.util.<span class="t">List</span>;</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span><span class="k">class</span> <span class="t">StackOfPlates</span> {</span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span> cap;</span><span class="ln"><span class="no">8</span>    <span class="c">// stacks.get(i) 是第 i 摞；摞空了立刻从列表删掉，后面的下标整体前移</span></span><span class="ln"><span class="no">9</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">List</span>&lt;<span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt;&gt; stacks = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="t">StackOfPlates</span>(<span class="k">int</span> cap) {</span><span class="ln"><span class="no">12</span>        <span class="k">this</span>.cap = cap;</span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span>    <span class="k">public</span> <span class="k">void</span> push(<span class="k">int</span> val) {</span><span class="ln"><span class="no">16</span>        <span class="k">if</span> (cap &lt;= <span class="n">0</span>) <span class="k">return</span>;   <span class="c">// 容量为 0 什么也放不下</span></span><span class="ln"><span class="no">17</span>        <span class="c">// 最后一摞满了就新开一摞</span></span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (stacks.isEmpty() || stacks.get(stacks.size() - <span class="n">1</span>).size() == cap) {</span><span class="ln"><span class="no">19</span>            stacks.add(<span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;());</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        stacks.get(stacks.size() - <span class="n">1</span>).push(val);</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span> </span><span class="ln"><span class="no">24</span>    <span class="k">public</span> <span class="k">int</span> pop() {</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> popAt(stacks.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span> </span><span class="ln"><span class="no">28</span>    <span class="k">public</span> <span class="k">int</span> popAt(<span class="k">int</span> index) {</span><span class="ln"><span class="no">29</span>        <span class="k">if</span> (index &lt; <span class="n">0</span> || index &gt;= stacks.size()) <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">30</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; s = stacks.get(index);</span><span class="ln"><span class="no">31</span>        <span class="k">if</span> (s.isEmpty()) <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">32</span>        <span class="k">int</span> val = s.pop();</span><span class="ln"><span class="no">33</span>        <span class="c">// 空摞删掉：popAt 的下标永远对着删除后的当前列表</span></span><span class="ln"><span class="no">34</span>        <span class="k">if</span> (s.isEmpty()) stacks.remove(index);</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> val;</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>堆盘子。设想有一堆盘子，堆太高可能会倒下来。因此，在现实生活中，盘子堆到一定高度时，我们就会另外堆一堆盘子。请实现数据结构<code>SetOfStacks</code>，模拟这种行为。<code>SetOfStacks</code>应该由多个栈组成，并且在前一个栈填满时新建一个栈。此外，<code>SetOfStacks.push()</code>和<code>SetOfStacks.pop()</code>应该与普通栈的操作方法相同（也就是说，pop()返回的值，应该跟只有一个栈时的情况一样）。 进阶：实现一个<code>popAt(int index)</code>方法，根据指定的子栈，执行pop操作。</p>
+
+<p>当某个栈为空时，应当删除该栈。当栈中没有元素或不存在该栈时，<code>pop</code>，<code>popAt</code>&nbsp;应返回 -1.</p>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong> 输入</strong>：
+["StackOfPlates", "push", "push", "popAt", "pop", "pop"]
+[[1], [1], [2], [1], [], []]
+<strong> 输出</strong>：
+[null, null, null, 2, 1, -1]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong> 输入</strong>：
+["StackOfPlates", "push", "push", "push", "popAt", "popAt", "popAt"]
+[[2], [1], [2], [3], [0], [0], [0]]
+<strong> 输出</strong>：
+[null, null, null, null, 2, 1, 3]
+</pre>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.ArrayDeque;", "import java.util.ArrayList;", "import java.util.Deque;", "import java.util.List;", "", "class StackOfPlates {", "    private final int cap;", "    // stacks.get(i) 是第 i 摞；摞空了立刻从列表删掉，后面的下标整体前移", "    private final List<Deque<Integer>> stacks = new ArrayList<>();", "", "    public StackOfPlates(int cap) {", "        this.cap = cap;", "    }", "", "    public void push(int val) {", "        if (cap <= 0) return;   // 容量为 0 什么也放不下", "        // 最后一摞满了就新开一摞", "        if (stacks.isEmpty() || stacks.get(stacks.size() - 1).size() == cap) {", "            stacks.add(new ArrayDeque<>());", "        }", "        stacks.get(stacks.size() - 1).push(val);", "    }", "", "    public int pop() {", "        return popAt(stacks.size() - 1);", "    }", "", "    public int popAt(int index) {", "        if (index < 0 || index >= stacks.size()) return -1;", "        Deque<Integer> s = stacks.get(index);", "        if (s.isEmpty()) return -1;", "        int val = s.pop();", "        // 空摞删掉：popAt 的下标永远对着删除后的当前列表", "        if (s.isEmpty()) stacks.remove(index);", "        return val;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 03.03. 堆盘子 —— 图解：复刻 Solution.java 的「多摞栈 + 空摞即删」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { cap: 2, ops: [['push', 1], ['push', 2], ['push', 3], ['popAt', 0], ['popAt', 0], ['popAt', 0]] };
+
+function trace(input) {
+  var cap = input.cap;
+  var stacks = [];   // 每摞一个数组，末尾是栈顶
+  var out = [];
+  var frames = [];
+  var seenFirstPop = false, seenFirstRemove = false;
+  var removedNow = false;
+
+  var A_PUSH = 'stacks.get(stacks.size() - 1).push(val);';
+  var A_POPVAL = 'int val = s.pop();';
+  var A_REMOVE = 'if (s.isEmpty()) stacks.remove(index);';
+  var A_RET = 'return val;';
+
+  function stackPanel(si, marks) {
+    var s = stacks[si];
+    var pointers = [{ at: s.length - 1, label: '栈顶', cls: 'p-head' }];
+    return Viz.list(s.map(String), { title: '第 ' + si + ' 摞（右端是栈顶）', marks: marks || {}, pointers: pointers });
+  }
+  function outPanel() {
+    return Viz.vars([
+      { name: '最近返回', v: out.length ? String(out[out.length - 1]) : '—', cls: out.length ? 'new' : '' },
+      { name: '返回值序列', v: out.length ? out.join(', ') : '—' }
+    ]);
+  }
+  function snap(at, key, marksPerStack) {
+    var ps = [];
+    for (var si = 0; si < stacks.length; si++) ps.push(stackPanel(si, marksPerStack && marksPerStack[si]));
+    ps.push(outPanel());
+    frames.push(Viz.frame(at, key, ps));
+  }
+
+  function popAt(index) {
+    if (index < 0 || index >= stacks.length) return -1;
+    var s = stacks[index];
+    if (!s.length) return -1;
+    var val = s.pop();
+    removedNow = false;
+    if (!s.length) {
+      stacks.splice(index, 1);   // 空摞即删，后面下标前移
+      removedNow = true;
+    }
+    return val;
+  }
+
+  input.ops.forEach(function (op, i) {
+    var act = op[0];
+    if (act === 'push') {
+      if (cap <= 0) return;
+      if (!stacks.length || stacks[stacks.length - 1].length === cap) stacks.push([]);
+      stacks[stacks.length - 1].push(op[1]);
+      // 第 3 步拍一帧：看清「最后一摞满了才开新摞」
+      if (i === 2) {
+        var mf = {};
+        mf[stacks.length - 1] = 'new';
+        snap(A_PUSH, 'push 1、2、3：第 0 摞满 ' + cap + ' 个后，新盘子开新摞', mf);
+      }
+    } else {
+      var isPop = act === 'pop';
+      var index = isPop ? stacks.length - 1 : op[1];
+      var v = popAt(index);
+      out.push(v);
+      // 第一次真弹出：拍弹出后的状态
+      if (!seenFirstPop && v !== -1) {
+        seenFirstPop = true;
+        snap(A_POPVAL, (isPop ? 'pop()' : 'popAt(' + index + ')') + '：从第 ' + index + ' 摞顶弹出 ' + v, null);
+      }
+      // 第一次掏空一摞：拍删除后的状态（本题最关键的一步）
+      if (removedNow && !seenFirstRemove) {
+        seenFirstRemove = true;
+        snap(A_REMOVE, '第 ' + index + ' 摞空了：整摞删除，后面的下标前移', null);
+      }
+    }
+  });
+
+  var shown = out.slice(0, 8).join(', ') + (out.length > 8 ? ' …' : '');
+  snap(A_RET, '全部操作做完：返回值依次是 ' + (out.length ? shown : '—'), null);
+  return { frames: frames, result: out };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

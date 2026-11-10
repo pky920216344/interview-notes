@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>数组的最小偏移量 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1116 / 1159</span>
+  <nav class="pn"><a href="0844.html">上一篇</a><a href="0999.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1675. </span>数组的最小偏移量</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">贪心</li><li class="aux">堆</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">有序集合</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">有序集合：奇数先 ×2 顶到上限，之后每轮把当前最大值减半放回，随时维护 max−min 的最小值。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>奇数只能 ×2，偶数能一路减半：先给奇数 ×2，每个数的可达范围就成了一条减半链。</li><li>全部当前值放进 <code>TreeSet</code>：每次唯一的自由度是<strong>把最大值减半</strong>（变小只会更优）。</li><li>减半放回后用 <code>last − first</code> 更新答案；最大值一旦是奇数就无法再缩，结束。</li><li>偏移量只看 max 和 min，<code>TreeSet</code> 去重不影响结果。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·logV·logn)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> minimumDeviation(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 有序集合装全部当前值：奇数先 ×2 顶到上限（它以后只能减半）</span></span><span class="ln"><span class="no">6</span>        <span class="t">TreeSet</span>&lt;<span class="t">Integer</span>&gt; set = <span class="k">new</span> <span class="t">TreeSet</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) set.add(x % <span class="n">2</span> == <span class="n">1</span> ? x * <span class="n">2</span> : x);</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> ans = set.last() - set.first();</span><span class="ln"><span class="no">9</span>        <span class="c">// 每轮只能把最大值减半：是偶数就减半放回，看 max−min 能压到多小</span></span><span class="ln"><span class="no">10</span>        <span class="k">while</span> (set.last() % <span class="n">2</span> == <span class="n">0</span>) {</span><span class="ln"><span class="no">11</span>            <span class="k">int</span> max = set.last();</span><span class="ln"><span class="no">12</span>            set.remove(max);</span><span class="ln"><span class="no">13</span>            set.add(max / <span class="n">2</span>);</span><span class="ln"><span class="no">14</span>            ans = <span class="t">Math</span>.min(ans, set.last() - set.first());</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个由 <code>n</code> 个正整数组成的数组 <code>nums</code> 。</p>
+
+<p>你可以对数组的任意元素执行任意次数的两类操作：</p>
+
+<ul>
+	<li>如果元素是<strong> 偶数</strong> ，<strong>除以</strong> <code>2</code>
+
+	<ul>
+		<li>例如，如果数组是 <code>[1,2,3,4]</code> ，那么你可以对最后一个元素执行此操作，使其变成 <code>[1,2,3,<strong>2</strong>]</code></li>
+	</ul>
+	</li>
+	<li>如果元素是 <strong>奇数</strong> ，<strong>乘上</strong> <code>2</code>
+	<ul>
+		<li>例如，如果数组是 <code>[1,2,3,4]</code> ，那么你可以对第一个元素执行此操作，使其变成 <code>[<strong>2</strong>,2,3,4]</code></li>
+	</ul>
+	</li>
+</ul>
+
+<p>数组的 <strong>偏移量</strong> 是数组中任意两个元素之间的 <strong>最大差值</strong> 。</p>
+
+<p>返回数组在执行某些操作之后可以拥有的 <strong>最小偏移量</strong> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,3,4]
+<strong>输出：</strong>1
+<strong>解释：</strong>你可以将数组转换为 [1,2,3,<strong>2</strong>]，然后转换成 [<strong>2</strong>,2,3,2]，偏移量是 3 - 2 = 1
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [4,1,5,20,3]
+<strong>输出：</strong>3
+<strong>解释：</strong>两次操作后，你可以将数组转换为 [4,<strong>2</strong>,5,<strong>5</strong>,3]，偏移量是 5 - 2 = 3
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [2,10,8]
+<strong>输出：</strong>3
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == nums.length</code></li>
+	<li><code>2 &lt;= n &lt;= 5 * 10<sup><span style="font-size: 10.8333px;">4</span></sup></code></li>
+	<li><code>1 &lt;= nums[i] &lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int minimumDeviation(int[] nums) {", "        // 有序集合装全部当前值：奇数先 ×2 顶到上限（它以后只能减半）", "        TreeSet<Integer> set = new TreeSet<>();", "        for (int x : nums) set.add(x % 2 == 1 ? x * 2 : x);", "        int ans = set.last() - set.first();", "        // 每轮只能把最大值减半：是偶数就减半放回，看 max−min 能压到多小", "        while (set.last() % 2 == 0) {", "            int max = set.last();", "            set.remove(max);", "            set.add(max / 2);", "            ans = Math.min(ans, set.last() - set.first());", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1675. 数组的最小偏移量 —— 图解：复刻 Solution.java 的「奇数先 ×2，再反复减半最大值」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 2, 3, 4] };
+
+function trace(input) {
+  var set = [];   // 升序去重，对应 TreeSet
+  var frames = [];
+  var ans = 0;
+
+  function add(v) {
+    if (set.indexOf(v) < 0) { set.push(v); set.sort(function (a, b) { return a - b; }); }
+  }
+  function setPanel(highlight) {
+    var marks = {};
+    if (highlight != null) marks[set.indexOf(highlight)] = highlight.cls;
+    var pointers = set.length ? [
+      { at: 0, label: 'min', cls: 'p-left' },
+      { at: set.length - 1, label: 'max', cls: 'p-right' }] : [];
+    return Viz.cells(set.slice(), { title: 'TreeSet（升序、去重）', marks: marks, pointers: pointers });
+  }
+  function snap(at, key, highlight, extra) {
+    var ps = [{ name: 'max−min', v: set.length ? set[set.length - 1] - set[0] : 0 }];
+    if (ans || extra) ps.push({ name: 'ans', v: ans, cls: 'done' });
+    var panels = [setPanel(highlight), Viz.vars(ps)];
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  // 第一步：奇数先 ×2
+  input.nums.forEach(function (x) { add(x % 2 === 1 ? x * 2 : x); });
+  snap('for (int x : nums) set.add(x % 2 == 1 ? x * 2 : x);',
+    '奇数先 ×2 顶到上限（之后只能减半）：' + input.nums.join('、') + ' → ' + set.join('、'));
+
+  ans = set[set.length - 1] - set[0];
+  snap('int ans = set.last() - set.first();', '初始偏移 = max − min = ' + (set[set.length - 1] - set[0]));
+
+  while (set[set.length - 1] % 2 === 0) {
+    var max = set[set.length - 1];
+    set.splice(set.length - 1, 1);
+    var existed = set.indexOf(max / 2) >= 0;
+    add(max / 2);
+    if (set[set.length - 1] - set[0] < ans) {
+      ans = set[set.length - 1] - set[0];
+      snap('set.add(max / 2);', '最大值 ' + max + ' 减半放回' + (existed ? '（与已有值重合）' : '') + '：偏移降到 ' + ans,
+        { v: max / 2, cls: 'new' });
+    }
+  }
+
+  snap('return ans;', '最大值 ' + set[set.length - 1] + ' 是奇数，动不了了：答案 ' + ans);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

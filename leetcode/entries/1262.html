@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>可被三整除的最大和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 231 / 1159</span>
+  <nav class="pn"><a href="0154.html">上一篇</a><a href="0902.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1262. </span>可被三整除的最大和</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 20</li><li class="algo">贪心</li><li class="aux">数学</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">排序</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">求出总和；若余 1 就减去「最小的余 1 数」或「两个最小的余 2 数」中较小的代价，余 2 对称。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>全选的总和 <code>total</code> 是上界，只需减掉最少的数让总和余 0：余 1 时减掉的集合要余 1，余 2 时要余 2。</li><li>每个余数类只记<strong>最小的两个</strong>数（<code>a[r]</code>、<code>b[r]</code>，没有记成 <code>MAX</code>）：要减就减最小的，损失才最小。</li><li>余 1 的两类减法：减一个余 1 的（<code>a[1]</code>），或减两个余 2 的（<code>a[2]+b[2]</code>）；余 2 对称。三个以上的减法每个数都 ≥ 1，代价必更大，不用考虑。</li><li>若 <code>a[r]</code> 不存在（是 <code>MAX</code>），另一类减法一定存在（总和余 r 蕴含了它），不会漏。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maxSumDivThree(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">3</span>        <span class="k">final</span> <span class="k">int</span> BIG = <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> total = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="c">// a[r]、b[r]：余数为 r 的数里最小的两个，没有就记 BIG</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] a = {BIG, BIG, BIG}, b = {BIG, BIG, BIG};</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) {</span><span class="ln"><span class="no">8</span>            total += x;</span><span class="ln"><span class="no">9</span>            <span class="k">int</span> r = x % <span class="n">3</span>;</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (x &lt; a[r]) { b[r] = a[r]; a[r] = x; }</span><span class="ln"><span class="no">11</span>            <span class="k">else</span> <span class="k">if</span> (x &lt; b[r]) b[r] = x;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">if</span> (total % <span class="n">3</span> == <span class="n">0</span>) <span class="k">return</span> total;</span><span class="ln"><span class="no">14</span>        <span class="c">// 总和余 r：减一个余 r 的最小数，或两个余 3-r 的最小数</span></span><span class="ln"><span class="no">15</span>        <span class="k">int</span> r = total % <span class="n">3</span>, other = <span class="n">3</span> - r;</span><span class="ln"><span class="no">16</span>        <span class="k">int</span> cost = a[r];</span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (b[other] != BIG) cost = <span class="t">Math</span>.min(cost, a[other] + b[other]);</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> total - cost;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组&nbsp;<code>nums</code>，请你找出并返回能被三整除的元素 <strong>最大和</strong>。</p>
+
+<ol>
+</ol>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [3,6,5,1,8]
+<strong>输出：</strong>18
+<strong>解释：</strong>选出数字 3, 6, 1 和 8，它们的和是 18（可被 3 整除的最大和）。</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [4]
+<strong>输出：</strong>0
+<strong>解释：</strong>4 不能被 3 整除，所以无法选出数字，返回 0。
+</pre>
+
+<p><strong class="example">示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,3,4,4]
+<strong>输出：</strong>12
+<strong>解释：</strong>选出数字 1, 3, 4 以及 4，它们的和是 12（可被 3 整除的最大和）。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 4 * 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= nums[i] &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maxSumDivThree(int[] nums) {", "        final int BIG = Integer.MAX_VALUE;", "        int total = 0;", "        // a[r]、b[r]：余数为 r 的数里最小的两个，没有就记 BIG", "        int[] a = {BIG, BIG, BIG}, b = {BIG, BIG, BIG};", "        for (int x : nums) {", "            total += x;", "            int r = x % 3;", "            if (x < a[r]) { b[r] = a[r]; a[r] = x; }", "            else if (x < b[r]) b[r] = x;", "        }", "        if (total % 3 == 0) return total;", "        // 总和余 r：减一个余 r 的最小数，或两个余 3-r 的最小数", "        int r = total % 3, other = 3 - r;", "        int cost = a[r];", "        if (b[other] != BIG) cost = Math.min(cost, a[other] + b[other]);", "        return total - cost;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1262. 可被三整除的最大和 —— 图解：复刻 Solution.java 的「余数分组记最小的两个 + 总和减代价」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [3, 6, 5, 1, 8] };
+
+function trace(input) {
+  var nums = input.nums;
+  var BIG = 2147483647;
+  var a = [BIG, BIG, BIG], b = [BIG, BIG, BIG];
+  var total = 0;
+  var frames = [];
+
+  var OPEN = 'for (int x : nums) {';
+  var DONE = 'if (total % 3 == 0) return total;';
+  var COST = 'int cost = a[r];';
+  var RET = 'return total - cost;';
+
+  function numsPanel(title, marks) {
+    return Viz.cells(nums.map(String), { title: title, marks: marks || {} });
+  }
+  function minPanel(hint) {
+    var rows = [];
+    for (var r = 0; r < 3; r++) {
+      var va = a[r] === BIG ? '—' : String(a[r]);
+      var vb = b[r] === BIG ? '—' : String(b[r]);
+      rows.push({ k: '余 ' + r, v: va + ' / ' + vb, cls: '' });
+    }
+    return Viz.table('各余数类最小的两个数（a / b）', rows, { hint: hint || '（— 表示还没有）' });
+  }
+
+  // 1) 扫描开始
+  for (var i = 0; i < nums.length; i++) {
+    var r = nums[i] % 3;
+    total += nums[i];
+    if (nums[i] < a[r]) { b[r] = a[r]; a[r] = nums[i]; }
+    else if (nums[i] < b[r]) b[r] = nums[i];
+    if (i === 0) {
+      var m = {};
+      m[0] = 'cur';
+      frames.push(Viz.frame(OPEN, '逐个扫：每个数记进它余数组里「最小的两个」位置',
+        [numsPanel('nums', m), minPanel(), Viz.vars([{ name: 'total', v: total }])]));
+    }
+  }
+
+  // 2) 扫描完成
+  var mod = total % 3;
+  var mAll = {};
+  for (i = 0; i < nums.length; i++) mAll[i] = 'dim';
+  frames.push(Viz.frame(DONE, '扫完了：total = ' + total + '，余 ' + mod + (mod === 0 ? '，直接返回' : '，得减点东西让它余 0'),
+    [numsPanel('nums（扫完，全部淡出）', mAll), minPanel('（已就绪）'),
+     Viz.vars([{ name: 'total', v: total, cls: 'chg' }, { name: 'total % 3', v: mod, cls: 'chg' }])]));
+
+  if (mod !== 0) {
+    var rr = mod, other = 3 - rr;
+    var cost = a[rr];
+    var cand2 = b[other] !== BIG ? a[other] + b[other] : null;
+    if (cand2 != null && cand2 < cost) cost = cand2;
+
+    // 3) 两个候选代价
+    frames.push(Viz.frame(COST, '候选一：减最小的余 ' + rr + ' 数 = ' + a[rr] + '；候选二：减两个余 ' + other + ' 数' +
+      (cand2 != null ? ' = ' + cand2 : '（不够两个，作废）'),
+      [numsPanel('nums', mAll), minPanel(), Viz.vars([
+        { name: '减一个余 ' + rr, v: a[rr] === BIG ? '—' : a[rr] },
+        { name: '减两个余 ' + other, v: cand2 != null ? cand2 : '—' },
+        { name: 'cost（取小）', v: cost, cls: 'chg' }])]));
+
+    // 4) 结果
+    frames.push(Viz.frame(RET, 'total - ' + cost + ' = ' + (total - cost) + '：能被 3 整除的最大和',
+      [numsPanel('nums', mAll), minPanel(),
+       Viz.vars([{ name: 'total', v: total }, { name: 'cost', v: cost }, { name: '答案', v: total - cost, cls: 'done' }])]));
+  }
+
+  return { frames: frames, result: total - (mod === 0 ? 0 : (function () {
+    var rr = mod, other = 3 - rr;
+    var cost = a[rr];
+    if (b[other] !== BIG && a[other] + b[other] < cost) cost = a[other] + b[other];
+    return cost;
+  })()) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>删除一次得到子数组最大和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 505 / 1159</span>
+  <nav class="pn"><a href="0229.html">上一篇</a><a href="1129.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1186. </span>删除一次得到子数组最大和</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">双状态 DP：keep 是不删、以 i 结尾的最大和；del 是恰好删一个、以 i 结尾的最大和。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>keep[i]</code>：以 <code>i</code> 结尾、没删过任何元素的最大子数组和（就是普通 Kadane）。</li><li><code>del[i]</code>：以 <code>i</code> 结尾、恰好删过一个的最大和 = <code>max(del[i-1] + arr[i], keep[i-1])</code>——要么之前删过、延伸过来，要么就在 <code>i</code> 这里删。</li><li>两个状态滚动成一个变量，<strong>先更新 <code>del</code> 再更新 <code>keep</code></strong>（<code>del</code> 需要的是上一行的 <code>keep</code>）。</li><li><code>del</code> 初始设成极小值：删成空子数组不合法；答案取 <code>max(keep, del)</code> 的全局最大。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maximumSum(<span class="k">int</span>[] arr) {</span><span class="ln"><span class="no">3</span>        <span class="c">// keep：以 i 结尾、没删过的最大和；del：以 i 结尾、恰好删过一个的最大和</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span> keep = arr[<span class="n">0</span>], del = -<span class="n">1000000000</span>, ans = arr[<span class="n">0</span>];</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; arr.length; i++) {</span><span class="ln"><span class="no">6</span>            <span class="c">// 在 i 处删（接住前面没删的前缀），或之前已删过、直接延伸</span></span><span class="ln"><span class="no">7</span>            del = <span class="t">Math</span>.max(del + arr[i], keep);</span><span class="ln"><span class="no">8</span>            keep = <span class="t">Math</span>.max(keep + arr[i], arr[i]);</span><span class="ln"><span class="no">9</span>            ans = <span class="t">Math</span>.max(ans, <span class="t">Math</span>.max(del, keep));</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组，返回它的某个&nbsp;<strong>非空</strong> 子数组（连续元素）在执行一次可选的删除操作后，所能得到的最大元素总和。换句话说，你可以从原数组中选出一个子数组，并可以决定要不要从中删除一个元素（只能删一次哦），（删除后）子数组中至少应当有一个元素，然后该子数组（剩下）的元素总和是所有子数组之中最大的。</p>
+
+<p>注意，删除一个元素后，子数组 <strong>不能为空</strong>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [1,-2,0,3]
+<strong>输出：</strong>4
+<strong>解释：</strong>我们可以选出 [1, -2, 0, 3]，然后删掉 -2，这样得到 [1, 0, 3]，和最大。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [1,-2,-2,3]
+<strong>输出：</strong>3
+<strong>解释：</strong>我们直接选出 [3]，这就是最大和。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [-1,-1,-1,-1]
+<strong>输出：</strong>-1
+<strong>解释：</strong>最后得到的子数组不能为空，所以我们不能选择 [-1] 并从中删去 -1 来得到 0。
+     我们应该直接选择 [-1]，或者选择 [-1, -1] 再从中删去一个 -1。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+<meta charset="UTF-8" />
+
+<ul>
+	<li><code>1 &lt;= arr.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>-10<sup>4</sup>&nbsp;&lt;= arr[i] &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maximumSum(int[] arr) {", "        // keep：以 i 结尾、没删过的最大和；del：以 i 结尾、恰好删过一个的最大和", "        int keep = arr[0], del = -1000000000, ans = arr[0];", "        for (int i = 1; i < arr.length; i++) {", "            // 在 i 处删（接住前面没删的前缀），或之前已删过、直接延伸", "            del = Math.max(del + arr[i], keep);", "            keep = Math.max(keep + arr[i], arr[i]);", "            ans = Math.max(ans, Math.max(del, keep));", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1186. 删除一次得到子数组最大和 —— 图解：复刻 Solution.java 的双状态 DP，在关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [1, -2, 0, 3] };
+
+function trace(input) {
+  var a = input.arr;
+  var frames = [];
+  var keep = a[0], del = -1000000000, ans = a[0];
+  var keepStart = 0, delStart = -1, delSkip = -1;
+  var ansSrc = 'keep', ansFrom = 0, ansTo = 0, ansSkip = -1;
+  var sawDel = false, sawDelMax = false;
+
+  function cellsPanel(o) {
+    o = o || {};
+    var marks = {};
+    for (var k = 0; k < a.length; k++) {
+      if (o.win && k >= o.win[0] && k <= o.win[1]) marks[k] = o.skip === k ? 'bad' : 'win';
+      else if (o.past) marks[k] = 'dim';
+    }
+    if (o.cur != null) marks[o.cur] = 'cur';
+    return Viz.cells(a, { title: '数组 arr', marks: marks });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: 'keep（没删过）', v: keep },
+      { name: 'del（删过一个）', v: del === -1000000000 ? '—' : del },
+      { name: 'ans', v: ans, cls: 'done' }
+    ]);
+  }
+  function snap(at, key, o) {
+    frames.push(Viz.frame(at, key, [cellsPanel(o), varsPanel()]));
+  }
+
+  snap('int keep = arr[0], del = -1000000000, ans = arr[0];',
+    '开局：keep = 第一个元素，del 还没有合法值，ans = ' + ans, { cur: 0 });
+
+  for (var i = 1; i < a.length; i++) {
+    var oldKeep = keep;
+    // del：在 i 处删（接住没删的前缀），或沿用之前删过、再延伸
+    if (del + a[i] >= oldKeep) { del = del + a[i]; }
+    else { del = oldKeep; delStart = keepStart; delSkip = i; }
+    if (!sawDel) {
+      sawDel = true;
+      snap('del = Math.max(del + arr[i], keep);',
+        'i=' + i + '：在这里删一次，del 接住前面没删的前缀', { win: [delStart, i], skip: delSkip, cur: i });
+    }
+    keep = Math.max(oldKeep + a[i], a[i]);
+    if (oldKeep + a[i] < a[i]) keepStart = i;
+    if (del > keep) {
+      if (del > ans) { ans = del; ansSrc = 'del'; ansFrom = delStart; ansTo = i; ansSkip = delSkip; }
+    } else {
+      if (keep > ans) { ans = keep; ansSrc = 'keep'; ansFrom = keepStart; ansTo = i; ansSkip = -1; }
+    }
+    if (ansSrc === 'del' && !sawDelMax) {
+      sawDelMax = true;
+      snap('ans = Math.max(ans, Math.max(del, keep));',
+        'i=' + i + '：删过一次的前缀延伸到 ' + a[i] + '，del=' + del + ' 创新高', { win: [ansFrom, ansTo], skip: ansSkip, cur: i });
+    }
+  }
+
+  var fin = { win: [ansFrom, ansTo], skip: ansSkip };
+  snap('return ans;',
+    '扫完：ans = ' + ans + (ansSkip >= 0 ? '（删掉一个元素后的最大子数组）' : '（不删的最大子数组）'), fin);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

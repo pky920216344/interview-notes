@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑动谜题 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 603 / 1159</span>
+  <nav class="pn"><a href="0653.html">上一篇</a><a href="0216.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">773. </span>滑动谜题</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">广度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">记忆化</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">回溯</li><li class="tag">矩阵</li><li class="tag">bidirectional-search</li><li class="tag">a-search</li><li class="tag">heuristic-search</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">把 2×3 盘面编码成字符串，BFS 一层层扩散到目标「123450」；0 的可换邻居用预计算表，状态只有 720 种。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>盘面按 0~5 编号拉平成字符串，状态总数 <code>6! = 720</code>，BFS 第一次到 <code>123450</code> 的层数就是最少步数。</li><li>预计算 <code>NEIGHBORS[i]</code>：0 在下标 <code>i</code> 时能交换的相邻格，转移只在这个小表里查。</li><li>队列按层扩散（<code>dist</code> 每层 +1），生成新状态时直接判目标；队列扫空仍没到就是 <code>-1</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(720·3)，空间复杂度 O(720)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 0 在下标 i 时可交换的相邻格（2×3 盘面按下标 0~5 编号）</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">int</span>[][] NEIGHBORS = {{<span class="n">1</span>, <span class="n">3</span>}, {<span class="n">0</span>, <span class="n">2</span>, <span class="n">4</span>}, {<span class="n">1</span>, <span class="n">5</span>}, {<span class="n">0</span>, <span class="n">4</span>}, {<span class="n">1</span>, <span class="n">3</span>, <span class="n">5</span>}, {<span class="n">2</span>, <span class="n">4</span>}};</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="k">int</span> slidingPuzzle(<span class="k">int</span>[][] board) {</span><span class="ln"><span class="no">8</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span>[] row : board) <span class="k">for</span> (<span class="k">int</span> v : row) sb.append(v);</span><span class="ln"><span class="no">10</span>        <span class="t">String</span> start = sb.toString();</span><span class="ln"><span class="no">11</span>        <span class="k">if</span> (start.equals(<span class="s">"123450"</span>)) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">12</span>        <span class="c">// 状态是 6 个数字的排列，一共只有 6! = 720 种，BFS 一层层扩散</span></span><span class="ln"><span class="no">13</span>        <span class="t">Queue</span>&lt;<span class="t">String</span>&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">14</span>        <span class="t">Set</span>&lt;<span class="t">String</span>&gt; seen = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">15</span>        queue.add(start);</span><span class="ln"><span class="no">16</span>        seen.add(start);</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> dist = <span class="n">0</span>;</span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">19</span>            dist++;</span><span class="ln"><span class="no">20</span>            <span class="k">for</span> (<span class="k">int</span> size = queue.size(); size &gt; <span class="n">0</span>; size--) {</span><span class="ln"><span class="no">21</span>                <span class="t">String</span> cur = queue.poll();</span><span class="ln"><span class="no">22</span>                <span class="k">int</span> zero = cur.indexOf(<span class="s">'0'</span>);</span><span class="ln"><span class="no">23</span>                <span class="k">for</span> (<span class="k">int</span> pos : NEIGHBORS[zero]) {</span><span class="ln"><span class="no">24</span>                    <span class="t">String</span> next = swap(cur, zero, pos);</span><span class="ln"><span class="no">25</span>                    <span class="k">if</span> (next.equals(<span class="s">"123450"</span>)) <span class="k">return</span> dist;</span><span class="ln"><span class="no">26</span>                    <span class="k">if</span> (seen.add(next)) queue.add(next);</span><span class="ln"><span class="no">27</span>                }</span><span class="ln"><span class="no">28</span>            }</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span> </span><span class="ln"><span class="no">33</span>    <span class="k">private</span> <span class="t">String</span> swap(<span class="t">String</span> s, <span class="k">int</span> i, <span class="k">int</span> j) {</span><span class="ln"><span class="no">34</span>        <span class="k">char</span>[] a = s.toCharArray();</span><span class="ln"><span class="no">35</span>        <span class="k">char</span> t = a[i];</span><span class="ln"><span class="no">36</span>        a[i] = a[j];</span><span class="ln"><span class="no">37</span>        a[j] = t;</span><span class="ln"><span class="no">38</span>        <span class="k">return</span> <span class="t">String</span>.valueOf(a);</span><span class="ln"><span class="no">39</span>    }</span><span class="ln"><span class="no">40</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>在一个 <code>2 x 3</code> 的板上（<code>board</code>）有 5 块砖瓦，用数字 <code>1~5</code> 来表示, 以及一块空缺用&nbsp;<code>0</code>&nbsp;来表示。一次 <strong>移动</strong> 定义为选择&nbsp;<code>0</code>&nbsp;与一个相邻的数字（上下左右）进行交换.</p>
+
+<p>最终当板&nbsp;<code>board</code>&nbsp;的结果是&nbsp;<code>[[1,2,3],[4,5,0]]</code>&nbsp;谜板被解开。</p>
+
+<p>给出一个谜板的初始状态&nbsp;<code>board</code>&nbsp;，返回最少可以通过多少次移动解开谜板，如果不能解开谜板，则返回 <code>-1</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/d7fd17f3ab6a.jpg" /></p>
+
+<pre>
+<strong>输入：</strong>board = [[1,2,3],[4,0,5]]
+<strong>输出：</strong>1
+<strong>解释：</strong>交换 0 和 5 ，1 步完成
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<p><img src="../assets/img/d88ee0a05699.jpg" /></p>
+
+<pre>
+<strong>输入：</strong>board = [[1,2,3],[5,4,0]]
+<strong>输出：</strong>-1
+<strong>解释：</strong>没有办法完成谜板
+</pre>
+
+<p><strong>示例 3:</strong></p>
+
+<p><img alt="" src="../assets/img/b49e78275e60.jpg" /></p>
+
+<pre>
+<strong>输入：</strong>board = [[4,1,2],[5,0,3]]
+<strong>输出：</strong>5
+<strong>解释：</strong>
+最少完成谜板的最少移动次数是 5 ，
+一种移动路径:
+尚未移动: [[4,1,2],[5,0,3]]
+移动 1 次: [[4,1,2],[0,5,3]]
+移动 2 次: [[0,1,2],[4,5,3]]
+移动 3 次: [[1,0,2],[4,5,3]]
+移动 4 次: [[1,2,0],[4,5,3]]
+移动 5 次: [[1,2,3],[4,5,0]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>board.length == 2</code></li>
+	<li><code>board[i].length == 3</code></li>
+	<li><code>0 &lt;= board[i][j] &lt;= 5</code></li>
+	<li><code>board[i][j]</code>&nbsp;中每个值都 <strong>不同</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    // 0 在下标 i 时可交换的相邻格（2×3 盘面按下标 0~5 编号）", "    private static final int[][] NEIGHBORS = {{1, 3}, {0, 2, 4}, {1, 5}, {0, 4}, {1, 3, 5}, {2, 4}};", "", "    public int slidingPuzzle(int[][] board) {", "        StringBuilder sb = new StringBuilder();", "        for (int[] row : board) for (int v : row) sb.append(v);", "        String start = sb.toString();", "        if (start.equals(\"123450\")) return 0;", "        // 状态是 6 个数字的排列，一共只有 6! = 720 种，BFS 一层层扩散", "        Queue<String> queue = new ArrayDeque<>();", "        Set<String> seen = new HashSet<>();", "        queue.add(start);", "        seen.add(start);", "        int dist = 0;", "        while (!queue.isEmpty()) {", "            dist++;", "            for (int size = queue.size(); size > 0; size--) {", "                String cur = queue.poll();", "                int zero = cur.indexOf('0');", "                for (int pos : NEIGHBORS[zero]) {", "                    String next = swap(cur, zero, pos);", "                    if (next.equals(\"123450\")) return dist;", "                    if (seen.add(next)) queue.add(next);", "                }", "            }", "        }", "        return -1;", "    }", "", "    private String swap(String s, int i, int j) {", "        char[] a = s.toCharArray();", "        char t = a[i];", "        a[i] = a[j];", "        a[j] = t;", "        return String.valueOf(a);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 773. 滑动谜题 —— 图解：BFS 找最少步数，快照拍在初始盘面和最短路径的几个状态上。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { board: [[4, 1, 2], [5, 0, 3]] };
+
+function trace(input) {
+  // 盘面按下标 0~5 编号：0 在每个下标时可交换的邻居，与 Java 的 NEIGHBORS 一致
+  var NEIGHBORS = [[1, 3], [0, 2, 4], [1, 5], [0, 4], [1, 3, 5], [2, 4]];
+  var frames = [];
+
+  function flat(b) { return b[0].join('') + b[1].join(''); }
+  function unflat(s) { return [[+s[0], +s[1], +s[2]], [+s[3], +s[4], +s[5]]]; }
+  function swap(s, i, j) {
+    var a = s.split('');
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+    return a.join('');
+  }
+
+  var start = flat(input.board), GOAL = '123450';
+  var parent = {};       // 状态 -> 来自哪个状态，用来还原最短路径
+  var dist = {};         // 状态 -> 步数
+  dist[start] = 0;
+  var queue = [start];
+  var found = start === GOAL;
+  var head = 0;
+  while (!found && head < queue.length) {
+    var cur = queue[head++];
+    var zero = cur.indexOf('0');
+    for (var ni = 0; ni < NEIGHBORS[zero].length; ni++) {
+      var pos = NEIGHBORS[zero][ni];
+      var next = swap(cur, zero, pos);
+      if (dist[next] === undefined) {
+        dist[next] = dist[cur] + 1;
+        parent[next] = cur;
+        queue.push(next);
+        if (next === GOAL) { found = true; break; }
+      }
+    }
+  }
+
+  // 还原 start -> goal 的最短路径
+  var path = [];
+  if (found) {
+    for (var s = GOAL; s !== undefined; s = parent[s]) path.unshift(s);
+  }
+
+  // 盘面面板：2×3 网格，0 所在的格子高亮
+  function boardPanel(state, prev) {
+    var b = unflat(state);
+    var marks = {};
+    var zero = state.indexOf('0');
+    marks[Math.floor(zero / 3) + ',' + (zero % 3)] = 'cur';
+    if (prev !== undefined) {
+      var pz = prev.indexOf('0');
+      marks[Math.floor(pz / 3) + ',' + (pz % 3)] = 'new';
+    }
+    return Viz.grid(b, { title: '盘面 board', marks: marks, corner: '目标 [[1,2,3],[4,5,0]]' });
+  }
+
+  frames.push(Viz.frame('queue.add(start);', '初始盘面：目标是把数字排成 [[1,2,3],[4,5,0]]',
+    [boardPanel(start)]));
+
+  function addPathFrames() {
+    // 从路径上挑 2~4 个中间状态拍快照（首尾已有）
+    var picks = [];
+    for (var i = 1; i + 1 < path.length; i++) picks.push(i);
+    while (picks.length > 3) { picks.splice(Math.floor(picks.length / 2), 1); }
+    picks.forEach(function (i) {
+      frames.push(Viz.frame('String next = swap(cur, zero, pos);',
+        'BFS 第 ' + dist[path[i]] + ' 步后的盘面：0 移到了下标 ' + path[i].indexOf('0'),
+        [boardPanel(path[i], path[i - 1])]));
+    });
+  }
+
+  if (found) {
+    addPathFrames();
+    frames.push(Viz.frame('if (next.equals("123450")) return dist;',
+      'BFS 第 ' + (path.length - 1) + ' 层碰到目标盘面，最少 ' + (path.length - 1) + ' 步',
+      [boardPanel(GOAL, path[path.length - 2])]));
+    return { frames: frames, result: path.length - 1 };
+  }
+
+  frames.push(Viz.frame('return -1;', '720 种状态全试过也没到目标：无解，返回 -1',
+    [boardPanel(start)]));
+  return { frames: frames, result: -1 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

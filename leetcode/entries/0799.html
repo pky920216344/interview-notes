@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>香槟塔 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 804 / 1159</span>
+  <nav class="pn"><a href="offer-55-ii.html">上一篇</a><a href="1574.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">799. </span>香槟塔</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">模拟</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">从顶层往下逐层模拟：每个杯子只记「流入总量」，超过 1 的部分对半分给下一层相邻两杯；目标杯取 min(1, 流入量)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>只需要目标行，用一维数组滚动：<code>row</code> 是当前层每个杯子的流入量，算完换 <code>next</code>。</li><li>杯子容量是 1：<code>excess = max(0, 流入量 − 1)</code> 才往下流，<code>next[i]</code> 和 <code>next[i+1]</code> <strong>各加 excess/2</strong>。</li><li>循环 <code>query_row</code> 次，正好停在与目标同层的下一层之前；答案 <code>min(1, row[query_glass])</code>。</li><li>流入量可以远大于 1（大 <code>poured</code> 也不溢出 double），不用截断中间层。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(query_row²)，空间复杂度 O(query_row)（滚动一维数组）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">double</span> champagneTower(<span class="k">int</span> poured, <span class="k">int</span> query_row, <span class="k">int</span> query_glass) {</span><span class="ln"><span class="no">3</span>        <span class="c">// row[i]：当前层第 i 个杯子的流入总量（超过 1 的部分会往下溢）</span></span><span class="ln"><span class="no">4</span>        <span class="k">double</span>[] row = { poured };</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; query_row; r++) {</span><span class="ln"><span class="no">6</span>            <span class="k">double</span>[] next = <span class="k">new</span> <span class="k">double</span>[r + <span class="n">2</span>];   <span class="c">// 下一层多一个杯子</span></span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt;= r; i++) {</span><span class="ln"><span class="no">8</span>                <span class="k">double</span> excess = <span class="t">Math</span>.max(<span class="n">0</span>, row[i] - <span class="n">1</span>);   <span class="c">// 装满 1 之后才往下流</span></span><span class="ln"><span class="no">9</span>                next[i] += excess / <span class="n">2</span>;                     <span class="c">// 左右两杯平分溢出量</span></span><span class="ln"><span class="no">10</span>                next[i + <span class="n">1</span>] += excess / <span class="n">2</span>;</span><span class="ln"><span class="no">11</span>            }</span><span class="ln"><span class="no">12</span>            row = next;</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> <span class="t">Math</span>.min(<span class="n">1</span>, row[query_glass]);   <span class="c">// 杯子容量最多 1</span></span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>我们把玻璃杯摆成金字塔的形状，其中&nbsp;<strong>第一层</strong>&nbsp;有 <code>1</code> 个玻璃杯， <strong>第二层</strong>&nbsp;有 <code>2</code> 个，依次类推到第 100 层，每个玻璃杯将盛有香槟。</p>
+
+<p>从顶层的第一个玻璃杯开始倾倒一些香槟，当顶层的杯子满了，任何溢出的香槟都会立刻等流量的流向左右两侧的玻璃杯。当左右两边的杯子也满了，就会等流量的流向它们左右两边的杯子，依次类推。（当最底层的玻璃杯满了，香槟会流到地板上）</p>
+
+<p>例如，在倾倒一杯香槟后，最顶层的玻璃杯满了。倾倒了两杯香槟后，第二层的两个玻璃杯各自盛放一半的香槟。在倒三杯香槟后，第二层的香槟满了 - 此时总共有三个满的玻璃杯。在倒第四杯后，第三层中间的玻璃杯盛放了一半的香槟，他两边的玻璃杯各自盛放了四分之一的香槟，如下图所示。</p>
+
+<p><img alt="" src="../assets/img/b1830b19be37.png" style="height: 241px; width: 350px;" /></p>
+
+<p>现在当倾倒了非负整数杯香槟后，返回第 <code>i</code> 行 <code>j</code>&nbsp;个玻璃杯所盛放的香槟占玻璃杯容积的比例（ <code>i</code> 和 <code>j</code>&nbsp;都从0开始）。</p>
+
+
+
+<pre>
+<strong>示例 1:</strong>
+<strong>输入:</strong> poured(倾倒香槟总杯数) = 1, query_glass(杯子的位置数) = 1, query_row(行数) = 1
+<strong>输出:</strong> 0.00000
+<strong>解释:</strong> 我们在顶层（下标是（0，0））倒了一杯香槟后，没有溢出，因此所有在顶层以下的玻璃杯都是空的。
+
+<strong>示例 2:</strong>
+<strong>输入:</strong> poured(倾倒香槟总杯数) = 2, query_glass(杯子的位置数) = 1, query_row(行数) = 1
+<strong>输出:</strong> 0.50000
+<strong>解释:</strong> 我们在顶层（下标是（0，0）倒了两杯香槟后，有一杯量的香槟将从顶层溢出，位于（1，0）的玻璃杯和（1，1）的玻璃杯平分了这一杯香槟，所以每个玻璃杯有一半的香槟。
+</pre>
+
+<p><meta charset="UTF-8" /></p>
+
+<p><strong>示例 3:</strong></p>
+
+<pre>
+<strong>输入:</strong> poured = 100000009, query_row = 33, query_glass = 17
+<strong>输出:</strong> 1.00000
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>0 &lt;=&nbsp;poured &lt;= 10<sup>9</sup></code></li>
+	<li><code>0 &lt;= query_glass &lt;= query_row&nbsp;&lt; 100</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public double champagneTower(int poured, int query_row, int query_glass) {", "        // row[i]：当前层第 i 个杯子的流入总量（超过 1 的部分会往下溢）", "        double[] row = { poured };", "        for (int r = 0; r < query_row; r++) {", "            double[] next = new double[r + 2];   // 下一层多一个杯子", "            for (int i = 0; i <= r; i++) {", "                double excess = Math.max(0, row[i] - 1);   // 装满 1 之后才往下流", "                next[i] += excess / 2;                     // 左右两杯平分溢出量", "                next[i + 1] += excess / 2;", "            }", "            row = next;", "        }", "        return Math.min(1, row[query_glass]);   // 杯子容量最多 1", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 799. 香槟塔 —— 图解：复刻 Solution.java 的「逐层模拟溢出」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { poured: 4, query_row: 2, query_glass: 1 };
+
+function trace(input) {
+  var poured = input.poured, queryRow = input.query_row, queryGlass = input.query_glass;
+  var frames = [];
+
+  // 与 Java 完全相同的运算顺序，保证 result 和 Java 的 double 逐位一致
+  var row = [poured];
+  var layers = [[row[0]]];       // 画金字塔用：已算完的各层
+  var fmt = function (v) { return String(Math.round(v * 10000) / 10000); };
+
+  function gridPanel(newCells, target) {
+    var marks = {};
+    (newCells || []).forEach(function (c) { marks[c[0] + ',' + c[1]] = 'new'; });
+    if (target != null) marks[target[0] + ',' + target[1]] = 'done';
+    var width = queryRow + 1;
+    var rows = layers.map(function (layer, r) {
+      var out = [];
+      for (var i = 0; i < width; i++) out.push(i < layer.length ? fmt(layer[i]) : '');
+      return out;
+    });
+    return Viz.grid(rows, { title: '金字塔（每格是流入量，装满 1 就溢出）', marks: marks });
+  }
+  function varsPanel(excess, i) {
+    var items = [];
+    if (excess != null) items.push({ name: '第 ' + i + ' 杯溢出量 excess', v: fmt(excess) });
+    return Viz.vars(items);
+  }
+  function snap(at, key, newCells, excess, i, target) {
+    frames.push(Viz.frame(at, key, [gridPanel(newCells, target), varsPanel(excess, i)]));
+  }
+
+  snap('double[] row = { poured };',
+    '开局：' + poured + ' 杯全部倒进顶层唯一一杯，装 1 溢 ' + fmt(Math.max(0, poured - 1)),
+    null, null, null, null);
+
+  for (var r = 0; r < queryRow; r++) {
+    var next = [];
+    for (var k = 0; k < r + 2; k++) next.push(0);
+    for (var i = 0; i <= r; i++) {
+      var excess = Math.max(0, row[i] - 1);
+      next[i] += excess / 2;
+      next[i + 1] += excess / 2;
+      if ((r === 0 || r === 1) && i === r) {   // 帧时刻该层已算完，可整层入画
+        ensureLayer(next);
+        snap('next[i] += excess / 2;',
+          r === 0
+            ? '顶层装 1 溢 ' + fmt(excess) + '：左右两杯平分，各得 ' + fmt(excess / 2)
+            : '第二层每杯 ' + fmt(row[1]) + ' 也溢出：第三层中间杯接了两份 = ' + fmt(next[1]),
+          layerCells(r + 1), excess, i, null);
+      }
+    }
+    ensureLayer(next);
+    row = next;
+  }
+
+  function ensureLayer(arr) { if (layers.length < r + 2) layers.push(arr.slice()); }
+  function layerCells(rr) {   // 第 rr 层全部格子（刚算完，标 new）
+    var out = [];
+    for (var i = 0; i <= rr; i++) out.push([rr, i]);
+    return out;
+  }
+
+  var ans = Math.min(1, row[queryGlass]);
+  snap('return Math.min(1, row[query_glass]);',
+    '目标杯累计 ' + fmt(row[queryGlass]) + (row[queryGlass] > 1 ? '，早已装满 → 返回 1' : '，未满 → 原样返回'),
+    null, null, null, [queryRow, queryGlass]);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

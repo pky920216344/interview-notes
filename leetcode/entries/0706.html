@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>设计哈希映射 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 282 / 1159</span>
+  <nav class="pn"><a href="0238.html">上一篇</a><a href="0204.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">706. </span>设计哈希映射</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 15</li><li class="algo">哈希表</li><li class="aux">链表</li><li class="aux">设计</li><li class="tag">设计</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">链表</li><li class="tag">哈希函数</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">桶数组 + 手写拉链：key % 桶数定位桶，链上逐个比 key；put 头插，remove 拿 pre 摘结点。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>Node</code> 里 key、val 都要存：同一条链上的结点 key 互不相同，比对时全靠它。</li><li>定位：<code>h = key % CAP</code>（桶数取质数分布更均匀）；<code>put</code> 先沿链找，找到就更新，找不到<strong>头插</strong>新结点。</li><li><code>get</code> 沿链比对 key，走完没有返回 <code>-1</code>。</li><li><code>remove</code> 用 <code>pre</code> 记前驱：删头结点时桶直接指向 <code>p.next</code>，否则 <code>pre.next = p.next</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 均摊 O(1)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">MyHashMap</span> {</span><span class="ln"><span class="no">2</span>    <span class="c">// 拉链法的结点：key 也要存，因为同一条链上 key 各不相同</span></span><span class="ln"><span class="no">3</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">class</span> <span class="t">Node</span> {</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> key, val;</span><span class="ln"><span class="no">5</span>        <span class="t">Node</span> next;</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>        <span class="t">Node</span>(<span class="k">int</span> key, <span class="k">int</span> val, <span class="t">Node</span> next) {</span><span class="ln"><span class="no">8</span>            <span class="k">this</span>.key = key;</span><span class="ln"><span class="no">9</span>            <span class="k">this</span>.val = val;</span><span class="ln"><span class="no">10</span>            <span class="k">this</span>.next = next;</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="c">// 桶数取质数，key % CAP 分布更均匀</span></span><span class="ln"><span class="no">15</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">int</span> CAP = <span class="n">769</span>;</span><span class="ln"><span class="no">16</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Node</span>[] buckets = <span class="k">new</span> <span class="t">Node</span>[CAP];</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="k">public</span> <span class="t">MyHashMap</span>() {</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>    <span class="k">public</span> <span class="k">void</span> put(<span class="k">int</span> key, <span class="k">int</span> value) {</span><span class="ln"><span class="no">22</span>        <span class="k">int</span> h = key % CAP;</span><span class="ln"><span class="no">23</span>        <span class="k">for</span> (<span class="t">Node</span> p = buckets[h]; p != <span class="k">null</span>; p = p.next) {</span><span class="ln"><span class="no">24</span>            <span class="k">if</span> (p.key == key) { p.val = value; <span class="k">return</span>; }   <span class="c">// 已有就原地更新</span></span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        buckets[h] = <span class="k">new</span> <span class="t">Node</span>(key, value, buckets[h]);     <span class="c">// 新结点头插，O(1)</span></span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span> </span><span class="ln"><span class="no">29</span>    <span class="k">public</span> <span class="k">int</span> get(<span class="k">int</span> key) {</span><span class="ln"><span class="no">30</span>        <span class="k">for</span> (<span class="t">Node</span> p = buckets[key % CAP]; p != <span class="k">null</span>; p = p.next) {</span><span class="ln"><span class="no">31</span>            <span class="k">if</span> (p.key == key) <span class="k">return</span> p.val;</span><span class="ln"><span class="no">32</span>        }</span><span class="ln"><span class="no">33</span>        <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span> </span><span class="ln"><span class="no">36</span>    <span class="k">public</span> <span class="k">void</span> remove(<span class="k">int</span> key) {</span><span class="ln"><span class="no">37</span>        <span class="k">int</span> h = key % CAP;</span><span class="ln"><span class="no">38</span>        <span class="t">Node</span> pre = <span class="k">null</span>, p = buckets[h];</span><span class="ln"><span class="no">39</span>        <span class="k">while</span> (p != <span class="k">null</span>) {</span><span class="ln"><span class="no">40</span>            <span class="k">if</span> (p.key == key) {</span><span class="ln"><span class="no">41</span>                <span class="k">if</span> (pre == <span class="k">null</span>) buckets[h] = p.next;   <span class="c">// 删的是链表头，桶直接指向下一个</span></span><span class="ln"><span class="no">42</span>                <span class="k">else</span> pre.next = p.next;</span><span class="ln"><span class="no">43</span>                <span class="k">return</span>;</span><span class="ln"><span class="no">44</span>            }</span><span class="ln"><span class="no">45</span>            pre = p;</span><span class="ln"><span class="no">46</span>            p = p.next;</span><span class="ln"><span class="no">47</span>        }</span><span class="ln"><span class="no">48</span>    }</span><span class="ln"><span class="no">49</span>}</span><span class="ln"><span class="no">50</span> </span><span class="ln"><span class="no">51</span><span class="c">/**</span></span><span class="ln"><span class="no">52</span><span class="c"> * Your MyHashMap object will be instantiated and called as such:</span></span><span class="ln"><span class="no">53</span><span class="c"> * MyHashMap obj = new MyHashMap();</span></span><span class="ln"><span class="no">54</span><span class="c"> * obj.put(key,value);</span></span><span class="ln"><span class="no">55</span><span class="c"> * int param_2 = obj.get(key);</span></span><span class="ln"><span class="no">56</span><span class="c"> * obj.remove(key);</span></span><span class="ln"><span class="no">57</span><span class="c"> */</span></span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>不使用任何内建的哈希表库设计一个哈希映射（HashMap）。</p>
+
+<p>实现 <code>MyHashMap</code> 类：</p>
+
+<ul>
+	<li><code>MyHashMap()</code> 用空映射初始化对象</li>
+	<li><code>void put(int key, int value)</code> 向 HashMap 插入一个键值对 <code>(key, value)</code> 。如果 <code>key</code> 已经存在于映射中，则更新其对应的值 <code>value</code> 。</li>
+	<li><code>int get(int key)</code> 返回特定的 <code>key</code> 所映射的 <code>value</code> ；如果映射中不包含 <code>key</code> 的映射，返回 <code>-1</code> 。</li>
+	<li><code>void remove(key)</code> 如果映射中存在 <code>key</code> 的映射，则移除 <code>key</code> 和它所对应的 <code>value</code> 。</li>
+</ul>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入</strong>：
+["MyHashMap", "put", "put", "get", "get", "put", "get", "remove", "get"]
+[[], [1, 1], [2, 2], [1], [3], [2, 1], [2], [2], [2]]
+<strong>输出</strong>：
+[null, null, null, 1, -1, null, 1, null, -1]
+
+<strong>解释</strong>：
+MyHashMap myHashMap = new MyHashMap();
+myHashMap.put(1, 1); // myHashMap 现在为 [[1,1]]
+myHashMap.put(2, 2); // myHashMap 现在为 [[1,1], [2,2]]
+myHashMap.get(1);    // 返回 1 ，myHashMap 现在为 [[1,1], [2,2]]
+myHashMap.get(3);    // 返回 -1（未找到），myHashMap 现在为 [[1,1], [2,2]]
+myHashMap.put(2, 1); // myHashMap 现在为 [[1,1], [2,1]]（更新已有的值）
+myHashMap.get(2);    // 返回 1 ，myHashMap 现在为 [[1,1], [2,1]]
+myHashMap.remove(2); // 删除键为 2 的数据，myHashMap 现在为 [[1,1]]
+myHashMap.get(2);    // 返回 -1（未找到），myHashMap 现在为 [[1,1]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= key, value &lt;= 10<sup>6</sup></code></li>
+	<li>最多调用 <code>10<sup>4</sup></code> 次 <code>put</code>、<code>get</code> 和 <code>remove</code> 方法</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class MyHashMap {", "    // 拉链法的结点：key 也要存，因为同一条链上 key 各不相同", "    private static class Node {", "        int key, val;", "        Node next;", "", "        Node(int key, int val, Node next) {", "            this.key = key;", "            this.val = val;", "            this.next = next;", "        }", "    }", "", "    // 桶数取质数，key % CAP 分布更均匀", "    private static final int CAP = 769;", "    private final Node[] buckets = new Node[CAP];", "", "    public MyHashMap() {", "    }", "", "    public void put(int key, int value) {", "        int h = key % CAP;", "        for (Node p = buckets[h]; p != null; p = p.next) {", "            if (p.key == key) { p.val = value; return; }   // 已有就原地更新", "        }", "        buckets[h] = new Node(key, value, buckets[h]);     // 新结点头插，O(1)", "    }", "", "    public int get(int key) {", "        for (Node p = buckets[key % CAP]; p != null; p = p.next) {", "            if (p.key == key) return p.val;", "        }", "        return -1;", "    }", "", "    public void remove(int key) {", "        int h = key % CAP;", "        Node pre = null, p = buckets[h];", "        while (p != null) {", "            if (p.key == key) {", "                if (pre == null) buckets[h] = p.next;   // 删的是链表头，桶直接指向下一个", "                else pre.next = p.next;", "                return;", "            }", "            pre = p;", "            p = p.next;", "        }", "    }", "}", "", "/**", " * Your MyHashMap object will be instantiated and called as such:", " * MyHashMap obj = new MyHashMap();", " * obj.put(key,value);", " * int param_2 = obj.get(key);", " * obj.remove(key);", " */"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 706. 设计哈希映射 —— 图解：复刻 Solution.java 的「桶数组 + 拉链」，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { ops: [['put', 1, 1], ['put', 2, 2], ['get', 1], ['get', 3], ['put', 2, 1], ['remove', 2], ['get', 2]] };
+
+function trace(input) {
+  var CAP = 769;
+  var buckets = {};   // 桶号 -> 结点数组（下标 0 是链表头）
+  var out = [];
+  var frames = [];
+  var fired = { insert: false, hit: false, update: false, remove: false, miss: false };
+
+  function chainOf(h) {
+    return (buckets[h] || []).map(function (n) { return n.key + ':' + n.val; }).join(' → ');
+  }
+  // 只画非空桶：k = 桶号，v = 这条链（头在左）
+  function tablePanel(hitH) {
+    var rows = Object.keys(buckets).map(Number).sort(function (a, b) { return a - b; }).map(function (h) {
+      return { k: '桶 ' + h, v: chainOf(h), cls: h === hitH ? 'hit' : '' };
+    });
+    return Viz.table('桶数组：key % 769 → 链表（头在左）', rows, { hint: '（只画非空桶）' });
+  }
+  function outVars() {
+    return out.length ? Viz.vars([{ name: 'get 的返回', v: '[' + out.join(', ') + ']', cls: 'chg' }]) : null;
+  }
+  function snap(at, key, hitH) {
+    var panels = [tablePanel(hitH)];
+    var vars = outVars();
+    if (vars) panels.push(vars);
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  input.ops.forEach(function (op, i) {
+    var opName = op[0], k = op[1];
+    var h = k % CAP;
+    if (opName === 'put') {
+      var v = op[2];
+      var chain = buckets[h] || [];
+      var found = null;
+      for (var j = 0; j < chain.length; j++) if (chain[j].key === k) { found = chain[j]; break; }
+      if (found) {
+        found.val = v;
+        if (i === 4 && !fired.update) {
+          fired.update = true;
+          snap('if (p.key == key) { p.val = value; return; }', 'put(2,1)：key 已在桶 ' + h + ' 的链上，原地更新值', h);
+        }
+      } else {
+        chain.unshift({ key: k, val: v });   // 头插
+        buckets[h] = chain;
+        if (!fired.insert) {
+          fired.insert = true;
+          snap('buckets[h] = new Node(key, value, buckets[h]);', 'put(' + k + ',' + v + ')：hash 到桶 ' + h + '，新结点头插', h);
+        }
+      }
+    } else if (opName === 'get') {
+      var chain2 = buckets[h] || [];
+      var hit = null;
+      for (var j2 = 0; j2 < chain2.length; j2++) if (chain2[j2].key === k) { hit = chain2[j2]; break; }
+      if (hit) {
+        out.push(hit.val);
+        if (!fired.hit) {
+          fired.hit = true;
+          snap('if (p.key == key) return p.val;', 'get(' + k + ')：沿桶 ' + h + ' 的链逐个比 key，命中返回 ' + hit.val, h);
+        }
+      } else {
+        out.push(-1);
+        if (i === 6 && !fired.miss) {
+          fired.miss = true;
+          snap('return -1;', 'get(' + k + ')：桶 ' + h + ' 的链上没有这个 key，返回 -1', h);
+        }
+      }
+    } else {
+      var chain3 = buckets[h] || [];
+      var idx = -1;
+      for (var j3 = 0; j3 < chain3.length; j3++) if (chain3[j3].key === k) { idx = j3; break; }
+      if (idx >= 0) {
+        chain3.splice(idx, 1);
+        if (!chain3.length) delete buckets[h];
+        if (!fired.remove) {
+          fired.remove = true;
+          snap('if (pre == null) buckets[h] = p.next;', 'remove(' + k + ')：从桶 ' + h + ' 的链上摘掉结点 ' + k, h);
+        }
+      }
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>兰顿蚂蚁 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 865 / 1159</span>
+  <nav class="pn"><a href="0925.html">上一篇</a><a href="1512.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 16.22. </span>兰顿蚂蚁</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">模拟</li><li class="aux">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">矩阵</li><li class="tag">模拟</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">哈希集合记黑格 + 方向状态机模拟：白格右转、黑格左转各走一步，最后按蚂蚁轨迹的最小包围矩形输出。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>网格无限大，不能开数组：用哈希集合存黑格，坐标 <code>x</code> 向右、<code>y</code> 向上。</li><li>四个方向按下标排成顺时针 <code>R→D→L→U</code>：白格（不在集合）右转 <code>+1</code>，黑格左转 <code>−1</code>；每步先翻转所在格再移动。</li><li>走的过程中维护蚂蚁到过的 <code>min/max x、y</code>；最后按 <code>y</code> 从大到小、<code>x</code> 从小到大输出矩形，蚂蚁格覆盖为朝向字母 <code>L/U/R/D</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(K)，空间复杂度 O(K)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 方向按下标顺时针排列：白格右转 = +1，黑格左转 = −1</span></span><span class="ln"><span class="no">5</span>    <span class="c">// y 轴向上为正，所以「下移」是 y−1</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">int</span>[] DX = {<span class="n">1</span>, <span class="n">0</span>, -<span class="n">1</span>, <span class="n">0</span>};</span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">int</span>[] DY = {<span class="n">0</span>, -<span class="n">1</span>, <span class="n">0</span>, <span class="n">1</span>};</span><span class="ln"><span class="no">8</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">char</span>[] DIR = {<span class="s">'R'</span>, <span class="s">'D'</span>, <span class="s">'L'</span>, <span class="s">'U'</span>};</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; printKMoves(<span class="k">int</span> K) {</span><span class="ln"><span class="no">11</span>        <span class="t">Set</span>&lt;<span class="t">Long</span>&gt; black = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">12</span>        <span class="k">int</span> x = <span class="n">0</span>, y = <span class="n">0</span>, d = <span class="n">0</span>;               <span class="c">// 蚂蚁从原点出发，初始朝右</span></span><span class="ln"><span class="no">13</span>        <span class="k">int</span> minX = <span class="n">0</span>, maxX = <span class="n">0</span>, minY = <span class="n">0</span>, maxY = <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> step = <span class="n">0</span>; step &lt; K; step++) {</span><span class="ln"><span class="no">15</span>            <span class="k">boolean</span> isBlack = black.contains(key(x, y));</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (isBlack) black.remove(key(x, y)); <span class="k">else</span> black.add(key(x, y));   <span class="c">// 翻转所在格颜色</span></span><span class="ln"><span class="no">17</span>            d = (d + (isBlack ? <span class="n">3</span> : <span class="n">1</span>)) % <span class="n">4</span>;   <span class="c">// 白格右转、黑格左转</span></span><span class="ln"><span class="no">18</span>            x += DX[d];</span><span class="ln"><span class="no">19</span>            y += DY[d];</span><span class="ln"><span class="no">20</span>            minX = <span class="t">Math</span>.min(minX, x); maxX = <span class="t">Math</span>.max(maxX, x);</span><span class="ln"><span class="no">21</span>            minY = <span class="t">Math</span>.min(minY, y); maxY = <span class="t">Math</span>.max(maxY, y);</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="c">// 输出包含所有到过格子的最小矩形：y 从大到小是行，x 从小到大是列</span></span><span class="ln"><span class="no">24</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; out = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">25</span>        <span class="k">for</span> (<span class="k">int</span> yy = maxY; yy &gt;= minY; yy--) {</span><span class="ln"><span class="no">26</span>            <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">27</span>            <span class="k">for</span> (<span class="k">int</span> xx = minX; xx &lt;= maxX; xx++) {</span><span class="ln"><span class="no">28</span>                <span class="k">if</span> (xx == x &amp;&amp; yy == y) sb.append(DIR[d]);</span><span class="ln"><span class="no">29</span>                <span class="k">else</span> sb.append(black.contains(key(xx, yy)) ? <span class="s">'X'</span> : <span class="s">'_'</span>);</span><span class="ln"><span class="no">30</span>            }</span><span class="ln"><span class="no">31</span>            out.add(sb.toString());</span><span class="ln"><span class="no">32</span>        }</span><span class="ln"><span class="no">33</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span> </span><span class="ln"><span class="no">36</span>    <span class="k">private</span> <span class="k">long</span> key(<span class="k">int</span> x, <span class="k">int</span> y) {</span><span class="ln"><span class="no">37</span>        <span class="k">return</span> ((<span class="k">long</span>) (x + <span class="n">200000</span>) &lt;&lt; <span class="n">32</span>) | (y + <span class="n">200000</span>);</span><span class="ln"><span class="no">38</span>    }</span><span class="ln"><span class="no">39</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>一只蚂蚁坐在由白色和黑色方格构成的无限网格上。开始时，网格全白，蚂蚁面向右侧。每行走一步，蚂蚁执行以下操作。</p>
+
+<p>(1) 如果在白色方格上，则翻转方格的颜色，向右(顺时针)转 90 度，并向前移动一个单位。<br />
+(2) 如果在黑色方格上，则翻转方格的颜色，向左(逆时针方向)转 90 度，并向前移动一个单位。</p>
+
+<p>编写程序来模拟蚂蚁执行的前 K 个动作，并返回最终的网格。</p>
+
+<p>网格由数组表示，每个元素是一个字符串，代表网格中的一行，黑色方格由&nbsp;<code>'X'</code>&nbsp;表示，白色方格由&nbsp;<code>'_'</code>&nbsp;表示，蚂蚁所在的位置由&nbsp;<code>'L'</code>, <code>'U'</code>, <code>'R'</code>, <code>'D'</code>&nbsp;表示，分别表示蚂蚁&nbsp;左、上、右、下 的朝向。只需要返回能够包含蚂蚁走过的所有方格的最小矩形。</p>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>0
+<strong>输出：</strong>["R"]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>2
+<strong>输出：
+</strong>[
+&nbsp; "_X",
+&nbsp; "LX"
+]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>5
+<strong>输出：
+</strong>[
+&nbsp; "_U",
+&nbsp; "X_",
+&nbsp; "XX"
+]
+</pre>
+
+<p><strong>说明：</strong></p>
+
+<ul>
+	<li><code>K &lt;= 100000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    // 方向按下标顺时针排列：白格右转 = +1，黑格左转 = −1", "    // y 轴向上为正，所以「下移」是 y−1", "    private static final int[] DX = {1, 0, -1, 0};", "    private static final int[] DY = {0, -1, 0, 1};", "    private static final char[] DIR = {'R', 'D', 'L', 'U'};", "", "    public List<String> printKMoves(int K) {", "        Set<Long> black = new HashSet<>();", "        int x = 0, y = 0, d = 0;               // 蚂蚁从原点出发，初始朝右", "        int minX = 0, maxX = 0, minY = 0, maxY = 0;", "        for (int step = 0; step < K; step++) {", "            boolean isBlack = black.contains(key(x, y));", "            if (isBlack) black.remove(key(x, y)); else black.add(key(x, y));   // 翻转所在格颜色", "            d = (d + (isBlack ? 3 : 1)) % 4;   // 白格右转、黑格左转", "            x += DX[d];", "            y += DY[d];", "            minX = Math.min(minX, x); maxX = Math.max(maxX, x);", "            minY = Math.min(minY, y); maxY = Math.max(maxY, y);", "        }", "        // 输出包含所有到过格子的最小矩形：y 从大到小是行，x 从小到大是列", "        List<String> out = new ArrayList<>();", "        for (int yy = maxY; yy >= minY; yy--) {", "            StringBuilder sb = new StringBuilder();", "            for (int xx = minX; xx <= maxX; xx++) {", "                if (xx == x && yy == y) sb.append(DIR[d]);", "                else sb.append(black.contains(key(xx, yy)) ? 'X' : '_');", "            }", "            out.add(sb.toString());", "        }", "        return out;", "    }", "", "    private long key(int x, int y) {", "        return ((long) (x + 200000) << 32) | (y + 200000);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 16.22. 兰顿蚂蚁 —— 图解：复刻 Solution.java 的「哈希黑格 + 方向状态机」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { k: 5 };
+
+function trace(input) {
+  var K = input.k;
+  var frames = [];
+  var INIT = 'int x = 0, y = 0, d = 0;';
+  var TURN = 'd = (d + (isBlack ? 3 : 1)) % 4;';
+  var BUILD = 'for (int yy = maxY; yy >= minY; yy--) {';
+  var DX = [1, 0, -1, 0], DY = [0, -1, 0, 1], DIR = ['R', 'D', 'L', 'U'];
+
+  var black = {};   // 'x,y' → 黑格
+  var x = 0, y = 0, d = 0;
+  var minX = 0, maxX = 0, minY = 0, maxY = 0;
+
+  // 当前包围矩形：X 黑、_ 白，蚂蚁格显示朝向字母；flip 是这一步刚翻转的格子
+  function gridPanel(fx, fy, final_) {
+    var rows = [], marks = {};
+    for (var yy = maxY; yy >= minY; yy--) {
+      var row = [];
+      for (var xx = minX; xx <= maxX; xx++) {
+        var isAnt = xx === x && yy === y;
+        row.push(isAnt ? DIR[d] : (black[xx + ',' + yy] ? 'X' : '_'));
+        var cell = (maxY - yy) + ',' + (xx - minX);
+        if (isAnt) marks[cell] = 'cur';
+        else if (final_ && black[xx + ',' + yy]) marks[cell] = 'done';
+      }
+      rows.push(row);
+    }
+    if (fx != null) marks[(maxY - fy) + ',' + (fx - minX)] = 'chg';
+    return Viz.grid(rows, { title: '当前包围矩形（X 黑、_ 白）', marks: marks });
+  }
+  function varPanel(step) {
+    return Viz.vars([
+      { name: '朝向', v: DIR[d], cls: 'chg' },
+      { name: '已走步数', v: step }
+    ]);
+  }
+
+  frames.push(Viz.frame(INIT, '开局：蚂蚁在原点朝右，网格全白', [gridPanel(), varPanel(0)]));
+
+  var snappedWhite = false, snappedBlack = false;
+  for (var step = 0; step < K; step++) {
+    var isBlack = !!black[x + ',' + y];
+    if (isBlack) delete black[x + ',' + y]; else black[x + ',' + y] = true;
+    d = (d + (isBlack ? 3 : 1)) % 4;
+    var fx = x, fy = y;              // 刚被翻转的是蚂蚁原来站的格子
+    x += DX[d];
+    y += DY[d];
+    minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+    if (!isBlack && !snappedWhite) {
+      snappedWhite = true;
+      frames.push(Viz.frame(TURN, '白格：翻成黑，右转，前进到 (' + x + ',' + y + ')', [gridPanel(fx, fy), varPanel(step + 1)]));
+    }
+    if (isBlack && !snappedBlack) {
+      snappedBlack = true;
+      frames.push(Viz.frame(TURN, '踩到黑格：翻回白，左转，前进到 (' + x + ',' + y + ')', [gridPanel(fx, fy), varPanel(step + 1)]));
+    }
+  }
+
+  frames.push(Viz.frame(BUILD, K === 0 ? '一步没走：矩形里只有朝右的蚂蚁'
+    : '走出包围矩形：黑格标 X，蚂蚁格标朝向', [gridPanel(null, null, true), varPanel(K)]));
+  return { frames: frames, result: buildOut() };
+
+  function buildOut() {
+    var out = [];
+    for (var yy = maxY; yy >= minY; yy--) {
+      var sb = '';
+      for (var xx = minX; xx <= maxX; xx++) {
+        sb += (xx === x && yy === y) ? DIR[d] : (black[xx + ',' + yy] ? 'X' : '_');
+      }
+      out.push(sb);
+    }
+    return out;
+  }
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

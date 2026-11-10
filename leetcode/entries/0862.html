@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>和至少为 K 的最短子数组 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 243 / 1159</span>
+  <nav class="pn"><a href="0556.html">上一篇</a><a href="offer-53-i.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">862. </span>和至少为 K 的最短子数组</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 19</li><li class="algo">单调栈</li><li class="aux">前缀和/差分</li><li class="tag">队列</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">前缀和</li><li class="tag">滑动窗口</li><li class="tag">单调队列</li><li class="tag">堆（优先队列）</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">前缀和 + 单调队列：队列存下标且对应 pre 值递增；队头差 ≥ k 就弹出记长度，负数靠队尾保单调。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先算前缀和 <code>pre</code>（用 <code>long</code>，元素可负、和会溢出 int）；子数组和 = <code>pre[i] - pre[j]</code>。</li><li>队列存下标，从队头到队尾 <code>pre</code> 值递增；每个 i 依次：弹队头、弹队尾、入队 i。</li><li>队头满足 <code>pre[i] - pre[队头] ≥ k</code>：这段够 k，长度 <code>i - 队头</code> 更新答案后弹出（i 再靠右只会更长）。</li><li><strong>负数的关键</strong>：<code>pre[i]</code> 比队尾还小且更靠后 → 队尾那些更大的下标当左端点永远更差，直接弹出；普通滑窗在这里失效，必须用单调队列。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> shortestSubarray(<span class="k">int</span>[] nums, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">4</span>        <span class="k">long</span>[] pre = <span class="k">new</span> <span class="k">long</span>[n + <span class="n">1</span>];   <span class="c">// 前缀和：pre[i] = 前 i 个数之和，用 long 防溢出</span></span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) pre[i + <span class="n">1</span>] = pre[i] + nums[i];</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] q = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];       <span class="c">// 队列存下标，对应的 pre 值从队头到队尾递增</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> head = <span class="n">0</span>, tail = <span class="n">0</span>, ans = n + <span class="n">1</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt;= n; i++) {</span><span class="ln"><span class="no">9</span>            <span class="c">// 队头凑够 k：这一段够长，弹出并记录长度</span></span><span class="ln"><span class="no">10</span>            <span class="k">while</span> (head &lt; tail &amp;&amp; pre[i] - pre[q[head]] &gt;= k) {</span><span class="ln"><span class="no">11</span>                ans = <span class="t">Math</span>.min(ans, i - q[head++]);</span><span class="ln"><span class="no">12</span>            }</span><span class="ln"><span class="no">13</span>            <span class="c">// 负数让普通滑窗失效：pre[i] 更小还更靠后，队尾更大的下标当左端点只会更差</span></span><span class="ln"><span class="no">14</span>            <span class="k">while</span> (head &lt; tail &amp;&amp; pre[q[tail - <span class="n">1</span>]] &gt;= pre[i]) {</span><span class="ln"><span class="no">15</span>                tail--;</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>            q[tail++] = i;</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> ans &gt; n ? -<span class="n">1</span> : ans;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> 和一个整数 <code>k</code> ，找出 <code>nums</code> 中和至少为 <code>k</code> 的 <strong>最短非空子数组</strong> ，并返回该子数组的长度。如果不存在这样的 <strong>子数组</strong> ，返回 <code>-1</code> 。</p>
+
+<p><strong>子数组</strong> 是数组中 <strong>连续</strong> 的一部分。</p>
+
+
+
+<ol>
+</ol>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1], k = 1
+<strong>输出：</strong>1
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2], k = 4
+<strong>输出：</strong>-1
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [2,-1,2], k = 3
+<strong>输出：</strong>3
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>-10<sup>5</sup> &lt;= nums[i] &lt;= 10<sup>5</sup></code></li>
+	<li><code>1 &lt;= k &lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int shortestSubarray(int[] nums, int k) {", "        int n = nums.length;", "        long[] pre = new long[n + 1];   // 前缀和：pre[i] = 前 i 个数之和，用 long 防溢出", "        for (int i = 0; i < n; i++) pre[i + 1] = pre[i] + nums[i];", "        int[] q = new int[n + 1];       // 队列存下标，对应的 pre 值从队头到队尾递增", "        int head = 0, tail = 0, ans = n + 1;", "        for (int i = 0; i <= n; i++) {", "            // 队头凑够 k：这一段够长，弹出并记录长度", "            while (head < tail && pre[i] - pre[q[head]] >= k) {", "                ans = Math.min(ans, i - q[head++]);", "            }", "            // 负数让普通滑窗失效：pre[i] 更小还更靠后，队尾更大的下标当左端点只会更差", "            while (head < tail && pre[q[tail - 1]] >= pre[i]) {", "                tail--;", "            }", "            q[tail++] = i;", "        }", "        return ans > n ? -1 : ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 862. 和至少为 K 的最短子数组 —— 图解：复刻 Solution.java 的「前缀和 + 单调队列」，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [84, -37, 32, 40, 95], k: 167 };
+
+function trace(input) {
+  var nums = input.nums, k = input.k, n = nums.length;
+  var pre = [0];
+  for (var i = 0; i < n; i++) pre.push(pre[i] + nums[i]);
+
+  var q = [];          // 队列存下标，对应 pre 值从队头到队尾递增
+  var ans = n + 1, bestL = -1, bestR = -1;
+  var frames = [];
+  var shotTail = false, headPops = 0;
+
+  // 前缀和面板：在队列里的下标 win、被弹掉的下标 dim、当前 i cur、正被弹出的 bad
+  function prePanel(qSet, cur, bad) {
+    var marks = {};
+    for (var x = 0; x <= n; x++) {
+      if (x === cur) marks[x] = 'cur';
+      else if (qSet[x]) marks[x] = 'win';
+      else if (x < cur) marks[x] = 'dim';
+    }
+    if (bad != null) marks[bad] = 'bad';
+    return Viz.cells(pre, { title: '前缀和 pre（下标 0~' + n + '）', marks: marks });
+  }
+
+  // 队列面板：显示队列里的下标和对应 pre 值，标出队头/队尾
+  function queuePanel(qArr, bad) {
+    var marks = {};
+    if (bad != null) marks[qArr.indexOf(bad)] = 'bad';
+    var pointers = qArr.length
+      ? [{ at: 0, label: '队头', cls: 'p-left' }, { at: qArr.length - 1, label: '队尾', cls: 'p-tail' }]
+      : [];
+    return Viz.cells(qArr.map(function (x) { return 'pre[' + x + ']=' + pre[x]; }),
+      { title: '单调队列（存下标，pre 值递增）', marks: marks, pointers: pointers, hideIndex: true });
+  }
+
+  function varsPanel(cur) {
+    return Viz.vars([
+      { name: 'i', v: String(cur) },
+      { name: 'pre[i]', v: String(pre[cur]) },
+      { name: 'ans（最短长度）', v: ans > n ? '—' : String(ans), cls: ans > n ? '' : 'done' }
+    ]);
+  }
+
+  // 帧 1：开局，前缀和已就绪
+  frames.push(Viz.frame('int[] q = new int[n + 1];',
+    '先算前缀和 pre；队列里放下标，从队头到队尾 pre 值递增，答案 = 队头与 i 的差',
+    [prePanel({}, -1, null), queuePanel(q, null), varsPanel(0)]));
+
+  function snapTail(dropped) {
+    var qSet = {};
+    q.forEach(function (x) { qSet[x] = true; });
+    frames.push(Viz.frame('pre[q[tail - 1]] >= pre[i]',
+      'pre[' + i + ']=' + pre[i] + ' 比队尾 pre[' + dropped + ']=' + pre[dropped] + ' 更小还更靠后：它当左端点只会更差，弹出队尾',
+      [prePanel(qSet, i, dropped), queuePanel(q, dropped), varsPanel(i)]));
+  }
+  function snapHead(dropped) {
+    var qSet = {};
+    q.forEach(function (x) { qSet[x] = true; });
+    frames.push(Viz.frame('pre[i] - pre[q[head]] >= k',
+      '队头下标 ' + dropped + '：pre[' + i + ']−pre[' + dropped + ']=' + (pre[i] - pre[dropped]) + ' ≥ k=' + k
+        + '，子数组 [' + dropped + ',' + i + ') 长 ' + (i - dropped) + '，弹出记长度',
+      [prePanel(qSet, i, dropped), queuePanel(q, dropped), varsPanel(i)]));
+  }
+
+  for (i = 0; i <= n; i++) {
+    while (q.length && pre[i] - pre[q[0]] >= k) {
+      var h = q[0];
+      headPops++;
+      if (ans > i - h) { ans = i - h; bestL = h; bestR = i - 1; }
+      if (headPops === 1) snapHead(h);
+      else if (headPops === 2) snapHead(h);
+      q.shift();
+    }
+    while (q.length && pre[q[q.length - 1]] >= pre[i]) {
+      var dropped = q[q.length - 1];
+      if (!shotTail) { shotTail = true; snapTail(dropped); }
+      q.pop();
+    }
+    q.push(i);
+  }
+
+  var numMarks = {};
+  for (i = 0; i < n; i++) numMarks[i] = ans > n ? 'dim' : (i >= bestL && i <= bestR ? 'done' : 'dim');
+  frames.push(Viz.frame('return ans > n ? -1 : ans;',
+    ans > n ? '没有任何子数组的和 ≥ ' + k + ' → -1'
+            : '最短子数组是 [' + nums.slice(bestL, bestR + 1).join(',') + ']，长度 ' + ans,
+    [Viz.cells(nums, { title: 'nums', marks: numMarks }), Viz.vars([{ name: '答案', v: String(ans > n ? -1 : ans), cls: 'done' }])]));
+
+  return { frames: frames, result: ans > n ? -1 : ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

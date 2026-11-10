@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>分隔链表 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1027 / 1159</span>
+  <nav class="pn"><a href="0730.html">上一篇</a><a href="0878.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">725. </span>分隔链表</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">链表</li><li class="tag">链表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">先数链表长度 n：每段至少 n/k 个，前 n%k 段各多 1 个；从头顺序切 k 刀，每刀把段尾断开。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>一遍数出 <code>n</code>，则 <code>base = n / k</code>、<code>rem = n % k</code>：第 <code>i</code> 段长 <code>base + (i &lt; rem ? 1 : 0)</code>，天然满足「前面 ≥ 后面、相差 ≤ 1」。</li><li><code>n &lt; k</code> 时后面的段 <code>len = 0</code>，直接放 <code>null</code>（题面允许空段）。</li><li>切割：段尾 <code>cur.next = null</code> 断开，<code>cur</code> 移到下一段开头；链表走完后剩余段全为 <code>null</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + k)，空间复杂度 O(k)（不算切出的结点）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">ListNode</span>[] splitListToParts(<span class="t">ListNode</span> head, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 先数全长 n，才知道每段该多长</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span> n = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="t">ListNode</span> p = head; p != <span class="k">null</span>; p = p.next) n++;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> base = n / k, rem = n % k;   <span class="c">// 每段至少 base 个，前 rem 段各多 1 个</span></span><span class="ln"><span class="no">7</span>        <span class="t">ListNode</span>[] parts = <span class="k">new</span> <span class="t">ListNode</span>[k];</span><span class="ln"><span class="no">8</span>        <span class="t">ListNode</span> cur = head;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; k; i++) {</span><span class="ln"><span class="no">10</span>            parts[i] = cur;</span><span class="ln"><span class="no">11</span>            <span class="k">int</span> len = base + (i &lt; rem ? <span class="n">1</span> : <span class="n">0</span>);   <span class="c">// 本段的结点数</span></span><span class="ln"><span class="no">12</span>            <span class="c">// 走到本段最后一个结点；链表用尽时 len 再大也只能停住</span></span><span class="ln"><span class="no">13</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt; len &amp;&amp; cur != <span class="k">null</span>; j++) cur = cur.next;</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (cur == <span class="k">null</span>) <span class="k">continue</span>;   <span class="c">// 后面的段全是 null</span></span><span class="ln"><span class="no">15</span>            <span class="t">ListNode</span> next = cur.next;</span><span class="ln"><span class="no">16</span>            cur.next = <span class="k">null</span>;             <span class="c">// 断刀：本段到此为止</span></span><span class="ln"><span class="no">17</span>            cur = next;</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> parts;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个头结点为 <code>head</code> 的单链表和一个整数 <code>k</code> ，请你设计一个算法将链表分隔为 <code>k</code> 个连续的部分。</p>
+
+<p>每部分的长度应该尽可能的相等：任意两部分的长度差距不能超过 1 。这可能会导致有些部分为 null 。</p>
+
+<p>这 <code>k</code> 个部分应该按照在链表中出现的顺序排列，并且排在前面的部分的长度应该大于或等于排在后面的长度。</p>
+
+<p>返回一个由上述 <code>k</code> 部分组成的数组。</p>
+&nbsp;
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/cc38a7f74882.jpg" style="width: 400px; height: 134px;" />
+<pre>
+<strong>输入：</strong>head = [1,2,3], k = 5
+<strong>输出：</strong>[[1],[2],[3],[],[]]
+<strong>解释：</strong>
+第一个元素 output[0] 为 output[0].val = 1 ，output[0].next = null 。
+最后一个元素 output[4] 为 null ，但它作为 ListNode 的字符串表示是 [] 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/8a2db916ae96.jpg" style="width: 600px; height: 60px;" />
+<pre>
+<strong>输入：</strong>head = [1,2,3,4,5,6,7,8,9,10], k = 3
+<strong>输出：</strong>[[1,2,3,4],[5,6,7],[8,9,10]]
+<strong>解释：</strong>
+输入被分成了几个连续的部分，并且每部分的长度相差不超过 1 。前面部分的长度大于等于后面部分的长度。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>链表中节点的数目在范围 <code>[0, 1000]</code></li>
+	<li><code>0 &lt;= Node.val &lt;= 1000</code></li>
+	<li><code>1 &lt;= k &lt;= 50</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public ListNode[] splitListToParts(ListNode head, int k) {", "        // 先数全长 n，才知道每段该多长", "        int n = 0;", "        for (ListNode p = head; p != null; p = p.next) n++;", "        int base = n / k, rem = n % k;   // 每段至少 base 个，前 rem 段各多 1 个", "        ListNode[] parts = new ListNode[k];", "        ListNode cur = head;", "        for (int i = 0; i < k; i++) {", "            parts[i] = cur;", "            int len = base + (i < rem ? 1 : 0);   // 本段的结点数", "            // 走到本段最后一个结点；链表用尽时 len 再大也只能停住", "            for (int j = 1; j < len && cur != null; j++) cur = cur.next;", "            if (cur == null) continue;   // 后面的段全是 null", "            ListNode next = cur.next;", "            cur.next = null;             // 断刀：本段到此为止", "            cur = next;", "        }", "        return parts;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 725. 分隔链表 —— 图解：复刻 Solution.java 的「数长度 → 算段长 → 顺序断刀」，拍 5 张快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { head: [1, 2, 3, 4, 5, 6, 7], k: 3 };
+
+function trace(input) {
+  var vals = input.head, k = input.k, n = vals.length;
+  var frames = [];
+
+  // 链表面板：vals 是原始结点值；nxt 模拟每个结点的 next（断刀后指向 null）
+  // done 已定稿的段；curMark 当前段；pHead 本段开头
+  function listPanel(nxt, marks, pointers) {
+    var edges = [], nulls = [];
+    for (var i = 0; i < n; i++) {
+      if (nxt[i] == null) nulls.push(i);
+      else edges.push([i, nxt[i]]);
+    }
+    var m = {};
+    Object.keys(marks || {}).forEach(function (key) { m[key] = marks[key]; });
+    return Viz.list(vals.map(String), { title: '链表', marks: m, edges: edges, nulls: nulls, pointers: pointers || [] });
+  }
+
+  var vars = function (items) { return Viz.vars(items); };
+
+  // —— 第 1 步：数长度 ——
+  var count = 0;
+  for (var i = 0; i < n; i++) count++;
+  var nxt = [];
+  for (i = 0; i < n; i++) nxt.push(i + 1 < n ? i + 1 : null);
+  var parts = [];          // 已切出的段（值的数组），与 Java 的 parts 对应
+  var result = [];
+
+  if (n > 0 && n <= 14) frames.push(Viz.frame('for (ListNode p = head; p != null; p = p.next) n++;',
+    '先数一遍：链表共 ' + n + ' 个结点', [listPanel(nxt, {}, [{ at: n - 1, label: 'p', cls: 'p-cur' }]), vars([{ name: 'n', v: String(n), cls: 'done' }])]));
+
+  // —— 第 2 步：逐段切割 ——
+  var base = Math.floor(n / k), rem = n % k;
+  var cur = 0;             // 当前段开头的下标，对应 Java 的 cur 指针
+  for (var seg = 0; seg < k; seg++) {
+    var len = base + (seg < rem ? 1 : 0);
+    if (n > 0 && n <= 14 && seg === 0) frames.push(Viz.frame('int len = base + (i < rem ? 1 : 0);',
+      'n=' + n + '、k=' + k + '：base=' + base + '、rem=' + rem + '，前 ' + rem + ' 段各多 1 个',
+      [listPanel(nxt, {}, [{ at: 0, label: 'cur', cls: 'p-cur' }]),
+       vars([{ name: 'base', v: String(base) }, { name: 'rem', v: String(rem) }, { name: '本段 len', v: String(len), cls: 'cur' }])]));
+
+    var start = cur;
+    var part = [];
+    for (var j = 0; j < len && cur < n; j++) { part.push(vals[cur]); cur++; }
+    // 断刀：段尾的 next 断开指向 null（对应 cur.next = null）
+    if (cur > start) nxt[cur - 1] = null;
+    parts.push(part);
+    result.push(part);
+
+    if (n <= 14 && (seg === 0 || seg === 1) && part.length > 0) {
+      var marks = {};
+      for (i = 0; i < start; i++) marks[i] = 'dim';
+      for (i = start; i < cur; i++) marks[i] = 'new';
+      var pointers = [{ at: start, label: '段头', cls: 'p-head' }];
+      if (cur < n) pointers.push({ at: cur, label: 'cur', cls: 'p-cur' });
+      frames.push(Viz.frame('cur.next = null;',
+        '切下第 ' + (seg + 1) + ' 段 [' + part.join(',') + ']（' + len + ' 个），段尾断开指向 null',
+        [listPanel(nxt, marks, pointers), vars([{ name: '已切', v: parts.map(function (p) { return p.length; }).join(','), cls: 'new' }])]));
+    }
+  }
+
+  if (n <= 14) frames.push(Viz.frame('return parts;',
+    '切完：' + k + ' 段长度 [' + parts.map(function (p) { return p.length; }).join(',') + ']，长度差不超过 1',
+    [listPanel(nxt, {}, []), vars([{ name: 'k 段', v: JSON.stringify(parts), cls: 'done' }])]));
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

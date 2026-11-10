@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>安排会议日程 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 854 / 1159</span>
+  <nav class="pn"><a href="mianshi-10-05.html">上一篇</a><a href="0793.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1229. </span>安排会议日程</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">双指针</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">排序</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">两人的空闲时段各自按开始时间排序，归并双指针：交集够 duration 就定在交集开头，否则先结束的那段让位。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>拍平的 <code>[s1,e1,s2,e2,…]</code> 还原成时段并按开始时间排序。</li><li>双指针各指一段：共同空闲 = <code>[max(两起点), min(两终点)]</code>，长度 ≥ <code>duration</code> 就返回 <code>[lo, lo+duration]</code>（双指针保证这是最早的）。</li><li>交集不够长时，<strong>先结束的那段</strong>让位（<code>end</code> 小的一侧指针前进）：它和对方后面任何段都不可能有更长的交集。</li><li>输入时段本身可以无序，排序是必要前置；任何一边走完都没有就返回空表。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; minAvailableDuration(<span class="k">int</span>[] slots1, <span class="k">int</span>[] slots2, <span class="k">int</span> duration) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[][] a = toPairs(slots1), b = toPairs(slots2);   <span class="c">// 各自按开始时间排序</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span> i = <span class="n">0</span>, j = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">while</span> (i &lt; a.length &amp;&amp; j &lt; b.length) {</span><span class="ln"><span class="no">8</span>            <span class="c">// 共同空闲 = [max(两起点), min(两终点)]，够长就把会议定在这开头</span></span><span class="ln"><span class="no">9</span>            <span class="k">int</span> lo = <span class="t">Math</span>.max(a[i][<span class="n">0</span>], b[j][<span class="n">0</span>]);</span><span class="ln"><span class="no">10</span>            <span class="k">int</span> hi = <span class="t">Math</span>.min(a[i][<span class="n">1</span>], b[j][<span class="n">1</span>]);</span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (hi - lo &gt;= duration) <span class="k">return</span> <span class="t">Arrays</span>.asList(lo, lo + duration);</span><span class="ln"><span class="no">12</span>            <span class="c">// 先结束的那段，不可能再和对方靠后的段产生交集，让位</span></span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (a[i][<span class="n">1</span>] &lt; b[j][<span class="n">1</span>]) i++;</span><span class="ln"><span class="no">14</span>            <span class="k">else</span> j++;</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    <span class="c">// 拍平的 [s1,e1,s2,e2,…] 还原成时间段并按开始时间排序</span></span><span class="ln"><span class="no">20</span>    <span class="k">private</span> <span class="k">int</span>[][] toPairs(<span class="k">int</span>[] slots) {</span><span class="ln"><span class="no">21</span>        <span class="k">int</span>[][] p = <span class="k">new</span> <span class="k">int</span>[slots.length / <span class="n">2</span>][<span class="n">2</span>];</span><span class="ln"><span class="no">22</span>        <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; p.length; k++) {</span><span class="ln"><span class="no">23</span>            p[k][<span class="n">0</span>] = slots[<span class="n">2</span> * k];</span><span class="ln"><span class="no">24</span>            p[k][<span class="n">1</span>] = slots[<span class="n">2</span> * k + <span class="n">1</span>];</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="t">Arrays</span>.sort(p, (x, y) -&gt; x[<span class="n">0</span>] - y[<span class="n">0</span>]);</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> p;</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> minAvailableDuration(int[] slots1, int[] slots2, int duration) {", "        int[][] a = toPairs(slots1), b = toPairs(slots2);   // 各自按开始时间排序", "        int i = 0, j = 0;", "        while (i < a.length && j < b.length) {", "            // 共同空闲 = [max(两起点), min(两终点)]，够长就把会议定在这开头", "            int lo = Math.max(a[i][0], b[j][0]);", "            int hi = Math.min(a[i][1], b[j][1]);", "            if (hi - lo >= duration) return Arrays.asList(lo, lo + duration);", "            // 先结束的那段，不可能再和对方靠后的段产生交集，让位", "            if (a[i][1] < b[j][1]) i++;", "            else j++;", "        }", "        return new ArrayList<>();", "    }", "", "    // 拍平的 [s1,e1,s2,e2,…] 还原成时间段并按开始时间排序", "    private int[][] toPairs(int[] slots) {", "        int[][] p = new int[slots.length / 2][2];", "        for (int k = 0; k < p.length; k++) {", "            p[k][0] = slots[2 * k];", "            p[k][1] = slots[2 * k + 1];", "        }", "        Arrays.sort(p, (x, y) -> x[0] - y[0]);", "        return p;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1229. 安排会议日程 —— 图解：复刻 Solution.java 的「排序 + 归并双指针找共同空闲」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 输入与 Check 导出一致：slots 是拍平的 [s1,e1,s2,e2,…]。
+
+var STORY_INPUT = { slots1: [10, 50, 60, 140], slots2: [0, 15, 60, 70], duration: 8 };
+
+function trace(input) {
+  var SORT = 'int[][] a = toPairs(slots1), b = toPairs(slots2);';
+  var ADV = 'if (a[i][1] < b[j][1]) i++;';
+  var HIT = 'if (hi - lo >= duration) return Arrays.asList(lo, lo + duration);';
+  var RET = 'return new ArrayList<>();';
+
+  function toPairs(flat) {
+    var p = [];
+    for (var k = 0; k + 1 < flat.length; k += 2) p.push([flat[k], flat[k + 1]]);
+    p.sort(function (x, y) { return x[0] - y[0]; });
+    return p;
+  }
+
+  var a = toPairs(input.slots1), b = toPairs(input.slots2), dur = input.duration;
+  var frames = [];
+
+  // 一行时段：处理过的标灰，当前指的这一段高亮
+  function rowPanel(pairs, idx, name) {
+    var marks = {};
+    for (var k = 0; k < pairs.length; k++) if (idx == null || k < idx) marks[k] = 'dim';
+    if (idx != null && idx < pairs.length) marks[idx] = 'cur';
+    var pointers = idx != null && idx < pairs.length ? [{ at: idx, label: name, cls: name === 'i' ? 'p-left' : 'p-right' }] : [];
+    return Viz.cells(pairs.map(function (p) { return p[0] + '-' + p[1]; }),
+      { title: name + ' 的空闲时段（已按开始时间排序）', marks: marks, pointers: pointers });
+  }
+
+  function varsPanel(lo, hi, cls) {
+    var len = lo == null ? null : hi - lo;
+    return Viz.vars([
+      { name: '共同空闲', v: lo == null ? '—' : '[' + lo + ', ' + hi + ']', cls: cls || '' },
+      { name: '长度 vs duration', v: len == null ? '—' : len + ' vs ' + dur, cls: len != null && len >= dur ? 'done' : (cls || '') }
+    ]);
+  }
+
+  var i = 0, j = 0, sawAdvance = false, sawBlank = false;
+  var opened = false;
+  var ans = [];
+
+  while (i < a.length && j < b.length) {
+    if (!opened) {
+      opened = true;
+      frames.push(Viz.frame(SORT, '两边各自按开始时间排好，i、j 都从头开始往后归并',
+        [rowPanel(a, i, 'i'), rowPanel(b, j, 'j'), varsPanel(null, null, '')]));
+    }
+    var lo = Math.max(a[i][0], b[j][0]);
+    var hi = Math.min(a[i][1], b[j][1]);
+    if (hi - lo >= dur) {
+      ans = [lo, lo + dur];
+      frames.push(Viz.frame(HIT, '时段 ' + a[i][0] + '-' + a[i][1] + ' 与 ' + b[j][0] + '-' + b[j][1]
+          + ' 的交集 [' + lo + ', ' + hi + '] 够长：会议定在 ' + lo + ' 开始',
+        [rowPanel(a, i, 'i'), rowPanel(b, j, 'j'), varsPanel(lo, hi, 'done')]));
+      return { frames: frames, result: ans };
+    }
+    if (!sawAdvance) {
+      sawAdvance = true;
+      if (lo >= hi) {
+        sawBlank = true;
+        frames.push(Viz.frame(ADV, a[i][0] + '-' + a[i][1] + ' 和 ' + b[j][0] + '-' + b[j][1] + ' 完全错开，交集是空的',
+          [rowPanel(a, i, 'i'), rowPanel(b, j, 'j'), varsPanel(null, null, 'bad')]));
+      } else {
+        frames.push(Viz.frame(ADV, '交集 [' + lo + ', ' + hi + '] 只有 ' + (hi - lo) + ' 分钟，不够 '
+            + dur + '；' + (a[i][1] < b[j][1] ? 'i' : 'j') + ' 这段先结束，让它让位',
+          [rowPanel(a, i, 'i'), rowPanel(b, j, 'j'), varsPanel(lo, hi, 'bad')]));
+      }
+    }
+    if (a[i][1] < b[j][1]) i++;
+    else j++;
+  }
+
+  frames.push(Viz.frame(RET, '一边走完了都没有够长的交集：安排不上，返回空表',
+    [rowPanel(a, null, 'i'), rowPanel(b, null, 'j'), varsPanel(null, null, 'bad')]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

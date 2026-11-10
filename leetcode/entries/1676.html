@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉树的最近公共祖先 IV · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 885 / 1159</span>
+  <nav class="pn"><a href="1650.html">上一篇</a><a href="1372.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1676. </span>二叉树的最近公共祖先 IV</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">深度优先搜索/递归</li><li class="aux">哈希表</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">哈希表</li><li class="tag">二叉树</li><li class="tag">lowest-common-ancestor</li><li class="tag">binary-lifting</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">目标结点放哈希集合，后序递归上报「子树内命中数」；第一次凑齐全部目标的结点（最深）就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>目标不止两个，思路照旧：<strong>后序遍历</strong>，<code>dfs(node)</code> 返回它子树里命中了几个目标；自己也是目标就再 +1。</li><li>某个结点子树的命中数<strong>第一次</strong>达到目标总数，它就是最深的公共祖先（再往下的子树必然缺目标），用一个 <code>ans == null</code> 守卫只记第一次。</li><li>目标放 <code>HashSet</code>（<code>TreeNode</code> 按引用判等），命中判断 O(1)；总数就是 <code>want.size()</code>。</li><li>236 的「左右非空返回根」写法对多目标不成立（目标可能分散在多处），计数版是自然推广。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="c">/*</span></span><span class="ln"><span class="no">2</span><span class="c"> * 力扣 1676 二叉树的最近公共祖先 IV（会员题，本地验证即可，不提交）：</span></span><span class="ln"><span class="no">3</span><span class="c"> * 求一组结点 nodes 的 LCA；这题保证它们都在树里、值互不相同。</span></span><span class="ln"><span class="no">4</span><span class="c"> */</span></span><span class="ln"><span class="no">5</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">8</span>    <span class="k">private</span> <span class="t">Set</span>&lt;<span class="t">TreeNode</span>&gt; want;    <span class="c">// 目标集合（放哈希集合，O(1) 判断命中）</span></span><span class="ln"><span class="no">9</span>    <span class="k">private</span> <span class="t">TreeNode</span> ans;</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="t">TreeNode</span> lowestCommonAncestor(<span class="t">TreeNode</span> root, <span class="t">TreeNode</span>[] nodes) {</span><span class="ln"><span class="no">12</span>        want = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;(<span class="t">Arrays</span>.asList(nodes));</span><span class="ln"><span class="no">13</span>        ans = <span class="k">null</span>;</span><span class="ln"><span class="no">14</span>        dfs(root);</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="c">// 返回：以 node 为根的子树里命中了几个目标</span></span><span class="ln"><span class="no">19</span>    <span class="k">private</span> <span class="k">int</span> dfs(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">20</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">21</span>        <span class="k">int</span> c = dfs(node.left) + dfs(node.right);   <span class="c">// 先问左右子树</span></span><span class="ln"><span class="no">22</span>        <span class="k">if</span> (want.contains(node)) c++;               <span class="c">// 自己也可能就是目标</span></span><span class="ln"><span class="no">23</span>        <span class="k">if</span> (c == want.size() &amp;&amp; ans == <span class="k">null</span>) ans = node;   <span class="c">// 后序里第一次凑齐 = 最深的公共祖先</span></span><span class="ln"><span class="no">24</span>        <span class="k">return</span> c;</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["/*", " * 力扣 1676 二叉树的最近公共祖先 IV（会员题，本地验证即可，不提交）：", " * 求一组结点 nodes 的 LCA；这题保证它们都在树里、值互不相同。", " */", "import java.util.*;", "", "class Solution {", "    private Set<TreeNode> want;    // 目标集合（放哈希集合，O(1) 判断命中）", "    private TreeNode ans;", "", "    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode[] nodes) {", "        want = new HashSet<>(Arrays.asList(nodes));", "        ans = null;", "        dfs(root);", "        return ans;", "    }", "", "    // 返回：以 node 为根的子树里命中了几个目标", "    private int dfs(TreeNode node) {", "        if (node == null) return 0;", "        int c = dfs(node.left) + dfs(node.right);   // 先问左右子树", "        if (want.contains(node)) c++;               // 自己也可能就是目标", "        if (c == want.size() && ans == null) ans = node;   // 后序里第一次凑齐 = 最深的公共祖先", "        return c;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1676. 二叉树的最近公共祖先 IV —— 图解：复刻 Solution.java 的后序计数，拍「目标集合 / 子树上报 / 凑齐即答案 / 结果」四帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [3, 5, 1, 6, 2, 0, 8, null, null, 7, 4], nodes: [7, 4, 5] };
+
+function trace(input) {
+  var arr = input.root, targets = input.nodes;
+  var frames = [];
+
+  // 力扣层序数组 -> 结点
+  function build(a) {
+    if (!a.length || a[0] === null) return null;
+    var root = { idx: 0, val: a[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < a.length) {
+      var n = q.shift();
+      if (i < a.length) { if (a[i] !== null) { n.left = { idx: i, val: a[i], left: null, right: null }; q.push(n.left); } i++; }
+      if (i < a.length) { if (a[i] !== null) { n.right = { idx: i, val: a[i], left: null, right: null }; q.push(n.right); } i++; }
+    }
+    return root;
+  }
+  var root = build(arr);
+  var byIdx = {};
+  (function walk(n) { if (n) { byIdx[n.idx] = n; walk(n.left); walk(n.right); } })(root);
+  var want = {};
+  targets.forEach(function (v) {
+    (function f(n) { if (n) { if (n.val === v) want[n.idx] = true; f(n.left); f(n.right); } })(root);
+  });
+
+  // --- 与 Java 一致的后序计数 ---
+  var seq = 0, order = {}, cnt = {};                    // cnt[idx]：该子树命中数
+  var ansIdx = null;
+  var fullEvents = [];                                  // 计数凑齐的结点序列
+  function dfs(node) {
+    if (node === null) return 0;
+    var c = dfs(node.left) + dfs(node.right);
+    if (want[node.idx]) c++;
+    order[node.idx] = ++seq;
+    cnt[node.idx] = c;
+    if (c === targets.length && ansIdx === null) { ansIdx = node.idx; fullEvents.push(node.idx); }
+    return c;
+  }
+  dfs(root);
+
+  function treePanel(title, curIdx, labels) {
+    var marks = {};
+    Object.keys(want).forEach(function (i) { marks[i] = 'win'; });
+    Object.keys(cnt).map(Number).forEach(function (i) {
+      if (i === curIdx) marks[i] = 'cur';
+      else if (!(i in want) && cnt[i] > 0) marks[i] = 'chg';   // 有命中上报的非目标结点
+    });
+    if (ansIdx !== null && curIdx == null) marks[ansIdx] = 'done';
+    return Viz.tree(arr, { title: title, marks: marks, labels: labels || [] });
+  }
+  function countLabels(uptoSeq) {
+    var labels = [];
+    Object.keys(cnt).map(Number).sort(function (a, b) { return order[a] - order[b]; }).forEach(function (i) {
+      if (order[i] <= uptoSeq) labels.push({ at: i, label: '命中' + cnt[i], cls: 'p-next' });
+    });
+    return labels;
+  }
+  function snap(at, key, panel) { frames.push(Viz.frame(at, key, [panel])); }
+
+  // 帧 1：目标集合
+  snap('want = new HashSet<>(Arrays.asList(nodes));',
+    '要找 ' + targets.length + ' 个结点（青）的 LCA：先放进哈希集合，判断命中是 O(1)',
+    treePanel('二叉树（青：目标结点）', null, []));
+
+  // 帧 2：后序第一个凑满的结点之前的上报过程（取第二个算完的结点演示）
+  var seqs = Object.keys(cnt).map(Number).sort(function (a, b) { return order[a] - order[b]; });
+  var demo = seqs[Math.min(1, seqs.length - 1)];
+  snap('int c = dfs(node.left) + dfs(node.right);',
+    '后序自底向上：把左右子树的命中数加起来，自己命中再 +1',
+    treePanel('二叉树（↓命中 n：该子树里找到的目标数）', demo, countLabels(order[demo])));
+
+  // 帧 3：首次凑齐 = LCA
+  if (ansIdx !== null) {
+    snap('if (c == want.size() && ans == null) ans = node;',
+      '结点 ' + arr[ansIdx] + ' 的子树首次凑齐 ' + targets.length + ' 个目标：它就是最深的公共祖先',
+      treePanel('二叉树（绿：首次凑齐的结点 = LCA）', null, countLabels(order[ansIdx])));
+  }
+
+  // 帧 4：结果
+  snap('return ans;',
+    ansIdx !== null ? 'LCA = ' + arr[ansIdx] + '（后序第一次凑齐的就是最深的）' : '空树，返回 null',
+    treePanel('二叉树（绿：LCA）', null, countLabels(seq)));
+
+  return { frames: frames, result: ansIdx === null ? null : arr[ansIdx] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>设计内存文件系统 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1144 / 1159</span>
+  <nav class="pn"><a href="1563.html">上一篇</a><a href="0361.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">588. </span>设计内存文件系统</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">设计</li><li class="aux">字典树</li><li class="tag">设计</li><li class="tag">字典树</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">排序</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">目录树（Trie）：结点带 TreeMap 孩子 + 内容串；mkdir/add 逐级创建，ls 报直接子项，read 拼内容。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>结点用 <code>TreeMap&lt;String, Node&gt;</code> 孩子表 + <code>StringBuilder content</code>；<code>content</code> 非 <code>null</code> 即文件。</li><li><code>go(path)</code> 沿 <code>/</code> 逐段走，<code>computeIfAbsent</code> 缺哪级补哪级——<code>mkdir</code> 就是走一遍。</li><li><code>ls</code>：文件返回自己的名字，目录返回孩子键集（<code>TreeMap</code> 已按字典序）。</li><li><code>addContentToFile</code>：没有就 <code>new StringBuilder()</code>，再 <code>append</code>；<code>read</code> 直接 <code>toString</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 每次操作 O(路径长度)；ls 另加子项排序，空间复杂度 O(树规模)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">FileSystem</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 目录树结点：children 用 TreeMap 保证 ls 的字典序</span></span><span class="ln"><span class="no">5</span>    <span class="c">// content 非 null 表示这是文件</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">class</span> <span class="t">Node</span> {</span><span class="ln"><span class="no">7</span>        <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Node</span>&gt; children = <span class="k">new</span> <span class="t">TreeMap</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="t">StringBuilder</span> content;</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Node</span> root = <span class="k">new</span> <span class="t">Node</span>();</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; ls(<span class="t">String</span> path) {</span><span class="ln"><span class="no">14</span>        <span class="t">Node</span> node = go(path);</span><span class="ln"><span class="no">15</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; out = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">16</span>        <span class="k">if</span> (node.content != <span class="k">null</span>) {</span><span class="ln"><span class="no">17</span>            <span class="c">// 文件：只报自己的名字</span></span><span class="ln"><span class="no">18</span>            out.add(path.substring(path.lastIndexOf(<span class="s">'/'</span>) + <span class="n">1</span>));</span><span class="ln"><span class="no">19</span>        } <span class="k">else</span> {</span><span class="ln"><span class="no">20</span>            out.addAll(node.children.keySet());   <span class="c">// 目录：子项字典序已就绪</span></span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span> </span><span class="ln"><span class="no">25</span>    <span class="k">public</span> <span class="k">void</span> mkdir(<span class="t">String</span> path) {</span><span class="ln"><span class="no">26</span>        go(path);                         <span class="c">// 逐级走一遍，缺哪级补哪级</span></span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span> </span><span class="ln"><span class="no">29</span>    <span class="k">public</span> <span class="k">void</span> addContentToFile(<span class="t">String</span> filePath, <span class="t">String</span> content) {</span><span class="ln"><span class="no">30</span>        <span class="t">Node</span> node = go(filePath);</span><span class="ln"><span class="no">31</span>        <span class="c">// 新文件先立户，再追加内容</span></span><span class="ln"><span class="no">32</span>        <span class="k">if</span> (node.content == <span class="k">null</span>) node.content = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">33</span>        node.content.append(content);</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span> </span><span class="ln"><span class="no">36</span>    <span class="k">public</span> <span class="t">String</span> readContentFromFile(<span class="t">String</span> filePath) {</span><span class="ln"><span class="no">37</span>        <span class="k">return</span> go(filePath).content.toString();</span><span class="ln"><span class="no">38</span>    }</span><span class="ln"><span class="no">39</span> </span><span class="ln"><span class="no">40</span>    <span class="c">// 从根沿路径走到目标结点，中间缺的目录就地创建</span></span><span class="ln"><span class="no">41</span>    <span class="k">private</span> <span class="t">Node</span> go(<span class="t">String</span> path) {</span><span class="ln"><span class="no">42</span>        <span class="t">Node</span> cur = root;</span><span class="ln"><span class="no">43</span>        <span class="k">for</span> (<span class="t">String</span> part : path.split(<span class="s">"/"</span>)) {</span><span class="ln"><span class="no">44</span>            <span class="k">if</span> (part.isEmpty()) <span class="k">continue</span>;</span><span class="ln"><span class="no">45</span>            cur.children.computeIfAbsent(part, k -&gt; <span class="k">new</span> <span class="t">Node</span>());</span><span class="ln"><span class="no">46</span>            cur = cur.children.get(part);</span><span class="ln"><span class="no">47</span>        }</span><span class="ln"><span class="no">48</span>        <span class="k">return</span> cur;</span><span class="ln"><span class="no">49</span>    }</span><span class="ln"><span class="no">50</span>}</span><span class="ln"><span class="no">51</span> </span><span class="ln"><span class="no">52</span><span class="c">/**</span></span><span class="ln"><span class="no">53</span><span class="c"> * Your FileSystem object will be instantiated and called as such:</span></span><span class="ln"><span class="no">54</span><span class="c"> * FileSystem obj = new FileSystem();</span></span><span class="ln"><span class="no">55</span><span class="c"> * List&lt;String&gt; param_1 = obj.ls(path);</span></span><span class="ln"><span class="no">56</span><span class="c"> * obj.mkdir(path);</span></span><span class="ln"><span class="no">57</span><span class="c"> * obj.addContentToFile(filePath,content);</span></span><span class="ln"><span class="no">58</span><span class="c"> * String param_4 = obj.readContentFromFile(filePath);</span></span><span class="ln"><span class="no">59</span><span class="c"> */</span></span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class FileSystem {", "    // 目录树结点：children 用 TreeMap 保证 ls 的字典序", "    // content 非 null 表示这是文件", "    private static class Node {", "        Map<String, Node> children = new TreeMap<>();", "        StringBuilder content;", "    }", "", "    private final Node root = new Node();", "", "    public List<String> ls(String path) {", "        Node node = go(path);", "        List<String> out = new ArrayList<>();", "        if (node.content != null) {", "            // 文件：只报自己的名字", "            out.add(path.substring(path.lastIndexOf('/') + 1));", "        } else {", "            out.addAll(node.children.keySet());   // 目录：子项字典序已就绪", "        }", "        return out;", "    }", "", "    public void mkdir(String path) {", "        go(path);                         // 逐级走一遍，缺哪级补哪级", "    }", "", "    public void addContentToFile(String filePath, String content) {", "        Node node = go(filePath);", "        // 新文件先立户，再追加内容", "        if (node.content == null) node.content = new StringBuilder();", "        node.content.append(content);", "    }", "", "    public String readContentFromFile(String filePath) {", "        return go(filePath).content.toString();", "    }", "", "    // 从根沿路径走到目标结点，中间缺的目录就地创建", "    private Node go(String path) {", "        Node cur = root;", "        for (String part : path.split(\"/\")) {", "            if (part.isEmpty()) continue;", "            cur.children.computeIfAbsent(part, k -> new Node());", "            cur = cur.children.get(part);", "        }", "        return cur;", "    }", "}", "", "/**", " * Your FileSystem object will be instantiated and called as such:", " * FileSystem obj = new FileSystem();", " * List<String> param_1 = obj.ls(path);", " * obj.mkdir(path);", " * obj.addContentToFile(filePath,content);", " * String param_4 = obj.readContentFromFile(filePath);", " */"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 588. 设计内存文件系统（会员题）—— 图解：目录树逐级创建/查询，文件存内容，ls 走 TreeMap 字典序。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 操作编码与 Check 导出一致：[0,path]=ls、[1,path]=mkdir、[2,path,content]=addContentToFile、[3,path]=read。
+
+var STORY_INPUT = { ops: [[1, '/a'], [1, '/a/b'], [2, '/a/b/c.txt', 'hello'], [0, '/'], [0, '/a/b'], [3, '/a/b/c.txt']] };
+
+function trace(input) {
+  var root = { children: {}, content: null };
+  var frames = [];
+  var out = [];
+  var snapped = {};
+
+  function go(path) {
+    var cur = root;
+    path.split('/').forEach(function (part) {
+      if (!part) return;
+      if (!cur.children[part]) cur.children[part] = { children: {}, content: null };
+      cur = cur.children[part];
+    });
+    return cur;
+  }
+
+  function treePanel(hi, cls) {
+    var rows = [];
+    (function walk(node, path) {
+      Object.keys(node.children).sort().forEach(function (name) {
+        var child = node.children[name];
+        var p = path + '/' + name;
+        var isFile = child.content !== null;
+        rows.push({ k: p, v: isFile ? '文件「' + child.content + '」' : '目录', cls: p === hi ? (cls || '') : '' });
+        walk(child, p);
+      });
+    })(root, '');
+    return Viz.table('目录树：路径 → 类型/内容', rows, { hint: 'content 非 null 即文件' });
+  }
+  function varsPanel(opText, outText) {
+    return Viz.vars([
+      { name: '操作', v: opText },
+      { name: '输出', v: outText, cls: 'chg' }
+    ]);
+  }
+  function snap(at, key, hi, cls, opText, outText) {
+    frames.push(Viz.frame(at, key, [treePanel(hi, cls), varsPanel(opText, outText)]));
+  }
+  function outText(v) {
+    if (v === null) return 'null（无返回）';
+    if (Array.isArray(v)) return '[' + v.join(', ') + ']';
+    return String(v);
+  }
+
+  input.ops.forEach(function (op, oi) {
+    var type = op[0], path = op[1];
+    var res = null, opText = '';
+    if (type === 0) {
+      var node = go(path);
+      res = node.content !== null ? [path.slice(path.lastIndexOf('/') + 1)]
+        : Object.keys(node.children).sort();
+      opText = 'ls(' + path + ')';
+      out.push(res);
+    } else if (type === 1) {
+      go(path);
+      opText = 'mkdir(' + path + ')';
+      out.push(null);
+    } else if (type === 2) {
+      var f = go(path);
+      f.content = (f.content || '') + op[2];
+      opText = 'addContentToFile(' + path + ', ' + op[2] + ')';
+      out.push(null);
+    } else {
+      res = go(path).content;
+      opText = 'readContentFromFile(' + path + ')';
+      out.push(res);
+    }
+    var last = oi === input.ops.length - 1;
+    if (oi === 0 || oi === 2 || oi === 3 || oi === 4 || last) {
+      if (!snapped[oi]) {
+        snapped[oi] = true;
+        var at = type === 0 ? 'out.addAll(node.children.keySet());'
+          : type === 2 ? 'node.content.append(content);'
+          : type === 3 ? 'return go(filePath).content.toString();'
+          : '逐级走一遍，缺哪级补哪级';
+        var key = opText + '：' + (type === 0 ? '只列直接子项，TreeMap 天然字典序'
+          : type === 1 ? '逐级走一遍，缺哪级补哪级'
+          : type === 2 ? '新文件先立户，内容往后追加'
+          : '取文件的拼接内容');
+        snap(at, key, path, type === 2 ? 'new' : (type === 0 || type === 3 ? 'hit' : ''), opText, outText(res));
+      }
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

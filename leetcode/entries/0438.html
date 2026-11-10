@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>找到字符串中所有字母异位词 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 286 / 1159</span>
+  <nav class="pn"><a href="0131.html">上一篇</a><a href="offer-32-iii.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">438. </span>找到字符串中所有字母异位词</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 15</li><li class="algo">滑动窗口</li><li class="aux">哈希表</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">滑动窗口</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">定长滑窗计数：先装满第一个窗口，之后右进左出各一个字符，26 格计数和 p 相等就是异位词。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>need[c]</code> 是 p 的字母计数，<code>win[c]</code> 是当前窗口的计数；异位词 ⇔ 两个计数表完全相等。</li><li>先把 <code>s[0..m-1]</code> 装进窗口判一次；之后每步 <code>win[s[r]]++</code>、<code>win[s[r-m]]--</code>，增量维护。</li><li>每步用 <code>Arrays.equals(win, need)</code> 比较，相等就把起点 <code>r - m + 1</code> 收进答案。</li><li>s 比 p 短时窗口装不满（计数总和就对不上），不用单独写分支。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(26n)，空间复杂度 O(26)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; findAnagrams(<span class="t">String</span> s, <span class="t">String</span> p) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> m = p.length(), n = s.length();</span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] need = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>], win = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) need[p.charAt(i) - <span class="s">'a'</span>]++;</span><span class="ln"><span class="no">9</span>        <span class="c">// 先装满第一个窗口；s 比 p 短时窗口装不满，计数和永远对不上，自然没有命中</span></span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m &amp;&amp; i &lt; n; i++) win[s.charAt(i) - <span class="s">'a'</span>]++;</span><span class="ln"><span class="no">11</span>        <span class="k">if</span> (<span class="t">Arrays</span>.equals(win, need)) ans.add(<span class="n">0</span>);</span><span class="ln"><span class="no">12</span>        <span class="c">// 之后每步右端进一个、左端出一个，计数表和 need 相等就是异位词</span></span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> r = m; r &lt; n; r++) {</span><span class="ln"><span class="no">14</span>            win[s.charAt(r) - <span class="s">'a'</span>]++;          <span class="c">// 右端进窗</span></span><span class="ln"><span class="no">15</span>            win[s.charAt(r - m) - <span class="s">'a'</span>]--;      <span class="c">// 左端出窗</span></span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (<span class="t">Arrays</span>.equals(win, need)) ans.add(r - m + <span class="n">1</span>);</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定两个字符串&nbsp;<code>s</code>&nbsp;和 <code>p</code>，找到&nbsp;<code>s</code>中所有&nbsp;<code>p</code>的&nbsp;<strong><span>异位词</span>&nbsp;</strong>的子串，返回这些子串的起始索引。不考虑答案输出的顺序。</p>
+
+
+
+<p><strong>示例&nbsp;1:</strong></p>
+
+<pre>
+<strong>输入: </strong>s = "cbaebabacd", p = "abc"
+<strong>输出: </strong>[0,6]
+<strong>解释:</strong>
+起始索引等于 0 的子串是 "cba", 它是 "abc" 的异位词。
+起始索引等于 6 的子串是 "bac", 它是 "abc" 的异位词。
+</pre>
+
+<p><strong>&nbsp;示例 2:</strong></p>
+
+<pre>
+<strong>输入: </strong>s = "abab", p = "ab"
+<strong>输出: </strong>[0,1,2]
+<strong>解释:</strong>
+起始索引等于 0 的子串是 "ab", 它是 "ab" 的异位词。
+起始索引等于 1 的子串是 "ba", 它是 "ab" 的异位词。
+起始索引等于 2 的子串是 "ab", 它是 "ab" 的异位词。
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length, p.length &lt;= 3 * 10<sup>4</sup></code></li>
+	<li><code>s</code>&nbsp;和&nbsp;<code>p</code>&nbsp;仅包含小写字母</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> findAnagrams(String s, String p) {", "        List<Integer> ans = new ArrayList<>();", "        int m = p.length(), n = s.length();", "        int[] need = new int[26], win = new int[26];", "        for (int i = 0; i < m; i++) need[p.charAt(i) - 'a']++;", "        // 先装满第一个窗口；s 比 p 短时窗口装不满，计数和永远对不上，自然没有命中", "        for (int i = 0; i < m && i < n; i++) win[s.charAt(i) - 'a']++;", "        if (Arrays.equals(win, need)) ans.add(0);", "        // 之后每步右端进一个、左端出一个，计数表和 need 相等就是异位词", "        for (int r = m; r < n; r++) {", "            win[s.charAt(r) - 'a']++;          // 右端进窗", "            win[s.charAt(r - m) - 'a']--;      // 左端出窗", "            if (Arrays.equals(win, need)) ans.add(r - m + 1);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 438. 找到字符串中所有字母异位词 —— 图解：复刻 Solution.java 的定长滑窗计数，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'cbaebabacd', p: 'abc' };
+
+function trace(input) {
+  var s = input.s, p = input.p;
+  var n = s.length, m = p.length;
+  var frames = [];
+  var need = {}, win = {};
+  for (var i = 0; i < m; i++) need[p[i]] = (need[p[i]] || 0) + 1;
+  var ans = [];
+  var matches = 0;
+  var fired = { first: false, slide: false, second: false };
+  var FILL = 'for (int i = 0; i < m && i < n; i++) win[s.charAt(i) - \'a\']++;';
+  var FIRST = 'if (Arrays.equals(win, need)) ans.add(0);';
+  var OUT = "win[s.charAt(r - m) - 'a']--;";
+  var EQ = 'if (Arrays.equals(win, need)) ans.add(r - m + 1);';
+
+  function same() {
+    for (var c in need) if ((win[c] || 0) !== need[c]) return false;
+    for (var c2 in win) if (!(c2 in need) && win[c2]) return false;
+    return true;
+  }
+  // 字符串面板：窗口 [from, to]，to 标黄，l / r 两个指针
+  function cellsPanel(from, to) {
+    var marks = {};
+    for (var k = from; k <= to; k++) marks[k] = 'win';
+    marks[to] = 'cur';
+    var ptrs = [{ at: to, label: 'r', cls: 'p-right' }];
+    if (to - m >= 0) ptrs.push({ at: to - m, label: 'l', cls: 'p-left' });
+    return Viz.cells(s.split(''), {
+      title: 's', marks: marks, pointers: ptrs,
+      range: { from: from, to: to, label: '窗口（长 ' + m + '）' }
+    });
+  }
+  // 计数表：窗口里的 win / p 要求的 need；刚变化的字母标黄
+  function tablePanel(chg) {
+    var letters = {};
+    Object.keys(need).forEach(function (c) { letters[c] = true; });
+    Object.keys(win).forEach(function (c) { if (win[c]) letters[c] = true; });
+    return Viz.table('win / need（窗口计数 / p 的计数）', Object.keys(letters).sort().map(function (c) {
+      return { k: c, v: (win[c] || 0) + ' / ' + (need[c] || 0), cls: c === chg ? 'chg' : '' };
+    }));
+  }
+  function ansVars() {
+    return Viz.vars([{ name: 'ans（命中起点）', v: '[' + ans.join(', ') + ']', cls: 'chg' }]);
+  }
+
+  // 先装满第一个窗口 [0, m-1]
+  for (var i = 0; i < m && i < n; i++) win[s[i]] = (win[s[i]] || 0) + 1;
+  frames.push(Viz.frame(FILL, '先把下标 0..' + (Math.min(m, n) - 1) + ' 装进窗口，数出每个字母的个数',
+    [cellsPanel(0, Math.min(m, n) - 1), tablePanel(null)]));
+  if (same()) {
+    matches++;
+    ans.push(0);
+    if (!fired.first) {
+      fired.first = true;
+      frames.push(Viz.frame(FIRST, '第一个窗口的计数和 p 完全相等：起点 0 收进 ans',
+        [cellsPanel(0, m - 1), tablePanel(null), ansVars()]));
+    }
+  }
+
+  // 滑动：每步右端进一个、左端出一个
+  for (var r = m; r < n; r++) {
+    var cIn = s[r], cOut = s[r - m];
+    win[cIn] = (win[cIn] || 0) + 1;
+    win[cOut]--;
+    if (r === m && !fired.slide) {
+      fired.slide = true;
+      frames.push(Viz.frame(OUT, '窗口右移一格：右端 ' + cIn + ' 进窗，左端 ' + cOut + ' 出窗',
+        [cellsPanel(r - m + 1, r), tablePanel(cOut)]));
+    }
+    if (same()) {
+      matches++;
+      ans.push(r - m + 1);
+      if (matches === 2 && !fired.second) {
+        fired.second = true;
+        frames.push(Viz.frame(EQ, '窗口 [' + (r - m + 1) + '..' + r + '] 的计数又相等：起点 ' + (r - m + 1) + ' 收进 ans',
+          [cellsPanel(r - m + 1, r), tablePanel(cIn), ansVars()]));
+      }
+    }
+  }
+
+  var marks = {};
+  ans.forEach(function (st) { for (var k = st; k < st + m && k < n; k++) marks[k] = 'done'; });
+  frames.push(Viz.frame('return ans;',
+    n < m ? 's 比 p 短，窗口装不满，没有异位词' : '扫完：所有异位词起点 = [' + ans.join(', ') + ']',
+    [Viz.cells(s.split(''), { title: 's（绿 = 命中的窗口）', marks: marks }), ansVars()]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>单词规律 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 620 / 1159</span>
+  <nav class="pn"><a href="1358.html">上一篇</a><a href="1490.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">290. </span>单词规律</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 3</li><li class="algo">哈希表</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">双向哈希映射：字母→单词、单词→字母各查一遍，任一方向冲突就 false；词数和字母数先比相等。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先 <code>split(" ")</code> 拆词，词数不等于字母数直接 <code>false</code>。</li><li><code>c2w</code> 查「这个字母是否已配过别的词」，<code>w2c</code> 查「这个词是否已配过别的字母」。</li><li>两个方向都要查——只查单向会漏掉 <code>abba</code>/<code>dog dog dog dog</code> 这种多对一。</li><li>每对通过检查就同时写进两张表，全部通过返回 <code>true</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + m)，空间复杂度 O(n + m)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> wordPattern(<span class="t">String</span> pattern, <span class="t">String</span> s) {</span><span class="ln"><span class="no">5</span>        <span class="t">String</span>[] words = s.split(<span class="s">" "</span>);</span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (words.length != pattern.length()) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">7</span>        <span class="t">Map</span>&lt;<span class="t">Character</span>, <span class="t">String</span>&gt; c2w = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Character</span>&gt; w2c = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; pattern.length(); i++) {</span><span class="ln"><span class="no">10</span>            <span class="k">char</span> c = pattern.charAt(i);</span><span class="ln"><span class="no">11</span>            <span class="t">String</span> w = words[i];</span><span class="ln"><span class="no">12</span>            <span class="c">// 双向各查一次：字母已配过别的词、或词已配过别的字母，都算冲突</span></span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (c2w.containsKey(c) &amp;&amp; !c2w.get(c).equals(w)) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (w2c.containsKey(w) &amp;&amp; w2c.get(w) != c) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">15</span>            c2w.put(c, w);</span><span class="ln"><span class="no">16</span>            w2c.put(w, c);</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一种规律 <code>pattern</code>&nbsp;和一个字符串&nbsp;<code>s</code>&nbsp;，判断 <code>s</code>&nbsp;是否遵循相同的规律。</p>
+
+<p>这里的&nbsp;<strong>遵循&nbsp;</strong>指完全匹配，例如，&nbsp;<code>pattern</code>&nbsp;里的每个字母和字符串&nbsp;<code>s</code>中的每个非空单词之间存在着双向连接的对应规律。具体来说：</p>
+
+<ul>
+	<li><code>pattern</code>&nbsp;中的每个字母都 <strong>恰好</strong> 映射到 <code>s</code> 中的一个唯一单词。</li>
+	<li><code>s</code> 中的每个唯一单词都 <strong>恰好</strong> 映射到&nbsp;<code>pattern</code> 中的一个字母。</li>
+	<li>没有两个字母映射到同一个单词，也没有两个单词映射到同一个字母。</li>
+</ul>
+
+
+
+<p><strong class="example">示例1:</strong></p>
+
+<pre>
+<strong>输入:</strong> pattern = <code>"abba"</code>, s = <code>"dog cat cat dog"</code>
+<strong>输出:</strong> true</pre>
+
+<p><strong class="example">示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong>pattern = <code>"abba"</code>, s = <code>"dog cat cat fish"</code>
+<strong>输出:</strong> false</pre>
+
+<p><strong class="example">示例 3:</strong></p>
+
+<pre>
+<strong>输入:</strong> pattern = <code>"aaaa"</code>, s = <code>"dog cat cat dog"</code>
+<strong>输出:</strong> false</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= pattern.length &lt;= 300</code></li>
+	<li><code>pattern</code>&nbsp;只包含小写英文字母</li>
+	<li><code>1 &lt;= s.length &lt;= 3000</code></li>
+	<li><code>s</code>&nbsp;只包含小写英文字母和&nbsp;<code>' '</code></li>
+	<li><code>s</code>&nbsp;<strong>不包含</strong> 任何前导或尾随对空格</li>
+	<li><code>s</code>&nbsp;中每个单词都被 <strong>单个空格 </strong>分隔</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean wordPattern(String pattern, String s) {", "        String[] words = s.split(\" \");", "        if (words.length != pattern.length()) return false;", "        Map<Character, String> c2w = new HashMap<>();", "        Map<String, Character> w2c = new HashMap<>();", "        for (int i = 0; i < pattern.length(); i++) {", "            char c = pattern.charAt(i);", "            String w = words[i];", "            // 双向各查一次：字母已配过别的词、或词已配过别的字母，都算冲突", "            if (c2w.containsKey(c) && !c2w.get(c).equals(w)) return false;", "            if (w2c.containsKey(w) && w2c.get(w) != c) return false;", "            c2w.put(c, w);", "            w2c.put(w, c);", "        }", "        return true;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 290. 单词规律 —— 图解：字母→单词、单词→字母两张映射表一起长，任一头对不上就 false。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { pattern: 'abba', s: 'dog cat cat dog' };
+
+function trace(input) {
+  var pattern = input.pattern;
+  var words = input.s.split(' ');
+  var frames = [];
+  var c2w = {}, w2c = {};
+  var histC = [], histW = [];   // 表格行按首次出现顺序排，画面才稳定
+  var ok = words.length === pattern.length;
+
+  var LEN = 'if (words.length != pattern.length()) return false;';
+  var CHK = 'if (c2w.containsKey(c) && !c2w.get(c).equals(w)) return false;';
+  var PUT = 'c2w.put(c, w);';
+  var RET = 'return true;';
+
+  function patternPanel(curIdx) {
+    var marks = {};
+    for (var i = 0; i < pattern.length; i++) {
+      if (i < curIdx) marks[i] = 'done';
+      else if (i === curIdx) marks[i] = 'cur';
+    }
+    return Viz.cells(pattern.split(''), { title: '规律 pattern', marks: marks });
+  }
+
+  function tableOf(title, map, order, hitK) {
+    var rows = order.map(function (k) { return { k: k, v: map[k], cls: k === hitK ? 'hit' : '' }; });
+    return Viz.table(title, rows, { hint: order.length ? '' : '（还没有映射）' });
+  }
+
+  function snap(at, key, curIdx, hitC, hitW, showResult) {
+    var panels = [];
+    if (pattern.length) panels.push(patternPanel(curIdx));
+    panels.push(tableOf('字母 → 单词（c2w）', c2w, histC, hitC));
+    panels.push(tableOf('单词 → 字母（w2c）', w2c, histW, hitW));
+    if (showResult) {
+      panels.push(Viz.vars([{ name: '结果', v: ok ? 'true' : 'false', cls: ok ? 'done' : 'bad' }]));
+    }
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  snap(LEN, '先比数量：' + pattern.length + ' 个字母对 ' + words.length + ' 个单词' +
+    (ok ? '，相等，开始配对' : '，不等，直接 false'), -1, null, null, false);
+
+  if (ok) {
+    var wrote = false, hitShown = false;
+    for (var i = 0; i < pattern.length && ok; i++) {
+      var c = pattern[i], w = words[i];
+      var hitC = c in c2w, hitW = w in w2c;
+      if ((hitC && c2w[c] !== w) || (hitW && w2c[w] !== c)) ok = false;
+      if (!wrote) {
+        wrote = true;
+        snap(PUT, '第 ' + (i + 1) + ' 对都是新的：写入 ' + c + ' → ' + w + '，反向再写 ' + w + ' → ' + c, i, c, w, false);
+      } else if ((hitC || hitW) && !hitShown) {
+        hitShown = true;
+        var msg = ok ? '再遇到 ' + c + ' ↔ ' + w + '：两张表里都是老配对，一致'
+                     : c + ' 或 ' + w + ' 已配过别的对家：冲突';
+        snap(CHK, msg, i, hitC ? c : null, hitW ? w : null, false);
+      }
+      if (!ok) break;
+      if (!hitC) histC.push(c);
+      if (!hitW) histW.push(w);
+      c2w[c] = w;
+      w2c[w] = c;
+    }
+  }
+
+  snap(RET, ok ? '每对都双向一致：返回 true' : '有对不上或数量不等：返回 false', pattern.length, null, null, true);
+
+  return { frames: frames, result: ok };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>找到 K 个最接近的元素 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 331 / 1159</span>
+  <nav class="pn"><a href="0486.html">上一篇</a><a href="0202.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">658. </span>找到 K 个最接近的元素</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 12</li><li class="algo">二分查找</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">二分查找</li><li class="tag">排序</li><li class="tag">滑动窗口</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">答案必是连续 k 个：二分窗口左端，比较 x−arr[mid] 与 arr[mid+k]−x，左端更远就右移窗口。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>k</code> 个最靠近 <code>x</code> 的数在升序数组里一定连续，且同距取值小 → 只需定出窗口左端 <code>lo ∈ [0, n−k]</code>。</li><li>二分比较：<code>x − arr[mid] &gt; arr[mid+k] − x</code> 说明 <code>arr[mid]</code> 离 <code>x</code> 更远，窗口该右移（<code>lo = mid+1</code>）；否则左移（<code>hi = mid</code>）。</li><li>两个差都是<strong>带符号</strong>的：<code>x</code> 在窗口外一侧时结论自动成立，不用取绝对值；同距时走 <code>else</code>，窗口保留在左边（值更小）。</li><li>收尾直接从 <code>lo</code> 拷 <code>k</code> 个元素，天然升序。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log(n−k) + k)，空间复杂度 O(1)（不计输出）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; findClosestElements(<span class="k">int</span>[] arr, <span class="k">int</span> k, <span class="k">int</span> x) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 二分的是窗口左端：候选窗口 [lo, lo+k-1]，最终答案必是连续的 k 个</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span> lo = <span class="n">0</span>, hi = arr.length - k;</span><span class="ln"><span class="no">7</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">8</span>            <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">9</span>            <span class="c">// arr[mid] 比 arr[mid+k] 离 x 更远（同距时右边的算近）：窗口整个左移不如右移</span></span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (x - arr[mid] &gt; arr[mid + k] - x) lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">11</span>            <span class="k">else</span> hi = mid;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(k);</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> i = lo; i &lt; lo + k; i++) ans.add(arr[i]);</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个 <strong>排序好</strong> 的数组&nbsp;<code>arr</code> ，两个整数 <code>k</code> 和 <code>x</code> ，从数组中找到最靠近 <code>x</code>（两数之差最小）的 <code>k</code> 个数。返回的结果必须要是按升序排好的。</p>
+
+<p>整数 <code>a</code> 比整数 <code>b</code> 更接近 <code>x</code> 需要满足：</p>
+
+<ul>
+	<li><code>|a - x| &lt; |b - x|</code> 或者</li>
+	<li><code>|a - x| == |b - x|</code> 且 <code>a &lt; b</code></li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [1,2,3,4,5], k = 4, x = 3
+<strong>输出：</strong>[1,2,3,4]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [1,1,2,3,4,5], k = 4, x = -1
+<strong>输出：</strong>[1,1,2,3]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= k &lt;= arr.length</code></li>
+	<li><code>1 &lt;= arr.length&nbsp;&lt;= 10<sup>4</sup></code><meta charset="UTF-8" /></li>
+	<li><code>arr</code>&nbsp;按 <strong>升序</strong> 排列</li>
+	<li><code>-10<sup>4</sup>&nbsp;&lt;= arr[i], x &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> findClosestElements(int[] arr, int k, int x) {", "        // 二分的是窗口左端：候选窗口 [lo, lo+k-1]，最终答案必是连续的 k 个", "        int lo = 0, hi = arr.length - k;", "        while (lo < hi) {", "            int mid = (lo + hi) >>> 1;", "            // arr[mid] 比 arr[mid+k] 离 x 更远（同距时右边的算近）：窗口整个左移不如右移", "            if (x - arr[mid] > arr[mid + k] - x) lo = mid + 1;", "            else hi = mid;", "        }", "        List<Integer> ans = new ArrayList<>(k);", "        for (int i = lo; i < lo + k; i++) ans.add(arr[i]);", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 658. 找到 K 个最接近的元素 —— 图解：复刻 Solution.java 的「二分窗口左端」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [1, 2, 4, 5, 6, 8, 9], k: 3, x: 5 };
+
+function trace(input) {
+  var arr = input.arr, k = input.k, x = input.x;
+  var n = arr.length;
+  var frames = [];
+  var INIT = 'int lo = 0, hi = arr.length - k;';
+  var MOVE = 'if (x - arr[mid] > arr[mid + k] - x) lo = mid + 1;';
+  var KEEP = 'else hi = mid;';
+  var RET = 'for (int i = lo; i < lo + k; i++) ans.add(arr[i]);';
+
+  var lo = 0, hi = n - k;
+  var shown = { move: false, keep: false };
+
+  function cellsPanel(mid, badAt) {
+    var marks = {}, i;
+    for (i = 0; i < n; i++) marks[i] = i < lo ? 'dim' : '';
+    var pointers = [];
+    var range = null;
+    if (mid != null) {
+      var other = badAt === mid ? mid + k : mid;
+      marks[badAt] = 'bad';
+      marks[other] = 'cur';
+      pointers.push({ at: mid, label: 'mid', cls: 'p-mid' });
+      if (mid + k < n) pointers.push({ at: mid + k, label: 'mid+k', cls: 'p-right' });
+      range = { from: mid, to: Math.min(mid + k - 1, n - 1), label: '候选窗口（左端 mid）' };
+    }
+    return Viz.cells(arr.map(String), { title: '升序数组 arr', marks: marks, pointers: pointers, range: range });
+  }
+
+  function varsPanel(mid, dL, dR) {
+    var items = [
+      { name: 'lo', v: lo, cls: 'chg' },
+      { name: 'hi', v: hi, cls: 'chg' }
+    ];
+    if (mid != null) {
+      items.push({ name: 'x−arr[mid]', v: dL, cls: '' });
+      items.push({ name: 'arr[mid+k]−x', v: dR, cls: '' });
+    }
+    return Viz.vars(items);
+  }
+
+  frames.push(Viz.frame(INIT, '答案一定是连续 k 个：二分窗口左端，范围 [0, ' + (n - k) + ']',
+    [cellsPanel(null), varsPanel(null)]));
+
+  var iter = 0;
+  while (lo < hi) {
+    var mid = (lo + hi) >>> 1;
+    var dL = x - arr[mid], dR = arr[mid + k] - x;
+    var move = dL > dR;
+    iter++;
+    if (iter === 1 && move && !shown.move) {
+      shown.move = true;
+      frames.push(Viz.frame(MOVE, 'x−' + arr[mid] + '=' + dL + ' > ' + arr[mid + k] + '−x=' + dR
+        + '：arr[mid] 更远，左端挪到 mid+1', [cellsPanel(mid, mid), varsPanel(mid, dL, dR)]));
+    } else if (iter === 1 && !move && !shown.keep) {
+      shown.keep = true;
+      frames.push(Viz.frame(KEEP, 'x−' + arr[mid] + '=' + dL + ' ≤ ' + arr[mid + k] + '−x=' + dR
+        + '：arr[mid+k] 更远，窗口留在左半', [cellsPanel(mid, mid + k), varsPanel(mid, dL, dR)]));
+    } else if (!move && !shown.keep) {
+      shown.keep = true;
+      frames.push(Viz.frame(KEEP, 'x−' + arr[mid] + '=' + dL + ' ≤ ' + arr[mid + k] + '−x=' + dR
+        + '：同距也取左边（值更小），窗口留在左半', [cellsPanel(mid, mid + k), varsPanel(mid, dL, dR)]));
+    } else if (move && !shown.move) {
+      shown.move = true;
+      frames.push(Viz.frame(MOVE, 'x−' + arr[mid] + '=' + dL + ' > ' + arr[mid + k] + '−x=' + dR
+        + '：左端越过 mid', [cellsPanel(mid, mid), varsPanel(mid, dL, dR)]));
+    }
+    if (move) lo = mid + 1;
+    else hi = mid;
+  }
+
+  frames.push(Viz.frame(RET, '左端定在 ' + lo + '：取 [' + arr.slice(lo, lo + k).join(', ') + ']，正好 ' + k + ' 个',
+    (function () {
+      var marks = {}, i;
+      for (i = 0; i < n; i++) marks[i] = (i >= lo && i < lo + k) ? 'done' : 'dim';
+      return [Viz.cells(arr.map(String), {
+        title: '升序数组 arr', marks: marks,
+        range: { from: lo, to: lo + k - 1, label: '答案窗口' }
+      }), Viz.vars([{ name: '答案', v: '[' + arr.slice(lo, lo + k).join(',') + ']', cls: 'done' }])];
+    })()));
+
+  return { frames: frames, result: arr.slice(lo, lo + k) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

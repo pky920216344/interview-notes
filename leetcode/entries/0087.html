@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>扰乱字符串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 680 / 1159</span>
+  <nav class="pn"><a href="0515.html">上一篇</a><a href="0750.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">87. </span>扰乱字符串</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">动态规划</li><li class="aux">深度优先搜索/递归</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">记忆化 DFS：对每对等长子串先比字符计数（不同直接 false），再枚举切分点试「不交换 / 交换」两种配对。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dfs(i, j, len)</code>：<code>s1[i..i+len)</code> 与 <code>s2[j..j+len)</code> 是否互为扰乱串；<code>len == 1</code> 时比单字符。</li><li><strong>先剪枝</strong>：两段字符计数不同必为 <code>false</code>，砍掉绝大多数分支；否则枚举切分点 <code>k</code>：</li><li>不交换：<code>dfs(i,j,k) &amp;&amp; dfs(i+k,j+k,len−k)</code>；</li><li>交换：<code>dfs(i,j+len−k,k) &amp;&amp; dfs(i+k,j,len−k)</code>。</li><li>结果存进 <code>memo[i][j][len]</code>，三态 <code>−1/0/1</code> 区分没算过。</li><li>没有交换次数上限——每一层递归都可独立决定换不换，所以只要有一个切法成立就行。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n⁴)（状态 n³ × 每状态计数 O(n)），空间复杂度 O(n³)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span>[][][] memo;   <span class="c">// -1 没算过，1 真，0 假</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="t">String</span> s1, s2;</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="k">boolean</span> isScramble(<span class="t">String</span> s1, <span class="t">String</span> s2) {</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> n = s1.length();</span><span class="ln"><span class="no">9</span>        <span class="k">this</span>.s1 = s1;</span><span class="ln"><span class="no">10</span>        <span class="k">this</span>.s2 = s2;</span><span class="ln"><span class="no">11</span>        memo = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>][n + <span class="n">1</span>][n + <span class="n">1</span>];</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span>[][] a : memo) <span class="k">for</span> (<span class="k">int</span>[] b : a) <span class="t">Arrays</span>.fill(b, -<span class="n">1</span>);</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> dfs(<span class="n">0</span>, <span class="n">0</span>, n) == <span class="n">1</span>;</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="c">/** dfs(i, j, len)：s1 从 i 起、s2 从 j 起的 len 个字符是否互为扰乱串。 */</span></span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="k">int</span> dfs(<span class="k">int</span> i, <span class="k">int</span> j, <span class="k">int</span> len) {</span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (len == <span class="n">1</span>) <span class="k">return</span> s1.charAt(i) == s2.charAt(j) ? <span class="n">1</span> : <span class="n">0</span>;</span><span class="ln"><span class="no">19</span>        <span class="k">if</span> (memo[i][j][len] != -<span class="n">1</span>) <span class="k">return</span> memo[i][j][len];</span><span class="ln"><span class="no">20</span>        <span class="k">int</span> res = <span class="n">0</span>;</span><span class="ln"><span class="no">21</span>        <span class="c">// 剪枝：字符计数不同，怎么切怎么换都不可能相等</span></span><span class="ln"><span class="no">22</span>        <span class="k">if</span> (sameCount(i, j, len)) {</span><span class="ln"><span class="no">23</span>            <span class="k">for</span> (<span class="k">int</span> k = <span class="n">1</span>; k &lt; len; k++) {</span><span class="ln"><span class="no">24</span>                <span class="c">// 不交换：两段按原顺序对应；交换：s1 前段对 s2 后段</span></span><span class="ln"><span class="no">25</span>                <span class="k">if</span> (dfs(i, j, k) == <span class="n">1</span> &amp;&amp; dfs(i + k, j + k, len - k) == <span class="n">1</span>) { res = <span class="n">1</span>; <span class="k">break</span>; }</span><span class="ln"><span class="no">26</span>                <span class="k">if</span> (dfs(i, j + len - k, k) == <span class="n">1</span> &amp;&amp; dfs(i + k, j, len - k) == <span class="n">1</span>) { res = <span class="n">1</span>; <span class="k">break</span>; }</span><span class="ln"><span class="no">27</span>            }</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        memo[i][j][len] = res;</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> res;</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span> </span><span class="ln"><span class="no">33</span>    <span class="k">private</span> <span class="k">boolean</span> sameCount(<span class="k">int</span> i, <span class="k">int</span> j, <span class="k">int</span> len) {</span><span class="ln"><span class="no">34</span>        <span class="k">int</span>[] cnt = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">35</span>        <span class="k">for</span> (<span class="k">int</span> t = <span class="n">0</span>; t &lt; len; t++) {</span><span class="ln"><span class="no">36</span>            cnt[s1.charAt(i + t) - <span class="s">'a'</span>]++;</span><span class="ln"><span class="no">37</span>            cnt[s2.charAt(j + t) - <span class="s">'a'</span>]--;</span><span class="ln"><span class="no">38</span>        }</span><span class="ln"><span class="no">39</span>        <span class="k">for</span> (<span class="k">int</span> c : cnt) <span class="k">if</span> (c != <span class="n">0</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">40</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">41</span>    }</span><span class="ln"><span class="no">42</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">使用下面描述的算法可以扰乱字符串 <code>s</code> 得到字符串 <code>t</code> ：
+<ol>
+	<li>如果字符串的长度为 1 ，算法停止</li>
+	<li>如果字符串的长度 > 1 ，执行下述步骤：
+	<ul>
+		<li>在一个随机下标处将字符串分割成两个非空的子字符串。即，如果已知字符串 <code>s</code> ，则可以将其分成两个子字符串 <code>x</code> 和 <code>y</code> ，且满足 <code>s = x + y</code> 。</li>
+		<li><strong>随机</strong> 决定是要「交换两个子字符串」还是要「保持这两个子字符串的顺序不变」。即，在执行这一步骤之后，<code>s</code> 可能是 <code>s = x + y</code> 或者 <code>s = y + x</code> 。</li>
+		<li>在 <code>x</code> 和 <code>y</code> 这两个子字符串上继续从步骤 1 开始递归执行此算法。</li>
+	</ul>
+	</li>
+</ol>
+
+<p>给你两个 <strong>长度相等</strong> 的字符串 <code>s1</code><em> </em>和 <code>s2</code>，判断 <code>s2</code><em> </em>是否是 <code>s1</code><em> </em>的扰乱字符串。如果是，返回 <code>true</code> ；否则，返回 <code>false</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s1 = "great", s2 = "rgeat"
+<strong>输出：</strong>true
+<strong>解释：</strong>s1 上可能发生的一种情形是：
+"great" --> "gr/eat" // 在一个随机下标处分割得到两个子字符串
+"gr/eat" --> "gr/eat" // 随机决定：「保持这两个子字符串的顺序不变」
+"gr/eat" --> "g/r / e/at" // 在子字符串上递归执行此算法。两个子字符串分别在随机下标处进行一轮分割
+"g/r / e/at" --> "r/g / e/at" // 随机决定：第一组「交换两个子字符串」，第二组「保持这两个子字符串的顺序不变」
+"r/g / e/at" --> "r/g / e/ a/t" // 继续递归执行此算法，将 "at" 分割得到 "a/t"
+"r/g / e/ a/t" --> "r/g / e/ a/t" // 随机决定：「保持这两个子字符串的顺序不变」
+算法终止，结果字符串和 s2 相同，都是 "rgeat"
+这是一种能够扰乱 s1 得到 s2 的情形，可以认为 s2 是 s1 的扰乱字符串，返回 true
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s1 = "abcde", s2 = "caebd"
+<strong>输出：</strong>false
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s1 = "a", s2 = "a"
+<strong>输出：</strong>true
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>s1.length == s2.length</code></li>
+	<li><code>1 <= s1.length <= 30</code></li>
+	<li><code>s1</code> 和 <code>s2</code> 由小写英文字母组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private int[][][] memo;   // -1 没算过，1 真，0 假", "    private String s1, s2;", "", "    public boolean isScramble(String s1, String s2) {", "        int n = s1.length();", "        this.s1 = s1;", "        this.s2 = s2;", "        memo = new int[n + 1][n + 1][n + 1];", "        for (int[][] a : memo) for (int[] b : a) Arrays.fill(b, -1);", "        return dfs(0, 0, n) == 1;", "    }", "", "    /** dfs(i, j, len)：s1 从 i 起、s2 从 j 起的 len 个字符是否互为扰乱串。 */", "    private int dfs(int i, int j, int len) {", "        if (len == 1) return s1.charAt(i) == s2.charAt(j) ? 1 : 0;", "        if (memo[i][j][len] != -1) return memo[i][j][len];", "        int res = 0;", "        // 剪枝：字符计数不同，怎么切怎么换都不可能相等", "        if (sameCount(i, j, len)) {", "            for (int k = 1; k < len; k++) {", "                // 不交换：两段按原顺序对应；交换：s1 前段对 s2 后段", "                if (dfs(i, j, k) == 1 && dfs(i + k, j + k, len - k) == 1) { res = 1; break; }", "                if (dfs(i, j + len - k, k) == 1 && dfs(i + k, j, len - k) == 1) { res = 1; break; }", "            }", "        }", "        memo[i][j][len] = res;", "        return res;", "    }", "", "    private boolean sameCount(int i, int j, int len) {", "        int[] cnt = new int[26];", "        for (int t = 0; t < len; t++) {", "            cnt[s1.charAt(i + t) - 'a']++;", "            cnt[s2.charAt(j + t) - 'a']--;", "        }", "        for (int c : cnt) if (c != 0) return false;", "        return true;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 87. 扰乱字符串 —— 图解：复刻 Solution.java 的「计数剪枝 + 记忆化 DFS」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s1: 'great', s2: 'rgeat' };
+
+function trace(input) {
+  var s1 = input.s1, s2 = input.s2, n = s1.length;
+  var memo = {};
+  var frames = [];
+
+  // 顶部一层的字符计数
+  function countTable() {
+    var c1 = {}, c2 = {};
+    for (var i = 0; i < n; i++) {
+      c1[s1[i]] = (c1[s1[i]] || 0) + 1;
+      c2[s2[i]] = (c2[s2[i]] || 0) + 1;
+    }
+    var letters = Object.keys(c1);
+    Object.keys(c2).forEach(function (ch) { if (!(ch in c1)) letters.push(ch); });
+    letters.sort();
+    return Viz.table('字符计数（左 s1 · 右 s2）', letters.map(function (ch) {
+      var same = (c1[ch] || 0) === (c2[ch] || 0);
+      return { k: ch, v: (c1[ch] || 0) + ' · ' + (c2[ch] || 0), cls: same ? 'hit' : 'bad' };
+    }));
+  }
+
+  function strPanels(o) {
+    var m1 = {}, m2 = {};
+    var i;
+    for (i = 0; i < n; i++) { m1[i] = ''; m2[i] = ''; }
+    if (o.s1a) for (i = o.s1a[0]; i < o.s1a[1]; i++) m1[i] = 'win';
+    if (o.s1b) for (i = o.s1b[0]; i < o.s1b[1]; i++) m1[i] = 'cur';
+    if (o.s2a) for (i = o.s2a[0]; i < o.s2a[1]; i++) m2[i] = 'win';
+    if (o.s2b) for (i = o.s2b[0]; i < o.s2b[1]; i++) m2[i] = 'cur';
+    return [
+      Viz.cells(s1.split(''), { title: 's1', marks: m1 }),
+      Viz.cells(s2.split(''), { title: 's2', marks: m2 })
+    ];
+  }
+
+  var topSame = true;
+  (function () {   // 顶层字符计数是否一致（Java 里 sameCount(0, 0, n) 的结果）
+    var c = {};
+    for (var i = 0; i < n; i++) {
+      c[s1[i]] = (c[s1[i]] || 0) + 1;
+      c[s2[i]] = (c[s2[i]] || 0) - 1;
+    }
+    for (var ch in c) if (c[ch] !== 0) topSame = false;
+  })();
+  var topK = -1, topSwap = false;
+  function dfs(i, j, len, top) {
+    if (len === 1) return s1.charAt(i) === s2.charAt(j);
+    var kk = i + ',' + j + ',' + len;
+    if (memo[kk] !== undefined) return memo[kk];
+    var res = false;
+    var same = true, cnt = {};
+    for (var t = 0; t < len; t++) {
+      cnt[s1.charAt(i + t)] = (cnt[s1.charAt(i + t)] || 0) + 1;
+      cnt[s2.charAt(j + t)] = (cnt[s2.charAt(j + t)] || 0) - 1;
+    }
+    for (var ch in cnt) if (cnt[ch] !== 0) { same = false; break; }
+    if (same) {
+      for (var k = 1; k < len; k++) {
+        if (dfs(i, j, k, false) && dfs(i + k, j + k, len - k, false)) {
+          res = true;
+          if (top) { topK = k; topSwap = false; }
+          break;
+        }
+        if (dfs(i, j + len - k, k, false) && dfs(i + k, j, len - k, false)) {
+          res = true;
+          if (top) { topK = k; topSwap = true; }
+          break;
+        }
+      }
+    }
+    memo[kk] = res;
+    return res;
+  }
+  var ans = dfs(0, 0, n, true);
+
+  frames.push(Viz.frame('if (sameCount(i, j, len)) {',
+    topSame
+      ? '先比字符计数：两边各字母一样多，才值得继续切'
+      : '字符计数都不一样，直接判 false',
+    strPanels({}).concat([countTable()])));
+
+  if (topSame && n > 1) {
+    if (topK >= 0) {
+      var a = topK, b = n - topK;
+      frames.push(Viz.frame('if (dfs(i, j, k) == 1 && dfs(i + k, j + k, len - k) == 1) { res = 1; break; }',
+        '枚举切分点：在 k=' + topK + ' 处切开，先试「不交换」' + (topSwap ? '（失败）' : '（成功）'),
+        strPanels({ s1a: [0, a], s1b: [a, n], s2a: [0, a], s2b: [a, n] })));
+      if (topSwap) {
+        frames.push(Viz.frame('if (dfs(i, j + len - k, k) == 1 && dfs(i + k, j, len - k) == 1) { res = 1; break; }',
+          '再试「交换」：s1 前段对 s2 后段，配上了',
+          strPanels({ s1a: [0, a], s1b: [a, n], s2a: [b, n], s2b: [0, b] })));
+      } else {
+        frames.push(Viz.frame('if (dfs(i, j, k) == 1 && dfs(i + k, j + k, len - k) == 1) { res = 1; break; }',
+          '不交换配对成立：两段各自能搅乱成对方',
+          strPanels({ s1a: [0, a], s1b: [a, n], s2a: [0, a], s2b: [a, n] })));
+      }
+    } else {
+      frames.push(Viz.frame('if (dfs(i, j + len - k, k) == 1 && dfs(i + k, j, len - k) == 1) { res = 1; break; }',
+        '每个切分点的「不交换/交换」两种配对都失败',
+        strPanels({})));
+    }
+  }
+
+  frames.push(Viz.frame('return dfs(0, 0, n) == 1;',
+    ans ? '递归全部通过 → s2 是 s1 的扰乱串' : '所有切法都走不通 → 不是扰乱串',
+    [Viz.vars([{ name: '结果', v: String(ans) }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

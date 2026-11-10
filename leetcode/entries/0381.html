@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>O(1) 时间插入、删除和获取随机元素 - 允许重复 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 377 / 1159</span>
+  <nav class="pn"><a href="0321.html">上一篇</a><a href="supp-13.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">381. </span>O(1) 时间插入、删除和获取随机元素 - 允许重复</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 9</li><li class="algo">设计</li><li class="aux">哈希表</li><li class="tag">设计</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">数学</li><li class="tag">随机化</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">数组紧凑存所有出现（可重复），哈希表 val→下标集合；删除时抓任一出现下标，用尾部元素搬来补洞。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>insert</code> 一律追加到数组尾（重复也照加）；<code>getRandom</code> 均匀抽下标，出现几次就是几份概率。</li><li><code>pos[val]</code> 是它所有出现下标的集合；删除时抓任意一个 <code>i</code>，把尾部元素搬到 <code>i</code> 补洞，数组保持紧凑。</li><li>顺序坑：先从 val 的集合删掉 <code>i</code>，再给尾元素换下标——当 val 自己就是尾元素时，两个操作动的是同一个集合，反了会把新下标误删。</li><li>次数归零就 <code>pos.remove(val)</code>：下次 insert 才能正确返回「第一次插入」。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 每步平均 O(1)，空间复杂度 O(出现总个数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">RandomizedCollection</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; vals = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();           <span class="c">// 所有出现（可重复）紧凑存放</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt;&gt; pos = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;(); <span class="c">// val → 它的出现下标集合</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Random</span> rnd = <span class="k">new</span> <span class="t">Random</span>();</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">RandomizedCollection</span>() { }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">public</span> <span class="k">boolean</span> insert(<span class="k">int</span> val) {</span><span class="ln"><span class="no">11</span>        <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; set = pos.computeIfAbsent(val, k -&gt; <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;());</span><span class="ln"><span class="no">12</span>        <span class="k">boolean</span> first = set.isEmpty();   <span class="c">// 空集合只会是新建的：即 val 此前不存在</span></span><span class="ln"><span class="no">13</span>        set.add(vals.size());            <span class="c">// 新出现的位置在数组尾</span></span><span class="ln"><span class="no">14</span>        vals.add(val);</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> first;</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="k">public</span> <span class="k">boolean</span> remove(<span class="k">int</span> val) {</span><span class="ln"><span class="no">19</span>        <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; set = pos.get(val);</span><span class="ln"><span class="no">20</span>        <span class="k">if</span> (set == <span class="k">null</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">21</span>        <span class="k">int</span> i = set.iterator().next();       <span class="c">// 抓 val 任意一个出现下标</span></span><span class="ln"><span class="no">22</span>        <span class="k">int</span> last = vals.get(vals.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">23</span>        set.remove(i);                       <span class="c">// 先从 val 的集合里删掉这个下标</span></span><span class="ln"><span class="no">24</span>        vals.set(i, last);                   <span class="c">// 尾元素搬过来补洞</span></span><span class="ln"><span class="no">25</span>        <span class="k">if</span> (i &lt; vals.size() - <span class="n">1</span>) {</span><span class="ln"><span class="no">26</span>            pos.get(last).remove(vals.size() - <span class="n">1</span>);   <span class="c">// 尾元素旧下标作废</span></span><span class="ln"><span class="no">27</span>            pos.get(last).add(i);                    <span class="c">// 记录尾元素的新下标</span></span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        vals.remove(vals.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">30</span>        <span class="k">if</span> (set.isEmpty()) pos.remove(val);  <span class="c">// 次数归零删 key，insert 才能判「第一次」</span></span><span class="ln"><span class="no">31</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span> </span><span class="ln"><span class="no">34</span>    <span class="k">public</span> <span class="k">int</span> getRandom() {</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> vals.get(rnd.nextInt(vals.size()));</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p><code>RandomizedCollection</code> 是一种包含数字集合(可能是重复的)的数据结构。它应该支持插入和删除特定元素，以及删除随机元素。</p>
+
+<p>实现 <code>RandomizedCollection</code> 类:</p>
+
+<ul>
+	<li><code>RandomizedCollection()</code>初始化空的 <code>RandomizedCollection</code> 对象。</li>
+	<li><code>bool insert(int val)</code>&nbsp;将一个 <code>val</code> 项插入到集合中，即使该项已经存在。如果该项不存在，则返回 <code>true</code> ，否则返回 <code>false</code> 。</li>
+	<li><code>bool remove(int val)</code>&nbsp;如果存在，从集合中移除一个 <code>val</code> 项。如果该项存在，则返回 <code>true</code> ，否则返回 <code>false</code> 。注意，如果 <code>val</code> 在集合中出现多次，我们只删除其中一个。</li>
+	<li><code>int getRandom()</code> 从当前的多个元素集合中返回一个随机元素。每个元素被返回的概率与集合中包含的相同值的数量 <strong>线性相关</strong> 。</li>
+</ul>
+
+<p>您必须实现类的函数，使每个函数的 <strong>平均</strong> 时间复杂度为 <code>O(1)</code> 。</p>
+
+<p><strong>注意：</strong>生成测试用例时，只有在 <code>RandomizedCollection</code> 中 <strong>至少有一项</strong> 时，才会调用 <code>getRandom</code> 。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入</strong>
+["RandomizedCollection", "insert", "insert", "insert", "getRandom", "remove", "getRandom"]
+[[], [1], [1], [2], [], [1], []]
+<strong>输出</strong>
+[null, true, false, true, 2, true, 1]
+
+<strong>解释</strong>
+RandomizedCollection collection = new RandomizedCollection();// 初始化一个空的集合。
+collection.insert(1);   // 返回 true，因为集合不包含 1。
+                        // 将 1 插入到集合中。
+collection.insert(1);   // 返回 false，因为集合包含 1。
+&nbsp;                       // 将另一个 1 插入到集合中。集合现在包含 [1,1]。
+collection.insert(2);   // 返回 true，因为集合不包含 2。
+&nbsp;                       // 将 2 插入到集合中。集合现在包含 [1,1,2]。
+collection.getRandom(); // getRandom 应当:
+&nbsp;                       // 有 2/3 的概率返回 1,
+&nbsp;                       // 1/3 的概率返回 2。
+collection.remove(1);   // 返回 true，因为集合包含 1。
+&nbsp;                       // 从集合中移除 1。集合现在包含 [1,2]。
+collection.getRandom(); // getRandom 应该返回 1 或 2，两者的可能性相同。</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>-2<sup>31</sup>&nbsp;&lt;= val &lt;= 2<sup>31</sup>&nbsp;- 1</code></li>
+	<li><code>insert</code>,&nbsp;<code>remove</code>&nbsp;和&nbsp;<code>getRandom</code>&nbsp;最多 <strong>总共</strong> 被调用&nbsp;<code>2 * 10<sup>5</sup></code>&nbsp;次</li>
+	<li>当调用 <code>getRandom</code> 时，数据结构中 <strong>至少有一个</strong> 元素</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class RandomizedCollection {", "    private final List<Integer> vals = new ArrayList<>();           // 所有出现（可重复）紧凑存放", "    private final Map<Integer, Set<Integer>> pos = new HashMap<>(); // val → 它的出现下标集合", "    private final Random rnd = new Random();", "", "    public RandomizedCollection() { }", "", "    public boolean insert(int val) {", "        Set<Integer> set = pos.computeIfAbsent(val, k -> new HashSet<>());", "        boolean first = set.isEmpty();   // 空集合只会是新建的：即 val 此前不存在", "        set.add(vals.size());            // 新出现的位置在数组尾", "        vals.add(val);", "        return first;", "    }", "", "    public boolean remove(int val) {", "        Set<Integer> set = pos.get(val);", "        if (set == null) return false;", "        int i = set.iterator().next();       // 抓 val 任意一个出现下标", "        int last = vals.get(vals.size() - 1);", "        set.remove(i);                       // 先从 val 的集合里删掉这个下标", "        vals.set(i, last);                   // 尾元素搬过来补洞", "        if (i < vals.size() - 1) {", "            pos.get(last).remove(vals.size() - 1);   // 尾元素旧下标作废", "            pos.get(last).add(i);                    // 记录尾元素的新下标", "        }", "        vals.remove(vals.size() - 1);", "        if (set.isEmpty()) pos.remove(val);  // 次数归零删 key，insert 才能判「第一次」", "        return true;", "    }", "", "    public int getRandom() {", "        return vals.get(rnd.nextInt(vals.size()));", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 381. O(1) 时间插入、删除和获取随机元素（允许重复）—— 图解：复刻 Solution.java 的「数组 + 下标集合」，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// getRandom 的随机选择两边各自独立，不进对拍结果（out 只含 insert/remove 的布尔值）。
+
+var STORY_INPUT = { ops: [['insert', 1], ['insert', 1], ['insert', 2], ['getRandom'], ['remove', 1], ['getRandom'], ['remove', 1]] };
+
+function trace(input) {
+  var vals = [];   // 数组存所有出现（可重复）
+  var pos = {};    // val → 出现下标的集合（用数组模拟）
+  var out = [], frames = [], captured = {}, rmCount = 0;
+
+  var ADD = 'set.add(vals.size());';
+  var GET = 'return vals.get(rnd.nextInt(vals.size()));';
+  var SET = 'vals.set(i, last);';
+  var POP = 'vals.remove(vals.size() - 1);';
+  var DEL = 'if (set.isEmpty()) pos.remove(val);';
+
+  function push(tag, at, key, panels) {
+    if (captured[tag]) return;
+    captured[tag] = true;
+    frames.push(Viz.frame(at, key, panels));
+  }
+  function valsPanel(marks, ptrs) {
+    return Viz.cells(vals.slice(), { title: 'vals 数组（紧凑存放，可重复）', marks: marks || {}, pointers: ptrs || [] });
+  }
+  function posPanel(hit) {
+    var keys = Object.keys(pos).map(Number).sort(function (a, b) { return a - b; });
+    return Viz.table('pos：val → 出现下标集合', keys.map(function (k) {
+      return { k: String(k), v: pos[k].join(','), cls: k === hit ? 'hit' : '' };
+    }));
+  }
+  function varsPanel(txt) {
+    var items = [];
+    if (txt) items.push({ name: '说明', v: txt });
+    return Viz.vars(items);
+  }
+
+  input.ops.forEach(function (op, idx) {
+    if (op[0] === 'insert') {
+      var v = op[1];
+      var set = pos[v] = pos[v] || [];
+      var first = set.length === 0;
+      if (!first && idx === 1) push('dup', ADD, 'insert(' + v + ') 又来：返回 false，但数组照样追加，pos 多一个下标',
+        [valsPanel(), posPanel(v), varsPanel('返回 false（第一次才是 true）')]);
+      set.push(vals.length);
+      vals.push(v);
+      out.push(first);
+    } else if (op[0] === 'remove') {
+      var rv = op[1];
+      if (!pos[rv] || !pos[rv].length) { out.push(false); return; }
+      var s = pos[rv];
+      var i = s[0];                        // 抓任意一个出现下标
+      var last = vals[vals.length - 1];
+      rmCount++;
+      if (rmCount === 1) push('rm1', SET, 'remove(' + rv + ')：抓它的下标 ' + i + '，把尾部的 ' + last + ' 搬来补洞',
+        [valsPanel((function () { var m = {}; m[i] = 'bad'; return m; })(),
+                    [{ at: vals.length - 1, label: 'last=' + last, cls: 'p-tail' }]), posPanel(rv)]);
+      s.splice(s.indexOf(i), 1);
+      vals[i] = last;
+      if (i < vals.length - 1) {
+        var lt = pos[last];
+        lt.splice(lt.indexOf(vals.length - 1), 1);
+        lt.push(i);
+      }
+      if (rmCount === 1) push('rm1b', POP, '尾部 ' + last + ' 落到下标 ' + i + '：数组仍紧凑，pos 同步换下标',
+        [valsPanel((function () { var m = {}; m[i] = 'new'; return m; })()), posPanel()]);
+      vals.pop();
+      var gone = s.length === 0;
+      if (gone) delete pos[rv];
+      if (rmCount === 2) push('rm2', SET, '再 remove(' + rv + ')：' + rv + ' 的次数就要归零，先照样尾部补洞',
+        [valsPanel((function () { var m = {}; m[i] = 'bad'; return m; })(),
+                    [{ at: vals.length - 1, label: 'last=' + last, cls: 'p-tail' }]), posPanel(rv)]);
+      if (rmCount === 2 && gone) push('rm2b', DEL, rv + ' 的次数归零，pos 里删掉它的 key：下次 insert 才报「第一次」',
+        [valsPanel(), posPanel(), varsPanel('返回 true')]);
+      out.push(true);
+    } else {
+      if (!vals.length) return;
+      var pick = vals[Math.floor(Math.random() * vals.length)];
+      if (idx === 3) push('rand', GET, 'getRandom：数组里均匀抽下标，出现几次就几份概率，这次抽到 ' + pick,
+        [valsPanel({}, [{ at: vals.indexOf(pick), label: '抽中', cls: 'p-cur' }]), posPanel()]);
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

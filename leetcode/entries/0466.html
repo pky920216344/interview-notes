@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>统计重复个数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1000 / 1159</span>
+  <nav class="pn"><a href="1122.html">上一篇</a><a href="1462.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">466. </span>统计重复个数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">模拟</li><li class="aux">哈希表</li><li class="tag">双指针</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">用「s2 配到哪个下标 j」当状态逐块扫 s1；同一状态再现说明出现循环，按「每 cb 块凑 cc 个 s2」整段跳跃。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>一眼看穿状态：扫第 k 个 s1 块之前，只需要知道 <code>j</code>（s2 下一个要配的下标）——<code>j</code> 只有 s2.length 种取值。</li><li>每个块开工前把 <code>(j → 块号, 已凑 s2 数)</code> 记下来；<code>j</code> 再次出现即找到循环节：<code>cb</code> 个块凑 <code>cc</code> 个 s2。</li><li>剩余块数整除 <code>cb</code> 的部分一次跳完，余数继续逐块扫；n1 高达 10⁶ 也只需扫 O(s2) 个块。</li><li>陷阱：s2 里有 s1 配不上的字符时 cc=0，照样能跳（答案 0）；最终答案是 <code>cnt / n2</code> 向下取整。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O((s1 + s2) × s2)，空间复杂度 O(s2)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> getMaxRepetitions(<span class="t">String</span> s1, <span class="k">int</span> n1, <span class="t">String</span> s2, <span class="k">int</span> n2) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> m = s2.length();</span><span class="ln"><span class="no">6</span>        <span class="c">// 状态 = 下一个要匹配的 s2 下标 j；seen 记这个状态上次出现在第几个 s1 块、那时已凑几个 s2</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] seenBlock = <span class="k">new</span> <span class="k">int</span>[m], seenCnt = <span class="k">new</span> <span class="k">int</span>[m];</span><span class="ln"><span class="no">8</span>        <span class="t">Arrays</span>.fill(seenBlock, -<span class="n">1</span>);</span><span class="ln"><span class="no">9</span>        <span class="k">int</span> j = <span class="n">0</span>, cnt = <span class="n">0</span>, block = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">while</span> (block &lt; n1) {</span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (seenBlock[j] &gt;= <span class="n">0</span>) {</span><span class="ln"><span class="no">12</span>                <span class="c">// 同一状态再次出现：每 cb 个块凑 cc 个 s2，整段循环一次跳过去</span></span><span class="ln"><span class="no">13</span>                <span class="k">int</span> cb = block - seenBlock[j], cc = cnt - seenCnt[j];</span><span class="ln"><span class="no">14</span>                <span class="k">int</span> jump = (n1 - block) / cb;</span><span class="ln"><span class="no">15</span>                cnt += cc * jump;</span><span class="ln"><span class="no">16</span>                block += cb * jump;</span><span class="ln"><span class="no">17</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">18</span>                seenBlock[j] = block;</span><span class="ln"><span class="no">19</span>                seenCnt[j] = cnt;</span><span class="ln"><span class="no">20</span>            }</span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (block &gt;= n1) <span class="k">break</span>;</span><span class="ln"><span class="no">22</span>            <span class="c">// 逐字符扫一个 s1 块：配得上就把 j 前移，凑满一个 s2 就 cnt++、j 归零</span></span><span class="ln"><span class="no">23</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s1.length(); i++) {</span><span class="ln"><span class="no">24</span>                <span class="k">if</span> (s1.charAt(i) == s2.charAt(j)) {</span><span class="ln"><span class="no">25</span>                    j++;</span><span class="ln"><span class="no">26</span>                    <span class="k">if</span> (j == s2.length()) { j = <span class="n">0</span>; cnt++; }</span><span class="ln"><span class="no">27</span>                }</span><span class="ln"><span class="no">28</span>            }</span><span class="ln"><span class="no">29</span>            block++;</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>        <span class="k">return</span> cnt / n2;</span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>定义 <code>str = [s, n]</code> 表示 <code>str</code> 由 <code>n</code> 个字符串 <code>s</code> 连接构成。</p>
+
+<ul>
+	<li>例如，<code>str == ["abc", 3] =="abcabcabc"</code> 。</li>
+</ul>
+
+<p>如果可以从 <code>s2</code><sub> </sub>中删除某些字符使其变为 <code>s1</code>，则称字符串 <code>s1</code><sub> </sub>可以从字符串 <code>s2</code> 获得。</p>
+
+<ul>
+	<li>例如，根据定义，<code>s1 = "abc"</code> 可以从 <code>s2 = "ab<em><strong>dbe</strong></em>c"</code> 获得，仅需要删除加粗且用斜体标识的字符。</li>
+</ul>
+
+<p>现在给你两个字符串 <code>s1</code> 和 <code>s2</code> 和两个整数 <code>n1</code> 和 <code>n2</code> 。由此构造得到两个字符串，其中 <code>str1 = [s1, n1]</code>、<code>str2 = [s2, n2]</code> 。</p>
+
+<p>请你找出一个最大整数 <code>m</code> ，以满足 <code>str = [str2, m]</code> 可以从 <code>str1</code> 获得。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s1 = "acb", n1 = 4, s2 = "ab", n2 = 2
+<strong>输出：</strong>2
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s1 = "acb", n1 = 1, s2 = "acb", n2 = 1
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= s1.length, s2.length <= 100</code></li>
+	<li><code>s1</code> 和 <code>s2</code> 由小写英文字母组成</li>
+	<li><code>1 <= n1, n2 <= 10<sup>6</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int getMaxRepetitions(String s1, int n1, String s2, int n2) {", "        int m = s2.length();", "        // 状态 = 下一个要匹配的 s2 下标 j；seen 记这个状态上次出现在第几个 s1 块、那时已凑几个 s2", "        int[] seenBlock = new int[m], seenCnt = new int[m];", "        Arrays.fill(seenBlock, -1);", "        int j = 0, cnt = 0, block = 0;", "        while (block < n1) {", "            if (seenBlock[j] >= 0) {", "                // 同一状态再次出现：每 cb 个块凑 cc 个 s2，整段循环一次跳过去", "                int cb = block - seenBlock[j], cc = cnt - seenCnt[j];", "                int jump = (n1 - block) / cb;", "                cnt += cc * jump;", "                block += cb * jump;", "            } else {", "                seenBlock[j] = block;", "                seenCnt[j] = cnt;", "            }", "            if (block >= n1) break;", "            // 逐字符扫一个 s1 块：配得上就把 j 前移，凑满一个 s2 就 cnt++、j 归零", "            for (int i = 0; i < s1.length(); i++) {", "                if (s1.charAt(i) == s2.charAt(j)) {", "                    j++;", "                    if (j == s2.length()) { j = 0; cnt++; }", "                }", "            }", "            block++;", "        }", "        return cnt / n2;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 466. 统计重复个数 —— 图解：复刻 Solution.java 的「状态循环检测 + 整段跳跃」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s1: 'acb', n1: 4, s2: 'ab', n2: 2 };
+
+function trace(input) {
+  var s1 = input.s1, s2 = input.s2, n1 = input.n1, n2 = input.n2;
+  var m = s2.length;
+  var seenBlock = {}, seenCnt = {};
+  var j = 0, cnt = 0, block = 0;
+  var frames = [];
+  var jumped = false;
+
+  function s1Panel(markAt, markCls) {
+    var marks = {};
+    if (markAt != null) marks[markAt] = markCls || 'cur';
+    return Viz.cells(s1.split(''), { title: 's1（当前正在扫的块）', marks: marks,
+      pointers: [{ at: Math.min(markAt == null ? 0 : markAt, s1.length - 1), label: 'i', cls: 'p-cur' }] });
+  }
+  function s2Panel(markAt, markCls) {
+    var marks = {};
+    if (markAt != null) marks[markAt] = markCls || 'hit';
+    return Viz.cells(s2.split(''), { title: 's2（下一个要配的下标 j）', marks: marks,
+      pointers: [{ at: j, label: 'j', cls: 'p-cur' }] });
+  }
+  function varsPanel(extra) {
+    var items = [
+      { name: 'block（扫到第几个 s1 块）', v: String(block) },
+      { name: 'cnt（凑出的 s2 个数）', v: String(cnt) },
+      { name: 'j（s2 的下一个下标）', v: String(j) }
+    ];
+    return Viz.vars(extra ? items.concat(extra) : items);
+  }
+
+  while (block < n1) {
+    if (seenBlock[j] >= 0) {
+      var cb = block - seenBlock[j], cc = cnt - seenCnt[j];
+      var jump = Math.floor((n1 - block) / cb);
+      if (jump > 0 && !jumped) {
+        jumped = true;
+        frames.push(Viz.frame('int jump = (n1 - block) / cb;',
+          '状态 j=' + j + ' 上次在第 ' + seenBlock[j] + ' 块出现：' + cb + ' 个块凑 ' + cc + ' 个 s2，一次跳 ' + jump + ' 段',
+          [s1Panel(null), s2Panel(null), varsPanel([{ name: 'cb（块/循环）', v: String(cb) }, { name: 'cc（s2/循环）', v: String(cc) }, { name: 'jump', v: String(jump) }])]));
+      }
+      cnt += cc * jump;
+      block += cb * jump;
+    } else {
+      seenBlock[j] = block;
+      seenCnt[j] = cnt;
+      if (block === 0) {
+        frames.push(Viz.frame('seenBlock[j] = block;',
+          '开工前先记账：状态 j=0 记在第 0 块、已凑 0 个 s2', [s1Panel(null), s2Panel(null), varsPanel()]));
+      }
+    }
+    if (block >= n1) break;
+    for (var i = 0; i < s1.length; i++) {
+      if (s1[i] === s2[j]) {
+        if (block === 0 && i === 0) {
+          frames.push(Viz.frame('if (s1.charAt(i) == s2.charAt(j)) {',
+            '逐字符扫 s1：\'' + s1[i] + '\' 配上 s2[' + j + ']，j 前移一位',
+            [s1Panel(i), s2Panel(j, 'hit'), varsPanel()]));
+        }
+        j++;
+        if (j === s2.length) {
+          j = 0;
+          cnt++;
+          if (block === 0) {
+            frames.push(Viz.frame('if (j == s2.length()) { j = 0; cnt++; }',
+              '凑满一个 s2：cnt 增到 ' + cnt + '，j 归零从头再配',
+              [s1Panel(i), s2Panel(null), varsPanel()]));
+          }
+        }
+      }
+    }
+    block++;
+  }
+
+  frames.push(Viz.frame('return cnt / n2;',
+    '共凑出 ' + cnt + ' 个 s2，除以 n2=' + n2 + ' → ' + Math.floor(cnt / n2) + ' 个完整 str2',
+    [s1Panel(null), s2Panel(null), varsPanel([{ name: '答案 m', v: String(Math.floor(cnt / n2)) }])]));
+
+  return { frames: frames, result: Math.floor(cnt / n2) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

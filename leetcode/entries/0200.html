@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>岛屿数量 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 10 / 1159</span>
+  <nav class="pn"><a href="supp-04.html">上一篇</a><a href="0021.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">200. </span>岛屿数量</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 336</li><li class="algo">广度优先搜索</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">逐格扫描，遇到 &#x27;1&#x27; 就是一座新岛：计数加 1，再用 BFS 把整座岛沉成 &#x27;0&#x27;，之后不会重复数到。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>双重循环扫描网格；遇到 <code>'1'</code> 说明发现一座没数过的岛，<code>ans++</code>，再调 <code>sink</code> 把这座岛整个沉掉。</li><li><code>sink</code> 用队列做 BFS：起点改成 <code>'0'</code> 后入队，每次出队向上下左右看，邻居是 <code>'1'</code> 就改成 <code>'0'</code> 并入队。</li><li>必须<strong>入队时就沉</strong>，不能等出队再改，否则同一格会被多个邻居重复入队。</li><li>沉成 <code>'0'</code> 就是「已访问」标记，原地改 <code>grid</code>，不用额外的 <code>visited</code>；队列里只有 BFS 当前这一圈的格子，空间 <code>O(min(m, n))</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(min(m, n))</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">int</span>[][] DIRS = {{<span class="n">1</span>, <span class="n">0</span>}, {-<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">0</span>, <span class="n">1</span>}, {<span class="n">0</span>, -<span class="n">1</span>}};</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="k">int</span> numIslands(<span class="k">char</span>[][] grid) {</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; grid.length; i++) {</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; grid[<span class="n">0</span>].length; j++) {</span><span class="ln"><span class="no">10</span>                <span class="k">if</span> (grid[i][j] == <span class="s">'1'</span>) {</span><span class="ln"><span class="no">11</span>                    <span class="c">// 发现新岛：计数，再把整座岛沉掉</span></span><span class="ln"><span class="no">12</span>                    ans++;</span><span class="ln"><span class="no">13</span>                    sink(grid, i, j);</span><span class="ln"><span class="no">14</span>                }</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span> </span><span class="ln"><span class="no">20</span>    <span class="c">// BFS：把 (i, j) 所在的整座岛都改成 '0'</span></span><span class="ln"><span class="no">21</span>    <span class="k">private</span> <span class="k">void</span> sink(<span class="k">char</span>[][] grid, <span class="k">int</span> i, <span class="k">int</span> j) {</span><span class="ln"><span class="no">22</span>        <span class="k">int</span> m = grid.length, n = grid[<span class="n">0</span>].length;</span><span class="ln"><span class="no">23</span>        <span class="t">Queue</span>&lt;<span class="k">int</span>[]&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">24</span>        grid[i][j] = <span class="s">'0'</span>;</span><span class="ln"><span class="no">25</span>        queue.add(<span class="k">new</span> <span class="k">int</span>[]{i, j});</span><span class="ln"><span class="no">26</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">27</span>            <span class="k">int</span>[] cur = queue.poll();</span><span class="ln"><span class="no">28</span>            <span class="k">for</span> (<span class="k">int</span>[] d : DIRS) {</span><span class="ln"><span class="no">29</span>                <span class="k">int</span> r = cur[<span class="n">0</span>] + d[<span class="n">0</span>], c = cur[<span class="n">1</span>] + d[<span class="n">1</span>];</span><span class="ln"><span class="no">30</span>                <span class="k">if</span> (r &gt;= <span class="n">0</span> &amp;&amp; r &lt; m &amp;&amp; c &gt;= <span class="n">0</span> &amp;&amp; c &lt; n &amp;&amp; grid[r][c] == <span class="s">'1'</span>) {</span><span class="ln"><span class="no">31</span>                    <span class="c">// 入队时就沉，免得同一格重复入队</span></span><span class="ln"><span class="no">32</span>                    grid[r][c] = <span class="s">'0'</span>;</span><span class="ln"><span class="no">33</span>                    queue.add(<span class="k">new</span> <span class="k">int</span>[]{r, c});</span><span class="ln"><span class="no">34</span>                }</span><span class="ln"><span class="no">35</span>            }</span><span class="ln"><span class="no">36</span>        }</span><span class="ln"><span class="no">37</span>    }</span><span class="ln"><span class="no">38</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个由&nbsp;<code>'1'</code>（陆地）和 <code>'0'</code>（水）组成的的二维网格，请你计算网格中岛屿的数量。</p>
+
+<p>岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。</p>
+
+<p>此外，你可以假设该网格的四条边均被水包围。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>grid = [
+&nbsp; ['1','1','1','1','0'],
+&nbsp; ['1','1','0','1','0'],
+&nbsp; ['1','1','0','0','0'],
+&nbsp; ['0','0','0','0','0']
+]
+<strong>输出：</strong>1
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>grid = [
+&nbsp; ['1','1','0','0','0'],
+&nbsp; ['1','1','0','0','0'],
+&nbsp; ['0','0','1','0','0'],
+&nbsp; ['0','0','0','1','1']
+]
+<strong>输出：</strong>3
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == grid.length</code></li>
+	<li><code>n == grid[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 300</code></li>
+	<li><code>grid[i][j]</code> 的值为 <code>'0'</code> 或 <code>'1'</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private static final int[][] DIRS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};", "", "    public int numIslands(char[][] grid) {", "        int ans = 0;", "        for (int i = 0; i < grid.length; i++) {", "            for (int j = 0; j < grid[0].length; j++) {", "                if (grid[i][j] == '1') {", "                    // 发现新岛：计数，再把整座岛沉掉", "                    ans++;", "                    sink(grid, i, j);", "                }", "            }", "        }", "        return ans;", "    }", "", "    // BFS：把 (i, j) 所在的整座岛都改成 '0'", "    private void sink(char[][] grid, int i, int j) {", "        int m = grid.length, n = grid[0].length;", "        Queue<int[]> queue = new ArrayDeque<>();", "        grid[i][j] = '0';", "        queue.add(new int[]{i, j});", "        while (!queue.isEmpty()) {", "            int[] cur = queue.poll();", "            for (int[] d : DIRS) {", "                int r = cur[0] + d[0], c = cur[1] + d[1];", "                if (r >= 0 && r < m && c >= 0 && c < n && grid[r][c] == '1') {", "                    // 入队时就沉，免得同一格重复入队", "                    grid[r][c] = '0';", "                    queue.add(new int[]{r, c});", "                }", "            }", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 200. 岛屿数量 —— 图解：复刻 Solution.java 的「逐格扫描 + BFS 沉岛」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: ['11000', '11000', '00100', '00011'] };
+
+function trace(input) {
+  var rows = input.grid;
+  var m = rows.length, n = rows[0].length;
+  var g = rows.map(function (s) { return s.split(''); });      // 对应 Java 里被原地改写的 grid
+  var orig = rows.map(function (s) { return s.split(''); });   // 只用来分辨「本来就是水」和「沉掉的陆地」
+  var DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  var queue = [];     // 等待向外扩展的格子 [r, c]
+  var ans = 0;
+  var sinks = 0;      // 在 BFS 里沉掉的格子数，用来挑「BFS 进行中」的那一帧
+  var frames = [];
+
+  // 网格面板：青色 = 陆地 1；绿色 = 已沉没的陆地（现在是 0）；蓝色 = 已入队等扩展；橙色 = 当前格。
+  function gridPanel(cur) {
+    var marks = {};
+    var r, c;
+    for (r = 0; r < m; r++) {
+      for (c = 0; c < n; c++) {
+        if (g[r][c] === '1') marks[r + ',' + c] = 'win';
+        else if (orig[r][c] === '1') marks[r + ',' + c] = 'done';
+      }
+    }
+    queue.forEach(function (p) { marks[p[0] + ',' + p[1]] = 'new'; });
+    if (cur) marks[cur[0] + ',' + cur[1]] = 'cur';
+    var rl = [], cl = [];
+    for (r = 0; r < m; r++) rl.push(String(r));
+    for (c = 0; c < n; c++) cl.push(String(c));
+    return Viz.grid(g, { title: '网格 grid（青：陆地 1，绿：已沉没，蓝：在队列里，橙：当前格）', marks: marks, rowLabels: rl, colLabels: cl });
+  }
+
+  function queuePanel() {
+    var items = queue.map(function (p) { return p[0] + ',' + p[1]; });
+    return Viz.cells(items, {
+      title: items.length ? '队列 queue（格子 r,c）' : '队列 queue（空）', hideIndex: true,
+      pointers: items.length ? [{ at: 0, label: '队首', cls: 'p-head' }] : []
+    });
+  }
+
+  function ansPanel(changed) { return Viz.vars([{ name: 'ans', v: ans, cls: changed ? 'chg' : '' }]); }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  // BFS 沉岛：起点先沉再入队；邻居是 1 就沉掉并入队（入队时就沉，不会重复入队）。
+  function sink(i, j) {
+    g[i][j] = '0';
+    queue.push([i, j]);
+    while (queue.length) {
+      var cur = queue.shift();
+      for (var k = 0; k < DIRS.length; k++) {
+        var r = cur[0] + DIRS[k][0], c = cur[1] + DIRS[k][1];
+        if (r >= 0 && r < m && c >= 0 && c < n && g[r][c] === '1') {
+          g[r][c] = '0';
+          queue.push([r, c]);
+          sinks++;
+          if (sinks === 2) {
+            snap("grid[r][c] = '0';", 'BFS：邻居是 1，入队时就沉成 0（防重复入队）',
+              [gridPanel(cur), queuePanel(), ansPanel(false)]);
+          }
+        }
+      }
+    }
+  }
+
+  snap('int ans = 0;', '开局：从左上角逐格扫描，ans = 0', [gridPanel(null), ansPanel(false)]);
+
+  for (var i = 0; i < m; i++) {
+    for (var j = 0; j < n; j++) {
+      if (g[i][j] === '1') {
+        ans++;
+        if (ans === 1) {
+          snap('ans++;', '扫到第一个 1：新岛，ans 加 1，从这里 BFS 沉岛', [gridPanel([i, j]), ansPanel(true)]);
+        } else if (ans === 2) {
+          snap('ans++;', '上一座岛已沉成 0，不会重复数；又扫到 1：ans = 2', [gridPanel([i, j]), ansPanel(true)]);
+        }
+        sink(i, j);
+      }
+    }
+  }
+
+  snap('return ans;', '扫完整个网格：共 ' + ans + ' 座岛', [gridPanel(null), ansPanel(false)]);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>砖墙 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 289 / 1159</span>
+  <nav class="pn"><a href="0876.html">上一篇</a><a href="0912.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">554. </span>砖墙</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 15</li><li class="algo">哈希表</li><li class="aux">前缀和/差分</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">哈希统计「除两端外」每个缝位置出现在多少行里，缝最多的位置穿砖最少，答案 = 行数 − 最大计数。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>穿线不穿砖 ⇔ 线落在砖缝上：把每行砖宽累加，得到的每个前缀和就是一个缝位置。</li><li>只统计<strong>除最后一块砖外</strong>的前缀和（墙右缘不能画线）；<code>Map&lt;Long,Integer&gt; gapCount</code> 数每个缝位置出现在几行里。</li><li>边累加边 <code>merge(x, 1, Integer::sum)</code>，顺手更新最大值 <code>best</code>。</li><li>答案 = <code>wall.size() - best</code>：那条线在 <code>best</code> 行落在缝上，剩下的行都被穿过；一行缝都没有时 <code>best=0</code>，答案就是行数。</li><li>缝位置用 <code>long</code>：砖宽可达 2^31−1，两块相加就溢出 int。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(总砖数)，空间复杂度 O(总砖数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> leastBricks(<span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; wall) {</span><span class="ln"><span class="no">5</span>        <span class="c">// gapCount：缝位置 x → 有多少行在这里有缝（x 用 long 累加，防砖宽极大时溢出）</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">Long</span>, <span class="t">Integer</span>&gt; gapCount = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> best = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="t">List</span>&lt;<span class="t">Integer</span>&gt; row : wall) {</span><span class="ln"><span class="no">9</span>            <span class="k">long</span> x = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>            <span class="c">// 只数除最后一块砖外的砖缝：墙的右缘不能画线</span></span><span class="ln"><span class="no">11</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; row.size() - <span class="n">1</span>; i++) {</span><span class="ln"><span class="no">12</span>                x += row.get(i);</span><span class="ln"><span class="no">13</span>                best = <span class="t">Math</span>.max(best, gapCount.merge(x, <span class="n">1</span>, <span class="t">Integer</span>::sum));</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="c">// 穿过的砖块数 = 行数 − 这条线上有缝的行数，取缝最多的位置</span></span><span class="ln"><span class="no">17</span>        <span class="k">return</span> wall.size() - best;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你的面前有一堵矩形的、由 <code>n</code> 行砖块组成的砖墙。这些砖块高度相同（也就是一个单位高）但是宽度不同。每一行砖块的宽度之和相等。</p>
+
+<p>你现在要画一条 <strong>自顶向下 </strong>的、穿过 <strong>最少 </strong>砖块的垂线。如果你画的线只是从砖块的边缘经过，就不算穿过这块砖。<strong>你不能沿着墙的两个垂直边缘之一画线，这样显然是没有穿过一块砖的。</strong></p>
+
+<p>给你一个二维数组 <code>wall</code> ，该数组包含这堵墙的相关信息。其中，<code>wall[i]</code> 是一个代表从左至右每块砖的宽度的数组。你需要找出怎样画才能使这条线 <strong>穿过的砖块数量最少</strong> ，并且返回 <strong>穿过的砖块数量</strong> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/4f0107a7648a.png" style="width: 400px; height: 384px;" />
+<pre>
+<strong>输入：</strong>wall = [[1,2,2,1],[3,1,2],[1,3,2],[2,4],[3,1,2],[1,3,1,1]]
+<strong>输出：</strong>2
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>wall = [[1],[1],[1]]
+<strong>输出：</strong>3
+</pre>
+&nbsp;
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == wall.length</code></li>
+	<li><code>1 &lt;= n &lt;= 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= wall[i].length &lt;= 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= sum(wall[i].length) &lt;= 2 * 10<sup>4</sup></code></li>
+	<li>对于每一行 <code>i</code> ，<code>sum(wall[i])</code> 是相同的</li>
+	<li><code>1 &lt;= wall[i][j] &lt;= 2<sup>31</sup> - 1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int leastBricks(List<List<Integer>> wall) {", "        // gapCount：缝位置 x → 有多少行在这里有缝（x 用 long 累加，防砖宽极大时溢出）", "        Map<Long, Integer> gapCount = new HashMap<>();", "        int best = 0;", "        for (List<Integer> row : wall) {", "            long x = 0;", "            // 只数除最后一块砖外的砖缝：墙的右缘不能画线", "            for (int i = 0; i < row.size() - 1; i++) {", "                x += row.get(i);", "                best = Math.max(best, gapCount.merge(x, 1, Integer::sum));", "            }", "        }", "        // 穿过的砖块数 = 行数 − 这条线上有缝的行数，取缝最多的位置", "        return wall.size() - best;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 554. 砖墙 —— 图解：复刻 Solution.java 的「哈希统计每行砖缝位置」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { wall: [[1, 2, 2, 1], [3, 1, 2], [1, 3, 2], [2, 4], [3, 1, 2], [1, 3, 1, 1]] };
+
+function trace(input) {
+  var wall = input.wall;
+  var n = wall.length;
+  var frames = [];
+  var gapCount = {};   // 缝位置 x -> 在这里有多少行有缝
+  var rowGaps = [];    // 每行数出来的缝位置，画左表用
+  var best = 0;
+  var fired = { row0: false, mid: false, last: false };
+  var MERGE = 'best = Math.max(best, gapCount.merge(x, 1, Integer::sum));';
+
+  // 左表：每行的缝位置（除最右砖外的前缀和）；右表：缝位置 -> 行数
+  function rowsPanel() {
+    return Viz.table('每行的缝位置（累加砖宽，最右缘不算）', wall.map(function (row, r) {
+      var gaps = rowGaps[r] || [];
+      return { k: '第 ' + (r + 1) + ' 行', v: gaps.length ? gaps.join(' ') : '（无）', cls: r < curRow ? 'done' : r === curRow ? 'cur' : '' };
+    }));
+  }
+  function countPanel(chgX, final) {
+    var xs = Object.keys(gapCount).map(Number).sort(function (a, b) { return a - b; });
+    return Viz.table('缝位置 x → 有多少行在这里有缝', xs.map(function (x) {
+      var cls = x === chgX ? 'chg' : final && gapCount[x] === best ? 'done' : '';
+      return { k: 'x=' + x, v: String(gapCount[x]), cls: cls };
+    }), { hint: '（穿这条线 = 落在缝上的行数最多）' });
+  }
+  function snap(at, key, chgX, final) {
+    frames.push(Viz.frame(at, key, [rowsPanel(), countPanel(chgX, final)]));
+  }
+  var curRow = -1;
+
+  for (var r = 0; r < n; r++) {
+    curRow = r;
+    var gaps = [];
+    var x = 0;
+    for (var i = 0; i < wall[r].length - 1; i++) {
+      x += wall[r][i];
+      gaps.push(x);
+      gapCount[x] = (gapCount[x] || 0) + 1;
+      best = Math.max(best, gapCount[x]);
+    }
+    rowGaps[r] = gaps;
+    if (r === 0 && !fired.row0) {
+      fired.row0 = true;
+      snap(MERGE, '第 1 行：砖宽累加出的前缀和就是缝位置，记入哈希表', null, false);
+    }
+    if (r === 2 && n > 2 && !fired.mid) {
+      fired.mid = true;
+      var topX = null;
+      Object.keys(gapCount).forEach(function (xx) { if (gapCount[xx] === best && topX === null) topX = Number(xx); });
+      snap(MERGE, '数到第 ' + (r + 1) + ' 行：x=' + topX + ' 已有 ' + best + ' 行在这里有缝', topX, false);
+    }
+    if (r === n - 1 && n > 3 && !fired.last) {
+      fired.last = true;
+      snap(MERGE, '全墙数完：缝最多的位置有 ' + best + ' 行', null, false);
+    }
+  }
+
+  frames.push(Viz.frame('return wall.size() - best;',
+    '答案 = 行数 − 缝最多的行数 = ' + n + ' − ' + best + ' = ' + (n - best),
+    [rowsPanel(), countPanel(null, true)]));
+  return { frames: frames, result: n - best };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

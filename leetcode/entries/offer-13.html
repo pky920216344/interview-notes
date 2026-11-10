@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>衣橱整理 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 548 / 1159</span>
+  <nav class="pn"><a href="0538.html">上一篇</a><a href="0967.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 13. </span>衣橱整理</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">深度优先搜索/递归</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">从 (0,0) 出发 DFS/BFS 连通计数：只能右/下走，数位和(行)+数位和(列) ≤ cnt 的格子才可进。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>起点固定 <code>(0,0)</code>，只能<strong>向右或向下</strong>走；格子 <code>(i,j)</code> 可进当且仅当 <code>digitSum(i) + digitSum(j) ≤ cnt</code>。</li><li>从起点做一次 DFS/BFS 连通计数（<code>vis</code> 防重入），数出的就是答案。</li><li>关键：<strong>数位和达标的格子不一定可达</strong>——可能被一整排高数位和的格子挡住（如 <code>cnt=1</code> 时 <code>(10,0)</code> 进不去），所以不能直接数合格格子的个数。</li><li>数位和可以预处理或现算，<code>x ≤ 100</code> 直接逐位除 10 即可。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m·n)，空间复杂度 O(m·n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> wardrobeFinishing(<span class="k">int</span> m, <span class="k">int</span> n, <span class="k">int</span> cnt) {</span><span class="ln"><span class="no">3</span>        <span class="k">boolean</span>[][] vis = <span class="k">new</span> <span class="k">boolean</span>[m][n];</span><span class="ln"><span class="no">4</span>        <span class="k">return</span> dfs(<span class="n">0</span>, <span class="n">0</span>, m, n, cnt, vis);</span><span class="ln"><span class="no">5</span>    }</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="c">// 只能向右或向下走：返回从 (i,j) 出发能整理到的格子数</span></span><span class="ln"><span class="no">8</span>    <span class="k">private</span> <span class="k">int</span> dfs(<span class="k">int</span> i, <span class="k">int</span> j, <span class="k">int</span> m, <span class="k">int</span> n, <span class="k">int</span> cnt, <span class="k">boolean</span>[][] vis) {</span><span class="ln"><span class="no">9</span>        <span class="k">if</span> (i == m || j == n || vis[i][j] || digitSum(i) + digitSum(j) &gt; cnt) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        vis[i][j] = <span class="k">true</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">return</span> <span class="n">1</span> + dfs(i + <span class="n">1</span>, j, m, n, cnt, vis) + dfs(i, j + <span class="n">1</span>, m, n, cnt, vis);</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="k">int</span> digitSum(<span class="k">int</span> x) {</span><span class="ln"><span class="no">15</span>        <span class="k">int</span> s = <span class="n">0</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (; x &gt; <span class="n">0</span>; x /= <span class="n">10</span>) s += x % <span class="n">10</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> s;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>家居整理师将待整理衣橱划分为 <code>m x n</code> 的二维矩阵 <code>grid</code>，其中 <code>grid[i][j]</code> 代表一个需要整理的格子。整理师自 <code>grid[0][0]</code> 开始 <strong>逐行逐列</strong> 地整理每个格子。</p>
+
+<p>整理规则为：在整理过程中，可以选择&nbsp;<strong>向右移动一格&nbsp;</strong>或&nbsp;<strong>向下移动一格</strong>，但不能移动到衣柜之外。同时，不需要整理 <code>digit(i)&nbsp;+ digit(j)&nbsp;&gt; cnt</code> 的格子，其中 <code>digit(x)</code>&nbsp;表示数字&nbsp;<code>x</code> 的各数位之和。</p>
+
+<p>请返回整理师&nbsp;<strong>总共需要整理多少个格子</strong>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>m = 4, n = 7, cnt = 5
+<strong>输出：</strong>18
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n, m &lt;= 100</code></li>
+	<li><code>0 &lt;= cnt &lt;= 20</code></li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int wardrobeFinishing(int m, int n, int cnt) {", "        boolean[][] vis = new boolean[m][n];", "        return dfs(0, 0, m, n, cnt, vis);", "    }", "", "    // 只能向右或向下走：返回从 (i,j) 出发能整理到的格子数", "    private int dfs(int i, int j, int m, int n, int cnt, boolean[][] vis) {", "        if (i == m || j == n || vis[i][j] || digitSum(i) + digitSum(j) > cnt) return 0;", "        vis[i][j] = true;", "        return 1 + dfs(i + 1, j, m, n, cnt, vis) + dfs(i, j + 1, m, n, cnt, vis);", "    }", "", "    private int digitSum(int x) {", "        int s = 0;", "        for (; x > 0; x /= 10) s += x % 10;", "        return s;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// offer-13 机器人的运动范围（LCR 130 衣橱整理）—— 图解：复刻 Solution.java 的「右/向下的 DFS」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { m: 4, n: 5, cnt: 2 };
+
+function trace(input) {
+  var m = input.m, n = input.n, cnt = input.cnt;
+  var frames = [];
+  var fired = { start: false, block1: false, block3: false };
+
+  function ds(x) { var s = 0; while (x > 0) { s += x % 10; x = Math.floor(x / 10); } return s; }
+
+  // 网格面板：格子里写「行数位和+列数位和」，marks 标状态
+  function gridPanel(extra) {
+    var rows = [];
+    for (var i = 0; i < m; i++) {
+      var row = [];
+      for (var j = 0; j < n; j++) row.push(ds(i) + ds(j));
+      rows.push(row);
+    }
+    var marks = {};
+    for (i = 0; i < m; i++) for (var j = 0; j < n; j++) if (visited[i][j]) marks[i + ',' + j] = 'win';
+    Object.keys(extra || {}).forEach(function (k) { marks[k] = extra[k]; });
+    return Viz.grid(rows, { title: '数位和表（> ' + cnt + ' 的格子不整理）', marks: marks });
+  }
+  function varsPanel(count) {
+    return Viz.vars([
+      { name: 'cnt', v: String(cnt) },
+      { name: '已整理格数', v: String(count) }
+    ]);
+  }
+  function snap(tag, at, key, extra) {
+    if (fired[tag]) return;
+    fired[tag] = true;
+    frames.push(Viz.frame(at, key, [gridPanel(extra), varsPanel(count)]));
+  }
+
+  // 与 Solution.java 相同的 DFS（先下后右），只多记「被数位和挡住」的时刻
+  var visited = [];
+  for (var i = 0; i < m; i++) visited.push(new Array(n).fill(false));
+  var count = 0;
+  function dfs(r, c) {
+    if (r >= m || c >= n || visited[r][c]) return;
+    if (ds(r) + ds(c) > cnt) {
+      var extra = {};
+      extra[r + ',' + c] = 'bad';
+      if (!fired.block1) {
+        snap('block1', 'if (i == m || j == n || vis[i][j] || digitSum(i) + digitSum(j) > cnt) return 0;',
+          '走到 (' + r + ',' + c + ')：数位和 ' + (ds(r) + ds(c)) + ' > ' + cnt + '，进不去', extra);
+      } else if (!fired.block3) {
+        snap('block3', 'return 1 + dfs(i + 1, j, m, n, cnt, vis) + dfs(i, j + 1, m, n, cnt, vis);',
+          '另一个方向也被挡：(' + r + ',' + c + ') 和为 ' + (ds(r) + ds(c)) + ' > ' + cnt, extra);
+      }
+      return;
+    }
+    visited[r][c] = true;
+    count++;
+    if (!fired.start) {
+      snap('start', 'if (i == m || j == n || vis[i][j] || digitSum(i) + digitSum(j) > cnt) return 0;',
+        '从 (0,0) 出发，只能向右或向下，能走的格子数位和都不超过 cnt', { '0,0': 'cur' });
+    }
+    dfs(r + 1, c);
+    dfs(r, c + 1);
+  }
+  dfs(0, 0);
+
+  var done = {};
+  for (i = 0; i < m; i++) for (var j = 0; j < n; j++) if (visited[i][j]) done[i + ',' + j] = 'done';
+  frames.push(Viz.frame('return dfs(0, 0, m, n, cnt, vis);',
+    'DFS 收完：从 (0,0) 连通可达、需要整理的格子共 ' + count + ' 个',
+    [gridPanel(done), varsPanel(count)]));
+
+  return { frames: frames, result: count };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

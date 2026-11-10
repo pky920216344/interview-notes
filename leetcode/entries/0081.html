@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>搜索旋转排序数组 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 579 / 1159</span>
+  <nav class="pn"><a href="0984.html">上一篇</a><a href="0542.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">81. </span>搜索旋转排序数组 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">二分查找</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">二分：和右端相等时分不清哪半有序就 hi-- 缩一格；否则照 33 题判出有序的一半看 target 在不在里面。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>nums[mid] == target</code> 直接返回；<code>nums[mid] == nums[hi]</code> 时有序性存疑（如 <code>[1,0,1,1,1]</code>），<code>hi--</code> 逐步排除重复。</li><li><code>nums[mid] &lt; nums[hi]</code> 说明右半有序：target 落在 <code>(nums[mid], nums[hi]]</code> 才去右半，否则去左半。</li><li>否则左半有序：target 落在 <code>[nums[lo], nums[mid])</code> 才去左半，否则去右半。</li><li>与 33 题唯一的区别就是多了 <code>hi--</code> 这一步，最坏（全相同）退化成 O(n)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log n) 均摊，最坏 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> search(<span class="k">int</span>[] nums, <span class="k">int</span> target) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> lo = <span class="n">0</span>, hi = nums.length - <span class="n">1</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">while</span> (lo &lt;= hi) {</span><span class="ln"><span class="no">5</span>            <span class="k">int</span> mid = (lo + hi) / <span class="n">2</span>;</span><span class="ln"><span class="no">6</span>            <span class="k">if</span> (nums[mid] == target) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (nums[mid] == nums[hi]) { hi--; <span class="k">continue</span>; }   <span class="c">// 和右端相等时没法判断哪半有序，缩一格</span></span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (nums[mid] &lt; nums[hi]) {   <span class="c">// 右半 [mid+1..hi] 有序</span></span><span class="ln"><span class="no">9</span>                <span class="k">if</span> (target &gt; nums[mid] &amp;&amp; target &lt;= nums[hi]) lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">10</span>                <span class="k">else</span> hi = mid - <span class="n">1</span>;</span><span class="ln"><span class="no">11</span>            } <span class="k">else</span> {                      <span class="c">// 左半 [lo..mid-1] 有序</span></span><span class="ln"><span class="no">12</span>                <span class="k">if</span> (target &gt;= nums[lo] &amp;&amp; target &lt; nums[mid]) hi = mid - <span class="n">1</span>;</span><span class="ln"><span class="no">13</span>                <span class="k">else</span> lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>已知存在一个按非降序排列的整数数组 <code>nums</code> ，数组中的值不必互不相同。</p>
+
+<p>在传递给函数之前，<code>nums</code> 在预先未知的某个下标 <code>k</code>（<code>0 &lt;= k &lt; nums.length</code>）上进行了 <strong>旋转 </strong>，使数组变为 <code>[nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]]</code>（下标 <strong>从 0 开始</strong> 计数）。例如， <code>[0,1,2,4,4,4,5,6,6,7]</code> 在下标 <code>5</code> 处经旋转后可能变为 <code>[4,5,6,6,7,0,1,2,4,4]</code> 。</p>
+
+<p>给你 <strong>旋转后</strong> 的数组 <code>nums</code> 和一个整数 <code>target</code> ，请你编写一个函数来判断给定的目标值是否存在于数组中。如果 <code>nums</code> 中存在这个目标值 <code>target</code> ，则返回 <code>true</code> ，否则返回 <code>false</code> 。</p>
+
+<p>你必须尽可能减少整个操作步骤。</p>
+
+
+
+<p><strong>示例&nbsp;1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = <code>[2,5,6,0,0,1,2]</code>, target = 0
+<strong>输出：</strong>true
+</pre>
+
+<p><strong>示例&nbsp;2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = <code>[2,5,6,0,0,1,2]</code>, target = 3
+<strong>输出：</strong>false</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 5000</code></li>
+	<li><code>-10<sup>4</sup> &lt;= nums[i] &lt;= 10<sup>4</sup></code></li>
+	<li>题目数据保证 <code>nums</code> 在预先未知的某个下标上进行了旋转</li>
+	<li><code>-10<sup>4</sup> &lt;= target &lt;= 10<sup>4</sup></code></li>
+</ul>
+
+
+
+<p><strong>进阶：</strong></p>
+
+<ul>
+	<li>此题与&nbsp;<a href="https://leetcode.cn/problems/search-in-rotated-sorted-array/description/">搜索旋转排序数组</a>&nbsp;相似，但本题中的&nbsp;<code>nums</code>&nbsp; 可能包含 <strong>重复</strong> 元素。这会影响到程序的时间复杂度吗？会有怎样的影响，为什么？</li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean search(int[] nums, int target) {", "        int lo = 0, hi = nums.length - 1;", "        while (lo <= hi) {", "            int mid = (lo + hi) / 2;", "            if (nums[mid] == target) return true;", "            if (nums[mid] == nums[hi]) { hi--; continue; }   // 和右端相等时没法判断哪半有序，缩一格", "            if (nums[mid] < nums[hi]) {   // 右半 [mid+1..hi] 有序", "                if (target > nums[mid] && target <= nums[hi]) lo = mid + 1;", "                else hi = mid - 1;", "            } else {                      // 左半 [lo..mid-1] 有序", "                if (target >= nums[lo] && target < nums[mid]) hi = mid - 1;", "                else lo = mid + 1;", "            }", "        }", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 81. 搜索旋转排序数组 II —— 图解：复刻 Solution.java 的「二分 + 端点相等就缩一格」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 0, 1, 1, 1], target: 0 };
+
+function trace(input) {
+  var nums = input.nums, target = input.target, n = nums.length;
+  var frames = [];
+
+  function panel(o) {
+    var marks = {}, i;
+    for (i = 0; i < n; i++) marks[i] = 'win';
+    if (o && o.mid != null) marks[o.mid] = o.found ? 'done' : 'cur';
+    var pointers = o ? [
+      { at: o.lo, label: 'lo', cls: 'p-left' },
+      { at: o.mid != null ? o.mid : o.lo, label: 'mid', cls: 'p-mid' },
+      { at: o.hi, label: 'hi', cls: 'p-right' }
+    ] : [];
+    return Viz.cells(nums, { title: 'nums（旋转过的有序数组）', marks: marks, pointers: pointers });
+  }
+  function varsPanel() { return Viz.vars([{ name: 'target', v: target, cls: 'cur' }]); }
+  function snap(at, key, o) { if (frames.length < 6) frames.push(Viz.frame(at, key, [panel(o), varsPanel()])); }
+
+  var lo = 0, hi = n - 1, iter = 0, result = false;
+  while (lo <= hi) {
+    var mid = (lo + hi) >> 1;
+    if (iter > 0) snap('int mid = (lo + hi) / 2;', '缩过之后 lo=' + lo + '、hi=' + hi + '，新的 mid=' + mid + '：nums[mid]=' + nums[mid],
+      { lo: lo, hi: hi, mid: mid });
+    iter++;
+    if (nums[mid] === target) {
+      result = true;
+      snap('if (nums[mid] == target) return true;', 'nums[' + mid + ']=' + nums[mid] + ' 正好是 target，找到', { lo: lo, hi: hi, mid: mid, found: true });
+      break;
+    }
+    if (nums[mid] === nums[hi]) {
+      snap('if (nums[mid] == nums[hi]) { hi--; continue; }', 'nums[' + mid + '] 和 nums[' + hi + '] 都是 ' + nums[mid] +
+        '：分不清哪半有序，hi 缩一格', { lo: lo, hi: hi, mid: mid });
+      hi--;
+      continue;
+    }
+    if (nums[mid] < nums[hi]) {
+      if (target > nums[mid] && target <= nums[hi]) lo = mid + 1;
+      else hi = mid - 1;
+    } else {
+      if (target >= nums[lo] && target < nums[mid]) hi = mid - 1;
+      else lo = mid + 1;
+    }
+  }
+
+  snap(result ? 'if (nums[mid] == target) return true;' : 'return false;',
+    result ? '结果：target 在数组里，返回 true' : '区间缩空了：target 不在数组里，返回 false', null);
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

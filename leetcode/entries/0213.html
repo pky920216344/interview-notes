@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>打家劫舍 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 142 / 1159</span>
+  <nav class="pn"><a href="0050.html">上一篇</a><a href="0440.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">213. </span>打家劫舍 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 42</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">环形拆成两条线性链：不偷尾（0..n-2）与 不偷首（1..n-1）各跑一遍打家劫舍，取较大者。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>环上首尾相邻不能同偷：分成「不偷尾」和「不偷首」两条线性链，答案必在其中一条里。</li><li>每条链用滚动两变量：偷当前 = 不偷上一间 + 当前金额；不偷当前 = 两个旧状态取大。</li><li>只有一间时首尾是同一间，直接返回它，别套两条链的公式。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> rob(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">4</span>        <span class="c">// 只有一间：首尾是同一间，直接偷</span></span><span class="ln"><span class="no">5</span>        <span class="k">if</span> (n == <span class="n">1</span>) <span class="k">return</span> nums[<span class="n">0</span>];</span><span class="ln"><span class="no">6</span>        <span class="c">// 环形拆成两条线性链：不偷尾（0..n-2）或不偷首（1..n-1），取较大者</span></span><span class="ln"><span class="no">7</span>        <span class="k">return</span> <span class="t">Math</span>.max(rob(nums, <span class="n">0</span>, n - <span class="n">2</span>), rob(nums, <span class="n">1</span>, n - <span class="n">1</span>));</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="c">// 线性打家劫舍：区间 [from, to] 内相邻不能同偷的最大和</span></span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">int</span> rob(<span class="k">int</span>[] nums, <span class="k">int</span> from, <span class="k">int</span> to) {</span><span class="ln"><span class="no">12</span>        <span class="c">// rob：偷当前这间的最优；skip：不偷当前这间的最优</span></span><span class="ln"><span class="no">13</span>        <span class="k">int</span> rob = <span class="n">0</span>, skip = <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> i = from; i &lt;= to; i++) {</span><span class="ln"><span class="no">15</span>            <span class="c">// 偷当前，上一间必须不偷</span></span><span class="ln"><span class="no">16</span>            <span class="k">int</span> newRob = skip + nums[i];</span><span class="ln"><span class="no">17</span>            <span class="c">// 不偷当前：上一间偷不偷都行，取大</span></span><span class="ln"><span class="no">18</span>            skip = <span class="t">Math</span>.max(rob, skip);</span><span class="ln"><span class="no">19</span>            rob = newRob;</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> <span class="t">Math</span>.max(rob, skip);</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你是一个专业的小偷，计划偷窃沿街的房屋，每间房内都藏有一定的现金。这个地方所有的房屋都 <strong>围成一圈</strong> ，这意味着第一个房屋和最后一个房屋是紧挨着的。同时，相邻的房屋装有相互连通的防盗系统，<strong>如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警</strong> 。</p>
+
+<p>给定一个代表每个房屋存放金额的非负整数数组，计算你 <strong>在不触动警报装置的情况下</strong> ，今晚能够偷窃到的最高金额。</p>
+
+
+
+<p><strong>示例&nbsp;1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [2,3,2]
+<strong>输出：</strong>3
+<strong>解释：</strong>你不能先偷窃 1 号房屋（金额 = 2），然后偷窃 3 号房屋（金额 = 2）, 因为他们是相邻的。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,3,1]
+<strong>输出：</strong>4
+<strong>解释：</strong>你可以先偷窃 1 号房屋（金额 = 1），然后偷窃 3 号房屋（金额 = 3）。
+&nbsp;    偷窃到的最高金额 = 1 + 3 = 4 。</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,3]
+<strong>输出：</strong>3
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 100</code></li>
+	<li><code>0 &lt;= nums[i] &lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int rob(int[] nums) {", "        int n = nums.length;", "        // 只有一间：首尾是同一间，直接偷", "        if (n == 1) return nums[0];", "        // 环形拆成两条线性链：不偷尾（0..n-2）或不偷首（1..n-1），取较大者", "        return Math.max(rob(nums, 0, n - 2), rob(nums, 1, n - 1));", "    }", "", "    // 线性打家劫舍：区间 [from, to] 内相邻不能同偷的最大和", "    private int rob(int[] nums, int from, int to) {", "        // rob：偷当前这间的最优；skip：不偷当前这间的最优", "        int rob = 0, skip = 0;", "        for (int i = from; i <= to; i++) {", "            // 偷当前，上一间必须不偷", "            int newRob = skip + nums[i];", "            // 不偷当前：上一间偷不偷都行，取大", "            skip = Math.max(rob, skip);", "            rob = newRob;", "        }", "        return Math.max(rob, skip);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 213. 打家劫舍 II —— 图解：复刻 Solution.java 的「环形拆两条线性链」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 2, 3, 1] };
+
+function trace(input) {
+  var nums = input.nums;
+  var n = nums.length;
+  var frames = [];
+
+  // 与 Solution.java 相同的滚动转移，区间 [from, to]；记录每步状态供面板使用
+  function robRange(from, to) {
+    var rob = 0, skip = 0, steps = [];
+    for (var i = from; i <= to; i++) {
+      var newRob = skip + nums[i];
+      skip = Math.max(rob, skip);
+      rob = newRob;
+      steps.push({ i: i, rob: rob, skip: skip });
+    }
+    return { rob: rob, skip: skip, best: Math.max(rob, skip), steps: steps };
+  }
+
+  function cellsPanel(range, extra) {
+    var o = extra || {};
+    var marks = {}, i;
+    for (i = 0; i < n; i++) {
+      if (range && i >= range.from && i <= range.to) marks[i] = 'win';
+      else if (range) marks[i] = 'dim';
+    }
+    var k;
+    for (k in o.marks || {}) marks[k] = o.marks[k];
+    var pointers = [];
+    if (o.cur != null) pointers.push({ at: o.cur, label: o.curLabel || 'cur', cls: o.curCls || 'p-cur' });
+    return Viz.cells(nums, { title: o.title || '各房金额 nums', marks: marks, pointers: pointers, range: o.rangeLabel ? { from: range.from, to: range.to, label: o.rangeLabel } : null });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  if (n === 1) {
+    snap('if (n == 1) return nums[0];', '只有一间：首尾是同一间，直接偷它，返回 ' + nums[0],
+      [cellsPanel(null, { marks: { 0: 'done' } }), varsPanel([{ name: 'ans', v: nums[0], cls: 'done' }])]);
+    return { frames: frames, result: nums[0] };
+  }
+
+  // 两条链：不偷尾 = [0..n-2]，不偷首 = [1..n-1]
+  var passA = robRange(0, n - 2);
+  var passB = robRange(1, n - 1);
+  var ans = Math.max(passA.best, passB.best);
+  var winA = passA.best >= passB.best;
+
+  var MAIN = 'return Math.max(rob(nums, 0, n - 2), rob(nums, 1, n - 1));';
+  var NEWROB = 'int newRob = skip + nums[i];';
+  var BEST = 'return Math.max(rob, skip);';
+
+  // 帧 1：环形拆两条链
+  snap(MAIN, '环形首尾相邻，拆成两条线性链：不偷尾看 [0..' + (n - 2) + ']，不偷首看 [1..' + (n - 1) + ']',
+    [cellsPanel({ from: 0, to: n - 2 }, { rangeLabel: '链一：不偷尾', marks: (function () { var m = {}; m[n - 1] = 'dim'; return m; })() }),
+     cellsPanel({ from: 1, to: n - 1 }, { rangeLabel: '链二：不偷首', marks: (function () { var m = {}; m[0] = 'dim'; return m; })() }),
+     varsPanel([{ name: 'ans1', v: '待算', cls: '' }, { name: 'ans2', v: '待算', cls: '' }])]);
+
+  // 帧 2：第一条链的滚动转移（取中间一步）
+  var mid = passA.steps.length > 1 ? 1 : 0;
+  var st = passA.steps[mid];
+  snap(NEWROB, '链一滚动：偷当前 = 不偷上一间 + 当前，两个状态轮流推进',
+    [cellsPanel({ from: 0, to: n - 2 }, {
+      rangeLabel: '链一：不偷尾', cur: st.i, curCls: 'p-cur',
+      marks: (function () { var m = {}, j; for (j = 0; j < st.i; j++) m[j] = 'dim'; return m; })()
+    }),
+     varsPanel([{ name: 'rob（偷当前）', v: st.rob, cls: 'chg' }, { name: 'skip（不偷当前）', v: st.skip, cls: '' }])]);
+
+  // 帧 3：第一条链扫完
+  snap(BEST, '链一扫完：不偷尾的最优 = max(' + passA.rob + ', ' + passA.skip + ') = ' + passA.best,
+    [cellsPanel({ from: 0, to: n - 2 }, { rangeLabel: '链一：不偷尾', marks: (function () { var m = {}; m[n - 1] = 'dim'; return m; })() }),
+     varsPanel([{ name: 'ans1（不偷尾）', v: passA.best, cls: 'done' }, { name: 'ans2（不偷首）', v: '待算', cls: '' }])]);
+
+  // 帧 4：第二条链扫完
+  snap(BEST, '链二同样滚一遍：不偷首的最优 = ' + passB.best,
+    [cellsPanel({ from: 1, to: n - 1 }, { rangeLabel: '链二：不偷首', marks: (function () { var m = {}; m[0] = 'dim'; return m; })() }),
+     varsPanel([{ name: 'ans1（不偷尾）', v: passA.best, cls: '' }, { name: 'ans2（不偷首）', v: passB.best, cls: 'done' }])]);
+
+  // 帧 5：取大者，标出选中的房子（在胜出的那条链上回溯）
+  var chosen = [];
+  (function () {
+    var steps = (winA ? passA : passB).steps;
+    var take = steps.length ? (steps[steps.length - 1].rob >= steps[steps.length - 1].skip) : false;
+    for (var j = steps.length - 1; j >= 0; j--) {
+      if (take) { chosen.push(steps[j].i); take = false; }
+      else if (j > 0) take = steps[j - 1].rob >= steps[j - 1].skip;
+    }
+  })();
+  var doneMarks = {};
+  chosen.forEach(function (c) { doneMarks[c] = 'done'; });
+  var base = winA ? { from: 0, to: n - 2, rangeLabel: '链一：不偷尾' } : { from: 1, to: n - 1, rangeLabel: '链二：不偷首' };
+  snap(MAIN, '两条链取大：' + passA.best + ' vs ' + passB.best + ' → 答案 ' + ans,
+    [cellsPanel(base, { marks: doneMarks }), varsPanel([{ name: 'ans', v: ans, cls: 'done' }])]);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>整数转换英文表示 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 375 / 1159</span>
+  <nav class="pn"><a href="0231.html">上一篇</a><a href="0321.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">273. </span>整数转换英文表示</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 9</li><li class="algo">模拟</li><li class="tag">递归</li><li class="tag">数学</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按三个一组分节（Billion/Million/Thousand）递归，一节内 0..999：百位接 Hundred，&lt;20 查直接表，≥20 查十位表加个位。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>从高到低按 <code>Billion / Million / Thousand / 个</code> 切节，每节 0..999 用同一个函数处理；非零节拼「节内转换 + 节单位」。</li><li>节内：百位 → <code>Xxx Hundred</code>；余数 &lt; 20 查 <code>LESS</code> 直接表（覆盖 Eleven…Nineteen）；≥ 20 = <code>TENS[十位]</code> + 个位。</li><li>节的余数为 0 就什么都不接（<code>tail</code> 返回空串）；<code>0</code> 整体特判 <code>Zero</code>。</li><li>按题面，英文里<strong>没有 and</strong>（<code>One Hundred Twenty Three</code>）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1)（最多 4 节），空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="t">String</span>[] LESS = {<span class="s">""</span>, <span class="s">"One"</span>, <span class="s">"Two"</span>, <span class="s">"Three"</span>, <span class="s">"Four"</span>, <span class="s">"Five"</span>, <span class="s">"Six"</span>, <span class="s">"Seven"</span>, <span class="s">"Eight"</span>, <span class="s">"Nine"</span>, <span class="s">"Ten"</span>,</span><span class="ln"><span class="no">3</span>            <span class="s">"Eleven"</span>, <span class="s">"Twelve"</span>, <span class="s">"Thirteen"</span>, <span class="s">"Fourteen"</span>, <span class="s">"Fifteen"</span>, <span class="s">"Sixteen"</span>, <span class="s">"Seventeen"</span>, <span class="s">"Eighteen"</span>, <span class="s">"Nineteen"</span>};</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="t">String</span>[] TENS = {<span class="s">""</span>, <span class="s">""</span>, <span class="s">"Twenty"</span>, <span class="s">"Thirty"</span>, <span class="s">"Forty"</span>, <span class="s">"Fifty"</span>, <span class="s">"Sixty"</span>, <span class="s">"Seventy"</span>, <span class="s">"Eighty"</span>, <span class="s">"Ninety"</span>};</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="t">String</span> numberToWords(<span class="k">int</span> num) {</span><span class="ln"><span class="no">7</span>        <span class="k">if</span> (num == <span class="n">0</span>) <span class="k">return</span> <span class="s">"Zero"</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">return</span> say(num);</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="c">// 0..2^31-1 按 Billion/Million/Thousand 分节递归；一节内 0..999 再按百/十/个处理</span></span><span class="ln"><span class="no">12</span>    <span class="k">private</span> <span class="t">String</span> say(<span class="k">int</span> num) {</span><span class="ln"><span class="no">13</span>        <span class="k">if</span> (num &lt; <span class="n">100</span>) {</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (num &lt; <span class="n">20</span>) <span class="k">return</span> LESS[num];   <span class="c">// 1..19 直接查表</span></span><span class="ln"><span class="no">15</span>            <span class="k">return</span> TENS[num / <span class="n">10</span>] + (num % <span class="n">10</span> == <span class="n">0</span> ? <span class="s">""</span> : <span class="s">" "</span> + LESS[num % <span class="n">10</span>]);</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (num &lt; <span class="n">1000</span>) <span class="k">return</span> LESS[num / <span class="n">100</span>] + <span class="s">" Hundred"</span> + tail(num % <span class="n">100</span>);</span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (num &lt; <span class="n">1_000_000</span>) <span class="k">return</span> say(num / <span class="n">1000</span>) + <span class="s">" Thousand"</span> + tail(num % <span class="n">1000</span>);</span><span class="ln"><span class="no">19</span>        <span class="k">if</span> (num &lt; <span class="n">1_000_000_000</span>) <span class="k">return</span> say(num / <span class="n">1_000_000</span>) + <span class="s">" Million"</span> + tail(num % <span class="n">1_000_000</span>);</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> say(num / <span class="n">1_000_000_000</span>) + <span class="s">" Billion"</span> + tail(num % <span class="n">1_000_000_000</span>);</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span> </span><span class="ln"><span class="no">23</span>    <span class="c">// 节的余数：非零才接「 空格 + 余数转英文」；按题面从头到尾没有 and</span></span><span class="ln"><span class="no">24</span>    <span class="k">private</span> <span class="t">String</span> tail(<span class="k">int</span> num) {</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> num == <span class="n">0</span> ? <span class="s">""</span> : <span class="s">" "</span> + say(num);</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>将非负整数 <code>num</code> 转换为其对应的英文表示。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>num = 123
+<strong>输出：</strong>"One Hundred Twenty Three"
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>num = 12345
+<strong>输出：</strong>"Twelve Thousand Three Hundred Forty Five"
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>num = 1234567
+<strong>输出：</strong>"One Million Two Hundred Thirty Four Thousand Five Hundred Sixty Seven"
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= num &lt;= 2<sup>31</sup> - 1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private static final String[] LESS = {\"\", \"One\", \"Two\", \"Three\", \"Four\", \"Five\", \"Six\", \"Seven\", \"Eight\", \"Nine\", \"Ten\",", "            \"Eleven\", \"Twelve\", \"Thirteen\", \"Fourteen\", \"Fifteen\", \"Sixteen\", \"Seventeen\", \"Eighteen\", \"Nineteen\"};", "    private static final String[] TENS = {\"\", \"\", \"Twenty\", \"Thirty\", \"Forty\", \"Fifty\", \"Sixty\", \"Seventy\", \"Eighty\", \"Ninety\"};", "", "    public String numberToWords(int num) {", "        if (num == 0) return \"Zero\";", "        return say(num);", "    }", "", "    // 0..2^31-1 按 Billion/Million/Thousand 分节递归；一节内 0..999 再按百/十/个处理", "    private String say(int num) {", "        if (num < 100) {", "            if (num < 20) return LESS[num];   // 1..19 直接查表", "            return TENS[num / 10] + (num % 10 == 0 ? \"\" : \" \" + LESS[num % 10]);", "        }", "        if (num < 1000) return LESS[num / 100] + \" Hundred\" + tail(num % 100);", "        if (num < 1_000_000) return say(num / 1000) + \" Thousand\" + tail(num % 1000);", "        if (num < 1_000_000_000) return say(num / 1_000_000) + \" Million\" + tail(num % 1_000_000);", "        return say(num / 1_000_000_000) + \" Billion\" + tail(num % 1_000_000_000);", "    }", "", "    // 节的余数：非零才接「 空格 + 余数转英文」；按题面从头到尾没有 and", "    private String tail(int num) {", "        return num == 0 ? \"\" : \" \" + say(num);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 273. 整数转换英文表示 —— 图解：复刻 Solution.java 的「分节递归」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { num: 1234567 };
+
+function trace(input) {
+  var num0 = input.num;
+  if (num0 === 0) return { frames: [], result: 'Zero' };   // 与 Java 相同的 0 特判
+
+  var LESS = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
+              'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  var TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  var frames = [], captured = {};
+  var rec = num0 > 0 && num0 < 1e8;
+
+  var MILLION = 'return say(num / 1_000_000) + " Million" + tail(num % 1_000_000);';
+  var THOUSAND = 'return say(num / 1000) + " Thousand" + tail(num % 1000);';
+  var HUNDRED = 'return LESS[num / 100] + " Hundred" + tail(num % 100);';
+  var TENSLINE = 'return TENS[num / 10] + (num % 10 == 0 ? "" : " " + LESS[num % 10]);';
+  var RET = 'return say(num);';
+
+  function push(tag, at, key, panels) {
+    if (!rec || captured[tag]) return;
+    captured[tag] = true;
+    frames.push(Viz.frame(at, key, panels));
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+  function marksAll(nn) {
+    var m = {};
+    for (var q = 0; q < nn; q++) m[q] = 'done';
+    return m;
+  }
+
+  function say(num) {
+    if (num < 100) {
+      if (num < 20) return LESS[num];
+      var s = TENS[(num / 10) | 0] + (num % 10 === 0 ? '' : ' ' + LESS[num % 10]);
+      push('tens', TENSLINE, '两位数 ≥20：十位查 TENS 表、个位查 LESS 表（<20 整体查表）',
+        [Viz.table('这次用到的表项', [
+          { k: 'TENS[' + ((num / 10) | 0) + ']', v: TENS[(num / 10) | 0] },
+          { k: 'LESS[' + (num % 10) + ']', v: LESS[num % 10], cls: 'hit' }]),
+         varsPanel([{ name: 'num', v: String(num) }, { name: '产出', v: s, cls: 'new' }])]);
+      return s;
+    }
+    if (num < 1000) {
+      var h = LESS[(num / 100) | 0] + ' Hundred';
+      push('hundred', HUNDRED, '一节内先看百位：' + h + '，余数 ' + (num % 100) + ' 接着转',
+        [varsPanel([{ name: 'num', v: String(num) }, { name: '百位产出', v: h, cls: 'new' }])]);
+      return h + tail(num % 100);
+    }
+    if (num < 1e6) {
+      push('thousand', THOUSAND, 'Thousand 节值 ' + ((num / 1000) | 0) + '，余数 ' + (num % 1000) + ' 交给下一层',
+        [varsPanel([{ name: 'num', v: String(num) },
+                    { name: 'Thousand 节', v: String((num / 1000) | 0) },
+                    { name: '余数', v: String(num % 1000) }])]);
+      return say((num / 1000) | 0) + ' Thousand' + tail(num % 1000);
+    }
+    if (num < 1e9) {
+      push('million', MILLION, '按三个一组分节：Million 节值 ' + ((num / 1e6) | 0) + ' 单独转，余数递归',
+        [varsPanel([{ name: 'num', v: String(num) },
+                    { name: 'Million 节', v: String((num / 1e6) | 0) },
+                    { name: '余数', v: String(num % 1e6) }])]);
+      return say((num / 1e6) | 0) + ' Million' + tail(num % 1e6);
+    }
+    return say((num / 1e9) | 0) + ' Billion' + tail(num % 1e9);
+  }
+
+  function tail(num) { return num === 0 ? '' : ' ' + say(num); }
+
+  var res = say(num0);
+  push('final', RET, '各节结果按序相连（题面全程没有 and）',
+    [Viz.cells(res.split(' '), { title: '最终的英文表示', marks: marksAll(res.split(' ').length) })]);
+
+  return { frames: frames, result: res };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

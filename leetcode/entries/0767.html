@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>重构字符串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 357 / 1159</span>
+  <nav class="pn"><a href="1074.html">上一篇</a><a href="offer-60.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">767. </span>重构字符串</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 10</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">计数</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">计数：最大次数超过 (n+1)/2 直接返回空串；否则按次数从多到少先填偶数位 0,2,4…，再回头填奇数位。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先数 26 个字母的出现次数；<code>max &gt; (n+1)/2</code> 时无论怎么排都有两个相邻，返回空串。</li><li>字母按次数<strong>从多到少</strong>排（同次数按字母序），依次填偶数位 <code>0,2,4…</code>，填满后跳回 <code>idx=1</code> 续填奇数位。</li><li>同一字母的相邻槽位实际下标差 2，天然不同；次数最多的字母排在最前、只占偶数位——这正是次数不能超 <code>(n+1)/2</code> 的原因。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> reorganizeString(<span class="t">String</span> s) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] cnt = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) cnt[s.charAt(i) - <span class="s">'a'</span>]++;</span><span class="ln"><span class="no">8</span>        <span class="c">// 次数超过一半必然出现相邻同字母，直接摆不出来</span></span><span class="ln"><span class="no">9</span>        <span class="k">int</span> max = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> v : cnt) max = <span class="t">Math</span>.max(max, v);</span><span class="ln"><span class="no">11</span>        <span class="k">if</span> (max &gt; (n + <span class="n">1</span>) / <span class="n">2</span>) <span class="k">return</span> <span class="s">""</span>;</span><span class="ln"><span class="no">12</span>        <span class="c">// 按次数从多到少排字母（次数相同按字母序），多的先占位</span></span><span class="ln"><span class="no">13</span>        <span class="t">Integer</span>[] order = <span class="k">new</span> <span class="t">Integer</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; <span class="n">26</span>; c++) order[c] = c;</span><span class="ln"><span class="no">15</span>        <span class="t">Arrays</span>.sort(order, (a, b) -&gt; cnt[a] != cnt[b] ? cnt[b] - cnt[a] : a - b);</span><span class="ln"><span class="no">16</span>        <span class="c">// 依次填偶数位 0,2,4…，填满再回头填奇数位 1,3,5…</span></span><span class="ln"><span class="no">17</span>        <span class="k">char</span>[] res = <span class="k">new</span> <span class="k">char</span>[n];</span><span class="ln"><span class="no">18</span>        <span class="k">int</span> idx = <span class="n">0</span>;</span><span class="ln"><span class="no">19</span>        <span class="k">for</span> (<span class="k">int</span> c : order) {</span><span class="ln"><span class="no">20</span>            <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; cnt[c]; k++) {</span><span class="ln"><span class="no">21</span>                res[idx] = (<span class="k">char</span>) (<span class="s">'a'</span> + c);</span><span class="ln"><span class="no">22</span>                idx += <span class="n">2</span>;</span><span class="ln"><span class="no">23</span>                <span class="k">if</span> (idx &gt;= n) idx = <span class="n">1</span>;</span><span class="ln"><span class="no">24</span>            }</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> <span class="k">new</span> <span class="t">String</span>(res);</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个字符串&nbsp;<code>s</code>&nbsp;，检查是否能重新排布其中的字母，使得任意两个相邻字符不相同。</p>
+
+<p>返回<em> <code>s</code>&nbsp;的任意可能的重新排列。若不可行，返回空字符串&nbsp;<code>""</code></em>&nbsp;。</p>
+
+
+
+<p><strong>示例&nbsp;1:</strong></p>
+
+<pre>
+<strong>输入:</strong> s = "aab"
+<strong>输出:</strong> "aba"
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> s = "aaab"
+<strong>输出:</strong> ""
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 500</code></li>
+	<li><code>s</code> 只包含小写字母</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String reorganizeString(String s) {", "        int n = s.length();", "        int[] cnt = new int[26];", "        for (int i = 0; i < n; i++) cnt[s.charAt(i) - 'a']++;", "        // 次数超过一半必然出现相邻同字母，直接摆不出来", "        int max = 0;", "        for (int v : cnt) max = Math.max(max, v);", "        if (max > (n + 1) / 2) return \"\";", "        // 按次数从多到少排字母（次数相同按字母序），多的先占位", "        Integer[] order = new Integer[26];", "        for (int c = 0; c < 26; c++) order[c] = c;", "        Arrays.sort(order, (a, b) -> cnt[a] != cnt[b] ? cnt[b] - cnt[a] : a - b);", "        // 依次填偶数位 0,2,4…，填满再回头填奇数位 1,3,5…", "        char[] res = new char[n];", "        int idx = 0;", "        for (int c : order) {", "            for (int k = 0; k < cnt[c]; k++) {", "                res[idx] = (char) ('a' + c);", "                idx += 2;", "                if (idx >= n) idx = 1;", "            }", "        }", "        return new String(res);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 767. 重构字符串 —— 图解：复刻 Solution.java 的「次数检查 + 偶数位先填」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'aab' };
+
+function trace(input) {
+  var s = input.s, n = s.length;
+  var frames = [];
+  var cnt = [];
+  for (var c = 0; c < 26; c++) cnt.push(0);
+  for (var i = 0; i < n; i++) cnt[s.charCodeAt(i) - 97]++;
+  var max = 0;
+  for (var c2 = 0; c2 < 26; c2++) max = Math.max(max, cnt[c2]);
+  var half = Math.floor((n + 1) / 2);
+  var feasible = max <= half;
+
+  // 结果数组：没填的画 ·，刚写入的标 cur
+  function resPanel(filledUpTo, curIdx) {
+    var items = [], marks = {};
+    for (var k = 0; k < n; k++) {
+      items.push(k < filledUpTo ? res[k] : '·');
+      if (k < filledUpTo) marks[k] = 'new';
+    }
+    if (curIdx != null) marks[curIdx] = 'cur';
+    return Viz.cells(items, { title: '结果数组（偶数位先填，奇数位续填）', marks: marks });
+  }
+  function tablePanel(curChar) {
+    var order = [];
+    for (var c3 = 0; c3 < 26; c3++) if (cnt[c3] > 0) order.push(c3);
+    order.sort(function (a, b) { return cnt[b] - cnt[a] || a - b; });
+    return Viz.table('字母 → 剩余次数（按次数从多到少）', order.map(function (c4) {
+      return { k: String.fromCharCode(97 + c4), v: '×' + cnt[c4], cls: c4 === curChar ? 'cur' : '' };
+    }));
+  }
+  function varsPanel(idx, emph) {
+    function v(name, val) { return { name: name, v: val, cls: emph === name ? 'chg' : '' }; }
+    return Viz.vars([v('max', max), v('(n+1)/2', half), v('idx', idx == null ? '—' : idx)]);
+  }
+
+  frames.push(Viz.frame('if (max > (n + 1) / 2) return "";',
+    feasible
+      ? 'max = ' + max + ' ≤ (n+1)/2 = ' + half + '：不超半，摆得出来'
+      : 'max = ' + max + ' > (n+1)/2 = ' + half + '：必有两个相邻，返回空串',
+    [resPanel(0, null), tablePanel(null), varsPanel(null, '')]));
+  if (!feasible) return { frames: frames, result: '' };
+
+  var res = [];
+  for (var k2 = 0; k2 < n; k2++) res.push('·');
+  var idx = 0;
+  var fired = { sort: false, wrap: false };
+  var order = [];
+  for (var c5 = 0; c5 < 26; c5++) order.push(c5);
+  order.sort(function (a, b) { return cnt[b] - cnt[a] || a - b; });
+
+  for (var oi = 0; oi < order.length; oi++) {
+    var ch = order[oi];
+    for (var k3 = 0; k3 < cnt[ch]; k3++) {
+      if (!fired.sort && oi === 0 && k3 === 0) {
+        fired.sort = true;
+        frames.push(Viz.frame('Arrays.sort(order, (a, b) -> cnt[a] != cnt[b] ? cnt[b] - cnt[a] : a - b);',
+          '次数最多的 ' + String.fromCharCode(97 + ch) + ' 先填：占据最前面的偶数位',
+          [resPanel(0, null), tablePanel(ch), varsPanel(idx, 'idx')]));
+      }
+      res[idx] = String.fromCharCode(97 + ch);
+      var just = idx;
+      idx += 2;
+      if (idx >= n) {
+        idx = 1;
+        if (!fired.wrap) {
+          fired.wrap = true;
+          frames.push(Viz.frame('if (idx >= n) idx = 1;',
+            '偶数位用完，跳回奇数位 1 继续填：同一字母隔位放置不会相邻',
+            [resPanel(n, just), tablePanel(ch), varsPanel(idx, 'idx')]));
+        }
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return new String(res);',
+    '填完：' + res.join('') + '，同字母间隔至少 2，相邻必不同',
+    [resPanel(n, null), tablePanel(null), varsPanel(null, '')]));
+
+  return { frames: frames, result: res.join('') };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

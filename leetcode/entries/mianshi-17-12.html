@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BiNode · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1058 / 1159</span>
+  <nav class="pn"><a href="1096.html">上一篇</a><a href="0605.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 17.12. </span>BiNode</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 1</li><li class="algo">深度优先搜索/递归</li><li class="tag">栈</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉搜索树</li><li class="tag">链表</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">中序遍历 BST 得到升序序列：显式栈迭代，弹出一个接一个接到链尾，left 全部清空。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>经典中序迭代：<code>cur</code> 一路向左压栈，栈顶就是中序下一个。</li><li>维护 <code>head/tail</code>：第一个弹出的当 <code>head</code>，之后 <code>tail.right = node</code>、<code>tail = node</code>。</li><li>每个结点弹出时 <code>left = null</code>；它的右孩子随后交给 <code>cur</code> 继续遍历。</li><li>用显式栈不用递归：n 可达 10^5，递归写法可能爆栈。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)（栈存路径，最坏 O(n)）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">TreeNode</span> convertBiNode(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 中序遍历（显式栈）：按升序访问，访问到谁就把谁接到链尾</span></span><span class="ln"><span class="no">6</span>        <span class="t">Deque</span>&lt;<span class="t">TreeNode</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="t">TreeNode</span> head = <span class="k">null</span>, tail = <span class="k">null</span>, cur = root;</span><span class="ln"><span class="no">8</span>        <span class="k">while</span> (cur != <span class="k">null</span> || !stack.isEmpty()) {</span><span class="ln"><span class="no">9</span>            <span class="k">while</span> (cur != <span class="k">null</span>) {   <span class="c">// 一路向左，沿途压栈</span></span><span class="ln"><span class="no">10</span>                stack.push(cur);</span><span class="ln"><span class="no">11</span>                cur = cur.left;</span><span class="ln"><span class="no">12</span>            }</span><span class="ln"><span class="no">13</span>            <span class="t">TreeNode</span> node = stack.pop();    <span class="c">// 中序下一个：栈顶</span></span><span class="ln"><span class="no">14</span>            node.left = <span class="k">null</span>;               <span class="c">// 左指针清空，腾给链表用</span></span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (tail == <span class="k">null</span>) head = node;  <span class="c">// 中序第一个就是链表头</span></span><span class="ln"><span class="no">16</span>            <span class="k">else</span> tail.right = node;         <span class="c">// 其余的接在上一个后面</span></span><span class="ln"><span class="no">17</span>            tail = node;</span><span class="ln"><span class="no">18</span>            cur = node.right;               <span class="c">// 转去右子树</span></span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> head;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>二叉树数据结构<code>TreeNode</code>可用来表示单向链表（其中<code>left</code>置空，<code>right</code>为下一个链表节点）。实现一个方法，把二叉搜索树转换为单向链表，要求依然符合二叉搜索树的性质，转换操作应是原址的，也就是在原始的二叉搜索树上直接修改。</p>
+
+<p>返回转换后的单向链表的头节点。</p>
+
+<p><strong>注意：</strong>本题相对原题稍作改动</p>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre><strong>输入：</strong> [4,2,5,1,3,null,6,0]
+<strong>输出：</strong> [0,null,1,null,2,null,3,null,4,null,5,null,6]
+</pre>
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>节点数量不会超过 100000。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public TreeNode convertBiNode(TreeNode root) {", "        // 中序遍历（显式栈）：按升序访问，访问到谁就把谁接到链尾", "        Deque<TreeNode> stack = new ArrayDeque<>();", "        TreeNode head = null, tail = null, cur = root;", "        while (cur != null || !stack.isEmpty()) {", "            while (cur != null) {   // 一路向左，沿途压栈", "                stack.push(cur);", "                cur = cur.left;", "            }", "            TreeNode node = stack.pop();    // 中序下一个：栈顶", "            node.left = null;               // 左指针清空，腾给链表用", "            if (tail == null) head = node;  // 中序第一个就是链表头", "            else tail.right = node;         // 其余的接在上一个后面", "            tail = node;", "            cur = node.right;               // 转去右子树", "        }", "        return head;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 17.12 BiNode —— 图解：复刻 Solution.java 的显式栈中序 + 接链，6 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [4, 2, 5, 1, 3, null, 6, 0] };
+
+function trace(input) {
+  // 建树：按力扣层序数组，同时给每个结点编号 id（层序下标，空位不算）
+  function build(a) {
+    if (!a.length || a[0] === null || a[0] === undefined) return null;
+    var root = { val: a[0], left: null, right: null, id: 0 };
+    var q = [root], i = 1, id = 1;
+    while (q.length && i < a.length) {
+      var nd = q.shift();
+      if (i < a.length) { if (a[i] !== null && a[i] !== undefined) { nd.left = { val: a[i], left: null, right: null, id: id++ }; q.push(nd.left); } i++; }
+      if (i < a.length) { if (a[i] !== null && a[i] !== undefined) { nd.right = { val: a[i], left: null, right: null, id: id++ }; q.push(nd.right); } i++; }
+    }
+    return root;
+  }
+
+  var work = build(input.root);   // 算法用的树（会被改）
+  var disp = build(input.root);   // 展示用的原树（不动，进度用高亮表示）
+  var frames = [];
+  var chain = [], chained = [];   // 已接好的链：值列表 / 结点列表
+
+  // 展示树 -> 力扣层序数组，并记 id -> 展示下标
+  var dispArr = [], dispById = [];
+  (function () {
+    var q = disp === null ? [] : [disp];
+    while (q.length) {
+      var nd = q.shift();
+      if (nd === null) { dispArr.push(null); continue; }
+      dispArr.push(nd.val);
+      dispById[nd.id] = dispArr.length - 1;
+      q.push(nd.left);
+      q.push(nd.right);
+    }
+    while (dispArr.length && dispArr[dispArr.length - 1] === null) dispArr.pop();
+  })();
+
+  function brief(txt) { return txt.length > 26 ? txt.slice(0, 26) + '…' : txt; }
+
+  // 原树面板：接上链的结点 done、栈里待访问 win、当前 cur
+  function treePanel(title, o) {
+    var marks = {}, labels = [], i, k;
+    for (i = 0; i < o.chained.length; i++) { k = dispById[o.chained[i].id]; if (k != null) marks[k] = 'done'; }
+    for (i = 0; i < o.stack.length; i++) { k = dispById[o.stack[i].id]; if (k != null && !(k in marks)) marks[k] = 'win'; }
+    if (o.cur && dispById[o.cur.id] != null) {
+      k = dispById[o.cur.id];
+      marks[k] = 'cur';
+      labels.push({ at: k, label: 'cur', cls: 'p-cur' });
+    }
+    return Viz.tree(dispArr, { title: title, marks: marks, labels: labels });
+  }
+
+  function chainPanel() {
+    var marks = {}, i;
+    for (i = 0; i < chain.length; i++) marks[i] = 'done';
+    var pointers = chain.length ? [{ at: chain.length - 1, label: 'tail', cls: 'p-tail' }] : [];
+    return Viz.list(chain.slice(), { title: '已接好的右链（head → tail）', marks: marks, pointers: pointers });
+  }
+
+  function snap(at, key, o) {
+    frames.push(Viz.frame(at, key, [treePanel(o.tTitle || '原二叉搜索树（进度高亮）', o), chainPanel()]));
+  }
+
+  var INIT = 'TreeNode head = null, tail = null, cur = root;';
+  var PUSH = 'stack.push(cur);';
+  var HEAD = 'if (tail == null) head = node;';
+  var LINK = 'else tail.right = node;';
+  var MOVE = 'tail = node;';
+  var RET = 'return head;';
+
+  var stack = [], head = null, tail = null, cur = work;
+  var shown = { left: false, head: false, second: false, third: false };
+
+  snap(INIT, '目标：按中序（BST 即升序）把结点串成一条右链', { cur: cur, stack: [], chained: [] });
+
+  while (cur !== null || stack.length) {
+    while (cur !== null) {
+      stack.push(cur);
+      cur = cur.left;
+      if (cur === null && !shown.left) {
+        shown.left = true;
+        snap(PUSH, '一路向左压栈 ' + brief(stack.map(function (n) { return n.val; }).join(',')) + '：最左的最小，最先访问',
+          { stack: stack, chained: chained });
+      }
+    }
+    var node = stack.pop();
+    node.left = null;
+    if (tail === null) head = node; else tail.right = node;
+    tail = node;
+    chain.push(node.val);
+    chained.push(node);
+    if (chain.length === 1 && !shown.head) {
+      shown.head = true;
+      snap(HEAD, '弹出 ' + node.val + '：中序第一个，当链头（left 已清空）', { stack: stack, chained: chained });
+    } else if (chain.length === 2 && !shown.second) {
+      shown.second = true;
+      snap(LINK, '弹出 ' + node.val + '：接到 tail 后面，链表长一格', { stack: stack, chained: chained });
+    } else if (chain.length === 3 && !shown.third) {
+      shown.third = true;
+      snap(MOVE, '弹出 ' + node.val + '：左子树全在链上才轮到它；再去右子树', { stack: stack, chained: chained });
+    }
+    cur = node.right;
+  }
+
+  snap(RET, '中序完成：right 串成升序链 ' + brief(chain.join('→')) + '，left 全空',
+    { stack: [], chained: chained });
+
+  return { frames: frames, result: chain };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

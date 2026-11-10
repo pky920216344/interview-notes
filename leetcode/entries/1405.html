@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最长快乐字符串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1125 / 1159</span>
+  <nav class="pn"><a href="0927.html">上一篇</a><a href="1306.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1405. </span>最长快乐字符串</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">贪心</li><li class="aux">堆</li><li class="tag">贪心</li><li class="tag">字符串</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">大顶堆按剩余个数贪心：每次取与结尾不同的最多者连放两个；堆顶会三连就改放一个次大的。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>堆里放三种字符的剩余个数，每次取堆顶连放 <code>min(2, 剩余)</code> 个（两个不会三连），再把剩余压回。</li><li>堆顶与结尾相同会三连：改放一个次大的垫一下；次大也没有就结束。</li><li>能放两个就放两个，最多者优先耗掉；最后放不进去的字符直接丢弃。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(a+b+c)，空间复杂度 O(1)（堆里只有 3 个字符）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">PriorityQueue</span>;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> longestDiverseString(<span class="k">int</span> a, <span class="k">int</span> b, <span class="k">int</span> c) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 大顶堆按剩余个数（同数按字母序，取舍才确定）</span></span><span class="ln"><span class="no">6</span>        <span class="t">PriorityQueue</span>&lt;<span class="k">int</span>[]&gt; heap = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;((x, y) -&gt; y[<span class="n">0</span>] != x[<span class="n">0</span>] ? y[<span class="n">0</span>] - x[<span class="n">0</span>] : x[<span class="n">1</span>] - y[<span class="n">1</span>]);</span><span class="ln"><span class="no">7</span>        <span class="k">if</span> (a &gt; <span class="n">0</span>) heap.add(<span class="k">new</span> <span class="k">int</span>[]{a, <span class="s">'a'</span>});</span><span class="ln"><span class="no">8</span>        <span class="k">if</span> (b &gt; <span class="n">0</span>) heap.add(<span class="k">new</span> <span class="k">int</span>[]{b, <span class="s">'b'</span>});</span><span class="ln"><span class="no">9</span>        <span class="k">if</span> (c &gt; <span class="n">0</span>) heap.add(<span class="k">new</span> <span class="k">int</span>[]{c, <span class="s">'c'</span>});</span><span class="ln"><span class="no">10</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">11</span>        <span class="k">while</span> (!heap.isEmpty()) {</span><span class="ln"><span class="no">12</span>            <span class="k">int</span>[] top = heap.poll();</span><span class="ln"><span class="no">13</span>            <span class="c">// 堆顶与结尾相同：再放就三连了，改放一个次大的</span></span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (sb.length() &gt; <span class="n">0</span> &amp;&amp; sb.charAt(sb.length() - <span class="n">1</span>) == top[<span class="n">1</span>]) {</span><span class="ln"><span class="no">15</span>                <span class="k">if</span> (heap.isEmpty()) <span class="k">break</span>;   <span class="c">// 没有别的字符可垫，到此为止</span></span><span class="ln"><span class="no">16</span>                <span class="k">int</span>[] second = heap.poll();</span><span class="ln"><span class="no">17</span>                sb.append((<span class="k">char</span>) second[<span class="n">1</span>]);</span><span class="ln"><span class="no">18</span>                <span class="k">if</span> (--second[<span class="n">0</span>] &gt; <span class="n">0</span>) heap.add(second);</span><span class="ln"><span class="no">19</span>                heap.add(top);</span><span class="ln"><span class="no">20</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">21</span>                <span class="c">// 一次放两个最划算，但剩下不足两个就只能放一个</span></span><span class="ln"><span class="no">22</span>                <span class="k">int</span> use = <span class="t">Math</span>.min(<span class="n">2</span>, top[<span class="n">0</span>]);</span><span class="ln"><span class="no">23</span>                <span class="k">for</span> (<span class="k">int</span> t = <span class="n">0</span>; t &lt; use; t++) sb.append((<span class="k">char</span>) top[<span class="n">1</span>]);</span><span class="ln"><span class="no">24</span>                top[<span class="n">0</span>] -= use;</span><span class="ln"><span class="no">25</span>                <span class="k">if</span> (top[<span class="n">0</span>] &gt; <span class="n">0</span>) heap.add(top);</span><span class="ln"><span class="no">26</span>            }</span><span class="ln"><span class="no">27</span>        }</span><span class="ln"><span class="no">28</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>如果字符串中不含有任何 <code>&#39;aaa&#39;</code>，<code>&#39;bbb&#39;</code> 或 <code>&#39;ccc&#39;</code> 这样的字符串作为子串，那么该字符串就是一个「快乐字符串」。</p>
+
+<p>给你三个整数 <code>a</code>，<code>b</code> ，<code>c</code>，请你返回 <strong>任意一个</strong> 满足下列全部条件的字符串 <code>s</code>：</p>
+
+<ul>
+	<li><code>s</code> 是一个尽可能长的快乐字符串。</li>
+	<li><code>s</code> 中 <strong>最多</strong> 有<code>a</code> 个字母 <code>&#39;a&#39;</code>、<code>b</code>&nbsp;个字母 <code>&#39;b&#39;</code>、<code>c</code> 个字母 <code>&#39;c&#39;</code> 。</li>
+	<li><code>s </code>中只含有 <code>&#39;a&#39;</code>、<code>&#39;b&#39;</code> 、<code>&#39;c&#39;</code> 三种字母。</li>
+</ul>
+
+<p>如果不存在这样的字符串 <code>s</code> ，请返回一个空字符串 <code>&quot;&quot;</code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>a = 1, b = 1, c = 7
+<strong>输出：</strong>&quot;ccaccbcc&quot;
+<strong>解释：</strong>&quot;ccbccacc&quot; 也是一种正确答案。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>a = 2, b = 2, c = 1
+<strong>输出：</strong>&quot;aabbc&quot;
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>a = 7, b = 1, c = 0
+<strong>输出：</strong>&quot;aabaa&quot;
+<strong>解释：</strong>这是该测试用例的唯一正确答案。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= a, b, c &lt;= 100</code></li>
+	<li><code>a + b + c &gt; 0</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.PriorityQueue;", "", "class Solution {", "    public String longestDiverseString(int a, int b, int c) {", "        // 大顶堆按剩余个数（同数按字母序，取舍才确定）", "        PriorityQueue<int[]> heap = new PriorityQueue<>((x, y) -> y[0] != x[0] ? y[0] - x[0] : x[1] - y[1]);", "        if (a > 0) heap.add(new int[]{a, 'a'});", "        if (b > 0) heap.add(new int[]{b, 'b'});", "        if (c > 0) heap.add(new int[]{c, 'c'});", "        StringBuilder sb = new StringBuilder();", "        while (!heap.isEmpty()) {", "            int[] top = heap.poll();", "            // 堆顶与结尾相同：再放就三连了，改放一个次大的", "            if (sb.length() > 0 && sb.charAt(sb.length() - 1) == top[1]) {", "                if (heap.isEmpty()) break;   // 没有别的字符可垫，到此为止", "                int[] second = heap.poll();", "                sb.append((char) second[1]);", "                if (--second[0] > 0) heap.add(second);", "                heap.add(top);", "            } else {", "                // 一次放两个最划算，但剩下不足两个就只能放一个", "                int use = Math.min(2, top[0]);", "                for (int t = 0; t < use; t++) sb.append((char) top[1]);", "                top[0] -= use;", "                if (top[0] > 0) heap.add(top);", "            }", "        }", "        return sb.toString();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1405. 最长快乐字符串 —— 图解：复刻 Solution.java 的大顶堆贪心，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { a: 1, b: 1, c: 7 };
+
+function trace(input) {
+  var cnt = { a: input.a, b: input.b, c: input.c };
+  var sb = [];
+  var frames = [];
+
+  var A_SAME = 'if (sb.length() > 0 && sb.charAt(sb.length() - 1) == top[1]) {';
+  var A_SEC = 'sb.append((char) second[1]);';
+  var A_USE = 'for (int t = 0; t < use; t++) sb.append((char) top[1]);';
+  var A_RET = 'return sb.toString();';
+
+  // 与 Java 比较器一致：个数多在前，同数字母小在前
+  function heapOrder() {
+    var keys = ['a', 'b', 'c'].filter(function (ch) { return cnt[ch] > 0; });
+    keys.sort(function (p, q) { return cnt[q] - cnt[p] || (p < q ? -1 : 1); });
+    return keys;
+  }
+  function heapPanel(special) {
+    var rows = heapOrder().map(function (ch) {
+      return { k: ch, v: '剩 ' + cnt[ch], cls: special && ch === special.ch ? special.cls : '' };
+    });
+    return Viz.table('大顶堆（剩余个数多的在前）', rows);
+  }
+  function sbPanel(marks) {
+    return Viz.cells(sb.slice(), { title: '当前串 sb', marks: marks || {} });
+  }
+  function snap(at, key, marks, special) {
+    frames.push(Viz.frame(at, key, [sbPanel(marks), heapPanel(special)]));
+  }
+
+  var iter = 0, snappedSub = false;
+  var start = heapOrder();
+  snap("if (a > 0) heap.add(new int[]{a, 'a'});", '堆按剩余个数排好：最多的 ' + (start.length ? start[0] : '—') + ' 在顶', {}, null);
+  for (;;) {
+    var order = heapOrder();
+    if (!order.length) break;
+    var top = order[0];
+    if (sb.length && sb[sb.length - 1] === top) {
+      if (order.length === 1) break;   // 没有别的字符可垫，到此为止
+      var second = order[1];
+      sb.push(second);
+      cnt[second]--;
+      // 关键帧：堆顶会和结尾凑成三连，只能改放一个次大的
+      if (!snappedSub) {
+        snappedSub = true;
+        var m3 = {};
+        m3[sb.length - 1] = 'new';
+        snap(A_SEC, '结尾已是 ' + top + '：堆顶不能再用，改放一个 ' + second, m3, { ch: top, cls: 'bad' });
+      }
+    } else {
+      var use = Math.min(2, cnt[top]);
+      for (var t = 0; t < use; t++) sb.push(top);
+      cnt[top] -= use;
+      if (iter === 0) {
+        var m2 = {};
+        for (var u = 0; u < sb.length; u++) m2[u] = 'new';
+        snap(A_USE, '取堆顶 ' + top + ' 连放 ' + use + ' 个（不超过两个不三连）', m2, { ch: top, cls: 'hit' });
+      }
+    }
+    iter++;
+  }
+
+  var rest = heapOrder();
+  var all = {};
+  for (var f = 0; f < sb.length; f++) all[f] = 'done';
+  snap(A_RET, '结束：长度 ' + sb.length + (rest.length ? '，剩 ' + cnt[rest[0]] + ' 个 ' + rest[0] + ' 垫不进去' : '，全部用完'),
+    all, rest.length ? { ch: rest[0], cls: 'bad' } : null);
+
+  return { frames: frames, result: sb.join('') };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>连接词 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1065 / 1159</span>
+  <nav class="pn"><a href="1690.html">上一篇</a><a href="0389.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">472. </span>连接词</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">字典树</li><li class="aux">动态规划</li><li class="tag">深度优先搜索</li><li class="tag">字典树</li><li class="tag">数组</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按长度排序后逐词检查：用字典树做「可拆分」DP（前 i 个字符能否由已入库词拼出），整词一段不算；查完再把自己入库。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先按长度升序排序：检查词 <code>w</code> 时，能拼出它的更短词都已入库，查完才把 <code>w</code> 插进字典树（防止用自己拼自己）。</li><li>判定用拆分 DP：<code>ok[0]=true</code>，从每个 <code>ok[i]</code> 出发沿字典树走，走到词尾结点就令 <code>ok[j+1]=true</code>；<code>ok[n]</code> 即可拆。</li><li>唯一要排除的是「整词当一段」：<code>i==0</code> 且走到 <code>n−1</code> 的那次命中不计，这样保证至少两段。</li><li>判定一个词 O(L²)（L 为词长），全部词总长 ≤ 1e5，足够快。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(总字符数 × 单词最大长度)，空间复杂度 O(总字符数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 字典树结点：26 个孩子指针 + 是否是一个完整单词</span></span><span class="ln"><span class="no">5</span>    <span class="k">static</span> <span class="k">class</span> <span class="t">Trie</span> {</span><span class="ln"><span class="no">6</span>        <span class="t">Trie</span>[] ch = <span class="k">new</span> <span class="t">Trie</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">7</span>        <span class="k">boolean</span> end;</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; findAllConcatenatedWordsInADict(<span class="t">String</span>[] words) {</span><span class="ln"><span class="no">11</span>        <span class="c">// 由短到长检查：轮到某个词时，能拼它的更短词都已入库</span></span><span class="ln"><span class="no">12</span>        <span class="t">Arrays</span>.sort(words, (a, b) -&gt; a.length() - b.length());</span><span class="ln"><span class="no">13</span>        <span class="t">Trie</span> root = <span class="k">new</span> <span class="t">Trie</span>();</span><span class="ln"><span class="no">14</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="t">String</span> w : words) {</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (isConcat(root, w)) ans.add(w);   <span class="c">// 检查完才入库，避免用自己拼自己</span></span><span class="ln"><span class="no">17</span>            insert(root, w);</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="t">Collections</span>.sort(ans);   <span class="c">// 答案与顺序无关，排序后输出稳定</span></span><span class="ln"><span class="no">20</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span> </span><span class="ln"><span class="no">23</span>    <span class="c">// 词能否拆成 ≥ 2 个已入库词：ok[i] = 前 i 个字符能拆出来</span></span><span class="ln"><span class="no">24</span>    <span class="k">private</span> <span class="k">boolean</span> isConcat(<span class="t">Trie</span> root, <span class="t">String</span> w) {</span><span class="ln"><span class="no">25</span>        <span class="k">int</span> n = w.length();</span><span class="ln"><span class="no">26</span>        <span class="k">boolean</span>[] ok = <span class="k">new</span> <span class="k">boolean</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">27</span>        ok[<span class="n">0</span>] = <span class="k">true</span>;</span><span class="ln"><span class="no">28</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">29</span>            <span class="k">if</span> (!ok[i]) <span class="k">continue</span>;</span><span class="ln"><span class="no">30</span>            <span class="t">Trie</span> cur = root;</span><span class="ln"><span class="no">31</span>            <span class="k">for</span> (<span class="k">int</span> j = i; j &lt; n; j++) {</span><span class="ln"><span class="no">32</span>                cur = cur.ch[w.charAt(j) - <span class="s">'a'</span>];</span><span class="ln"><span class="no">33</span>                <span class="k">if</span> (cur == <span class="k">null</span>) <span class="k">break</span>;   <span class="c">// 这条路在字典树里走不下去</span></span><span class="ln"><span class="no">34</span>                <span class="c">// 整个词当一段不算拼接，排除「从 0 一路到结尾」这一种取法</span></span><span class="ln"><span class="no">35</span>                <span class="k">if</span> (cur.end &amp;&amp; !(i == <span class="n">0</span> &amp;&amp; j == n - <span class="n">1</span>)) ok[j + <span class="n">1</span>] = <span class="k">true</span>;</span><span class="ln"><span class="no">36</span>            }</span><span class="ln"><span class="no">37</span>        }</span><span class="ln"><span class="no">38</span>        <span class="k">return</span> ok[n];</span><span class="ln"><span class="no">39</span>    }</span><span class="ln"><span class="no">40</span> </span><span class="ln"><span class="no">41</span>    <span class="k">private</span> <span class="k">void</span> insert(<span class="t">Trie</span> root, <span class="t">String</span> w) {</span><span class="ln"><span class="no">42</span>        <span class="t">Trie</span> cur = root;</span><span class="ln"><span class="no">43</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; w.length(); i++) {</span><span class="ln"><span class="no">44</span>            <span class="k">int</span> c = w.charAt(i) - <span class="s">'a'</span>;</span><span class="ln"><span class="no">45</span>            <span class="k">if</span> (cur.ch[c] == <span class="k">null</span>) cur.ch[c] = <span class="k">new</span> <span class="t">Trie</span>();</span><span class="ln"><span class="no">46</span>            cur = cur.ch[c];</span><span class="ln"><span class="no">47</span>        }</span><span class="ln"><span class="no">48</span>        cur.end = <span class="k">true</span>;</span><span class="ln"><span class="no">49</span>    }</span><span class="ln"><span class="no">50</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个 <strong>不含重复 </strong>单词的字符串数组 <code>words</code> ，请你找出并返回 <code>words</code> 中的所有 <strong>连接词</strong> 。</p>
+
+<p><strong>连接词</strong> 定义为：一个完全由给定数组中的至少两个较短单词（不一定是不同的两个单词）组成的字符串。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>words = ["cat","cats","catsdogcats","dog","dogcatsdog","hippopotamuses","rat","ratcatdogcat"]
+<strong>输出：</strong>["catsdogcats","dogcatsdog","ratcatdogcat"]
+<strong>解释：</strong>"catsdogcats" 由 "cats", "dog" 和 "cats" 组成; 
+     "dogcatsdog" 由 "dog", "cats" 和 "dog" 组成; 
+     "ratcatdogcat" 由 "rat", "cat", "dog" 和 "cat" 组成。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>words = ["cat","dog","catdog"]
+<strong>输出：</strong>["catdog"]</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= words.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= words[i].length &lt;= 30</code></li>
+	<li><code>words[i]</code>&nbsp;仅由小写英文字母组成。&nbsp;</li>
+	<li><code>words</code>&nbsp;中的所有字符串都是 <strong>唯一</strong> 的。</li>
+	<li><code>1 &lt;= sum(words[i].length) &lt;= 10<sup>5</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    // 字典树结点：26 个孩子指针 + 是否是一个完整单词", "    static class Trie {", "        Trie[] ch = new Trie[26];", "        boolean end;", "    }", "", "    public List<String> findAllConcatenatedWordsInADict(String[] words) {", "        // 由短到长检查：轮到某个词时，能拼它的更短词都已入库", "        Arrays.sort(words, (a, b) -> a.length() - b.length());", "        Trie root = new Trie();", "        List<String> ans = new ArrayList<>();", "        for (String w : words) {", "            if (isConcat(root, w)) ans.add(w);   // 检查完才入库，避免用自己拼自己", "            insert(root, w);", "        }", "        Collections.sort(ans);   // 答案与顺序无关，排序后输出稳定", "        return ans;", "    }", "", "    // 词能否拆成 ≥ 2 个已入库词：ok[i] = 前 i 个字符能拆出来", "    private boolean isConcat(Trie root, String w) {", "        int n = w.length();", "        boolean[] ok = new boolean[n + 1];", "        ok[0] = true;", "        for (int i = 0; i < n; i++) {", "            if (!ok[i]) continue;", "            Trie cur = root;", "            for (int j = i; j < n; j++) {", "                cur = cur.ch[w.charAt(j) - 'a'];", "                if (cur == null) break;   // 这条路在字典树里走不下去", "                // 整个词当一段不算拼接，排除「从 0 一路到结尾」这一种取法", "                if (cur.end && !(i == 0 && j == n - 1)) ok[j + 1] = true;", "            }", "        }", "        return ok[n];", "    }", "", "    private void insert(Trie root, String w) {", "        Trie cur = root;", "        for (int i = 0; i < w.length(); i++) {", "            int c = w.charAt(i) - 'a';", "            if (cur.ch[c] == null) cur.ch[c] = new Trie();", "            cur = cur.ch[c];", "        }", "        cur.end = true;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 472. 连接词 —— 图解：复刻 Solution.java 的「按长度排序 + 字典树 + 拆分 DP」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { words: ['cat', 'dog', 'cats', 'dogcat', 'catsdog'] };
+
+function trace(input) {
+  var ws = input.words.slice().sort(function (a, b) { return a.length - b.length; });
+  var frames = [];
+  var ans = [];
+
+  // 字典树：children 表 + 是否完整单词；只用于判定，不专门画树
+  function newTrie() { return { ch: {}, end: false }; }
+  var root = newTrie();
+  function insert(w) {
+    var cur = root;
+    for (var i = 0; i < w.length; i++) {
+      if (!cur.ch[w[i]]) cur.ch[w[i]] = newTrie();
+      cur = cur.ch[w[i]];
+    }
+    cur.end = true;
+  }
+
+  // 拆分 DP：ok[i] = 前 i 个字符能由已入库词拆出；from[i] = 达成时这一段的起点
+  function check(w) {
+    var n = w.length;
+    var ok = new Array(n + 1).fill(false);
+    var from = new Array(n + 1).fill(-1);
+    ok[0] = true;
+    for (var i = 0; i < n; i++) {
+      if (!ok[i]) continue;
+      var cur = root;
+      for (var j = i; j < n; j++) {
+        cur = cur.ch[w[j]];
+        if (!cur) break;
+        if (cur.end && !(i === 0 && j === n - 1) && !ok[j + 1]) { ok[j + 1] = true; from[j + 1] = i; }
+      }
+    }
+    return { ok: ok, from: from };
+  }
+
+  var A_SORT = 'Arrays.sort(words, (a, b) -> a.length() - b.length());';
+  var A_CHECK = 'if (isConcat(root, w)) ans.add(w);';
+  var A_RET = 'return ans;';
+
+  function wordsPanel(marks) {
+    return Viz.cells(ws, { title: '按长度排序后的 words', marks: marks || {} });
+  }
+  // 检查结果的两块面板：词的字符按拆分段上色 + ok[] 数组
+  function checkPanels(w, res, decided) {
+    var n = w.length;
+    var wm = {}, om = {};
+    if (decided) {           // 从结尾回溯出成功拆分的各段，整段标 win
+      var at = n;
+      while (at > 0) {
+        for (var k = res.from[at]; k < at; k++) wm[k] = 'win';
+        om[at] = 'done';
+        at = res.from[at];
+      }
+      om[0] = 'done';
+      om[n] = 'new';
+    } else {
+      for (var i = 0; i <= n; i++) if (res.ok[i]) om[i] = 'done';
+    }
+    var okCells = [];
+    for (var t = 0; t <= n; t++) okCells.push(res.ok[t] ? '✓' : '·');
+    return [
+      Viz.cells(w.split(''), { title: '正在检查「' + w + '」', marks: wm }),
+      Viz.cells(okCells, { title: 'ok[i]：前 i 个字符能拆出来吗', marks: om })
+    ];
+  }
+
+  var failedOnce = false, okOnce = false;
+  ws.forEach(function (w) {
+    var res = check(w);
+    var hit = res.ok[w.length];
+    if (hit) ans.push(w);
+    // 讲故事的几个关键时刻：第一个失败词、第一个成功词
+    if (!hit && !failedOnce) {
+      failedOnce = true;
+      var p1 = checkPanels(w, res, false);
+      frames.push(Viz.frame(A_CHECK, '「' + w + '」：整词当一段不算，剩下的接不上 → 不是连接词',
+        [wordsPanel({}), p1[0], p1[1]]));
+    }
+    if (hit && !okOnce) {
+      okOnce = true;
+      var p2 = checkPanels(w, res, true);
+      frames.push(Viz.frame(A_CHECK, '「' + w + '」：能拆成已入库词的拼接 → 是连接词，收进答案',
+        [wordsPanel({}), p2[0], p2[1]]));
+    }
+    insert(w);
+  });
+
+  ans.sort();   // 与 Java 一致：答案与顺序无关，排序后输出稳定
+
+  var doneMarks = {};
+  ans.forEach(function (w) { var k = ws.indexOf(w); if (k >= 0) doneMarks[k] = 'done'; });
+  frames.push(Viz.frame(A_RET, '全部检查完：连接词共 ' + ans.length + ' 个', [wordsPanel(doneMarks),
+    Viz.vars([{ name: '答案', v: ans.length ? ans.join(', ') : '（无）', cls: 'done' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

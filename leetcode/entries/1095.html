@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>山脉数组中查找目标值 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 301 / 1159</span>
+  <nav class="pn"><a href="mianshi-10-03.html">上一篇</a><a href="offer-35.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1095. </span>山脉数组中查找目标值</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 14</li><li class="algo">二分查找</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">交互</li><li class="tag">ternary-search</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">三次二分：先二分找峰顶，再在递增的左坡、递减的右坡各二分一次 target，最多 3·log(n) 次 get。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><strong>找峰</strong>：<code>get(mid) &lt; get(mid+1)</code> 说明还在上坡，<code>l = mid+1</code>；否则峰在左边 <code>r = mid</code>。</li><li><strong>左坡</strong>（严格递增）：标准二分找最左的 <code>target</code>，命中直接返回（要最小下标，先查左坡）。</li><li><strong>右坡</strong>（严格递减）：方向反过来，<code>get(mid) &gt; target</code> 才 <code>l = mid+1</code>；结尾再判一次相等，否则返回 <code>-1</code>。</li><li>交互题的考点就是「get 次数 ≤ 100」：三次二分共约 <code>3·log(n)</code> 次（n=10⁴ 时约 45 次）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="c">/**</span></span><span class="ln"><span class="no">2</span><span class="c"> * // This is MountainArray's API interface.</span></span><span class="ln"><span class="no">3</span><span class="c"> * // You should not implement it, or speculate about its implementation</span></span><span class="ln"><span class="no">4</span><span class="c"> * interface MountainArray {</span></span><span class="ln"><span class="no">5</span><span class="c"> *     public int get(int index) {}</span></span><span class="ln"><span class="no">6</span><span class="c"> *     public int length() {}</span></span><span class="ln"><span class="no">7</span><span class="c"> * }</span></span><span class="ln"><span class="no">8</span><span class="c"> */</span></span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="k">int</span> findInMountainArray(<span class="k">int</span> target, <span class="t">MountainArray</span> mountainArr) {</span><span class="ln"><span class="no">12</span>        <span class="k">int</span> n = mountainArr.length();</span><span class="ln"><span class="no">13</span>        <span class="c">// 第一问：二分找峰顶。get(mid) &lt; get(mid+1) 说明在上坡，峰在右边</span></span><span class="ln"><span class="no">14</span>        <span class="k">int</span> l = <span class="n">0</span>, r = n - <span class="n">1</span>;</span><span class="ln"><span class="no">15</span>        <span class="k">while</span> (l &lt; r) {</span><span class="ln"><span class="no">16</span>            <span class="k">int</span> mid = l + (r - l) / <span class="n">2</span>;</span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (mountainArr.get(mid) &lt; mountainArr.get(mid + <span class="n">1</span>)) l = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">18</span>            <span class="k">else</span> r = mid;</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">int</span> peak = l;</span><span class="ln"><span class="no">21</span>        <span class="c">// 第二问：左坡严格递增，二分找最左的 target</span></span><span class="ln"><span class="no">22</span>        l = <span class="n">0</span>;</span><span class="ln"><span class="no">23</span>        r = peak;</span><span class="ln"><span class="no">24</span>        <span class="k">while</span> (l &lt; r) {</span><span class="ln"><span class="no">25</span>            <span class="k">int</span> mid = l + (r - l) / <span class="n">2</span>;</span><span class="ln"><span class="no">26</span>            <span class="k">if</span> (mountainArr.get(mid) &lt; target) l = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">27</span>            <span class="k">else</span> r = mid;</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="k">if</span> (mountainArr.get(l) == target) <span class="k">return</span> l;</span><span class="ln"><span class="no">30</span>        <span class="c">// 第三问：右坡严格递减，大于 target 才往右走，方向反过来</span></span><span class="ln"><span class="no">31</span>        l = peak + <span class="n">1</span>;</span><span class="ln"><span class="no">32</span>        r = n - <span class="n">1</span>;</span><span class="ln"><span class="no">33</span>        <span class="k">while</span> (l &lt; r) {</span><span class="ln"><span class="no">34</span>            <span class="k">int</span> mid = l + (r - l) / <span class="n">2</span>;</span><span class="ln"><span class="no">35</span>            <span class="k">if</span> (mountainArr.get(mid) &gt; target) l = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">36</span>            <span class="k">else</span> r = mid;</span><span class="ln"><span class="no">37</span>        }</span><span class="ln"><span class="no">38</span>        <span class="k">return</span> mountainArr.get(l) == target ? l : -<span class="n">1</span>;</span><span class="ln"><span class="no">39</span>    }</span><span class="ln"><span class="no">40</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>（这是一个 <strong>交互式问题&nbsp;</strong>）</p>
+
+<p>你可以将一个数组&nbsp;<code>arr</code>&nbsp;称为&nbsp;<strong>山脉数组&nbsp;</strong>当且仅当：</p>
+
+<ul>
+	<li><code>arr.length &gt;= 3</code></li>
+	<li>存在一些&nbsp;<code>0 &lt; i &lt; arr.length - 1</code>&nbsp;的&nbsp;<code>i</code>&nbsp;使得：
+	<ul>
+		<li><code>arr[0] &lt; arr[1] &lt; ... &lt; arr[i - 1] &lt; arr[i]</code></li>
+		<li><code>arr[i] &gt; arr[i + 1] &gt; ... &gt; arr[arr.length - 1]</code></li>
+	</ul>
+	</li>
+</ul>
+
+<p>给定一个山脉数组&nbsp;<code>mountainArr</code>&nbsp;，返回&nbsp;<strong>最小</strong> 的&nbsp;<code>index</code>&nbsp;使得&nbsp;<code>mountainArr.get(index) == target</code>。如果不存在这样的&nbsp;<code>index</code>，返回&nbsp;<code>-1</code>&nbsp;。</p>
+
+<p><strong>你无法直接访问山脉数组</strong>。你只能使用&nbsp;<code>MountainArray</code>&nbsp;接口来访问数组：</p>
+
+<ul>
+	<li><code>MountainArray.get(k)</code>&nbsp;返回数组中下标为&nbsp;<code>k</code>&nbsp;的元素（从 0 开始）。</li>
+	<li><code>MountainArray.length()</code>&nbsp;返回数组的长度。</li>
+</ul>
+
+<p>调用&nbsp;<code>MountainArray.get</code>&nbsp;超过&nbsp;<code>100</code>&nbsp;次的提交会被判定为错误答案。此外，任何试图绕过在线评测的解决方案都将导致取消资格。</p>
+
+<ol>
+</ol>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>mountainArr = [1,2,3,4,5,3,1], target = 3
+<strong>输出：</strong>2
+<strong>解释：</strong>3 在数组中出现了两次，下标分别为 2 和 5，我们返回最小的下标 2。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>mountainArr = [0,1,2,4,2,1], target = 3
+<strong>输出：</strong>-1
+<strong>解释：</strong>3 在数组中没有出现，返回 -1。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>3 &lt;= mountainArr.length() &lt;= 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= target &lt;= 10<sup>9</sup></code></li>
+	<li><code>0 &lt;= mountainArr.get(index) &lt;=&nbsp;10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["/**", " * // This is MountainArray's API interface.", " * // You should not implement it, or speculate about its implementation", " * interface MountainArray {", " *     public int get(int index) {}", " *     public int length() {}", " * }", " */", "", "class Solution {", "    public int findInMountainArray(int target, MountainArray mountainArr) {", "        int n = mountainArr.length();", "        // 第一问：二分找峰顶。get(mid) < get(mid+1) 说明在上坡，峰在右边", "        int l = 0, r = n - 1;", "        while (l < r) {", "            int mid = l + (r - l) / 2;", "            if (mountainArr.get(mid) < mountainArr.get(mid + 1)) l = mid + 1;", "            else r = mid;", "        }", "        int peak = l;", "        // 第二问：左坡严格递增，二分找最左的 target", "        l = 0;", "        r = peak;", "        while (l < r) {", "            int mid = l + (r - l) / 2;", "            if (mountainArr.get(mid) < target) l = mid + 1;", "            else r = mid;", "        }", "        if (mountainArr.get(l) == target) return l;", "        // 第三问：右坡严格递减，大于 target 才往右走，方向反过来", "        l = peak + 1;", "        r = n - 1;", "        while (l < r) {", "            int mid = l + (r - l) / 2;", "            if (mountainArr.get(mid) > target) l = mid + 1;", "            else r = mid;", "        }", "        return mountainArr.get(l) == target ? l : -1;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1095. 山脉数组中查找目标值 —— 图解：复刻 Solution.java 的三次二分（找峰 → 左坡 → 右坡），在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [0, 2, 5, 6, 4, 3, 1], target: 3 };
+
+function trace(input) {
+  var arr = input.arr, target = input.target;
+  var n = arr.length;
+  var frames = [];
+  var UP = 'if (mountainArr.get(mid) < mountainArr.get(mid + 1)) l = mid + 1;';
+  var PEAK = 'int peak = l;';
+  var LEFT = 'if (mountainArr.get(mid) < target) l = mid + 1;';
+  var LEFTCHK = 'if (mountainArr.get(l) == target) return l;';
+  var RIGHT = 'if (mountainArr.get(mid) > target) l = mid + 1;';
+  var RET = 'return mountainArr.get(l) == target ? l : -1;';
+
+  var firedUp = false, firedLeft = false, firedRight = false;
+
+  // 数组面板：[from,to] 是当前二分窗口，mid 高亮，peak 挂指针
+  function arrPanel(o) {
+    var marks = {};
+    for (var k = 0; k < n; k++) marks[k] = 'dim';
+    if (o.from != null) for (k = o.from; k <= o.to; k++) marks[k] = 'win';
+    if (o.mid != null) marks[o.mid] = 'cur';
+    if (o.done != null) marks[o.done] = 'done';
+    var ptrs = [];
+    if (o.l != null && o.l >= 0 && o.l < n) ptrs.push({ at: o.l, label: 'l', cls: 'p-left' });
+    if (o.r != null && o.r >= 0 && o.r < n) ptrs.push({ at: o.r, label: 'r', cls: 'p-right' });
+    if (o.mid != null && o.mid >= 0 && o.mid < n) ptrs.push({ at: o.mid, label: 'mid', cls: 'p-mid' });
+    if (o.peak != null && o.peak >= 0 && o.peak < n) ptrs.push({ at: o.peak, label: '峰', cls: 'p-head' });
+    return Viz.cells(arr, { title: '山脉数组（真实题目只能用 get(k) 探查，这里画出来帮助理解）', marks: marks, pointers: ptrs });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+
+  // 第一次二分：找峰顶
+  var l = 0, r = n - 1;
+  while (l < r) {
+    var mid = Math.floor((l + r) / 2);
+    if (arr[mid] < arr[mid + 1]) {
+      if (!firedUp) {
+        firedUp = true;
+        frames.push(Viz.frame(UP, 'get(' + mid + ')=' + arr[mid] + ' < get(' + (mid + 1) + ')=' + arr[mid + 1] +
+          '：还在上坡，峰顶在右半边，l 跳到 mid+1',
+          [arrPanel({ from: l, to: r, mid: mid, l: l, r: r }),
+           varsPanel([{ name: 'get(mid) < get(mid+1)', v: arr[mid] + ' < ' + arr[mid + 1], cls: 'chg' },
+             { name: '结论', v: 'l = ' + (mid + 1) }])]));
+      }
+      l = mid + 1;
+    } else r = mid;
+  }
+  var peak = l;
+  frames.push(Viz.frame(PEAK, 'l=r=' + peak + '：arr[' + peak + ']=' + arr[peak] + ' 就是峰顶；左坡递增、右坡递减，可以各二分一次',
+    [arrPanel({ from: 0, to: n - 1, peak: peak, l: peak, r: peak }),
+     varsPanel([{ name: '峰顶下标', v: peak, cls: 'chg' }, { name: '峰顶值', v: arr[peak] }])]));
+
+  // 第二次二分：左坡（递增）找最左 target
+  l = 0;
+  r = peak;
+  while (l < r) {
+    var mid2 = Math.floor((l + r) / 2);
+    if (!firedLeft) {
+      firedLeft = true;
+      frames.push(Viz.frame(LEFT, '左坡递增：get(' + mid2 + ')=' + arr[mid2] + (arr[mid2] < target ? ' < ' : ' ≥ ') +
+        'target=' + target + (arr[mid2] < target ? ' → 目标在右半，l = mid+1' : ' → 目标在左半（含 mid），r = mid'),
+        [arrPanel({ from: l, to: r, mid: mid2, peak: peak, l: l, r: r }),
+         varsPanel([{ name: '窗口 [l, r]', v: l + '..' + r }, { name: 'get(mid)', v: arr[mid2], cls: 'chg' }])]));
+    }
+    if (arr[mid2] < target) l = mid2 + 1;
+    else r = mid2;
+  }
+  if (arr[l] === target) {
+    frames.push(Viz.frame(LEFTCHK, '左坡就找到了：get(' + l + ')=' + arr[l] + ' == target，返回最小下标 ' + l,
+      [arrPanel({ from: l, to: l, done: l, peak: peak, l: l, r: l }),
+       varsPanel([{ name: '返回', v: l, cls: 'done' }])]));
+    return { frames: frames, result: l };
+  }
+  frames.push(Viz.frame(LEFTCHK, '左坡二分结束：get(' + l + ')=' + arr[l] + ' ≠ target=' + target + '，左坡没有，去右坡找',
+    [arrPanel({ from: peak + 1, to: n - 1, peak: peak, l: l, r: l }),
+     varsPanel([{ name: 'get(l)', v: arr[l] }, { name: 'target', v: target }])]));
+
+  // 第三次二分：右坡（递减）找最左 target，比较方向反过来
+  l = peak + 1;
+  r = n - 1;
+  while (l < r) {
+    var mid3 = Math.floor((l + r) / 2);
+    if (arr[mid3] > target) {
+      if (!firedRight) {
+        firedRight = true;
+        frames.push(Viz.frame(RIGHT, '右坡递减：get(' + mid3 + ')=' + arr[mid3] + ' > target=' + target +
+          ' 才往右——比较方向和左坡相反，l = mid+1',
+          [arrPanel({ from: l, to: r, mid: mid3, peak: peak, l: l, r: r }),
+           varsPanel([{ name: 'get(mid) > target', v: arr[mid3] + ' > ' + target, cls: 'chg' },
+             { name: '结论', v: 'l = ' + (mid3 + 1) }])]));
+      }
+      l = mid3 + 1;
+    } else r = mid3;
+  }
+  var out = arr[l] === target ? l : -1;
+  frames.push(Viz.frame(RET, out >= 0 ? 'get(' + l + ')=' + arr[l] + ' == target：右坡找到，返回 ' + l
+      : 'get(' + l + ')=' + arr[l] + ' ≠ target：右坡也没有，返回 -1',
+    [arrPanel({ from: l, to: l, done: out >= 0 ? l : null, peak: peak, l: l, r: l }),
+     varsPanel([{ name: '返回', v: out, cls: 'done' }])]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

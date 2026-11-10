@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最高的广告牌 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1155 / 1159</span>
+  <nav class="pn"><a href="0865.html">上一篇</a><a href="0562.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">956. </span>最高的广告牌</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">knapsack-problem</li><li class="tag">0-1-knapsack</li><li class="tag">meet-in-the-middle</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按两侧高度差做背包 DP：dp[d] = 差为 d 时较高侧的最大高度；每根钢筋放高侧、放低侧或不用，dp[0] 即答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[d]</code> 记「两侧差为 <code>d</code> 时，较高一侧的最大高度」，<code>-1</code> 表示这个差拼不出来；钢筋总和 ≤ 5000，一维数组够用。</li><li>每根钢筋三种去向：<strong>放高侧</strong> → <code>dp[d+rod] = h+rod</code>；<strong>放低侧</strong> → 差变 <code>|d−rod|</code>，高度不变。</li><li>关键细节：放低侧时若 <code>rod &gt; d</code>，低侧反超、高侧换边，新高度要补上 <code>rod−d</code>；<code>rod == d</code> 则正好拼平，<code>dp[0]</code> 被更新。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·S)，空间复杂度 O(S)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> tallestBillboard(<span class="k">int</span>[] rods) {</span><span class="ln"><span class="no">5</span>        <span class="c">// dp[d]：两侧高度差为 d 时，较高一侧能堆到的最大高度；-1 表示这个差拼不出来</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[<span class="n">5001</span>];</span><span class="ln"><span class="no">7</span>        <span class="t">Arrays</span>.fill(dp, -<span class="n">1</span>);</span><span class="ln"><span class="no">8</span>        dp[<span class="n">0</span>] = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> rod : rods) {</span><span class="ln"><span class="no">10</span>            <span class="k">int</span>[] nd = dp.clone();   <span class="c">// 每根钢筋只用一次，从旧状态整体搬迁</span></span><span class="ln"><span class="no">11</span>            <span class="k">for</span> (<span class="k">int</span> d = <span class="n">0</span>; d &lt;= <span class="n">5000</span>; d++) {</span><span class="ln"><span class="no">12</span>                <span class="k">if</span> (dp[d] &lt; <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">13</span>                <span class="k">int</span> h = dp[d];</span><span class="ln"><span class="no">14</span>                <span class="c">// 放到高的一侧：差变大，高度加 rod</span></span><span class="ln"><span class="no">15</span>                <span class="k">if</span> (d + rod &lt;= <span class="n">5000</span>) nd[d + rod] = <span class="t">Math</span>.max(nd[d + rod], h + rod);</span><span class="ln"><span class="no">16</span>                <span class="c">// 放到低的一侧：差变 |d-rod|；rod 更长时高侧换边，新高度补上 rod-d</span></span><span class="ln"><span class="no">17</span>                <span class="k">int</span> d2 = <span class="t">Math</span>.abs(d - rod);</span><span class="ln"><span class="no">18</span>                <span class="k">int</span> h2 = h + <span class="t">Math</span>.max(<span class="n">0</span>, rod - d);</span><span class="ln"><span class="no">19</span>                nd[d2] = <span class="t">Math</span>.max(nd[d2], h2);</span><span class="ln"><span class="no">20</span>            }</span><span class="ln"><span class="no">21</span>            dp = nd;</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> dp[<span class="n">0</span>];</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你正在安装一个广告牌，并希望它高度最大。这块广告牌将有两个钢制支架，两边各一个。每个钢支架的高度必须相等。</p>
+
+<p>你有一堆可以焊接在一起的钢筋 <code>rods</code>。举个例子，如果钢筋的长度为 <code>1</code>、<code>2</code> 和 <code>3</code>，则可以将它们焊接在一起形成长度为 <code>6</code>&nbsp;的支架。</p>
+
+<p>返回 <em>广告牌的最大可能安装高度</em> 。如果没法安装广告牌，请返回 <code>0</code>&nbsp;。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>[1,2,3,6]
+<strong>输出：</strong>6
+<strong>解释：</strong>我们有两个不相交的子集 {1,2,3} 和 {6}，它们具有相同的和 sum = 6。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>[1,2,3,4,5,6]
+<strong>输出：</strong>10
+<strong>解释：</strong>我们有两个不相交的子集 {2,3,5} 和 {4,6}，它们具有相同的和 sum = 10。</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>[1,2]
+<strong>输出：</strong>0
+<strong>解释：</strong>没法安装广告牌，所以返回 0。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ol>
+	<li><code>0 &lt;= rods.length &lt;= 20</code></li>
+	<li><code>1 &lt;= rods[i] &lt;= 1000</code></li>
+	<li><code>sum(rods[i]) &lt;= 5000</code></li>
+</ol>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int tallestBillboard(int[] rods) {", "        // dp[d]：两侧高度差为 d 时，较高一侧能堆到的最大高度；-1 表示这个差拼不出来", "        int[] dp = new int[5001];", "        Arrays.fill(dp, -1);", "        dp[0] = 0;", "        for (int rod : rods) {", "            int[] nd = dp.clone();   // 每根钢筋只用一次，从旧状态整体搬迁", "            for (int d = 0; d <= 5000; d++) {", "                if (dp[d] < 0) continue;", "                int h = dp[d];", "                // 放到高的一侧：差变大，高度加 rod", "                if (d + rod <= 5000) nd[d + rod] = Math.max(nd[d + rod], h + rod);", "                // 放到低的一侧：差变 |d-rod|；rod 更长时高侧换边，新高度补上 rod-d", "                int d2 = Math.abs(d - rod);", "                int h2 = h + Math.max(0, rod - d);", "                nd[d2] = Math.max(nd[d2], h2);", "            }", "            dp = nd;", "        }", "        return dp[0];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 956. 最高的广告牌 —— 图解：复刻 Solution.java 的「按差值 DP：dp[d] = 差为 d 时高侧最大高度」，5 张关键帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { rods: [1, 2, 3, 6] };
+
+function trace(input) {
+  var rods = input.rods || [];
+  var frames = [];
+  var dp = { 0: 0 };   // d -> 高侧最大高度；缺行表示这个差拼不出来
+
+  function keys(m) {
+    return Object.keys(m).map(Number).sort(function (a, b) { return a - b; });
+  }
+  function oldAt(m, d) {
+    return m[d] === undefined ? -1 : m[d];
+  }
+  function tablePanel(changed) {
+    var rows = keys(dp).map(function (d) {
+      return { k: '差 ' + d, v: '高 ' + dp[d], cls: changed && changed[d] ? 'chg' : (d === 0 ? 'win' : '') };
+    });
+    return Viz.table('dp[d]：两侧差为 d 时，较高一侧的最大高度', rows, { hint: '（答案看差 0 那行）' });
+  }
+  function rodsPanel(cur) {
+    var marks = {};
+    for (var i = 0; i < rods.length; i++) marks[i] = i < cur ? 'done' : (i === cur ? 'cur' : '');
+    var pointers = cur < rods.length ? [{ at: cur, label: '当前钢筋', cls: 'p-cur' }] : [];
+    return Viz.cells(rods, { title: '钢筋 rods（逐根决定：放高侧 / 放低侧 / 不用）', marks: marks, pointers: pointers });
+  }
+
+  frames.push(Viz.frame('dp[0] = 0;', '开局：什么都不放，差 0、高侧 0；每根钢筋三种去向',
+    [rodsPanel(0), tablePanel(null)]));
+
+  rods.forEach(function (rod, ri) {
+    var prevZero = dp[0];
+    var nd = {};
+    keys(dp).forEach(function (d) { nd[d] = dp[d]; });
+    var changed = {}, swapped = false;
+    keys(dp).forEach(function (d) {
+      var h = dp[d];
+      if (d + rod <= 5000 && h + rod > oldAt(nd, d + rod)) {
+        nd[d + rod] = h + rod;
+        changed[d + rod] = true;
+      }
+      var d2 = Math.abs(d - rod);
+      var h2 = h + Math.max(0, rod - d);
+      if (h2 > oldAt(nd, d2)) {
+        nd[d2] = h2;
+        changed[d2] = true;
+        if (rod > d) swapped = true;   // 放低侧但 rod 更长：高侧换边
+      }
+    });
+    dp = nd;
+
+    var flatNow = dp[0] !== prevZero;
+    var key;
+    if (flatNow) {
+      key = '钢筋 ' + rod + ' 拼平两侧：dp[0] 更新为 ' + dp[0] + '（两侧相等才能立牌）';
+    } else if (swapped) {
+      key = '钢筋 ' + rod + ' 放低侧但它更长：高侧换边，高度补上 rod−d';
+    } else {
+      key = '钢筋 ' + rod + '：放高侧差变大、放低侧差变小，两处都试着更新';
+    }
+    var at = swapped && !flatNow ? 'int h2 = h + Math.max(0, rod - d);' : 'nd[d2] = Math.max(nd[d2], h2);';
+    frames.push(Viz.frame(at, key, [rodsPanel(ri + 1), tablePanel(changed)]));
+  });
+
+  frames.push(Viz.frame('return dp[0];', '扫完所有钢筋：dp[0]（两侧相等）的最大高度 = ' + dp[0],
+    [rodsPanel(rods.length), tablePanel(null)]));
+  return { frames: frames, result: dp[0] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

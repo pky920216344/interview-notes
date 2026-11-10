@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>扁平化多级双向链表 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 752 / 1159</span>
+  <nav class="pn"><a href="0712.html">上一篇</a><a href="1267.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">430. </span>扁平化多级双向链表</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">链表</li><li class="tag">深度优先搜索</li><li class="tag">链表</li><li class="tag">双向链表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">一遍扫描：遇到带 child 的结点，把整个子链（已展开）插到它和 next 之间，再从子链头继续扫。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>指针 <code>cur</code> 沿主链走；<code>cur.child</code> 非空就拼接：<code>cur.next = child</code>、子链尾 <code>tail.next = next</code>，prev 成对回接。</li><li>摘链时把 <code>cur.child</code> 置 null（题目要求扁平后所有 child 为空）。</li><li>拼接后从 <code>cur = child</code> 继续：子链内部的子链也会在后续被插到正确位置。</li><li>关键顺序：先把子链尾接到原 <code>next</code>，再把 <code>next.prev</code> 指回子链尾，别断链。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="c">/*</span></span><span class="ln"><span class="no">2</span><span class="c">// Definition for a Node.</span></span><span class="ln"><span class="no">3</span><span class="c">class Node {</span></span><span class="ln"><span class="no">4</span><span class="c">    public int val;</span></span><span class="ln"><span class="no">5</span><span class="c">    public Node prev;</span></span><span class="ln"><span class="no">6</span><span class="c">    public Node next;</span></span><span class="ln"><span class="no">7</span><span class="c">    public Node child;</span></span><span class="ln"><span class="no">8</span><span class="c">};</span></span><span class="ln"><span class="no">9</span><span class="c">*/</span></span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">12</span>    <span class="k">public</span> <span class="t">Node</span> flatten(<span class="t">Node</span> head) {</span><span class="ln"><span class="no">13</span>        <span class="t">Node</span> cur = head;</span><span class="ln"><span class="no">14</span>        <span class="k">while</span> (cur != <span class="k">null</span>) {</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (cur.child == <span class="k">null</span>) { cur = cur.next; <span class="k">continue</span>; }</span><span class="ln"><span class="no">16</span>            <span class="t">Node</span> next = cur.next, child = cur.child;</span><span class="ln"><span class="no">17</span>            cur.child = <span class="k">null</span>;                          <span class="c">// 扁平后 child 必须为空，顺手摘掉</span></span><span class="ln"><span class="no">18</span>            cur.next = child;                          <span class="c">// 子链整段插到 cur 和 next 之间</span></span><span class="ln"><span class="no">19</span>            child.prev = cur;</span><span class="ln"><span class="no">20</span>            <span class="t">Node</span> tail = child;</span><span class="ln"><span class="no">21</span>            <span class="k">while</span> (tail.next != <span class="k">null</span>) tail = tail.next;   <span class="c">// 找子链的尾</span></span><span class="ln"><span class="no">22</span>            tail.next = next;</span><span class="ln"><span class="no">23</span>            <span class="k">if</span> (next != <span class="k">null</span>) next.prev = tail;</span><span class="ln"><span class="no">24</span>            cur = child;                               <span class="c">// 从子链头继续，处理它的子链</span></span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> head;</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你会得到一个双链表，其中包含的节点有一个下一个指针、一个前一个指针和一个额外的 <strong>子指针</strong> 。这个子指针可能指向一个单独的双向链表，也包含这些特殊的节点。这些子列表可以有一个或多个自己的子列表，以此类推，以生成如下面的示例所示的 <strong>多层数据结构</strong> 。</p>
+
+<p>给定链表的头节点&nbsp;<font color="#c7254e"><font face="Menlo, Monaco, Consolas, Courier New, monospace"><span style="font-size:12.6px"><span style="background-color:#f9f2f4">head</span></span></font></font>&nbsp;，将链表 <strong>扁平化</strong> ，以便所有节点都出现在单层双链表中。让 <code>curr</code> 是一个带有子列表的节点。子列表中的节点应该出现在<strong>扁平化列表</strong>中的&nbsp;<code>curr</code> <strong>之后</strong> 和&nbsp;<code>curr.next</code>&nbsp;<strong>之前</strong> 。</p>
+
+<p>返回 <em>扁平列表的 <code>head</code>&nbsp;。列表中的节点必须将其 <strong>所有</strong> 子指针设置为&nbsp;<code>null</code>&nbsp;。</em></p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/b5aa0cf1b820.jpg" style="height:339px; width:700px" /></p>
+
+<pre>
+<strong>输入：</strong>head = [1,2,3,4,5,6,null,null,null,7,8,9,10,null,null,11,12]
+<strong>输出：</strong>[1,2,3,7,8,11,12,9,10,4,5,6]
+<strong>解释：</strong>输入的多级列表如上图所示。
+扁平化后的链表如下图：
+<img src="../assets/img/ee429b8abaf9.jpg" style="height:69px; width:1000px" />
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img src="../assets/img/d8f850939347.1jpg" style="height:200px; width:200px" /></p>
+
+<pre>
+<strong>输入：</strong>head = [1,2,null,3]
+<strong>输出：</strong>[1,3,2]
+<strong>解释：</strong>输入的多级列表如上图所示。
+扁平化后的链表如下图：
+<img src="../assets/img/f4ccddc25c1a.jpg" style="height:87px; width:300px" />
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>head = []
+<strong>输出：</strong>[]
+<strong>说明：</strong>输入中可能存在空列表。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>节点数目不超过 <code>1000</code></li>
+	<li><code>1 &lt;= Node.val &lt;= 10<sup>5</sup></code></li>
+</ul>
+
+
+
+<p><strong>如何表示测试用例中的多级链表？</strong></p>
+
+<p>以 <strong>示例 1</strong> 为例：</p>
+
+<pre>
+ 1---2---3---4---5---6--NULL
+         |
+         7---8---9---10--NULL
+             |
+             11--12--NULL</pre>
+
+<p>序列化其中的每一级之后：</p>
+
+<pre>
+[1,2,3,4,5,6,null]
+[7,8,9,10,null]
+[11,12,null]
+</pre>
+
+<p>为了将每一级都序列化到一起，我们需要每一级中添加值为 null 的元素，以表示没有节点连接到上一级的上级节点。</p>
+
+<pre>
+[1,2,3,4,5,6,null]
+[null,null,7,8,9,10,null]
+[null,11,12,null]
+</pre>
+
+<p>合并所有序列化结果，并去除末尾的 null 。</p>
+
+<pre>
+[1,2,3,4,5,6,null,null,null,7,8,9,10,null,null,11,12]
+</pre>
+
+<ul>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["/*", "// Definition for a Node.", "class Node {", "    public int val;", "    public Node prev;", "    public Node next;", "    public Node child;", "};", "*/", "", "class Solution {", "    public Node flatten(Node head) {", "        Node cur = head;", "        while (cur != null) {", "            if (cur.child == null) { cur = cur.next; continue; }", "            Node next = cur.next, child = cur.child;", "            cur.child = null;                          // 扁平后 child 必须为空，顺手摘掉", "            cur.next = child;                          // 子链整段插到 cur 和 next 之间", "            child.prev = cur;", "            Node tail = child;", "            while (tail.next != null) tail = tail.next;   // 找子链的尾", "            tail.next = next;", "            if (next != null) next.prev = tail;", "            cur = child;                               // 从子链头继续，处理它的子链", "        }", "        return head;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 430. 扁平化多级双向链表 —— 图解：复刻 Solution.java 的「摘 child、子链整段插入」拼接法。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { head: [1, 2, 3, null, null, 4, 5, null, null, 6] };
+
+function trace(input) {
+  var tokens = input.head || [];
+  // 与 Check.java 相同的解析：每级以 null 收尾；级首 null 的个数 = 子链挂在上一级第几个结点下
+  var chains = [];   // [{ parent: 结点或 null, nodes: [...] }]，第 0 条是主链
+  var all = [];
+  var i = 0, prev = null;
+  while (i < tokens.length) {
+    var lead = 0;
+    while (i < tokens.length && tokens[i] === null) { lead++; i++; }
+    if (i >= tokens.length) break;
+    var nodes = [];
+    while (i < tokens.length && tokens[i] !== null) {
+      var node = { id: all.length, v: tokens[i], prev: null, next: null, child: null };
+      if (nodes.length) { node.prev = nodes[nodes.length - 1]; nodes[nodes.length - 1].next = node; }
+      nodes.push(node); all.push(node); i++;
+    }
+    if (i < tokens.length) i++;
+    var parent = prev && lead < prev.length ? prev[lead] : null;
+    if (parent) parent.child = nodes[0];
+    chains.push({ parent: parent, nodes: nodes });
+    prev = nodes;
+  }
+  var head = chains.length ? chains[0].nodes[0] : null;
+  if (!head) return { frames: [], result: [] };
+
+  function liveList() {
+    var vals = [], idxOf = {}, p = head, k = 0;
+    while (p) { idxOf[p.id] = k; vals.push(p.v); p = p.next; k++; }
+    return { vals: vals, idxOf: idxOf };
+  }
+  function childPanels() {
+    var out = [];
+    chains.forEach(function (ch) {
+      if (ch.parent && !spliced[ch.parent.id]) {
+        out.push(Viz.list(ch.nodes.map(function (nd) { return nd.v; }),
+          { title: '结点 ' + ch.parent.v + ' 的子链', marks: {} }));
+      }
+    });
+    return out;
+  }
+  function snap(at, key, cur, newHead) {
+    var main = liveList();
+    var marks = {}, pointers = [];
+    if (newHead) marks[main.idxOf[newHead.id]] = 'new';
+    if (cur) pointers.push({ at: main.idxOf[cur.id], label: 'cur', cls: 'p-cur' });
+    var panels = [Viz.list(main.vals, { title: '主链', marks: marks, pointers: pointers })];
+    frames.push(Viz.frame(at, key, panels.concat(childPanels())));
+  }
+
+  var frames = [];
+  var spliced = {};
+  var splices = 0;
+
+  // 开局：主链 + 还挂着的各级子链
+  var init = liveList();
+  var initPanels = [Viz.list(init.vals, { title: '主链', marks: {}, pointers: [{ at: 0, label: 'cur', cls: 'p-cur' }] })];
+  frames.push(Viz.frame('Node cur = head;', '开局：cur 沿主链走，碰到挂着子链的结点就展开', initPanels.concat(childPanels())));
+
+  var cur = head;
+  while (cur) {
+    if (!cur.child) { cur = cur.next; continue; }
+    var next = cur.next, child = cur.child;
+    cur.child = null;
+    cur.next = child;
+    child.prev = cur;
+    var tail = child;
+    while (tail.next) tail = tail.next;
+    tail.next = next;
+    if (next) next.prev = tail;
+    spliced[cur.id] = true;
+    splices++;
+    if (splices === 1) snap('tail.next = next;',
+      '「' + cur.v + '」的子链整段插到它和后面之间，cur 走到子链头', child, child);
+    else if (splices === 2) snap('tail.next = next;',
+      '子链里还挂着子链：同样整段插入，cur 走到新子链头', child, child);
+    cur = child;
+  }
+
+  var fin = liveList();
+  var finMarks = {};
+  for (var k = 0; k < fin.vals.length; k++) finMarks[k] = 'done';
+  frames.push(Viz.frame('return head;', 'child 全部清空：一条单层双链表，共 ' + fin.vals.length + ' 个结点',
+    [Viz.list(fin.vals, { title: '主链', marks: finMarks, pointers: [{ at: 0, label: 'head', cls: 'p-head' }] })]));
+
+  var out = [];
+  for (var p = head; p; p = p.next) out.push(p.v);
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

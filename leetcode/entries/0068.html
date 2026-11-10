@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>文本左右对齐 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 305 / 1159</span>
+  <nav class="pn"><a href="0628.html">上一篇</a><a href="0166.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">68. </span>文本左右对齐</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 13</li><li class="algo">模拟</li><li class="aux">贪心</li><li class="tag">数组</li><li class="tag">字符串</li><li class="tag">模拟</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">贪心装词 + 模拟：每行尽量多装；除末行和单词行外都两端对齐，空格均分到缝隙、余数从左多放。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><strong>装词</strong>：<code>sum</code> 记「词长 + 词间至少 1 个空格」，能装就装（<code>sum + 1 + 词长 ≤ maxWidth</code>），确定本行的 <code>[i, j)</code>。</li><li><strong>两端对齐</strong>：<code>sum − (词数−1)</code> 还原纯词长，总空格 = <code>maxWidth − 词长</code>；每个缝隙 <code>空格数 ÷ 缝隙数</code> 个，余数从左到右每缝多 1 个。</li><li><strong>末行 / 单词行</strong>：左对齐，词间只放一个空格，右侧补空格到 <code>maxWidth</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·maxWidth)（输出本身就这么大），空间复杂度 O(1)（不计输出）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; fullJustify(<span class="t">String</span>[] words, <span class="k">int</span> maxWidth) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> n = words.length, i = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">while</span> (i &lt; n) {</span><span class="ln"><span class="no">8</span>            <span class="c">// 贪心装词：sum = 词长 + 词间至少一个空格，装到装不下为止</span></span><span class="ln"><span class="no">9</span>            <span class="k">int</span> sum = words[i].length(), j = i + <span class="n">1</span>;</span><span class="ln"><span class="no">10</span>            <span class="k">while</span> (j &lt; n &amp;&amp; sum + <span class="n">1</span> + words[j].length() &lt;= maxWidth) {</span><span class="ln"><span class="no">11</span>                sum += <span class="n">1</span> + words[j].length();</span><span class="ln"><span class="no">12</span>                j++;</span><span class="ln"><span class="no">13</span>            }</span><span class="ln"><span class="no">14</span>            <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (j == n || j - i == <span class="n">1</span>) {</span><span class="ln"><span class="no">16</span>                <span class="c">// 末行或单词行：左对齐，词间一个空格，右侧补齐</span></span><span class="ln"><span class="no">17</span>                sb.append(words[i]);</span><span class="ln"><span class="no">18</span>                <span class="k">for</span> (<span class="k">int</span> k = i + <span class="n">1</span>; k &lt; j; k++) sb.append(<span class="s">' '</span>).append(words[k]);</span><span class="ln"><span class="no">19</span>                <span class="k">while</span> (sb.length() &lt; maxWidth) sb.append(<span class="s">' '</span>);</span><span class="ln"><span class="no">20</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">21</span>                <span class="c">// 两端对齐：sum 里含 (j-i-1) 个词间单空格，先还原纯词长</span></span><span class="ln"><span class="no">22</span>                <span class="k">int</span> total = maxWidth - (sum - (j - i - <span class="n">1</span>));   <span class="c">// 要分掉的空格总数</span></span><span class="ln"><span class="no">23</span>                <span class="k">int</span> gaps = j - i - <span class="n">1</span>;</span><span class="ln"><span class="no">24</span>                sb.append(words[i]);</span><span class="ln"><span class="no">25</span>                <span class="k">for</span> (<span class="k">int</span> k = i + <span class="n">1</span>; k &lt; j; k++) {</span><span class="ln"><span class="no">26</span>                    <span class="c">// 均分后余数从左到右每个缝隙多放一个</span></span><span class="ln"><span class="no">27</span>                    <span class="k">int</span> sp = total / gaps + (k - i - <span class="n">1</span> &lt; total % gaps ? <span class="n">1</span> : <span class="n">0</span>);</span><span class="ln"><span class="no">28</span>                    <span class="k">for</span> (<span class="k">int</span> t = <span class="n">0</span>; t &lt; sp; t++) sb.append(<span class="s">' '</span>);</span><span class="ln"><span class="no">29</span>                    sb.append(words[k]);</span><span class="ln"><span class="no">30</span>                }</span><span class="ln"><span class="no">31</span>            }</span><span class="ln"><span class="no">32</span>            ans.add(sb.toString());</span><span class="ln"><span class="no">33</span>            i = j;</span><span class="ln"><span class="no">34</span>        }</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个单词数组&nbsp;<code>words</code> 和一个长度&nbsp;<code>maxWidth</code>&nbsp;，重新排版单词，使其成为每行恰好有&nbsp;<code>maxWidth</code>&nbsp;个字符，且左右两端对齐的文本。</p>
+
+<p>你应该使用 “<strong>贪心算法</strong>” 来放置给定的单词；也就是说，尽可能多地往每行中放置单词。必要时可用空格&nbsp;<code>' '</code>&nbsp;填充，使得每行恰好有 <em>maxWidth</em>&nbsp;个字符。</p>
+
+<p>要求尽可能均匀分配单词间的空格数量。如果某一行单词间的空格不能均匀分配，则左侧放置的空格数要多于右侧的空格数。</p>
+
+<p>文本的最后一行应为左对齐，且单词之间不插入<strong>额外的</strong>空格。</p>
+
+<p><strong>注意:</strong></p>
+
+<ul>
+	<li>单词是指由非空格字符组成的字符序列。</li>
+	<li>每个单词的长度大于 0，小于等于&nbsp;<em>maxWidth</em>。</li>
+	<li>输入单词数组 <code>words</code>&nbsp;至少包含一个单词。</li>
+</ul>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入: </strong>words = ["This", "is", "an", "example", "of", "text", "justification."], maxWidth = 16
+<strong>输出:</strong>
+[
+&nbsp; &nbsp;"This &nbsp; &nbsp;is &nbsp; &nbsp;an",
+&nbsp; &nbsp;"example &nbsp;of text",
+&nbsp; &nbsp;"justification. &nbsp;"
+]
+</pre>
+
+<p><strong>示例&nbsp;2:</strong></p>
+
+<pre>
+<strong>输入:</strong>words = ["What","must","be","acknowledgment","shall","be"], maxWidth = 16
+<strong>输出:</strong>
+[
+&nbsp; "What &nbsp; must &nbsp; be",
+&nbsp; "acknowledgment &nbsp;",
+&nbsp; "shall be &nbsp; &nbsp; &nbsp; &nbsp;"
+]
+<strong>解释: </strong>注意最后一行的格式应为 "shall be    " 而不是 "shall     be",
+&nbsp;    因为最后一行应为左对齐，而不是左右两端对齐。       
+     第二行同样为左对齐，这是因为这行只包含一个单词。
+</pre>
+
+<p><strong>示例&nbsp;3:</strong></p>
+
+<pre>
+<strong>输入:</strong>words = ["Science","is","what","we","understand","well","enough","to","explain","to","a","computer.","Art","is","everything","else","we","do"]，maxWidth = 20
+<strong>输出:</strong>
+[
+&nbsp; "Science &nbsp;is &nbsp;what we",
+  "understand &nbsp; &nbsp; &nbsp;well",
+&nbsp; "enough to explain to",
+&nbsp; "a &nbsp;computer. &nbsp;Art is",
+&nbsp; "everything &nbsp;else &nbsp;we",
+&nbsp; "do &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;"
+]
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= words.length &lt;= 300</code></li>
+	<li><code>1 &lt;= words[i].length &lt;= 20</code></li>
+	<li><code>words[i]</code>&nbsp;由小写英文字母和符号组成</li>
+	<li><code>1 &lt;= maxWidth &lt;= 100</code></li>
+	<li><code>words[i].length &lt;= maxWidth</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<String> fullJustify(String[] words, int maxWidth) {", "        List<String> ans = new ArrayList<>();", "        int n = words.length, i = 0;", "        while (i < n) {", "            // 贪心装词：sum = 词长 + 词间至少一个空格，装到装不下为止", "            int sum = words[i].length(), j = i + 1;", "            while (j < n && sum + 1 + words[j].length() <= maxWidth) {", "                sum += 1 + words[j].length();", "                j++;", "            }", "            StringBuilder sb = new StringBuilder();", "            if (j == n || j - i == 1) {", "                // 末行或单词行：左对齐，词间一个空格，右侧补齐", "                sb.append(words[i]);", "                for (int k = i + 1; k < j; k++) sb.append(' ').append(words[k]);", "                while (sb.length() < maxWidth) sb.append(' ');", "            } else {", "                // 两端对齐：sum 里含 (j-i-1) 个词间单空格，先还原纯词长", "                int total = maxWidth - (sum - (j - i - 1));   // 要分掉的空格总数", "                int gaps = j - i - 1;", "                sb.append(words[i]);", "                for (int k = i + 1; k < j; k++) {", "                    // 均分后余数从左到右每个缝隙多放一个", "                    int sp = total / gaps + (k - i - 1 < total % gaps ? 1 : 0);", "                    for (int t = 0; t < sp; t++) sb.append(' ');", "                    sb.append(words[k]);", "                }", "            }", "            ans.add(sb.toString());", "            i = j;", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 68. 文本左右对齐 —— 图解：复刻 Solution.java 的贪心装词 + 空格均分（余数从左）+ 末行补齐，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { words: ['ab', 'cde', 'fghi', 'j'], maxWidth: 12 };
+
+function trace(input) {
+  var words = input.words, width = input.maxWidth;
+  var n = words.length;
+  var frames = [];
+  var GREEDY = 'while (j < n && sum + 1 + words[j].length() <= maxWidth) {';
+  var SP = 'int sp = total / gaps + (k - i - 1 < total % gaps ? 1 : 0);';
+  var PAD = "while (sb.length() < maxWidth) sb.append(' ');";
+  var RET = 'return ans;';
+
+  var lines = [];
+  var firedFail = false, firedSp = 0, firedPad = false;
+
+  function wordsPanel(cls) {
+    return Viz.table('words 与词长', words.map(function (w, idx) {
+      return { k: w, v: String(w.length), cls: cls[idx] || '' };
+    }), { hint: '青 = 已装进本行' });
+  }
+  // 正在拼的行：每个字符一格，空格显示成 ␣
+  function linePanel(title) {
+    var shown = lineChars.map(function (ch) { return ch === ' ' ? '␣' : ch; });
+    return Viz.cells(shown, { title: title || '正在拼的行（␣ = 空格）', marks: lineMarks, hideIndex: true });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+
+  var lineChars = [], lineMarks = [];
+  function addWord(w) {
+    for (var c = 0; c < w.length; c++) { lineChars.push(w.charAt(c)); lineMarks.push('win'); }
+  }
+  function addSpaces(cnt) {
+    for (var t = 0; t < cnt; t++) { lineChars.push(' '); lineMarks.push('new'); }
+  }
+  function settleOld() {   // 把之前的 new 降级成普通，让「这一缝」的高亮唯一
+    for (var k = 0; k < lineMarks.length; k++) if (lineMarks[k] === 'new') lineMarks[k] = '';
+  }
+
+  var i = 0;
+  while (i < n) {
+    var sum = words[i].length, j = i + 1;
+    while (j < n && sum + 1 + words[j].length <= width) {
+      sum += 1 + words[j].length;
+      j++;
+    }
+    if (!firedFail && j < n) {
+      firedFail = true;
+      var cls = {};
+      for (var k = 0; k < n; k++) cls[k] = k < j ? 'win' : (k === j ? 'cur' : '');
+      frames.push(Viz.frame(GREEDY, '贪心装词：再装「' + words[j] + '」总长 ' + (sum + 1 + words[j].length) +
+        ' > ' + width + '，本行就装到 ' + words[j - 1] + ' 为止',
+        [wordsPanel(cls), varsPanel([{ name: 'i（行首）', v: i }, { name: 'j（第一个装不下的）', v: j, cls: 'chg' },
+          { name: 'sum（词长+单空格）', v: sum }])]));
+    }
+
+    lineChars = []; lineMarks = [];
+    if (j === n || j - i === 1) {
+      // 末行或单词行：左对齐
+      addWord(words[i]);
+      for (k = i + 1; k < j; k++) { addSpaces(1); addWord(words[k]); }
+      while (lineChars.length < width) { lineChars.push(' '); lineMarks.push('new'); }
+      if (j === n && !firedPad) {
+        firedPad = true;
+        frames.push(Viz.frame(PAD, '末行左对齐：词间只放一个空格，右侧补空格到 ' + width,
+          [wordsPanel((function () { var c = {}; for (var t = i; t < j; t++) c[t] = 'win'; return c; })()),
+           linePanel(), varsPanel([{ name: '行长', v: lineChars.length, cls: 'chg' }])]));
+      }
+    } else {
+      var total = width - (sum - (j - i - 1));   // 要分掉的空格总数
+      var gaps = j - i - 1;
+      addWord(words[i]);
+      for (k = i + 1; k < j; k++) {
+        var sp = Math.floor(total / gaps) + ((k - i - 1 < total % gaps) ? 1 : 0);
+        settleOld();
+        addSpaces(sp);
+        addWord(words[k]);
+        if (firedSp < 2) {
+          firedSp++;
+          frames.push(Viz.frame(SP, '第 ' + (k - i) + ' 缝：' + total + ' 个空格 ÷ ' + gaps + ' 缝' +
+            (total % gaps ? ' 余 ' + (total % gaps) : '') + ' → 本缝放 ' + sp + ' 个' + (sp > total / gaps ? '（余数从左多放）' : ''),
+            [wordsPanel((function () { var c = {}; for (var t = i; t < j; t++) c[t] = 'win'; return c; })()),
+             linePanel(), varsPanel([{ name: '总空格', v: total }, { name: '缝隙数', v: gaps },
+               { name: '本缝 sp', v: sp, cls: 'chg' }])]));
+        }
+      }
+    }
+    lines.push(lineChars.join(''));
+    i = j;
+  }
+
+  var rows = [];
+  for (k = 0; k < lines.length; k++) {
+    rows.push(lines[k].split('').map(function (ch) { return ch === ' ' ? '␣' : ch; }));
+  }
+  frames.push(Viz.frame(RET, '排版完成：' + lines.length + ' 行，每行都恰好 ' + width + ' 个字符',
+    [Viz.grid(rows, { title: '最终排版（␣ = 空格）' })]));
+
+  return { frames: frames, result: lines };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>从字符串生成二叉树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 982 / 1159</span>
+  <nav class="pn"><a href="0926.html">上一篇</a><a href="1005.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">536. </span>从字符串生成二叉树</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">深度优先搜索/递归</li><li class="tag">栈</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">字符串</li><li class="tag">二叉树</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">递归下降解析：读一个整数当结点，跟一对括号就递归读左子树，再跟一对就读右子树。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>语法只有三种成分：整数（可带负号）、<code>(</code>、<code>)</code>；一个全局下标 <code>i</code> 一路向右吃字符。</li><li><code>parse()</code>：先读整数建结点；若下一个字符是 <code>(</code>，吃掉后递归得<strong>左子树</strong>，再吃 <code>)</code>；若还有 <code>(</code>，同样方式得<strong>右子树</strong>。</li><li>递归入口遇到 <code>)</code> 或串结束说明是空子树——这也顺带处理了空串输入。</li><li>数字要按多位读：<code>while</code> 里累加 <code>v = v*10 + digit</code>，负号单独记。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="t">String</span> s;</span><span class="ln"><span class="no">3</span>    <span class="k">private</span> <span class="k">int</span> i;   <span class="c">// 解析进度：当前读到的字符下标</span></span><span class="ln"><span class="no">4</span> </span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="t">TreeNode</span> str2tree(<span class="t">String</span> s) {</span><span class="ln"><span class="no">6</span>        <span class="k">this</span>.s = s;</span><span class="ln"><span class="no">7</span>        i = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">return</span> parse();   <span class="c">// 空串返回 null</span></span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="c">// 递归下降：读一个结点 = 读整数 + 可选的 "(左子树)" + 可选的 "(右子树)"</span></span><span class="ln"><span class="no">12</span>    <span class="k">private</span> <span class="t">TreeNode</span> parse() {</span><span class="ln"><span class="no">13</span>        <span class="k">if</span> (i == s.length() || s.charAt(i) == <span class="s">')'</span>) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">14</span>        <span class="k">boolean</span> neg = <span class="k">false</span>;</span><span class="ln"><span class="no">15</span>        <span class="k">if</span> (s.charAt(i) == <span class="s">'-'</span>) {</span><span class="ln"><span class="no">16</span>            neg = <span class="k">true</span>;</span><span class="ln"><span class="no">17</span>            i++;</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">int</span> v = <span class="n">0</span>;</span><span class="ln"><span class="no">20</span>        <span class="k">while</span> (i &lt; s.length() &amp;&amp; <span class="t">Character</span>.isDigit(s.charAt(i))) {</span><span class="ln"><span class="no">21</span>            v = v * <span class="n">10</span> + (s.charAt(i) - <span class="s">'0'</span>);</span><span class="ln"><span class="no">22</span>            i++;</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="t">TreeNode</span> node = <span class="k">new</span> <span class="t">TreeNode</span>(neg ? -v : v);</span><span class="ln"><span class="no">25</span>        <span class="k">if</span> (i &lt; s.length() &amp;&amp; s.charAt(i) == <span class="s">'('</span>) {</span><span class="ln"><span class="no">26</span>            i++;                  <span class="c">// 吃掉 '('，递归读左子树</span></span><span class="ln"><span class="no">27</span>            node.left = parse();</span><span class="ln"><span class="no">28</span>            i++;                  <span class="c">// 吃掉配对的 ')'</span></span><span class="ln"><span class="no">29</span>            <span class="k">if</span> (i &lt; s.length() &amp;&amp; s.charAt(i) == <span class="s">'('</span>) {</span><span class="ln"><span class="no">30</span>                i++;</span><span class="ln"><span class="no">31</span>                node.right = parse();</span><span class="ln"><span class="no">32</span>                i++;</span><span class="ln"><span class="no">33</span>            }</span><span class="ln"><span class="no">34</span>        }</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> node;</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private String s;", "    private int i;   // 解析进度：当前读到的字符下标", "", "    public TreeNode str2tree(String s) {", "        this.s = s;", "        i = 0;", "        return parse();   // 空串返回 null", "    }", "", "    // 递归下降：读一个结点 = 读整数 + 可选的 \"(左子树)\" + 可选的 \"(右子树)\"", "    private TreeNode parse() {", "        if (i == s.length() || s.charAt(i) == ')') return null;", "        boolean neg = false;", "        if (s.charAt(i) == '-') {", "            neg = true;", "            i++;", "        }", "        int v = 0;", "        while (i < s.length() && Character.isDigit(s.charAt(i))) {", "            v = v * 10 + (s.charAt(i) - '0');", "            i++;", "        }", "        TreeNode node = new TreeNode(neg ? -v : v);", "        if (i < s.length() && s.charAt(i) == '(') {", "            i++;                  // 吃掉 '('，递归读左子树", "            node.left = parse();", "            i++;                  // 吃掉配对的 ')'", "            if (i < s.length() && s.charAt(i) == '(') {", "                i++;", "                node.right = parse();", "                i++;", "            }", "        }", "        return node;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 536. 从字符串生成二叉树 —— 图解：复刻「递归下降解析」，在根 / 左子树 / 右子树 / 完成 4 个时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: '4(2(3)(1))(6(5)(7))' };
+
+function trace(input) {
+  var s = input.s;
+  var i = 0;
+  var frames = [];
+
+  var ROOT = 'TreeNode node = new TreeNode(neg ? -v : v);';
+  var LEFT = 'node.left = parse();';
+  var RIGHT = 'node.right = parse();';
+  var DONE = 'return node;';
+
+  // 部分树的层序数组（null 占位不展开），并返回每个结点的层序下标
+  function levelOf(root) {
+    var arr = [], idx = new Map();
+    if (!root) return { arr: arr, idx: idx };
+    var queue = [root];
+    while (queue.length) {
+      var node = queue.shift();
+      if (node === null) {
+        arr.push(null);
+        continue;
+      }
+      idx.set(node, arr.length);
+      arr.push(node.v);
+      queue.push(node.left);
+      queue.push(node.right);
+    }
+    while (arr.length && arr[arr.length - 1] === null) arr.pop();
+    return { arr: arr, idx: idx };
+  }
+
+  function snap(at, key, root, markId) {
+    var lv = levelOf(root);
+    var marks = {};
+    if (markId && lv.idx.has(markId)) marks[lv.idx.get(markId)] = 'new';
+    frames.push(Viz.frame(at, key, [
+      Viz.tree(lv.arr, { title: '已解析出的二叉树（空位 = 还没解析 / 为空）', marks: marks }),
+      Viz.vars([{ name: '已读字符数', v: i + ' / ' + s.length, cls: '' }])
+    ]));
+  }
+
+  var root = null;
+  function parseWithSnaps() {
+    if (i === s.length || s[i] === ')') return null;
+    var neg = false;
+    if (s[i] === '-') {
+      neg = true;
+      i++;
+    }
+    var v = 0;
+    while (i < s.length && s[i] >= '0' && s[i] <= '9') {
+      v = v * 10 + (s[i].charCodeAt(0) - 48);
+      i++;
+    }
+    var node = { v: neg ? -v : v, left: null, right: null };
+    if (root === null) {
+      root = node;
+      snap(ROOT, '读完第一个整数 ' + v + '：它就是根，后面每对括号是一个子树', root, node);
+    }
+    if (i < s.length && s[i] === '(') {
+      i++;
+      node.left = parseWithSnaps();
+      i++;
+      if (node === root) snap(LEFT, '左子树 ' + subDesc(node.left) + ' 解析完毕，吃掉配对的 )', root, node.left);
+      if (i < s.length && s[i] === '(') {
+        i++;
+        node.right = parseWithSnaps();
+        i++;
+        if (node === root) snap(RIGHT, '右子树 ' + subDesc(node.right) + ' 解析完毕，串正好读完', root, node.right);
+      }
+    }
+    return node;
+  }
+  function subDesc(t) {
+    return t ? String(t.v) : '（空）';
+  }
+  function countNodes(t) {
+    return t ? 1 + countNodes(t.left) + countNodes(t.right) : 0;
+  }
+
+  root = null;
+  var result0 = parseWithSnaps();
+  if (root === null) {
+    snap('return parse();', '空串：一个字符都没有，返回空树', null, null);
+    return { frames: frames, result: [] };
+  }
+  var lv = levelOf(root);
+  var allMarks = {};
+  for (var k = 0; k < lv.arr.length; k++) if (lv.arr[k] !== null) allMarks[k] = 'done';
+  frames.push(Viz.frame(DONE, '解析完成：整棵树共 ' + countNodes(root) + ' 个结点', [
+    Viz.tree(lv.arr, { title: '最终二叉树（力扣层序）', marks: allMarks }),
+    Viz.vars([{ name: '已读字符数', v: i + ' / ' + s.length, cls: '' }])
+  ]));
+  return { frames: frames, result: lv.arr };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

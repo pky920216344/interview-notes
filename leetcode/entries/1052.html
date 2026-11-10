@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>爱生气的书店老板 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 953 / 1159</span>
+  <nav class="pn"><a href="1610.html">上一篇</a><a href="0644.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1052. </span>爱生气的书店老板</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">滑动窗口</li><li class="tag">数组</li><li class="tag">滑动窗口</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">不生气分钟的顾客直接计入 base；技巧的价值只是把某个长度 minutes 窗口内生气分钟的顾客救回来，滑窗取最大增量。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>base</code> = 所有 <code>grumpy[i]==0</code> 分钟的顾客和，这部分与技巧无关，先全部收下。</li><li>技巧选哪段都只影响「窗内生气分钟」：滑窗维护 <code>extra</code>（窗内 <code>grumpy==1</code> 的顾客和），右进左出各 O(1)。</li><li>答案 = <code>base</code> + <code>extra</code> 的最大值；<code>minutes == n</code> 时没有滑动循环，直接就是整段。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maxSatisfied(<span class="k">int</span>[] customers, <span class="k">int</span>[] grumpy, <span class="k">int</span> minutes) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = grumpy.length;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> base = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">6</span>            <span class="k">if</span> (grumpy[i] == <span class="n">0</span>) base += customers[i];   <span class="c">// 不用技巧本来就满意的顾客，直接全收</span></span><span class="ln"><span class="no">7</span>        }</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> extra = <span class="n">0</span>;   <span class="c">// 窗口内「原本生气、被技巧救回」的顾客数</span></span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; minutes; i++) {</span><span class="ln"><span class="no">10</span>            extra += grumpy[i] == <span class="n">1</span> ? customers[i] : <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="k">int</span> best = extra;</span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> i = minutes; i &lt; n; i++) {</span><span class="ln"><span class="no">14</span>            <span class="c">// 窗口右进左出，只有生气分钟会影响 extra</span></span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (grumpy[i] == <span class="n">1</span>) extra += customers[i];</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (grumpy[i - minutes] == <span class="n">1</span>) extra -= customers[i - minutes];</span><span class="ln"><span class="no">17</span>            best = <span class="t">Math</span>.max(best, extra);</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> base + best;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>有一个书店老板，他的书店开了&nbsp;<code>n</code>&nbsp;分钟。每分钟都有一些顾客进入这家商店。给定一个长度为 <code>n</code> 的整数数组 <code>customers</code> ，其中 <code>customers[i]</code> 是在第 <code>i</code> 分钟开始时进入商店的顾客数量，所有这些顾客在第 <code>i</code> 分钟结束后离开。</p>
+
+<p>在某些分钟内，书店老板会生气。 如果书店老板在第 <code>i</code> 分钟生气，那么 <code>grumpy[i] = 1</code>，否则 <code>grumpy[i] = 0</code>。</p>
+
+<p>当书店老板生气时，那一分钟的顾客就会不满意，若老板不生气则顾客是满意的。</p>
+
+<p>书店老板知道一个秘密技巧，能抑制自己的情绪，可以让自己连续&nbsp;<code>minutes</code>&nbsp;分钟不生气，但却只能使用一次。</p>
+
+<p>请你返回 <em>这一天营业下来，最多有多少客户能够感到满意</em> 。<br />
+&nbsp;</p>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>customers = [1,0,1,2,1,1,7,5], grumpy = [0,1,0,1,0,1,0,1], minutes = 3
+<strong>输出：</strong>16
+<strong>解释：</strong>书店老板在最后 3 分钟保持冷静。
+感到满意的最大客户数量 = 1 + 1 + 1 + 1 + 7 + 5 = 16.
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>customers = [1], grumpy = [0], minutes = 1
+<strong>输出：</strong>1</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == customers.length == grumpy.length</code></li>
+	<li><code>1 &lt;= minutes &lt;= n &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= customers[i] &lt;= 1000</code></li>
+	<li><code>grumpy[i] == 0 or 1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maxSatisfied(int[] customers, int[] grumpy, int minutes) {", "        int n = grumpy.length;", "        int base = 0;", "        for (int i = 0; i < n; i++) {", "            if (grumpy[i] == 0) base += customers[i];   // 不用技巧本来就满意的顾客，直接全收", "        }", "        int extra = 0;   // 窗口内「原本生气、被技巧救回」的顾客数", "        for (int i = 0; i < minutes; i++) {", "            extra += grumpy[i] == 1 ? customers[i] : 0;", "        }", "        int best = extra;", "        for (int i = minutes; i < n; i++) {", "            // 窗口右进左出，只有生气分钟会影响 extra", "            if (grumpy[i] == 1) extra += customers[i];", "            if (grumpy[i - minutes] == 1) extra -= customers[i - minutes];", "            best = Math.max(best, extra);", "        }", "        return base + best;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1052. 爱生气的书店老板 —— 图解：复刻 Solution.java 的「基础满意 + 滑窗救回增量」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  customers: [1, 0, 1, 2, 1, 1, 7, 5],
+  grumpy: [0, 1, 0, 1, 0, 1, 0, 1],
+  minutes: 3
+};
+
+function trace(input) {
+  var c = input.customers, g = input.grumpy, minutes = input.minutes;
+  var n = g.length;
+  var frames = [];
+
+  function cellsPanel(marks, range, ptr) {
+    var pointers = ptr ? [
+      { at: ptr[0], label: '出窗', cls: 'p-left' },
+      { at: ptr[1], label: '进窗', cls: 'p-right' }
+    ] : [];
+    return Viz.cells(c, { title: '每分钟顾客数（bad=老板生气，win=本来就不生气）', marks: marks || {}, range: range || null, pointers: pointers });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+  function snap(at, key, marks, range, ptr, items) {
+    frames.push(Viz.frame(at, key, [cellsPanel(marks, range, ptr), varsPanel(items)]));
+  }
+
+  // 全场标记：不生气的分钟是稳拿的（win），生气的分钟目前会丢（bad）
+  function fullMarks(saved) {
+    var m = {};
+    for (var i = 0; i < n; i++) m[i] = g[i] === 0 ? 'win' : 'bad';
+    if (saved) for (i = 0; i < n; i++) if (g[i] === 1 && saved.indexOf(i) >= 0) m[i] = 'hit';
+    return m;
+  }
+
+  var base = 0;
+  for (var i = 0; i < n; i++) if (g[i] === 0) base += c[i];
+  snap('if (grumpy[i] == 0) base += customers[i];',
+    '先把不生气分钟的顾客全收进 base（生气分钟先记为丢）', fullMarks(), null, null,
+    [{ name: 'base', v: String(base) }]);
+
+  var extra = 0;
+  for (i = 0; i < minutes; i++) extra += g[i] === 1 ? c[i] : 0;
+  var best = extra;
+  var bestL = 0;
+  for (i = minutes; i < n; i++) {
+    if (g[i] === 1) extra += c[i];
+    if (g[i - minutes] === 1) extra -= c[i - minutes];
+    if (i === minutes) {
+      snap('if (grumpy[i - minutes] == 1) extra -= customers[i - minutes];',
+        '窗口右移一格：右端进左端出，extra 只数窗内生气分钟', fullMarks(), { from: i - minutes + 1, to: i, label: '技巧窗口' },
+        [i - minutes, i],
+        [{ name: 'extra', v: String(extra) }, { name: 'best', v: String(best) }]);
+    }
+    if (extra > best) { best = extra; bestL = i - minutes + 1; }
+    if (i === n - 1) {
+      var saved = [];
+      for (var j = i - minutes + 1; j <= i; j++) if (g[j] === 1) saved.push(j);
+      snap('best = Math.max(best, extra);',
+        '滑到最后：这个窗口能救回 ' + extra + ' 位生气分钟的顾客', fullMarks(saved), { from: i - minutes + 1, to: i, label: '技巧窗口' },
+        [i - minutes + 1, i],
+        [{ name: 'extra', v: String(extra) }, { name: 'best', v: String(best) }]);
+    }
+  }
+
+  var doneMarks = fullMarks();
+  for (i = bestL; i < bestL + minutes; i++) if (g[i] === 1) doneMarks[i] = 'done';
+  snap('return base + best;',
+    '答案 = base ' + base + ' + 最好窗口的增量 ' + best + ' = ' + (base + best),
+    doneMarks, { from: bestL, to: bestL + minutes - 1, label: '最终选择的窗口' }, null,
+    [{ name: 'base + best', v: String(base + best) }]);
+
+  return { frames: frames, result: base + best };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

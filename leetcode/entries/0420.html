@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>强密码检验器 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 772 / 1159</span>
+  <nav class="pn"><a href="0754.html">上一篇</a><a href="offer-68-ii.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">420. </span>强密码检验器</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">字符串</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">贪心三分支：太短用 max(缺类型数, 6−n) 个插入；长度合规用 max(缺类型数, Σ⌊段长/3⌋) 次替换；超长先删 n−20 个（删除按段长 %3 分桶优先抵替换），再加 max(缺类型数, 剩余替换数)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先数缺的类型 <code>missing</code>，再把串切成连续同字符段：长度 <code>L</code> 的段要 <code>⌊L/3⌋</code> 次替换才能打断（换掉一个就断开一处）。</li><li><code>n &lt; 6</code>：插入补长度，插入进段里还能拆段、补类型 → <code>max(missing, 6−n)</code>。</li><li><code>6 ≤ n ≤ 20</code>：替换一箭双雕（打断段 + 补类型）→ <code>max(missing, Σ⌊L/3⌋)</code>。</li><li><code>n &gt; 20</code>：删 <code>n−20</code> 个是硬性的，让删除去抵替换：<code>%3==0</code> 的段删 1 个省 1 次，<code>%3==1</code> 的删 2 个省 1 次，剩下的每删 3 个省 1 次（删到段剩 2 为止）；答案 = 删除数 + <code>max(missing, 剩余替换数)</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> strongPasswordChecker(<span class="t">String</span> password) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = password.length();</span><span class="ln"><span class="no">6</span>        <span class="k">boolean</span> lower = <span class="k">false</span>, upper = <span class="k">false</span>, digit = <span class="k">false</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">8</span>            <span class="k">char</span> c = password.charAt(i);</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (c &gt;= <span class="s">'a'</span> &amp;&amp; c &lt;= <span class="s">'z'</span>) lower = <span class="k">true</span>;</span><span class="ln"><span class="no">10</span>            <span class="k">else</span> <span class="k">if</span> (c &gt;= <span class="s">'A'</span> &amp;&amp; c &lt;= <span class="s">'Z'</span>) upper = <span class="k">true</span>;</span><span class="ln"><span class="no">11</span>            <span class="k">else</span> <span class="k">if</span> (c &gt;= <span class="s">'0'</span> &amp;&amp; c &lt;= <span class="s">'9'</span>) digit = <span class="k">true</span>;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">int</span> missing = <span class="n">3</span> - (lower ? <span class="n">1</span> : <span class="n">0</span>) - (upper ? <span class="n">1</span> : <span class="n">0</span>) - (digit ? <span class="n">1</span> : <span class="n">0</span>);</span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span>        <span class="c">// 收集所有长度 ≥ 3 的连续同字符段</span></span><span class="ln"><span class="no">16</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; runs = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">17</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; ) {</span><span class="ln"><span class="no">18</span>            <span class="k">int</span> j = i;</span><span class="ln"><span class="no">19</span>            <span class="k">while</span> (j &lt; n &amp;&amp; password.charAt(j) == password.charAt(i)) j++;</span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (j - i &gt;= <span class="n">3</span>) runs.add(j - i);</span><span class="ln"><span class="no">21</span>            i = j;</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span> </span><span class="ln"><span class="no">24</span>        <span class="k">if</span> (n &lt; <span class="n">6</span>) <span class="k">return</span> <span class="t">Math</span>.max(missing, <span class="n">6</span> - n);       <span class="c">// 太短：插入补长度，还能顺带补类型、拆段</span></span><span class="ln"><span class="no">25</span> </span><span class="ln"><span class="no">26</span>        <span class="k">int</span> replace = <span class="n">0</span>;                                   <span class="c">// 每段每 3 个字符换 1 个就能打断</span></span><span class="ln"><span class="no">27</span>        <span class="k">for</span> (<span class="k">int</span> len : runs) replace += len / <span class="n">3</span>;</span><span class="ln"><span class="no">28</span>        <span class="k">if</span> (n &lt;= <span class="n">20</span>) <span class="k">return</span> <span class="t">Math</span>.max(missing, replace);    <span class="c">// 替换一箭双雕：既打断段又补类型</span></span><span class="ln"><span class="no">29</span> </span><span class="ln"><span class="no">30</span>        <span class="c">// 超长：delete 个删除是硬性的；先让删除去抵替换</span></span><span class="ln"><span class="no">31</span>        <span class="k">int</span> delete = n - <span class="n">20</span>;</span><span class="ln"><span class="no">32</span>        <span class="k">int</span> remain = delete;</span><span class="ln"><span class="no">33</span>        <span class="k">int</span> k = runs.size();</span><span class="ln"><span class="no">34</span>        <span class="k">int</span>[] len = <span class="k">new</span> <span class="k">int</span>[k];</span><span class="ln"><span class="no">35</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; k; i++) len[i] = runs.get(i);</span><span class="ln"><span class="no">36</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; k &amp;&amp; remain &gt; <span class="n">0</span>; i++) {        <span class="c">// 第 1 轮：%3==0 的段删 1 个就省 1 次替换</span></span><span class="ln"><span class="no">37</span>            <span class="k">if</span> (len[i] % <span class="n">3</span> == <span class="n">0</span>) {</span><span class="ln"><span class="no">38</span>                len[i]--;</span><span class="ln"><span class="no">39</span>                remain--;</span><span class="ln"><span class="no">40</span>            }</span><span class="ln"><span class="no">41</span>        }</span><span class="ln"><span class="no">42</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; k &amp;&amp; remain &gt; <span class="n">0</span>; i++) {        <span class="c">// 第 2 轮：%3==1 的段删 2 个省 1 次</span></span><span class="ln"><span class="no">43</span>            <span class="k">if</span> (len[i] % <span class="n">3</span> == <span class="n">1</span>) {</span><span class="ln"><span class="no">44</span>                <span class="k">int</span> take = <span class="t">Math</span>.min(remain, <span class="n">2</span>);</span><span class="ln"><span class="no">45</span>                len[i] -= take;</span><span class="ln"><span class="no">46</span>                remain -= take;</span><span class="ln"><span class="no">47</span>            }</span><span class="ln"><span class="no">48</span>        }</span><span class="ln"><span class="no">49</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; k &amp;&amp; remain &gt; <span class="n">0</span>; i++) {        <span class="c">// 第 3 轮：剩下的每删 3 个省 1 次，删到每段剩 2</span></span><span class="ln"><span class="no">50</span>            <span class="k">int</span> take = <span class="t">Math</span>.min(remain, len[i] - <span class="n">2</span>);</span><span class="ln"><span class="no">51</span>            <span class="k">if</span> (take &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">52</span>                len[i] -= take;</span><span class="ln"><span class="no">53</span>                remain -= take;</span><span class="ln"><span class="no">54</span>            }</span><span class="ln"><span class="no">55</span>        }</span><span class="ln"><span class="no">56</span>        <span class="k">int</span> replaceAfter = <span class="n">0</span>;</span><span class="ln"><span class="no">57</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; k; i++) replaceAfter += len[i] / <span class="n">3</span>;</span><span class="ln"><span class="no">58</span>        <span class="k">return</span> delete + <span class="t">Math</span>.max(missing, replaceAfter);</span><span class="ln"><span class="no">59</span>    }</span><span class="ln"><span class="no">60</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>满足以下条件的密码被认为是强密码：</p>
+
+<ul>
+	<li>由至少 <code>6</code> 个，至多 <code>20</code> 个字符组成。</li>
+	<li>包含至少 <strong>一个小写 </strong>字母，至少&nbsp;<strong>一个大写</strong> 字母，和至少&nbsp;<strong>一个数字</strong> 。</li>
+	<li>不包含连续三个重复字符 (比如 <code>"B<em><strong>aaa</strong></em>bb0"</code> 是弱密码, 但是&nbsp;<code>"B<em><strong>aa</strong></em>b<em><strong>a</strong></em>0"</code> 是强密码)。</li>
+</ul>
+
+<p>给你一个字符串 <code>password</code> ，返回&nbsp;<em>将 <code>password</code> 修改到满足强密码条件需要的最少修改步数。如果 <code>password</code> 已经是强密码，则返回 <code>0</code> 。</em></p>
+
+<p>在一步修改操作中，你可以：</p>
+
+<ul>
+	<li>插入一个字符到 <code>password</code> ，</li>
+	<li>从 <code>password</code> 中删除一个字符，或</li>
+	<li>用另一个字符来替换 <code>password</code> 中的某个字符。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>password = "a"
+<strong>输出：</strong>5
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>password = "aA1"
+<strong>输出：</strong>3
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>password = "1337C0d3"
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= password.length &lt;= 50</code></li>
+	<li><code>password</code> 由字母、数字、点 <code>'.'</code> 或者感叹号 <code>'!'</code> 组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int strongPasswordChecker(String password) {", "        int n = password.length();", "        boolean lower = false, upper = false, digit = false;", "        for (int i = 0; i < n; i++) {", "            char c = password.charAt(i);", "            if (c >= 'a' && c <= 'z') lower = true;", "            else if (c >= 'A' && c <= 'Z') upper = true;", "            else if (c >= '0' && c <= '9') digit = true;", "        }", "        int missing = 3 - (lower ? 1 : 0) - (upper ? 1 : 0) - (digit ? 1 : 0);", "", "        // 收集所有长度 ≥ 3 的连续同字符段", "        List<Integer> runs = new ArrayList<>();", "        for (int i = 0; i < n; ) {", "            int j = i;", "            while (j < n && password.charAt(j) == password.charAt(i)) j++;", "            if (j - i >= 3) runs.add(j - i);", "            i = j;", "        }", "", "        if (n < 6) return Math.max(missing, 6 - n);       // 太短：插入补长度，还能顺带补类型、拆段", "", "        int replace = 0;                                   // 每段每 3 个字符换 1 个就能打断", "        for (int len : runs) replace += len / 3;", "        if (n <= 20) return Math.max(missing, replace);    // 替换一箭双雕：既打断段又补类型", "", "        // 超长：delete 个删除是硬性的；先让删除去抵替换", "        int delete = n - 20;", "        int remain = delete;", "        int k = runs.size();", "        int[] len = new int[k];", "        for (int i = 0; i < k; i++) len[i] = runs.get(i);", "        for (int i = 0; i < k && remain > 0; i++) {        // 第 1 轮：%3==0 的段删 1 个就省 1 次替换", "            if (len[i] % 3 == 0) {", "                len[i]--;", "                remain--;", "            }", "        }", "        for (int i = 0; i < k && remain > 0; i++) {        // 第 2 轮：%3==1 的段删 2 个省 1 次", "            if (len[i] % 3 == 1) {", "                int take = Math.min(remain, 2);", "                len[i] -= take;", "                remain -= take;", "            }", "        }", "        for (int i = 0; i < k && remain > 0; i++) {        // 第 3 轮：剩下的每删 3 个省 1 次，删到每段剩 2", "            int take = Math.min(remain, len[i] - 2);", "            if (take > 0) {", "                len[i] -= take;", "                remain -= take;", "            }", "        }", "        int replaceAfter = 0;", "        for (int i = 0; i < k; i++) replaceAfter += len[i] / 3;", "        return delete + Math.max(missing, replaceAfter);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 420. 强密码检验器 —— 图解：复刻 Solution.java 的「分段计数 + 贪心」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { password: 'aaaaaaaaaaaaaaabbbbb11C' };
+
+function trace(input) {
+  var s = input.password;
+  var n = s.length;
+  var frames = [];
+
+  var RUNS = 'if (j - i >= 3) runs.add(j - i);';
+  var MISS = 'int missing = 3 - (lower ? 1 : 0) - (upper ? 1 : 0) - (digit ? 1 : 0);';
+  var DEL = 'int delete = n - 20;';
+  var R1 = 'if (len[i] % 3 == 0) {';
+  var R3 = 'int take = Math.min(remain, len[i] - 2);';
+  var RET = 'return delete + Math.max(missing, replaceAfter);';
+
+  var lower = /[a-z]/.test(s), upper = /[A-Z]/.test(s), digit = /[0-9]/.test(s);
+  var missing = 3 - (lower ? 1 : 0) - (upper ? 1 : 0) - (digit ? 1 : 0);
+
+  // 全部连续段（图解展示用）；Java 里只有长度 ≥ 3 的段参与计算
+  var allRuns = [];
+  for (var i = 0; i < n; ) {
+    var j = i;
+    while (j < n && s[j] === s[i]) j++;
+    allRuns.push({ ch: s[i], len: j - i });
+    i = j;
+  }
+  var runs = allRuns.filter(function (r) { return r.len >= 3; });
+
+  function rows(allocation) {
+    // allocation: {下标: 已删掉的个数}
+    return runs.map(function (r, idx) {
+      var cut = allocation && allocation[idx] ? allocation[idx] : 0;
+      var left = r.len - cut;
+      return {
+        k: r.ch + '\u00d7' + r.len,
+        v: (r.len % 3 === 0 ? 'mod 0' : r.len % 3 === 1 ? 'mod 1' : 'mod 2')
+          + (cut ? '\uff5c\u5220 ' + cut + ' \u2192 ' + left : '')
+          + '\uff5c\u66ff\u6362 ' + Math.floor(left / 3),
+        cls: allocation && allocation[idx] ? 'hit' : ''
+      };
+    });
+  }
+  function vars(items) { return Viz.vars(items); }
+  function snap(at, key, allocation, vs) {
+    frames.push(Viz.frame(at, key, [Viz.table('\u8fde\u7eed\u6bb5\uff08\u53ea\u6709 \u22653 \u7684\u6bb5\u9700\u8981\u6253\u65ad\uff09', rows(allocation)), vars(vs)]));
+  }
+
+  var fired = {};
+  var replace = 0;
+  runs.forEach(function (r) { replace += Math.floor(r.len / 3); });
+
+  var del = Math.max(0, n - 20);
+
+  if (!fired.init) {
+    fired.init = true;
+    snap(RUNS, '\u5148\u5207\u6bb5\uff1a' + allRuns.map(function (r) { return r.ch + '\u00d7' + r.len; }).join('\u3001')
+      + '\uff0c\u592a\u77ed\u7684\u6bb5\u4e0d\u7528\u7ba1', null, [{ name: 'password', v: s, cls: '' }]);
+  }
+  if (!fired.miss) {
+    fired.miss = true;
+    snap(MISS, '\u7f3a\u7684\u5b57\u7b26\u7c7b\u578b\u6570 missing=' + missing + '\uff1b\u6bcf\u6bb5\u9694 3 \u4e2a\u6362 1 \u4e2a\u5c31\u80fd\u6253\u65ad\uff0c\u5171\u9700 ' + replace + ' \u6b21\u66ff\u6362', null,
+      [{ name: 'missing\uff08\u7f3a\u7c7b\u578b\uff09', v: String(missing), cls: missing > 0 ? 'bad' : '' }, { name: 'replace\uff08\u6bb5\u9700\u8981\u7684\u66ff\u6362\uff09', v: String(replace), cls: 'hit' }]);
+  }
+
+  var ans;
+  var allocation = {};
+  if (n < 6) {
+    ans = Math.max(missing, 6 - n);
+  } else if (n <= 20) {
+    ans = Math.max(missing, replace);
+    if (!fired.noDel) {
+      fired.noDel = true;
+      snap('if (n <= 20) return Math.max(missing, replace);', '\u957f\u5ea6\u5408\u89c4\uff1a\u66ff\u6362\u53ef\u4ee5\u4e00\u7bad\u53cc\u96d5\uff08\u6253\u65ad + \u8865\u7c7b\u578b\uff09\uff0c\u53d6 max \u5373\u53ef', null,
+        [{ name: '\u7b54\u6848', v: 'max(' + missing + ', ' + replace + ') = ' + ans, cls: 'done' }]);
+    }
+  } else {
+    if (!fired.del) {
+      fired.del = true;
+      snap(DEL, '\u8d85\u957f ' + del + ' \u4e2a\uff1a\u5220\u9664\u662f\u786c\u6027\u7684\uff0c\u5148\u8ba9\u5220\u9664\u53bb\u62b5\u66ff\u6362', null,
+        [{ name: 'delete\uff08\u5fc5\u987b\u5220\uff09', v: String(del), cls: 'bad' }]);
+    }
+    var remain = del;
+    var len = runs.map(function (r) { return r.len; });
+    // \u7b2c 1 \u8f6e\uff1amod 0 \u7684\u6bb5\u5404\u5220 1 \u4e2a
+    for (i = 0; i < len.length && remain > 0; i++) {
+      if (len[i] % 3 === 0) {
+        len[i]--;
+        remain--;
+        if (!fired.r1) {
+          fired.r1 = true;
+          allocation[i] = (allocation[i] || 0) + 1;
+          snap(R1, 'mod 0 \u7684\u6bb5\u5220 1 \u4e2a\u5c31\u7701 1 \u6b21\u66ff\u6362\uff1a\u5220\u9664\u4f18\u5148\u82b1\u5728\u8fd9\u91cc', allocation,
+            [{ name: '\u5269\u4f59\u5220\u9664\u914d\u989d', v: String(remain), cls: 'chg' }]);
+        } else {
+          allocation[i] = (allocation[i] || 0) + 1;
+        }
+      }
+    }
+    // \u7b2c 2 \u8f6e\uff1amod 1 \u7684\u6bb5\u5404\u5220 2 \u4e2a
+    for (i = 0; i < len.length && remain > 0; i++) {
+      if (len[i] % 3 === 1) {
+        var t2 = Math.min(remain, 2);
+        len[i] -= t2;
+        remain -= t2;
+        allocation[i] = (allocation[i] || 0) + t2;
+        if (!fired.r2 && t2 === 2) {
+          fired.r2 = true;
+          snap('if (len[i] % 3 == 1) {', 'mod 1 \u7684\u6bb5\u5f97\u5220 2 \u4e2a\u624d\u7701 1 \u6b21\u66ff\u6362\uff08\u5220 1 \u4e2a\u4e0d\u8de8\u754c\uff09', allocation,
+            [{ name: '\u5269\u4f59\u5220\u9664\u914d\u989d', v: String(remain), cls: 'chg' }]);
+        }
+      }
+    }
+    // \u7b2c 3 \u8f6e\uff1a\u5269\u4e0b\u7684\u6bcf\u5220 3 \u4e2a\u7701 1 \u6b21\uff0c\u5220\u5230\u6bcf\u6bb5\u5269 2
+    for (i = 0; i < len.length && remain > 0; i++) {
+      var t3 = Math.min(remain, len[i] - 2);
+      if (t3 > 0) {
+        len[i] -= t3;
+        remain -= t3;
+        allocation[i] = (allocation[i] || 0) + t3;
+        if (!fired.r3) {
+          fired.r3 = true;
+          snap(R3, '\u5269\u4e0b\u7684\u5220\u9664\u6bcf\u5220 3 \u4e2a\u7701 1 \u6b21\u66ff\u6362\uff0c\u5220\u5230\u6bb5\u5269 2 \u4e3a\u6b62', allocation,
+            [{ name: '\u5269\u4f59\u5220\u9664\u914d\u989d', v: String(remain), cls: 'chg' }]);
+        }
+      }
+    }
+    var replaceAfter = 0;
+    len.forEach(function (l) { replaceAfter += Math.floor(l / 3); });
+    ans = del + Math.max(missing, replaceAfter);
+    if (!fired.fin) {
+      fired.fin = true;
+      snap(RET, '\u5220\u9664 ' + del + ' \u6b21\u5168\u7528\u6389\uff1b\u5269\u4e0b\u66ff\u6362 ' + replaceAfter + ' \u6b21\uff0c\u4e0e missing \u53d6 max\uff0c\u5171 ' + ans, allocation,
+        [{ name: '\u7b54\u6848', v: del + ' + max(' + missing + ', ' + replaceAfter + ') = ' + ans, cls: 'done' }]);
+    }
+  }
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

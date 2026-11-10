@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>和等于 k 的最长子数组长度 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 406 / 1159</span>
+  <nav class="pn"><a href="0530.html">上一篇</a><a href="1011.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">325. </span>和等于 k 的最长子数组长度</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 7</li><li class="algo">前缀和/差分</li><li class="aux">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">前缀和</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">前缀和哈希表只记「每个前缀和最早出现的下标」：读到 i 查 sum−k 是否在表里，命中则 i−j 就是和为 k 的子数组长度。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>sum</code> 是到 <code>i</code> 为止的前缀和；<code>(j, i]</code> 的和为 <code>k</code> ⟺ <code>sum[i] − sum[j] = k</code>，即用 <code>sum − k</code> 查表拿最早的 <code>j</code>。</li><li>表里只存每个前缀和<strong>最早</strong>的下标（<code>putIfAbsent</code> 不覆盖）：<code>j</code> 越早，<code>i − j</code> 越长。</li><li>哨兵 <code>0 → −1</code> 让「从头开始」的子数组也能配上；前缀和最坏 ±2×10⁹，要用 <code>long</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 前缀和 + 哈希表：sum[i] - sum[j] = k ⇒ 子数组 (j, i] 的和为 k；</span></span><span class="ln"><span class="no">5</span>    <span class="c">// 表里记每个前缀和「最早」出现的下标，区间越长越好</span></span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="k">int</span> maxSubArrayLen(<span class="k">int</span>[] nums, <span class="k">int</span> k) {</span><span class="ln"><span class="no">7</span>        <span class="t">Map</span>&lt;<span class="t">Long</span>, <span class="t">Integer</span>&gt; first = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();   <span class="c">// 前缀和 → 最早出现的下标</span></span><span class="ln"><span class="no">8</span>        first.put(<span class="n">0L</span>, -<span class="n">1</span>);                            <span class="c">// 空前缀：下标 -1</span></span><span class="ln"><span class="no">9</span>        <span class="k">long</span> sum = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; nums.length; i++) {</span><span class="ln"><span class="no">12</span>            sum += nums[i];</span><span class="ln"><span class="no">13</span>            <span class="c">// 之前出现过前缀和 sum - k，中间那段 (j, i] 就是候选</span></span><span class="ln"><span class="no">14</span>            <span class="t">Integer</span> j = first.get(sum - k);</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (j != <span class="k">null</span>) ans = <span class="t">Math</span>.max(ans, i - j);</span><span class="ln"><span class="no">16</span>            <span class="c">// 只记最早出现：越早，后面配出的子数组越长</span></span><span class="ln"><span class="no">17</span>            first.putIfAbsent(sum, i);</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    // 前缀和 + 哈希表：sum[i] - sum[j] = k ⇒ 子数组 (j, i] 的和为 k；", "    // 表里记每个前缀和「最早」出现的下标，区间越长越好", "    public int maxSubArrayLen(int[] nums, int k) {", "        Map<Long, Integer> first = new HashMap<>();   // 前缀和 → 最早出现的下标", "        first.put(0L, -1);                            // 空前缀：下标 -1", "        long sum = 0;", "        int ans = 0;", "        for (int i = 0; i < nums.length; i++) {", "            sum += nums[i];", "            // 之前出现过前缀和 sum - k，中间那段 (j, i] 就是候选", "            Integer j = first.get(sum - k);", "            if (j != null) ans = Math.max(ans, i - j);", "            // 只记最早出现：越早，后面配出的子数组越长", "            first.putIfAbsent(sum, i);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 325. 和等于 k 的最长子数组长度 —— 图解：复刻 Solution.java 的「前缀和哈希表（只记最早下标）」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, -1, 5, -2, 3], k: 3 };
+
+function trace(input) {
+  var nums = input.nums, k = input.k;
+  var first = { 0: -1 };   // 前缀和 → 最早出现的下标；哨兵 0 → -1
+  var sum = 0, ans = 0;
+  var best = [-1, -1];     // 当前最优子数组的 [起, 止] 下标
+  var frames = [];
+  var shown = {};
+
+  function tablePanel(hitSum) {
+    var keys = Object.keys(first).map(Number).sort(function (x, y) { return x - y; });
+    return Viz.table('前缀和 → 最早出现下标', keys.map(function (s) {
+      return { k: String(s), v: String(first[s]), cls: s === hitSum ? 'hit' : '' };
+    }));
+  }
+  function numsPanel(i) {
+    var marks = {}, x;
+    for (x = 0; x <= i; x++) marks[x] = 'win';
+    if (i >= 0) marks[i] = 'cur';
+    if (best[0] >= 0) for (x = best[0]; x <= best[1]; x++) marks[x] = 'done';
+    return Viz.cells(nums, { title: 'nums，k = ' + k, marks: marks,
+      pointers: i >= 0 ? [{ at: i, label: 'i', cls: 'p-cur' }] : [],
+      range: best[0] >= 0 ? { from: best[0], to: best[1], label: '和为 k' } : null });
+  }
+  function varsPanel() {
+    return Viz.vars([{ name: 'sum（前缀和）', v: sum }, { name: 'ans（最长长度）', v: ans, cls: 'chg' }]);
+  }
+  function snap(tag, at, key, panels) {
+    if (shown[tag]) return;
+    shown[tag] = true;
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  snap('init', 'first.put(0L, -1);',
+    '开局：表里放哨兵「前缀和 0 → 下标 −1」，让从头开始的子数组也能配上',
+    [numsPanel(-1), tablePanel(null), varsPanel()]);
+
+  for (var i = 0; i < nums.length; i++) {
+    sum += nums[i];
+    // putIfAbsent：sum 已在表里就不覆盖——保住最早的 j，区间才最长
+    if (first[sum] !== undefined) {
+      snap('keep', 'first.putIfAbsent(sum, i);',
+        '前缀和 ' + sum + ' 已在表里（下标 ' + first[sum] + '）：不覆盖，最早的 j 配出的区间才最长',
+        [numsPanel(i), tablePanel(null), varsPanel()]);
+    }
+    var j = first[sum - k];
+    if (j !== undefined) {
+      if (i - j > ans) { ans = i - j; best = [j + 1, i]; }
+      snap('hit', 'if (j != null) ans = Math.max(ans, i - j);',
+        'sum − k = ' + (sum - k) + ' 命中表（下标 ' + j + '）：(j, i] 的和正好是 k，ans 更新为 ' + ans,
+        [numsPanel(i), tablePanel(sum - k), varsPanel()]);
+    }
+    if (first[sum] === undefined) first[sum] = i;
+  }
+
+  snap('end', 'return ans;',
+    '扫完：最长子数组长度 ans = ' + ans + '，图上高亮的就是这段',
+    [numsPanel(nums.length - 1), tablePanel(null), varsPanel()]);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

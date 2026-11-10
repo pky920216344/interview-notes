@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>扫雷游戏 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 822 / 1159</span>
+  <nav class="pn"><a href="mianshi-17-22.html">上一篇</a><a href="0770.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">529. </span>扫雷游戏</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">广度优先搜索</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">从点击处 BFS：点雷改 X 结束；空格数 8 邻雷，有雷标数字停下，没雷标 B 并把 8 邻居入队继续扩散。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>点击是 <code>'M'</code>：改成 <code>'X'</code> 直接返回；点击是 <code>'E'</code>：从它开始 BFS。</li><li>出队一格先数 8 邻域里的 <code>'M'</code>：有雷 → 改成对应数字 <code>'0'+雷数</code>，<strong>停止扩散</strong>；没雷 → 改成 <code>'B'</code>，把 8 邻域里还是 <code>'E'</code> 的入队。</li><li>同一格可能被多个邻居重复入队，出队时判 <code>!= 'E'</code> 跳过即可（或入队时就标已访问）。</li><li>BFS/DFS 都行，最终盘面与扩散顺序无关；数字格不会把雷"揭"出来，雷只有被点击才变 X。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m·n)，空间复杂度 O(m·n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">char</span>[][] updateBoard(<span class="k">char</span>[][] board, <span class="k">int</span>[] click) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> r = click[<span class="n">0</span>], c = click[<span class="n">1</span>];</span><span class="ln"><span class="no">6</span>        <span class="c">// 8 个方向的偏移</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[][] dirs = {{-<span class="n">1</span>, -<span class="n">1</span>}, {-<span class="n">1</span>, <span class="n">0</span>}, {-<span class="n">1</span>, <span class="n">1</span>}, {<span class="n">0</span>, -<span class="n">1</span>}, {<span class="n">0</span>, <span class="n">1</span>}, {<span class="n">1</span>, -<span class="n">1</span>}, {<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">1</span>, <span class="n">1</span>}};</span><span class="ln"><span class="no">8</span>        <span class="k">if</span> (board[r][c] == <span class="s">'M'</span>) {</span><span class="ln"><span class="no">9</span>            <span class="c">// 点中地雷：游戏直接结束</span></span><span class="ln"><span class="no">10</span>            board[r][c] = <span class="s">'X'</span>;</span><span class="ln"><span class="no">11</span>        } <span class="k">else</span> {</span><span class="ln"><span class="no">12</span>            <span class="t">Deque</span>&lt;<span class="k">int</span>[]&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">13</span>            queue.add(<span class="k">new</span> <span class="k">int</span>[]{r, c});</span><span class="ln"><span class="no">14</span>            <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">15</span>                <span class="k">int</span>[] cur = queue.poll();</span><span class="ln"><span class="no">16</span>                <span class="k">int</span> i = cur[<span class="n">0</span>], j = cur[<span class="n">1</span>];</span><span class="ln"><span class="no">17</span>                <span class="c">// 同一格可能被多个邻居重复入队，出队时再查一次</span></span><span class="ln"><span class="no">18</span>                <span class="k">if</span> (board[i][j] != <span class="s">'E'</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">19</span>                <span class="k">int</span> mines = <span class="n">0</span>;</span><span class="ln"><span class="no">20</span>                <span class="k">for</span> (<span class="k">int</span>[] d : dirs) {</span><span class="ln"><span class="no">21</span>                    <span class="k">int</span> x = i + d[<span class="n">0</span>], y = j + d[<span class="n">1</span>];</span><span class="ln"><span class="no">22</span>                    <span class="k">if</span> (x &gt;= <span class="n">0</span> &amp;&amp; x &lt; board.length &amp;&amp; y &gt;= <span class="n">0</span> &amp;&amp; y &lt; board[<span class="n">0</span>].length &amp;&amp; board[x][y] == <span class="s">'M'</span>) mines++;</span><span class="ln"><span class="no">23</span>                }</span><span class="ln"><span class="no">24</span>                <span class="k">if</span> (mines &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">25</span>                    <span class="c">// 邻居有雷：只标数字，不再扩散</span></span><span class="ln"><span class="no">26</span>                    board[i][j] = (<span class="k">char</span>) (<span class="s">'0'</span> + mines);</span><span class="ln"><span class="no">27</span>                } <span class="k">else</span> {</span><span class="ln"><span class="no">28</span>                    <span class="c">// 周围干净：翻成 B，把还没揭开的邻居都排进队列</span></span><span class="ln"><span class="no">29</span>                    board[i][j] = <span class="s">'B'</span>;</span><span class="ln"><span class="no">30</span>                    <span class="k">for</span> (<span class="k">int</span>[] d : dirs) {</span><span class="ln"><span class="no">31</span>                        <span class="k">int</span> x = i + d[<span class="n">0</span>], y = j + d[<span class="n">1</span>];</span><span class="ln"><span class="no">32</span>                        <span class="k">if</span> (x &gt;= <span class="n">0</span> &amp;&amp; x &lt; board.length &amp;&amp; y &gt;= <span class="n">0</span> &amp;&amp; y &lt; board[<span class="n">0</span>].length &amp;&amp; board[x][y] == <span class="s">'E'</span>) {</span><span class="ln"><span class="no">33</span>                            queue.add(<span class="k">new</span> <span class="k">int</span>[]{x, y});</span><span class="ln"><span class="no">34</span>                        }</span><span class="ln"><span class="no">35</span>                    }</span><span class="ln"><span class="no">36</span>                }</span><span class="ln"><span class="no">37</span>            }</span><span class="ln"><span class="no">38</span>        }</span><span class="ln"><span class="no">39</span>        <span class="k">return</span> board;</span><span class="ln"><span class="no">40</span>    }</span><span class="ln"><span class="no">41</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>让我们一起来玩扫雷游戏！</p>
+
+<p>给你一个大小为 <code>m x n</code> 二维字符矩阵&nbsp;<code>board</code> ，表示扫雷游戏的盘面，其中：</p>
+
+<ul>
+	<li><code>'M'</code>&nbsp;代表一个 <strong>未挖出的</strong> 地雷，</li>
+	<li><code>'E'</code>&nbsp;代表一个<strong> 未挖出的 </strong>空方块，</li>
+	<li><code>'B'</code>代表没有相邻（上，下，左，右，和所有4个对角线）地雷的<strong> 已挖出的 </strong>空白方块，</li>
+	<li><strong>数字</strong>（<code>'1'</code> 到 <code>'8'</code>）表示有多少地雷与这块<strong> 已挖出的</strong> 方块相邻，</li>
+	<li><code>'X'</code>&nbsp;则表示一个<strong> 已挖出的</strong> 地雷。</li>
+</ul>
+
+<p>给你一个整数数组 <code>click</code> ，其中 <code>click = [click<sub>r</sub>, click<sub>c</sub>]</code> 表示在所有<strong> 未挖出的 </strong>方块（<code>'M'</code> 或者 <code>'E'</code>）中的下一个点击位置（<code>click<sub>r</sub></code> 是行下标，<code>click<sub>c</sub></code> 是列下标）。</p>
+
+<p>根据以下规则，返回相应位置被点击后对应的盘面：</p>
+
+<ol>
+	<li>如果一个地雷（<code>'M'</code>）被挖出，游戏就结束了- 把它改为&nbsp;<code>'X'</code> 。</li>
+	<li>如果一个<strong> 没有相邻地雷 </strong>的空方块（<code>'E'</code>）被挖出，修改它为（<code>'B'</code>），并且所有和其相邻的<strong> 未挖出 </strong>方块都应该被递归地揭露。</li>
+	<li>如果一个<strong> 至少与一个地雷相邻</strong> 的空方块（<code>'E'</code>）被挖出，修改它为数字（<code>'1'</code> 到 <code>'8'</code> ），表示相邻地雷的数量。</li>
+	<li>如果在此次点击中，若无更多方块可被揭露，则返回盘面。</li>
+</ol>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img src="../assets/img/554291711cd7.jpeg" style="width: 500px; max-width: 400px; height: 269px;" />
+<pre>
+<strong>输入：</strong>board = [["E","E","E","E","E"],["E","E","M","E","E"],["E","E","E","E","E"],["E","E","E","E","E"]], click = [3,0]
+<strong>输出：</strong>[["B","1","E","1","B"],["B","1","M","1","B"],["B","1","1","1","B"],["B","B","B","B","B"]]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img src="../assets/img/2df8564f0010.jpeg" style="width: 500px; max-width: 400px; height: 275px;" />
+<pre>
+<strong>输入：</strong>board = [["B","1","E","1","B"],["B","1","M","1","B"],["B","1","1","1","B"],["B","B","B","B","B"]], click = [1,2]
+<strong>输出：</strong>[["B","1","E","1","B"],["B","1","X","1","B"],["B","1","1","1","B"],["B","B","B","B","B"]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == board.length</code></li>
+	<li><code>n == board[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 50</code></li>
+	<li><code>board[i][j]</code> 为 <code>'M'</code>、<code>'E'</code>、<code>'B'</code> 或数字 <code>'1'</code> 到 <code>'8'</code> 中的一个</li>
+	<li><code>click.length == 2</code></li>
+	<li><code>0 &lt;= click<sub>r</sub> &lt; m</code></li>
+	<li><code>0 &lt;= click<sub>c</sub> &lt; n</code></li>
+	<li><code>board[click<sub>r</sub>][click<sub>c</sub>]</code> 为 <code>'M'</code> 或 <code>'E'</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public char[][] updateBoard(char[][] board, int[] click) {", "        int r = click[0], c = click[1];", "        // 8 个方向的偏移", "        int[][] dirs = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};", "        if (board[r][c] == 'M') {", "            // 点中地雷：游戏直接结束", "            board[r][c] = 'X';", "        } else {", "            Deque<int[]> queue = new ArrayDeque<>();", "            queue.add(new int[]{r, c});", "            while (!queue.isEmpty()) {", "                int[] cur = queue.poll();", "                int i = cur[0], j = cur[1];", "                // 同一格可能被多个邻居重复入队，出队时再查一次", "                if (board[i][j] != 'E') continue;", "                int mines = 0;", "                for (int[] d : dirs) {", "                    int x = i + d[0], y = j + d[1];", "                    if (x >= 0 && x < board.length && y >= 0 && y < board[0].length && board[x][y] == 'M') mines++;", "                }", "                if (mines > 0) {", "                    // 邻居有雷：只标数字，不再扩散", "                    board[i][j] = (char) ('0' + mines);", "                } else {", "                    // 周围干净：翻成 B，把还没揭开的邻居都排进队列", "                    board[i][j] = 'B';", "                    for (int[] d : dirs) {", "                        int x = i + d[0], y = j + d[1];", "                        if (x >= 0 && x < board.length && y >= 0 && y < board[0].length && board[x][y] == 'E') {", "                            queue.add(new int[]{x, y});", "                        }", "                    }", "                }", "            }", "        }", "        return board;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 529. 扫雷游戏 —— 图解：复刻 Solution.java 的 BFS 揭格，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { board: ['EEEEE', 'EEMEE', 'EEEEE', 'EEEEE'], click: [3, 0] };
+
+function trace(input) {
+  var rows = input.board;
+  var m = rows.length, n = rows[0].length;
+  var g = rows.map(function (s) { return s.split(''); });   // 对应 Java 里被原地改写的 board
+  var frames = [];
+  var queue = [];
+  var DIRS = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+
+  // 已翻开的（B/数字）标 new，当前出队的标 cur，雷保持原样
+  function panel(cur, title) {
+    var marks = {}, r, c;
+    for (r = 0; r < m; r++) {
+      for (c = 0; c < n; c++) {
+        if (g[r][c] === 'B' || /[1-8]/.test(g[r][c])) marks[r + ',' + c] = 'new';
+        else if (g[r][c] === 'X') marks[r + ',' + c] = 'done';
+      }
+    }
+    if (cur) marks[cur[0] + ',' + cur[1]] = 'cur';
+    var rl = [], cl = [];
+    for (r = 0; r < m; r++) rl.push(String(r));
+    for (c = 0; c < n; c++) cl.push(String(c));
+    return Viz.grid(g, { title: title || 'board（蓝 = 刚揭开）', marks: marks, rowLabels: rl, colLabels: cl });
+  }
+  function queuePanel() {
+    var items = queue.map(function (p) { return p[0] + ',' + p[1]; });
+    return Viz.cells(items, {
+      title: items.length ? '队列 queue（待揭开的空格）' : '队列 queue（空）', hideIndex: true,
+      pointers: items.length ? [{ at: 0, label: '队首', cls: 'p-head' }] : []
+    });
+  }
+  function snap(at, key, cur, withQueue, title) {
+    var panels = [panel(cur, title)];
+    if (withQueue) panels.push(queuePanel());
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  var r0 = input.click[0], c0 = input.click[1];
+  var hitMine = g[r0][c0] === 'M';
+  if (hitMine) {
+    g[r0][c0] = 'X';
+    snap('board[r][c] = \'X\';', '踩中雷 ' + r0 + ',' + c0 + '：改成 X，游戏结束', null, false);
+  } else {
+    queue.push([r0, c0]);
+    snap('queue.add(new int[]{r, c});',
+      '点击 ' + r0 + ',' + c0 + ' 是空格：先入队，等出队再数雷',
+      null, true);
+  }
+
+  var shot = { spread: false, digit: false };
+  while (queue.length) {
+    var cur = queue.shift();
+    var i = cur[0], j = cur[1];
+    if (g[i][j] !== 'E') continue;
+    var mines = 0;
+    DIRS.forEach(function (d) {
+      var x = i + d[0], y = j + d[1];
+      if (x >= 0 && x < m && y >= 0 && y < n && g[x][y] === 'M') mines++;
+    });
+    if (mines > 0) {
+      g[i][j] = String(mines);
+      if (!shot.digit) {
+        shot.digit = true;
+        snap('board[i][j] = (char) (\'0\' + mines);',
+          i + ',' + j + ' 旁边有 ' + mines + ' 颗雷：标成 ' + mines + ' 就停，不扩散',
+          [i, j], true);
+      }
+    } else {
+      g[i][j] = 'B';
+      DIRS.forEach(function (d) {
+        var x = i + d[0], y = j + d[1];
+        if (x >= 0 && x < m && y >= 0 && y < n && g[x][y] === 'E') queue.push([x, y]);
+      });
+      if (!shot.spread) {
+        shot.spread = true;
+        snap('board[i][j] = \'B\';',
+          '出队 ' + i + ',' + j + '：周围没雷翻成 B，8 个邻居全入队',
+          [i, j], true);
+      }
+    }
+  }
+
+  var hasDigit = false;
+  for (var r = 0; r < m && !hasDigit; r++) for (var c = 0; c < n; c++) if (/[1-8]/.test(g[r][c])) { hasDigit = true; break; }
+  var lastKey = hitMine
+    ? '踩雷结束：只有被点的那颗雷翻开成 X'
+    : (hasDigit ? '队空终盘：数字格挡住扩散，边缘留着的 E 揭不到' : '队空终盘：整片连通空区全揭开');
+  snap('return board;', lastKey, null, false);
+
+  return { frames: frames, result: g.map(function (row) { return row.join(''); }) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

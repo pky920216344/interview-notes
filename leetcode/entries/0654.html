@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最大二叉树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 644 / 1159</span>
+  <nav class="pn"><a href="0478.html">上一篇</a><a href="0759.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">654. </span>最大二叉树</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">单调栈</li><li class="tag">栈</li><li class="tag">树</li><li class="tag">数组</li><li class="tag">分治</li><li class="tag">二叉树</li><li class="tag">cartesian-tree</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">单调递减栈：新数把栈里比它小的依次弹出（最后弹出的做它的左孩子），再把自己挂上栈顶的右孩子；栈底即根。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>栈里保存「还没确定右孩子的结点」，从底到顶值递减；栈底始终是当前全局最大（根）。</li><li>新数 <code>v</code> 入栈前：弹出所有 <code>&lt; v</code> 的结点，<strong>最后弹出的</strong>（其中最大）成为 <code>v</code> 的左孩子。</li><li>栈非空就把 <code>v</code> 挂成新栈顶的<strong>右孩子</strong>；栈空说明 <code>v</code> 是目前最大，更新根。</li><li>等价于递归「区间取最大做根」，但一趟扫描完成，不用反复找最大值。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">TreeNode</span> constructMaximumBinaryTree(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 单调递减栈：栈里从底到顶递减，栈底就是目前为止的最大值</span></span><span class="ln"><span class="no">6</span>        <span class="t">Deque</span>&lt;<span class="t">TreeNode</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="t">TreeNode</span> root = <span class="k">null</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> v : nums) {</span><span class="ln"><span class="no">9</span>            <span class="t">TreeNode</span> node = <span class="k">new</span> <span class="t">TreeNode</span>(v);</span><span class="ln"><span class="no">10</span>            <span class="t">TreeNode</span> last = <span class="k">null</span>;</span><span class="ln"><span class="no">11</span>            <span class="c">// 新数比栈顶大：弹出的结点都归它管，最后弹出的成为它的左孩子</span></span><span class="ln"><span class="no">12</span>            <span class="k">while</span> (!stack.isEmpty() &amp;&amp; stack.peek().val &lt; v) last = stack.pop();</span><span class="ln"><span class="no">13</span>            node.left = last;</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (!stack.isEmpty()) {</span><span class="ln"><span class="no">15</span>                stack.peek().right = node;   <span class="c">// 新数比栈顶小：成为栈顶的右孩子</span></span><span class="ln"><span class="no">16</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">17</span>                root = node;                 <span class="c">// 栈空：它是目前全局最大，是根</span></span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>            stack.push(node);</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> root;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个不重复的整数数组&nbsp;<code>nums</code> 。&nbsp;<strong>最大二叉树</strong>&nbsp;可以用下面的算法从&nbsp;<code>nums</code> 递归地构建:</p>
+
+<ol>
+	<li>创建一个根节点，其值为&nbsp;<code>nums</code> 中的最大值。</li>
+	<li>递归地在最大值&nbsp;<strong>左边</strong>&nbsp;的&nbsp;<strong>子数组前缀上</strong>&nbsp;构建左子树。</li>
+	<li>递归地在最大值 <strong>右边</strong> 的&nbsp;<strong>子数组后缀上</strong>&nbsp;构建右子树。</li>
+</ol>
+
+<p>返回&nbsp;<em><code>nums</code> 构建的 </em><strong><em>最大二叉树</em> </strong>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/155964411c2e.jpg" />
+<pre>
+<strong>输入：</strong>nums = [3,2,1,6,0,5]
+<strong>输出：</strong>[6,3,5,null,2,0,null,null,1]
+<strong>解释：</strong>递归调用如下所示：
+- [3,2,1,6,0,5] 中的最大值是 6 ，左边部分是 [3,2,1] ，右边部分是 [0,5] 。
+    - [3,2,1] 中的最大值是 3 ，左边部分是 [] ，右边部分是 [2,1] 。
+        - 空数组，无子节点。
+        - [2,1] 中的最大值是 2 ，左边部分是 [] ，右边部分是 [1] 。
+            - 空数组，无子节点。
+            - 只有一个元素，所以子节点是一个值为 1 的节点。
+    - [0,5] 中的最大值是 5 ，左边部分是 [0] ，右边部分是 [] 。
+        - 只有一个元素，所以子节点是一个值为 0 的节点。
+        - 空数组，无子节点。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/27853536170a.jpg" />
+<pre>
+<strong>输入：</strong>nums = [3,2,1]
+<strong>输出：</strong>[3,null,2,null,1]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 1000</code></li>
+	<li><code>0 &lt;= nums[i] &lt;= 1000</code></li>
+	<li><code>nums</code> 中的所有整数 <strong>互不相同</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public TreeNode constructMaximumBinaryTree(int[] nums) {", "        // 单调递减栈：栈里从底到顶递减，栈底就是目前为止的最大值", "        Deque<TreeNode> stack = new ArrayDeque<>();", "        TreeNode root = null;", "        for (int v : nums) {", "            TreeNode node = new TreeNode(v);", "            TreeNode last = null;", "            // 新数比栈顶大：弹出的结点都归它管，最后弹出的成为它的左孩子", "            while (!stack.isEmpty() && stack.peek().val < v) last = stack.pop();", "            node.left = last;", "            if (!stack.isEmpty()) {", "                stack.peek().right = node;   // 新数比栈顶小：成为栈顶的右孩子", "            } else {", "                root = node;                 // 栈空：它是目前全局最大，是根", "            }", "            stack.push(node);", "        }", "        return root;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 654. 最大二叉树 —— 图解：复刻 Solution.java 的「单调递减栈建树」，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [3, 2, 1, 6, 0, 5] };
+
+function trace(input) {
+  var nums = input.nums;
+  var n = nums.length;
+  var frames = [];
+  var fired = { attach: false, pop: false };
+
+  var INIT = 'Deque<TreeNode> stack = new ArrayDeque<>();';
+  var POPLP = 'node.left = last;';
+  var ATTACH = 'stack.peek().right = node;';
+  var NEWROOT = 'root = node;';
+  var RET = 'return root;';
+
+  var root = null;
+  var stack = [];   // 模拟 Deque：末尾是栈顶
+
+  function mk(v, idx) { return { val: v, idx: idx, left: null, right: null }; }
+
+  // 当前部分树的层序（结点或 null），与 Trees.toLevel 同一套规则
+  function bfs() {
+    var out = [];
+    if (root !== null) {
+      var q = [root];
+      while (q.length) {
+        var nd = q.shift();
+        if (nd === null) { out.push(null); continue; }
+        out.push(nd);
+        q.push(nd.left);
+        q.push(nd.right);
+      }
+      while (out.length && out[out.length - 1] === null) out.pop();
+    }
+    return out;
+  }
+  function pos(list, node) { return node === null ? -1 : list.indexOf(node); }
+
+  function numsPanel(i) {
+    var marks = {};
+    for (var j = 0; j < n; j++) marks[j] = j < i ? 'dim' : '';
+    return Viz.cells(nums.map(String), { title: 'nums（从左往右逐个进栈）', marks: marks,
+      pointers: [{ at: Math.min(i, n - 1), label: '当前', cls: 'p-cur' }] });
+  }
+  function treePanel(highlight, label, final) {
+    var list = bfs();
+    var nodes = list.map(function (nd) { return nd === null ? null : nd.val; });
+    var marks = {}, labels = [];
+    if (final) {
+      for (var j = 0; j < list.length; j++) if (list[j] !== null) marks[j] = 'done';
+    } else {
+      var p = pos(list, highlight);
+      if (p >= 0) { marks[p] = 'new'; labels.push({ at: p, label: label || '新结点', cls: 'new' }); }
+    }
+    return Viz.tree(nodes, { title: final ? '最大二叉树' : '已建好的部分树', marks: marks, labels: labels });
+  }
+  function snap(at, key, i, hi, lab) { frames.push(Viz.frame(at, key, [numsPanel(i), treePanel(hi, lab, false)])); }
+
+  snap(INIT, '单调递减栈从空开始：栈底永远是当前最大值（根）', 0, null, '');
+
+  for (var i = 0; i < n; i++) {
+    var node = mk(nums[i], i);
+    var last = null, pops = 0;
+    while (stack.length && stack[stack.length - 1].val < nums[i]) { last = stack.pop(); pops++; }
+    node.left = last;
+    if (pops > 0 && (!fired.pop || i === n - 1)) {
+      var first = !fired.pop;
+      fired.pop = true;
+      snap(POPLP, first
+        ? '出现更大的 ' + nums[i] + '：栈里 ' + pops + ' 个全弹出，最后一个弹出的 ' + last.val + ' 成为它的左孩子'
+        : '又一次：' + nums[i] + ' 弹出 ' + last.val + ' 挂为自己的左孩子', i + 1, node, '新根候选');
+    }
+    if (stack.length) {
+      stack[stack.length - 1].right = node;
+      if (!fired.attach) {
+        fired.attach = true;
+        snap(ATTACH, '新数比栈顶小：成为栈顶 ' + stack[stack.length - 1].val + ' 的右孩子', i + 1, node, '右孩子');
+      }
+    } else {
+      root = node;
+      if (i === 0 && n > 1) snap(NEWROOT, '栈空：第一个数暂时是根，等更大的数来接管', i + 1, node, '暂根');
+    }
+    stack.push(node);
+  }
+
+  frames.push(Viz.frame(RET, '扫完：栈底的最大值就是根，整棵树建成', [numsPanel(n), treePanel(null, '', true)]));
+
+  var result = bfs().map(function (nd) { return nd === null ? null : nd.val; });
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>找两个和为目标值且不重叠的子数组 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 850 / 1159</span>
+  <nav class="pn"><a href="mianshi-03-04.html">上一篇</a><a href="mianshi-16-07.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1477. </span>找两个和为目标值且不重叠的子数组</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">滑动窗口</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">二分查找</li><li class="tag">动态规划</li><li class="tag">滑动窗口</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">左右各做一次正数滑窗，记下「前缀内/后缀内最短 target 子数组」，再枚举切分点把两段最短拼起来。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>元素全为正 → 和为 <code>target</code> 的窗口具有单调性，滑窗 <code>sum &gt; target</code> 就左缩，<code>sum == target</code> 记长度。</li><li>左扫一遍得 <code>bestLeft[i]</code>（<code>[0..i]</code> 内最短），右扫一遍得 <code>bestRight[i]</code>（<code>[i..n−1]</code> 内最短），各自带前缀/后缀最小值。</li><li>枚举切分点 <code>i</code>：两个子数组不重叠 ⟺ 一个在 <code>[0..i]</code>、另一个在 <code>[i+1..n−1]</code>，答案 = <code>min(bestLeft[i] + bestRight[i+1])</code>。</li><li>任一侧凑不出（值为 ∞）就跳过；整体凑不出返回 −1。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> minSumOfLengths(<span class="k">int</span>[] arr, <span class="k">int</span> target) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = arr.length, INF = <span class="t">Integer</span>.MAX_VALUE / <span class="n">2</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] bestLeft = <span class="k">new</span> <span class="k">int</span>[n], bestRight = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">5</span>        <span class="c">// 左→右滑窗：bestLeft[i] = [0..i] 里和为 target 的最短子数组长度</span></span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>, l = <span class="n">0</span>, sum = <span class="n">0</span>, best = INF; r &lt; n; r++) {</span><span class="ln"><span class="no">7</span>            sum += arr[r];</span><span class="ln"><span class="no">8</span>            <span class="k">while</span> (sum &gt; target) sum -= arr[l++];</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (sum == target) best = <span class="t">Math</span>.min(best, r - l + <span class="n">1</span>);   <span class="c">// 以 r 结尾的窗口</span></span><span class="ln"><span class="no">10</span>            bestLeft[r] = best;</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="c">// 右→左滑窗：bestRight[i] = [i..n−1] 里和为 target 的最短子数组长度</span></span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> l = n - <span class="n">1</span>, r = n - <span class="n">1</span>, sum = <span class="n">0</span>, best = INF; l &gt;= <span class="n">0</span>; l--) {</span><span class="ln"><span class="no">14</span>            sum += arr[l];</span><span class="ln"><span class="no">15</span>            <span class="k">while</span> (sum &gt; target) sum -= arr[r--];</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (sum == target) best = <span class="t">Math</span>.min(best, r - l + <span class="n">1</span>);   <span class="c">// 以 l 开头的窗口</span></span><span class="ln"><span class="no">17</span>            bestRight[l] = best;</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="c">// 在 i 和 i+1 之间切一刀：左边取最短 + 右边取最短</span></span><span class="ln"><span class="no">20</span>        <span class="k">int</span> ans = INF;</span><span class="ln"><span class="no">21</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i + <span class="n">1</span> &lt; n; i++) ans = <span class="t">Math</span>.min(ans, bestLeft[i] + bestRight[i + <span class="n">1</span>]);</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> ans &gt;= INF ? -<span class="n">1</span> : ans;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组&nbsp;<code>arr</code> 和一个整数值&nbsp;<code>target</code>&nbsp;。</p>
+
+<p>请你在 <code>arr</code>&nbsp;中找 <strong>两个互不重叠的子数组</strong>&nbsp;且它们的和都等于&nbsp;<code>target</code>&nbsp;。可能会有多种方案，请你返回满足要求的两个子数组长度和的 <strong>最小值</strong> 。</p>
+
+<p>请返回满足要求的最小长度和，如果无法找到这样的两个子数组，请返回 <strong>-1</strong>&nbsp;。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>arr = [3,2,2,4,3], target = 3
+<strong>输出：</strong>2
+<strong>解释：</strong>只有两个子数组和为 3 （[3] 和 [3]）。它们的长度和为 2 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>arr = [7,3,4,7], target = 7
+<strong>输出：</strong>2
+<strong>解释：</strong>尽管我们有 3 个互不重叠的子数组和为 7 （[7], [3,4] 和 [7]），但我们会选择第一个和第三个子数组，因为它们的长度和 2 是最小值。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>arr = [4,3,2,6,2,3,4], target = 6
+<strong>输出：</strong>-1
+<strong>解释：</strong>我们只有一个和为 6 的子数组。
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre><strong>输入：</strong>arr = [5,5,4,4,5], target = 3
+<strong>输出：</strong>-1
+<strong>解释：</strong>我们无法找到和为 3 的子数组。
+</pre>
+
+<p><strong>示例 5：</strong></p>
+
+<pre><strong>输入：</strong>arr = [3,1,1,1,5,1,2,1], target = 3
+<strong>输出：</strong>3
+<strong>解释：</strong>注意子数组 [1,2] 和 [2,1] 不能成为一个方案因为它们重叠了。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= arr.length &lt;= 10^5</code></li>
+	<li><code>1 &lt;= arr[i] &lt;= 1000</code></li>
+	<li><code>1 &lt;= target &lt;= 10^8</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int minSumOfLengths(int[] arr, int target) {", "        int n = arr.length, INF = Integer.MAX_VALUE / 2;", "        int[] bestLeft = new int[n], bestRight = new int[n];", "        // 左→右滑窗：bestLeft[i] = [0..i] 里和为 target 的最短子数组长度", "        for (int r = 0, l = 0, sum = 0, best = INF; r < n; r++) {", "            sum += arr[r];", "            while (sum > target) sum -= arr[l++];", "            if (sum == target) best = Math.min(best, r - l + 1);   // 以 r 结尾的窗口", "            bestLeft[r] = best;", "        }", "        // 右→左滑窗：bestRight[i] = [i..n−1] 里和为 target 的最短子数组长度", "        for (int l = n - 1, r = n - 1, sum = 0, best = INF; l >= 0; l--) {", "            sum += arr[l];", "            while (sum > target) sum -= arr[r--];", "            if (sum == target) best = Math.min(best, r - l + 1);   // 以 l 开头的窗口", "            bestRight[l] = best;", "        }", "        // 在 i 和 i+1 之间切一刀：左边取最短 + 右边取最短", "        int ans = INF;", "        for (int i = 0; i + 1 < n; i++) ans = Math.min(ans, bestLeft[i] + bestRight[i + 1]);", "        return ans >= INF ? -1 : ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1477. 找两个和为目标值且不重叠的子数组 —— 图解：左右各一次滑窗记最短，再切一刀拼接。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [3, 1, 1, 1, 5, 1, 2, 1], target: 3 };
+
+function trace(input) {
+  var arr = input.arr, target = input.target;
+  var n = arr.length, INF = Number.MAX_SAFE_INTEGER;
+  var frames = [];
+  var SW1IF = 'if (sum == target) best = Math.min(best, r - l + 1);   // 以 r 结尾的窗口';
+  var SW2FOR = 'for (int l = n - 1, r = n - 1, sum = 0, best = INF; l >= 0; l--) {';
+  var SW2IF = 'if (sum == target) best = Math.min(best, r - l + 1);   // 以 l 开头的窗口';
+  var COMB = 'for (int i = 0; i + 1 < n; i++) ans = Math.min(ans, bestLeft[i] + bestRight[i + 1]);';
+  var RET = 'return ans >= INF ? -1 : ans;';
+
+  // 左→右滑窗
+  var bestLeft = [], impL = [];
+  for (var r = 0, l = 0, sum = 0, best = INF; r < n; r++) {
+    sum += arr[r];
+    while (sum > target) sum -= arr[l++];
+    if (sum === target && r - l + 1 < best) { best = r - l + 1; impL.push({ l: l, r: r }); }
+    bestLeft[r] = best;
+  }
+  // 右→左滑窗
+  var bestRight = new Array(n), impR = [];
+  for (var l2 = n - 1, r2 = n - 1, sum2 = 0, best2 = INF; l2 >= 0; l2--) {
+    sum2 += arr[l2];
+    while (sum2 > target) sum2 -= arr[r2--];
+    if (sum2 === target && r2 - l2 + 1 < best2) { best2 = r2 - l2 + 1; impR.push({ l: l2, r: r2 }); }
+    bestRight[l2] = best2;
+  }
+  // 拼接：找第一次取到最终答案的切分点
+  var ans = INF, winI = -1;
+  for (var i = 0; i + 1 < n; i++) {
+    var cand = bestLeft[i] + bestRight[i + 1];
+    if (cand < ans) { ans = cand; winI = i; }
+  }
+
+  function arrPanel(o) {
+    var marks = {};
+    var k;
+    if (o.win) for (k = o.win[0]; k <= o.win[1]; k++) marks[k] = o.winCls || 'win';
+    if (o.done) { for (k = o.done[0][0]; k <= o.done[0][1]; k++) marks[k] = 'done'; for (k = o.done[1][0]; k <= o.done[1][1]; k++) marks[k] = 'done'; }
+    var pointers = [];
+    if (o.l != null) pointers.push({ at: o.l, label: 'l', cls: 'p-left' });
+    if (o.r != null) pointers.push({ at: o.r, label: o.rLabel || 'r', cls: 'p-right' });
+    var range = o.win ? { from: o.win[0], to: o.win[1], label: '和 = ' + target } : null;
+    return Viz.cells(arr.slice(), { title: 'arr（元素全为正，滑窗收缩不会漏解）', marks: marks, pointers: pointers, range: range });
+  }
+  function minPanel(tab, hi) {
+    return Viz.cells(tab.map(function (v) { return v >= INF ? '∞' : v; }), {
+      title: hi === 'L' ? 'bestLeft[i]：[0..i] 内最短 target 子数组' : 'bestRight[i]：[i..n−1] 内最短 target 子数组',
+      marks: {}
+    });
+  }
+
+  // 帧 1：左扫第一次命中
+  if (impL.length > 0) {
+    var w1 = impL[0];
+    frames.push(Viz.frame(SW1IF, '左扫：窗口 [' + arr.slice(w1.l, w1.r + 1).join(',') + '] 和 = ' + target + '，长度 ' + (w1.r - w1.l + 1) + ' 记入 bestLeft', [
+      arrPanel({ win: [w1.l, w1.r], l: w1.l, r: w1.r }),
+      Viz.vars([{ name: '左半最短', v: String(bestLeft[w1.r]), cls: 'new' }])
+    ]));
+  }
+  // 帧 2：左扫结束
+  frames.push(Viz.frame(SW2FOR, '左扫完：bestLeft[i] = 前 i+1 个元素里最短 target 子数组（没有则 ∞）', [
+    minPanel(bestLeft, 'L'),
+    Viz.vars([{ name: 'bestLeft[n−1]', v: bestLeft[n - 1] >= INF ? '∞' : String(bestLeft[n - 1]) }])
+  ]));
+  // 帧 3：右扫第一次命中
+  if (impR.length > 0) {
+    var w2 = impR[0];
+    frames.push(Viz.frame(SW2IF, '右扫：窗口 [' + arr.slice(w2.l, w2.r + 1).join(',') + '] 和 = ' + target + '，长度 ' + (w2.r - w2.l + 1) + ' 记入 bestRight', [
+      arrPanel({ win: [w2.l, w2.r], l: w2.l, r: w2.r, rLabel: 'r' }),
+      Viz.vars([{ name: '右半最短', v: String(bestRight[w2.l]), cls: 'new' }])
+    ]));
+  }
+  // 帧 4：拼接
+  if (winI >= 0) {
+    var leftWin = null, rightWin = null, k;
+    for (k = impL.length - 1; k >= 0; k--) if (impL[k].r <= winI) { leftWin = impL[k]; break; }
+    for (k = impR.length - 1; k >= 0; k--) if (impR[k].l >= winI + 1) { rightWin = impR[k]; break; }
+    frames.push(Viz.frame(COMB, '切一刀（i=' + winI + ' 后）：左最短 ' + bestLeft[winI] + ' + 右最短 ' + bestRight[winI + 1] + ' = ' + ans, [
+      arrPanel({ done: [[leftWin.l, leftWin.r], [rightWin.l, rightWin.r]] }),
+      minPanel(bestLeft, 'L'),
+      minPanel(bestRight, 'R'),
+      Viz.vars([{ name: 'ans', v: String(ans), cls: 'done' }])
+    ]));
+  }
+  // 帧 5：返回
+  frames.push(Viz.frame(RET, ans >= INF ? '凑不出两个不重叠的 target 子数组：返回 −1' : '最短长度和 = ' + ans, [
+    Viz.vars([{ name: '返回值', v: String(ans >= INF ? -1 : ans), cls: 'done' }])
+  ]));
+
+  return { frames: frames, result: ans >= INF ? -1 : ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

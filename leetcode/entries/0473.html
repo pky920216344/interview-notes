@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>火柴拼正方形 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 482 / 1159</span>
+  <nav class="pn"><a href="0311.html">上一篇</a><a href="0796.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">473. </span>火柴拼正方形</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">回溯</li><li class="tag">位运算</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">回溯</li><li class="tag">位掩码</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">回溯 + 4 条边桶：火柴从大到小逐根试放；剩余相同的边只试一条，空边失败就整支剪掉。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>total % 4 != 0</code> 直接 false；<code>side = total / 4</code>，每条边都要恰好凑到 side。</li><li><code>Arrays.sort</code> 后<strong>从大到小</strong>放：大火柴先定位置，失败得早、剪得狠。</li><li>两个剪枝：剩余长度相同的边只试一条（<code>Set</code> 去重）；放进空边失败则其余空边等价，<code>break</code>。</li><li>所有火柴放下（每步都没超 side）即 true；某根哪儿都放不下就回溯。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(4^n)（剪枝后远小），空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> makesquare(<span class="k">int</span>[] matchsticks) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> total = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> x : matchsticks) total += x;</span><span class="ln"><span class="no">7</span>        <span class="c">// 正方形 4 条边等长：总和必须能均分成 4 份</span></span><span class="ln"><span class="no">8</span>        <span class="k">if</span> (total % <span class="n">4</span> != <span class="n">0</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">int</span> side = total / <span class="n">4</span>;</span><span class="ln"><span class="no">10</span>        <span class="t">Arrays</span>.sort(matchsticks);</span><span class="ln"><span class="no">11</span>        <span class="c">// 从大到小把火柴逐根试放进 4 条边</span></span><span class="ln"><span class="no">12</span>        <span class="k">return</span> dfs(matchsticks, matchsticks.length - <span class="n">1</span>, <span class="k">new</span> <span class="k">int</span>[<span class="n">4</span>], side);</span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span>    <span class="c">// 把 a[idx] 及更小的火柴依次放进边桶，任何一条边都不能超过 side</span></span><span class="ln"><span class="no">16</span>    <span class="k">private</span> <span class="k">boolean</span> dfs(<span class="k">int</span>[] a, <span class="k">int</span> idx, <span class="k">int</span>[] sides, <span class="k">int</span> side) {</span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (idx &lt; <span class="n">0</span>) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">18</span>        <span class="k">int</span> x = a[idx];</span><span class="ln"><span class="no">19</span>        <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; tried = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">20</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; <span class="n">4</span>; i++) {</span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (sides[i] + x &gt; side) <span class="k">continue</span>;</span><span class="ln"><span class="no">22</span>            <span class="c">// 剩余长度相同的边效果一样，试一条就够</span></span><span class="ln"><span class="no">23</span>            <span class="k">if</span> (!tried.add(sides[i])) <span class="k">continue</span>;</span><span class="ln"><span class="no">24</span>            sides[i] += x;</span><span class="ln"><span class="no">25</span>            <span class="k">if</span> (dfs(a, idx - <span class="n">1</span>, sides, side)) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">26</span>            sides[i] -= x;</span><span class="ln"><span class="no">27</span>            <span class="c">// 空边都放不下：其余空边等价，整支剪掉</span></span><span class="ln"><span class="no">28</span>            <span class="k">if</span> (sides[i] == <span class="n">0</span>) <span class="k">break</span>;</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> <span class="k">false</span>;   <span class="c">// 所有边都试不通</span></span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你将得到一个整数数组 <code>matchsticks</code> ，其中 <code>matchsticks[i]</code> 是第 <code>i</code>&nbsp;个火柴棒的长度。你要用 <strong>所有的火柴棍</strong>&nbsp;拼成一个正方形。你 <strong>不能折断</strong> 任何一根火柴棒，但你可以把它们连在一起，而且每根火柴棒必须 <strong>使用一次</strong> 。</p>
+
+<p>如果你能使这个正方形，则返回 <code>true</code> ，否则返回 <code>false</code> 。</p>
+
+
+
+<p><strong>示例&nbsp;1:</strong></p>
+
+<p><img src="../assets/img/5e0595e652cd.jpg" /></p>
+
+<pre>
+<strong>输入:</strong> matchsticks = [1,1,2,2,2]
+<strong>输出:</strong> true
+<strong>解释:</strong> 能拼成一个边长为2的正方形，每边两根火柴。
+</pre>
+
+<p><strong>示例&nbsp;2:</strong></p>
+
+<pre>
+<strong>输入:</strong> matchsticks = [3,3,3,3,4]
+<strong>输出:</strong> false
+<strong>解释:</strong> 不能用所有火柴拼成一个正方形。
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= matchsticks.length &lt;= 15</code></li>
+	<li><code>1 &lt;= matchsticks[i] &lt;= 10<sup>8</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean makesquare(int[] matchsticks) {", "        int total = 0;", "        for (int x : matchsticks) total += x;", "        // 正方形 4 条边等长：总和必须能均分成 4 份", "        if (total % 4 != 0) return false;", "        int side = total / 4;", "        Arrays.sort(matchsticks);", "        // 从大到小把火柴逐根试放进 4 条边", "        return dfs(matchsticks, matchsticks.length - 1, new int[4], side);", "    }", "", "    // 把 a[idx] 及更小的火柴依次放进边桶，任何一条边都不能超过 side", "    private boolean dfs(int[] a, int idx, int[] sides, int side) {", "        if (idx < 0) return true;", "        int x = a[idx];", "        Set<Integer> tried = new HashSet<>();", "        for (int i = 0; i < 4; i++) {", "            if (sides[i] + x > side) continue;", "            // 剩余长度相同的边效果一样，试一条就够", "            if (!tried.add(sides[i])) continue;", "            sides[i] += x;", "            if (dfs(a, idx - 1, sides, side)) return true;", "            sides[i] -= x;", "            // 空边都放不下：其余空边等价，整支剪掉", "            if (sides[i] == 0) break;", "        }", "        return false;   // 所有边都试不通", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 473. 火柴拼正方形 —— 图解：复刻 Solution.java 的「从大到小试放 4 条边」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { matchsticks: [1, 1, 2, 2, 2] };
+
+function trace(input) {
+  var a = input.matchsticks.slice().sort(function (x, y) { return x - y; });   // 升序，从右往左取大的
+  var total = 0, i0;
+  for (i0 = 0; i0 < a.length; i0++) total += a[i0];
+  var frames = [];
+  if (total % 4 !== 0) {
+    frames.push(Viz.frame('if (total % 4 != 0) return false;', '总和 ' + total + ' 不能均分成 4 份 → false',
+      [Viz.vars([{ name: 'total', v: String(total) }])]));
+    return { frames: frames, result: false };
+  }
+  var side = total / 4;
+  var sides = [0, 0, 0, 0];
+  var fired = { first: false, three: false, done: false };
+
+  var START = 'return dfs(matchsticks, matchsticks.length - 1, new int[4], side);';
+  var PUT = 'sides[i] += x;';
+  var SUC = 'if (dfs(a, idx - 1, sides, side)) return true;';
+  var FAIL = 'return false;   // 所有边都试不通';
+
+  function stickPanel(idx) {
+    var marks = {};
+    for (var j = a.length - 1; j > idx; j--) marks[j] = 'win';
+    if (idx >= 0 && idx < a.length) marks[idx] = 'cur';
+    return Viz.cells(a, { title: '排序后从大到小放（蓝 = 已放好）', marks: marks,
+      pointers: idx >= 0 ? [{ at: idx, label: 'idx', cls: 'p-cur' }] : [] });
+  }
+
+  function sidePanel(fresh, allDone) {
+    var marks = {};
+    if (allDone) { for (var i = 0; i < 4; i++) marks[i] = 'done'; }
+    else if (fresh != null) marks[fresh] = 'new';
+    return Viz.cells(sides.map(String), { title: '4 条边（每条要恰好 ' + side + '）', marks: marks });
+  }
+
+  function varsPanel() {
+    return Viz.vars([{ name: 'side（每条边的长度）', v: String(side) }]);
+  }
+
+  frames.push(Viz.frame(START, '开局：总和 ' + total + '，每条边目标 ' + side + '，从最大的火柴开始放',
+    [stickPanel(a.length - 1), sidePanel(null), varsPanel()]));
+
+  function dfs(idx) {
+    if (idx < 0) {
+      if (!fired.done) {
+        fired.done = true;
+        frames.push(Viz.frame(SUC, '最后一根也放下了：4 条边都恰好 ' + side + ' → true',
+          [stickPanel(-1), sidePanel(null, true), varsPanel()]));
+      }
+      return true;
+    }
+    var x = a[idx];
+    var tried = {};
+    for (var i = 0; i < 4; i++) {
+      if (sides[i] + x > side) continue;
+      if (tried[sides[i]]) continue;
+      tried[sides[i]] = true;
+      sides[i] += x;
+      var nonEmpty = 0;
+      for (var q = 0; q < 4; q++) if (sides[q] > 0) nonEmpty++;
+      if (!fired.first && nonEmpty === 1) {
+        fired.first = true;
+        frames.push(Viz.frame(PUT, '最大的火柴 ' + x + ' 占住边 0：正好凑满一条边',
+          [stickPanel(idx), sidePanel(i), varsPanel()]));
+      }
+      if (!fired.three && nonEmpty === 3 && x === side) {
+        fired.three = true;
+        frames.push(Viz.frame(PUT, '三根大火柴各占满一条边：只剩边 3 是空的，小火柴都往这里补',
+          [stickPanel(idx), sidePanel(i), varsPanel()]));
+      }
+      if (dfs(idx - 1)) return true;
+      sides[i] -= x;
+      if (sides[i] === 0) break;
+    }
+    return false;
+  }
+
+  var result = dfs(a.length - 1);
+
+  if (!fired.done) {
+    frames.push(Viz.frame(FAIL, '所有放法都试过了：凑不出 4 条边长都是 ' + side + ' → false',
+      [stickPanel(-1), sidePanel(null), varsPanel()]));
+  }
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

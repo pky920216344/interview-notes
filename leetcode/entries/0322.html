@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>零钱兑换 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 51 / 1159</span>
+  <nav class="pn"><a href="0076.html">上一篇</a><a href="0070.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">322. </span>零钱兑换</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 135</li><li class="algo">动态规划</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">knapsack-problem</li><li class="tag">complete-knapsack</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">完全背包：dp[a] = min(dp[a-c]) + 1，dp[0]=0，其余先置成 ∞ 表示凑不出，每个金额把每种硬币都试一遍。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[a]</code> 是凑出金额 <code>a</code> 的最少硬币数；<code>dp[0] = 0</code>，其余先置成 <code>Integer.MAX_VALUE</code> 表示「还凑不出」。</li><li>每个金额 <code>a</code> 把每种硬币 <code>c</code> 都试一遍：<code>dp[a] = min(dp[a], dp[a-c] + 1)</code>。</li><li><code>dp[a-c]</code> 还是 <code>MAX_VALUE</code> 就跳过：那条路凑不出，<code>+1</code> 还会溢出成负数。</li><li>这题不能贪心：面额 <code>[1,3,4]</code> 凑 6，贪心拿 <code>4+1+1</code> 要 3 枚，DP 才找得到 <code>3+3</code> 的 2 枚。</li><li>最后 <code>dp[amount]</code> 仍是 <code>MAX_VALUE</code> 就返回 <code>-1</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(amount × coins)，空间复杂度 O(amount)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> coinChange(<span class="k">int</span>[] coins, <span class="k">int</span> amount) {</span><span class="ln"><span class="no">5</span>        <span class="c">// dp[a]：凑出金额 a 的最少硬币数</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[amount + <span class="n">1</span>];</span><span class="ln"><span class="no">7</span>        <span class="t">Arrays</span>.fill(dp, <span class="t">Integer</span>.MAX_VALUE);</span><span class="ln"><span class="no">8</span>        dp[<span class="n">0</span>] = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> a = <span class="n">1</span>; a &lt;= amount; a++) {</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> c : coins) {</span><span class="ln"><span class="no">11</span>                <span class="c">// c 太大，或 dp[a-c] 凑不出，就跳过</span></span><span class="ln"><span class="no">12</span>                <span class="k">if</span> (c &lt;= a &amp;&amp; dp[a - c] != <span class="t">Integer</span>.MAX_VALUE) {</span><span class="ln"><span class="no">13</span>                    dp[a] = <span class="t">Math</span>.min(dp[a], dp[a - c] + <span class="n">1</span>);</span><span class="ln"><span class="no">14</span>                }</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> dp[amount] == <span class="t">Integer</span>.MAX_VALUE ? -<span class="n">1</span> : dp[amount];</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>coins</code> ，表示不同面额的硬币；以及一个整数 <code>amount</code>，表示总金额。</p>
+
+<p>计算并返回可以凑成总金额所需的 <strong>最少 </strong>的硬币个数。如果没有任何一种硬币组合能组成总金额，返回&nbsp;-1 。</p>
+
+<p>你可以认为每种硬币的数量是无限的。</p>
+
+
+
+<p><strong>示例&nbsp;1：</strong></p>
+
+<pre>
+<strong>输入：</strong>coins = <code>[1, 2, 5]</code>, amount = <code>11</code>
+<strong>输出：</strong><code>3</code> 
+<strong>解释：</strong>11 = 5 + 5 + 1</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>coins = <code>[2]</code>, amount = <code>3</code>
+<strong>输出：</strong>-1</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>coins = [1], amount = 0
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= coins.length &lt;= 12</code></li>
+	<li><code>1 &lt;= coins[i] &lt;= 2<sup>31</sup> - 1</code></li>
+	<li><code>0 &lt;= amount &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int coinChange(int[] coins, int amount) {", "        // dp[a]：凑出金额 a 的最少硬币数", "        int[] dp = new int[amount + 1];", "        Arrays.fill(dp, Integer.MAX_VALUE);", "        dp[0] = 0;", "        for (int a = 1; a <= amount; a++) {", "            for (int c : coins) {", "                // c 太大，或 dp[a-c] 凑不出，就跳过", "                if (c <= a && dp[a - c] != Integer.MAX_VALUE) {", "                    dp[a] = Math.min(dp[a], dp[a - c] + 1);", "                }", "            }", "        }", "        return dp[amount] == Integer.MAX_VALUE ? -1 : dp[amount];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 322. 零钱兑换 —— 图解：复刻 Solution.java 的完全背包，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { coins: [1, 3, 4], amount: 6 };
+
+function trace(input) {
+  var coins = input.coins, amount = input.amount;
+  var frames = [];
+  var INF = Infinity;
+  var dp = [];
+  for (var a0 = 0; a0 <= amount; a0++) dp[a0] = a0 === 0 ? 0 : INF;
+
+  var MIN = 'dp[a] = Math.min(dp[a], dp[a - c] + 1);';
+
+  function sh(v) { return v === INF ? '∞' : String(v); }
+
+  function coinsPanel(curCoin) {
+    var marks = {};
+    if (curCoin != null) marks[curCoin] = 'cur';
+    return Viz.cells(coins, { title: 'coins 面额', marks: marks });
+  }
+
+  function dpPanel(marks) {
+    var vals = [], lbl = [];
+    for (var a = 0; a <= amount; a++) { vals.push(sh(dp[a])); lbl.push(String(a)); }
+    return Viz.grid([vals], {
+      title: 'dp[a]：凑出金额 a 的最少硬币数', marks: marks,
+      rowLabels: ['枚'], colLabels: lbl, corner: '金额'
+    });
+  }
+
+  function snap(at, key, curCoin, marks) {
+    frames.push(Viz.frame(at, key, [coinsPanel(curCoin), dpPanel(marks)]));
+  }
+
+  var m0 = {}; m0['0,0'] = 'win';
+  snap('dp[0] = 0;', '开局：dp[0]=0（0 元不用硬币），其余都是 ∞ 凑不出', null, m0);
+
+  for (var a = 1; a <= amount; a++) {
+    var src = -1, coin = -1;
+    for (var ci = 0; ci < coins.length; ci++) {
+      var c = coins[ci];
+      if (c <= a && dp[a - c] !== INF && dp[a - c] + 1 < dp[a]) {
+        dp[a] = dp[a - c] + 1;
+        src = a - c;
+        coin = ci;
+      }
+    }
+    if ((a === 4 || a === 6) && a <= amount) {
+      if (src >= 0) {
+        var mk = {}; mk['0,' + src] = 'hit'; mk['0,' + a] = 'new';
+        snap(MIN, '算 dp[' + a + ']：试遍硬币，最优 dp[' + src + ']+1 = ' + dp[a] + ' 枚（用面额 ' + coins[coin] + '）', coin, mk);
+      } else {
+        var mb = {}; mb['0,' + a] = 'bad';
+        snap(MIN, '算 dp[' + a + ']：哪种硬币都凑不出，仍是 ∞', null, mb);
+      }
+    }
+  }
+
+  var result = dp[amount] === INF ? -1 : dp[amount];
+  var mf = {}; mf['0,' + amount] = result === -1 ? 'bad' : 'done';
+  snap('return dp[amount] == Integer.MAX_VALUE ? -1 : dp[amount];',
+    '算完金额表：dp[' + amount + '] = ' + (result === -1 ? '∞，返回 -1' : result + '，返回它') + '；凑不出是 ∞',
+    null, mf);
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

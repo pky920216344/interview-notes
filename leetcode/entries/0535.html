@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TinyURL 的加密与解密 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 891 / 1159</span>
+  <nav class="pn"><a href="0335.html">上一篇</a><a href="1553.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">535. </span>TinyURL 的加密与解密</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">哈希表</li><li class="aux">设计</li><li class="tag">设计</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">哈希函数</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">自增发号器：encode 给每个新 URL 发一个号、36 进制当短码，两张哈希表双向各记一条。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>encode</code>：新 URL 就发自增号 <code>id</code>，短码 = <code>http://tinyurl.com/</code> + 36 进制的 <code>id</code>；见过的 URL 直接复用旧短码。</li><li>两张哈希表各写一条：<code>longToShort</code> 供复用，<code>shortToLong</code> 供还原。</li><li><code>decode</code>：查 <code>shortToLong</code> 一步还原，O(1)。</li><li>短码互异由发号器保证，decode 才不会撞车。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Codec</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">String</span>&gt; longToShort = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">String</span>&gt; shortToLong = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">int</span> id = <span class="n">0</span>;                          <span class="c">// 自增发号器</span></span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="c">// 同一个 URL 重复加密时复用第一次的短码</span></span><span class="ln"><span class="no">9</span>    <span class="k">public</span> <span class="t">String</span> encode(<span class="t">String</span> longUrl) {</span><span class="ln"><span class="no">10</span>        <span class="t">String</span> known = longToShort.get(longUrl);</span><span class="ln"><span class="no">11</span>        <span class="k">if</span> (known != <span class="k">null</span>) <span class="k">return</span> known;</span><span class="ln"><span class="no">12</span>        <span class="t">String</span> shortUrl = <span class="s">"http://tinyurl.com/"</span> + <span class="t">Long</span>.toString(id++, <span class="n">36</span>);</span><span class="ln"><span class="no">13</span>        longToShort.put(longUrl, shortUrl);</span><span class="ln"><span class="no">14</span>        shortToLong.put(shortUrl, longUrl);</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> shortUrl;</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="k">public</span> <span class="t">String</span> decode(<span class="t">String</span> shortUrl) {</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> shortToLong.get(shortUrl);</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>TinyURL 是一种 URL 简化服务， 比如：当你输入一个 URL&nbsp;<code>https://leetcode.com/problems/design-tinyurl</code>&nbsp;时，它将返回一个简化的URL&nbsp;<code>http://tinyurl.com/4e9iAk</code> 。请你设计一个类来加密与解密 TinyURL 。</p>
+
+<p>加密和解密算法如何设计和运作是没有限制的，你只需要保证一个 URL 可以被加密成一个 TinyURL ，并且这个 TinyURL 可以用解密方法恢复成原本的 URL 。</p>
+
+<p>实现 <code>Solution</code> 类：</p>
+
+<div class="original__bRMd">
+<div>
+<ul>
+	<li><code>Solution()</code> 初始化 TinyURL 系统对象。</li>
+	<li><code>String encode(String longUrl)</code> 返回 <code>longUrl</code> 对应的 TinyURL 。</li>
+	<li><code>String decode(String shortUrl)</code> 返回 <code>shortUrl</code> 原本的 URL 。题目数据保证给定的 <code>shortUrl</code> 是由同一个系统对象加密的。</li>
+</ul>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入：</strong>url = "https://leetcode.com/problems/design-tinyurl"
+<strong>输出：</strong>"https://leetcode.com/problems/design-tinyurl"
+
+<strong>解释：</strong>
+Solution obj = new Solution();
+string tiny = obj.encode(url); // 返回加密后得到的 TinyURL 。
+string ans = obj.decode(tiny); // 返回解密后得到的原本的 URL 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= url.length &lt;= 10<sup>4</sup></code></li>
+	<li>题目数据保证 <code>url</code> 是一个有效的 URL</li>
+</ul>
+</div>
+</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Codec {", "    private final Map<String, String> longToShort = new HashMap<>();", "    private final Map<String, String> shortToLong = new HashMap<>();", "    private int id = 0;                          // 自增发号器", "", "    // 同一个 URL 重复加密时复用第一次的短码", "    public String encode(String longUrl) {", "        String known = longToShort.get(longUrl);", "        if (known != null) return known;", "        String shortUrl = \"http://tinyurl.com/\" + Long.toString(id++, 36);", "        longToShort.put(longUrl, shortUrl);", "        shortToLong.put(shortUrl, longUrl);", "        return shortUrl;", "    }", "", "    public String decode(String shortUrl) {", "        return shortToLong.get(shortUrl);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 535. TinyURL 的加密与解密 —— 图解：encode 自增发号、两张哈希表各记一条；decode 查表还原。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { urls: ['https://a.com/x', 'https://b.com/yy', 'https://a.com/x'] };
+
+function trace(input) {
+  var urls = input.urls;
+  var longToShort = {}, shortToLong = {};
+  var id = 0;
+  var frames = [];
+  var out = [];
+
+  var shortPanel = function () {
+    var rows = [];
+    for (var s in shortToLong) rows.push({ k: s.replace('http://tinyurl.com/', '…/'), v: shortToLong[s], cls: '' });
+    return Viz.table('shortToLong：短码 → 原 URL', rows);
+  };
+  var longPanel = function (hitLong) {
+    var rows = [];
+    for (var l in longToShort) rows.push({ k: l, v: longToShort[l].replace('http://tinyurl.com/', '…/'), cls: l === hitLong ? 'hit' : '' });
+    return Viz.table('longToShort：原 URL → 短码', rows);
+  };
+  var varsPanel = function () {
+    return Viz.vars([{ name: 'id（下一个号）', v: id }]);
+  };
+
+  for (var i = 0; i < urls.length; i++) {
+    var u = urls[i];
+    var known = (u in longToShort) ? longToShort[u] : null;
+    if (known != null) {
+      out.push(known);
+      if (i === 2) {
+        frames.push(Viz.frame('if (known != null) return known;',
+          'encode 重复 url：查到旧短码，直接复用，不发新号',
+          [longPanel(u), shortPanel(), varsPanel()]));
+      }
+      continue;
+    }
+    var code = id.toString(36);
+    id++;
+    var shortUrl = 'http://tinyurl.com/' + code;
+    longToShort[u] = shortUrl;
+    shortToLong[shortUrl] = u;
+    out.push(shortUrl);
+    if (i === 0) {
+      frames.push(Viz.frame('String shortUrl = "http://tinyurl.com/" + Long.toString(id++, 36);',
+        'encode 第 1 个 url：发号 id=0，短码用 36 进制写出来',
+        [longPanel(u), shortPanel(), varsPanel()]));
+    }
+    if (i === 1) {
+      frames.push(Viz.frame('shortToLong.put(shortUrl, longUrl);',
+        'encode 第 2 个 url：id=1；反向表也写一条，decode 全靠它',
+        [longPanel(u), shortPanel(), varsPanel()]));
+    }
+  }
+
+  frames.push(Viz.frame('return shortToLong.get(shortUrl);',
+    'decode：拿短码查反向表，O(1) 还原出原 URL',
+    [shortPanel(), Viz.vars([{ name: 'decode(…/0)', v: shortToLong['http://tinyurl.com/0'], cls: 'done' }])]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

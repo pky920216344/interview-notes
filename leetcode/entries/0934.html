@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最短的桥 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 597 / 1159</span>
+  <nav class="pn"><a href="1106.html">上一篇</a><a href="0417.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">934. </span>最短的桥</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">广度优先搜索</li><li class="aux">深度优先搜索/递归</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">先 DFS 把扫到的第一座岛整座标成 2 并入队；再从整座岛多源 BFS 一层层向外铺水格，第一次碰到第二座岛时已翻的水格数就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>扫到第一个 <code>1</code> 就 DFS 把整座岛改成 <code>2</code>，同时全部入队——多源 BFS 的种子，距离都是 0。</li><li>BFS 逐层向外扩：出界或已是 <code>2</code> 的跳过；水格 <code>0</code> 翻成 <code>2</code> 入队；每铺完一层 <code>step+1</code>。</li><li>扩的时候碰到 <code>1</code>（第二座岛）：到它为止翻掉的水格数就是当前 <code>step</code>，直接返回。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">int</span>[] DR = {<span class="n">1</span>, -<span class="n">1</span>, <span class="n">0</span>, <span class="n">0</span>}, DC = {<span class="n">0</span>, <span class="n">0</span>, <span class="n">1</span>, -<span class="n">1</span>};</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="k">int</span> shortestBridge(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> n = grid.length;</span><span class="ln"><span class="no">8</span>        <span class="t">Deque</span>&lt;<span class="k">int</span>[]&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        <span class="c">// 第一步：找到第一座岛，整座 DFS 标成 2，格子入队当 BFS 的种子</span></span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; n; r++) {</span><span class="ln"><span class="no">11</span>            <span class="k">boolean</span> hit = <span class="k">false</span>;</span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; n; c++) {</span><span class="ln"><span class="no">13</span>                <span class="k">if</span> (grid[r][c] == <span class="n">1</span>) {</span><span class="ln"><span class="no">14</span>                    dfs(grid, r, c, queue);</span><span class="ln"><span class="no">15</span>                    hit = <span class="k">true</span>;</span><span class="ln"><span class="no">16</span>                    <span class="k">break</span>;</span><span class="ln"><span class="no">17</span>                }</span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (hit) <span class="k">break</span>;</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="c">// 第二步：多源 BFS 一层层向外铺，step 是已翻的水格数</span></span><span class="ln"><span class="no">22</span>        <span class="k">int</span> step = <span class="n">0</span>;</span><span class="ln"><span class="no">23</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">24</span>            <span class="k">for</span> (<span class="k">int</span> k = queue.size(); k &gt; <span class="n">0</span>; k--) {</span><span class="ln"><span class="no">25</span>                <span class="k">int</span>[] p = queue.poll();</span><span class="ln"><span class="no">26</span>                <span class="k">for</span> (<span class="k">int</span> d = <span class="n">0</span>; d &lt; <span class="n">4</span>; d++) {</span><span class="ln"><span class="no">27</span>                    <span class="k">int</span> r = p[<span class="n">0</span>] + DR[d], c = p[<span class="n">1</span>] + DC[d];</span><span class="ln"><span class="no">28</span>                    <span class="k">if</span> (r &lt; <span class="n">0</span> || r &gt;= n || c &lt; <span class="n">0</span> || c &gt;= n || grid[r][c] == <span class="n">2</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">29</span>                    <span class="k">if</span> (grid[r][c] == <span class="n">1</span>) <span class="k">return</span> step;   <span class="c">// 碰到第二座岛：翻过的水格就是答案</span></span><span class="ln"><span class="no">30</span>                    grid[r][c] = <span class="n">2</span>;</span><span class="ln"><span class="no">31</span>                    queue.offer(<span class="k">new</span> <span class="k">int</span>[]{r, c});</span><span class="ln"><span class="no">32</span>                }</span><span class="ln"><span class="no">33</span>            }</span><span class="ln"><span class="no">34</span>            step++;</span><span class="ln"><span class="no">35</span>        }</span><span class="ln"><span class="no">36</span>        <span class="k">return</span> -<span class="n">1</span>;   <span class="c">// 题目保证恰有两座岛，走不到这里</span></span><span class="ln"><span class="no">37</span>    }</span><span class="ln"><span class="no">38</span> </span><span class="ln"><span class="no">39</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span>[][] grid, <span class="k">int</span> r, <span class="k">int</span> c, <span class="t">Deque</span>&lt;<span class="k">int</span>[]&gt; queue) {</span><span class="ln"><span class="no">40</span>        <span class="k">int</span> n = grid.length;</span><span class="ln"><span class="no">41</span>        grid[r][c] = <span class="n">2</span>;</span><span class="ln"><span class="no">42</span>        queue.offer(<span class="k">new</span> <span class="k">int</span>[]{r, c});</span><span class="ln"><span class="no">43</span>        <span class="k">for</span> (<span class="k">int</span> d = <span class="n">0</span>; d &lt; <span class="n">4</span>; d++) {</span><span class="ln"><span class="no">44</span>            <span class="k">int</span> nr = r + DR[d], nc = c + DC[d];</span><span class="ln"><span class="no">45</span>            <span class="k">if</span> (nr &gt;= <span class="n">0</span> &amp;&amp; nr &lt; n &amp;&amp; nc &gt;= <span class="n">0</span> &amp;&amp; nc &lt; n &amp;&amp; grid[nr][nc] == <span class="n">1</span>) {</span><span class="ln"><span class="no">46</span>                dfs(grid, nr, nc, queue);</span><span class="ln"><span class="no">47</span>            }</span><span class="ln"><span class="no">48</span>        }</span><span class="ln"><span class="no">49</span>    }</span><span class="ln"><span class="no">50</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个大小为 <code>n x n</code> 的二元矩阵 <code>grid</code> ，其中 <code>1</code> 表示陆地，<code>0</code> 表示水域。</p>
+
+<p><strong>岛</strong> 是由四面相连的 <code>1</code> 形成的一个最大组，即不会与非组内的任何其他 <code>1</code> 相连。<code>grid</code> 中 <strong>恰好存在两座岛</strong> 。</p>
+
+<div class="original__bRMd">
+<div>
+<p>你可以将任意数量的 <code>0</code> 变为 <code>1</code> ，以使两座岛连接起来，变成 <strong>一座岛</strong> 。</p>
+
+<p>返回必须翻转的 <code>0</code> 的最小数目。</p>
+</div>
+</div>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>grid = [[0,1],[1,0]]
+<strong>输出：</strong>1
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>grid = [[0,1,0],[0,0,0],[0,0,1]]
+<strong>输出：</strong>2
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>grid = [[1,1,1,1,1],[1,0,0,0,1],[1,0,1,0,1],[1,0,0,0,1],[1,1,1,1,1]]
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == grid.length == grid[i].length</code></li>
+	<li><code>2 &lt;= n &lt;= 100</code></li>
+	<li><code>grid[i][j]</code> 为 <code>0</code> 或 <code>1</code></li>
+	<li><code>grid</code> 中恰有两个岛</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private static final int[] DR = {1, -1, 0, 0}, DC = {0, 0, 1, -1};", "", "    public int shortestBridge(int[][] grid) {", "        int n = grid.length;", "        Deque<int[]> queue = new ArrayDeque<>();", "        // 第一步：找到第一座岛，整座 DFS 标成 2，格子入队当 BFS 的种子", "        for (int r = 0; r < n; r++) {", "            boolean hit = false;", "            for (int c = 0; c < n; c++) {", "                if (grid[r][c] == 1) {", "                    dfs(grid, r, c, queue);", "                    hit = true;", "                    break;", "                }", "            }", "            if (hit) break;", "        }", "        // 第二步：多源 BFS 一层层向外铺，step 是已翻的水格数", "        int step = 0;", "        while (!queue.isEmpty()) {", "            for (int k = queue.size(); k > 0; k--) {", "                int[] p = queue.poll();", "                for (int d = 0; d < 4; d++) {", "                    int r = p[0] + DR[d], c = p[1] + DC[d];", "                    if (r < 0 || r >= n || c < 0 || c >= n || grid[r][c] == 2) continue;", "                    if (grid[r][c] == 1) return step;   // 碰到第二座岛：翻过的水格就是答案", "                    grid[r][c] = 2;", "                    queue.offer(new int[]{r, c});", "                }", "            }", "            step++;", "        }", "        return -1;   // 题目保证恰有两座岛，走不到这里", "    }", "", "    private void dfs(int[][] grid, int r, int c, Deque<int[]> queue) {", "        int n = grid.length;", "        grid[r][c] = 2;", "        queue.offer(new int[]{r, c});", "        for (int d = 0; d < 4; d++) {", "            int nr = r + DR[d], nc = c + DC[d];", "            if (nr >= 0 && nr < n && nc >= 0 && nc < n && grid[nr][nc] == 1) {", "                dfs(grid, nr, nc, queue);", "            }", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 934. 最短的桥 —— 图解：复刻 Solution.java 的「DFS 标岛 + 多源 BFS 铺桥」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[0, 1, 0], [0, 0, 0], [0, 0, 1]] };
+
+function trace(input) {
+  var g = input.grid.map(function (row) { return row.slice(); });
+  var n = g.length;
+  var DR = [1, -1, 0, 0], DC = [0, 0, 1, -1];
+  var frames = [];
+  var seed = {};   // 第一座岛占的格 "r,c" -> true（图解区分岛和翻掉的水）
+
+  function gridPanel(marks, title) {
+    return Viz.grid(g, { title: title || 'grid：1 陆地，0 水，2 已属于桥的一侧', marks: marks || {} });
+  }
+
+  // F0：开局，扫描到第一座岛的第一个格子
+  var start = null;
+  for (var r0 = 0; r0 < n && !start; r0++) {
+    for (var c0 = 0; c0 < n && !start; c0++) if (g[r0][c0] === 1) start = [r0, c0];
+  }
+  var m0 = {};
+  m0[start[0] + ',' + start[1]] = 'cur';
+  frames.push(Viz.frame('for (int r = 0; r < n; r++) {', '开局：扫到第一座岛，准备 DFS 整座标出', [gridPanel(m0)]));
+
+  // DFS 标岛并入队（和 Java 同构）
+  var queue = [];
+  function dfs(r, c) {
+    g[r][c] = 2;
+    seed[r + ',' + c] = true;
+    queue.push([r, c]);
+    for (var d = 0; d < 4; d++) {
+      var nr = r + DR[d], nc = c + DC[d];
+      if (nr >= 0 && nr < n && nc >= 0 && nc < n && g[nr][nc] === 1) dfs(nr, nc);
+    }
+  }
+  dfs(start[0], start[1]);
+  var m1 = {};
+  for (var r1 = 0; r1 < n; r1++) {
+    for (var c1 = 0; c1 < n; c1++) if (seed[r1 + ',' + c1]) m1[r1 + ',' + c1] = 'new';
+  }
+  frames.push(Viz.frame('dfs(grid, r, c, queue);', '第一座岛整座标成 2，全部入队当种子', [gridPanel(m1)]));
+
+  // 多源 BFS 分层铺桥
+  var step = 0;
+  var layerShown = false;
+  var found = false;
+  var result = -1;
+  while (queue.length && !found) {
+    var size = queue.length;
+    for (var k = 0; k < size && !found; k++) {
+      var p = queue.shift();
+      for (var d = 0; d < 4 && !found; d++) {
+        var r = p[0] + DR[d], c = p[1] + DC[d];
+        if (r < 0 || r >= n || c < 0 || c >= n || g[r][c] === 2) continue;
+        if (g[r][c] === 1) { found = true; result = step; break; }
+        g[r][c] = 2;
+        queue.push([r, c]);
+      }
+    }
+    if (!found && !layerShown) {
+      layerShown = true;
+      var m2 = {};
+      for (var r2 = 0; r2 < n; r2++) {
+        for (var c2 = 0; c2 < n; c2++) {
+          if (g[r2][c2] === 2) m2[r2 + ',' + c2] = seed[r2 + ',' + c2] ? 'win' : 'new';
+        }
+      }
+      frames.push(Viz.frame('for (int k = queue.size(); k > 0; k--) {', '多源 BFS：整层种子一起向外铺一步，水翻成 2', [gridPanel(m2)]));
+    }
+    step++;
+  }
+  var m3 = {};
+  for (var r3 = 0; r3 < n; r3++) {
+    for (var c3 = 0; c3 < n; c3++) {
+      if (g[r3][c3] === 2) m3[r3 + ',' + c3] = seed[r3 + ',' + c3] ? 'win' : 'chg';
+    }
+  }
+  if (found) {
+    var sec = findSecond();
+    m3[sec[0] + ',' + sec[1]] = 'cur';
+    frames.push(Viz.frame('if (grid[r][c] == 1) return step;', '铺到第二座岛：翻掉 ' + result + ' 个水格就接上了', [gridPanel(m3)]));
+  }
+  return { frames: frames, result: result };
+
+  function findSecond() {
+    for (var r = 0; r < n; r++) {
+      for (var c = 0; c < n; c++) if (g[r][c] === 1) return [r, c];
+    }
+    return null;
+  }
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

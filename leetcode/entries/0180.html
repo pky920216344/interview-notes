@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>连续出现的数字 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 749 / 1159</span>
+  <nav class="pn"><a href="0945.html">上一篇</a><a href="1219.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">180. </span>连续出现的数字</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">SQL</li><li class="tag">数据库</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">同表自连接两次，id 相邻（+1、+2）且三个 num 全相等即是连续三次，DISTINCT 去重输出。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>「连续」依赖 id 是<strong>自增主键</strong>：<code>l2.id = l1.id + 1</code>、<code>l3.id = l1.id + 2</code> 把相邻三行绑在一起。</li><li>三行 <code>num</code> 两两相等（<code>l1=l2 AND l2=l3</code>）就是连续三次；<code>DISTINCT</code> 防止更长的连续段重复输出。</li><li>若表没有自增 id（SQL Server 变体），标准替代是 <code>ROW_NUMBER() OVER (ORDER BY id) − ROW_NUMBER() OVER (PARTITION BY num ORDER BY id)</code> 分组——同一数字的连续段该差值不变。</li></ul></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 SQL 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span>-- 180（codetop 0180）连续出现的数字（MySQL）</span><span class="ln"><span class="no">2</span>-- 题意：Logs(id 自增, num)。找出至少连续出现三次的数字（去重输出，列名 ConsecutiveNums）。</span><span class="ln"><span class="no">3</span>SELECT DISTINCT l1.num AS ConsecutiveNums</span><span class="ln"><span class="no">4</span>FROM Logs l1</span><span class="ln"><span class="no">5</span>JOIN Logs l2 ON l2.id = l1.id + 1</span><span class="ln"><span class="no">6</span>JOIN Logs l3 ON l3.id = l1.id + 2</span><span class="ln"><span class="no">7</span>WHERE l1.num = l2.num</span><span class="ln"><span class="no">8</span>  AND l2.num = l3.num;</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>表：<code>Logs</code></p>
+
+<pre>
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| id          | int     |
+| num         | varchar |
++-------------+---------+
+在 SQL 中，id 是该表的主键。
+id 是一个自增列。</pre>
+
+
+
+<p>找出所有至少连续出现三次的数字。</p>
+
+<p>返回的结果表中的数据可以按 <strong>任意顺序</strong> 排列。</p>
+
+<p>结果格式如下面的例子所示：</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入：</strong>
+Logs 表：
++----+-----+
+| id | num |
++----+-----+
+| 1  | 1   |
+| 2  | 1   |
+| 3  | 1   |
+| 4  | 2   |
+| 5  | 1   |
+| 6  | 2   |
+| 7  | 2   |
++----+-----+
+<strong>输出：</strong>
+Result 表：
++-----------------+
+| ConsecutiveNums |
++-----------------+
+| 1               |
++-----------------+
+<strong>解释：</strong>1 是唯一连续出现至少三次的数字。</pre>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["-- 180（codetop 0180）连续出现的数字（MySQL）", "-- 题意：Logs(id 自增, num)。找出至少连续出现三次的数字（去重输出，列名 ConsecutiveNums）。", "SELECT DISTINCT l1.num AS ConsecutiveNums", "FROM Logs l1", "JOIN Logs l2 ON l2.id = l1.id + 1", "JOIN Logs l3 ON l3.id = l1.id + 2", "WHERE l1.num = l2.num", "  AND l2.num = l3.num;"]}</script>
+
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

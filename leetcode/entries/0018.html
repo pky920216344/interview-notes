@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>四数之和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 211 / 1159</span>
+  <nav class="pn"><a href="supp-14.html">上一篇</a><a href="0343.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">18. </span>四数之和</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 23</li><li class="algo">双指针</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">排序</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">排序后固定前两个数 i、j，在右边用双指针 l、r 凑 target；i、j、l/r 三处跳过重复值，和用 long 防溢出。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>排序后两层循环固定 <code>i</code>、<code>j</code>，内层对 <code>[j+1, n-1]</code> 用双指针：和小 <code>l++</code>，和大 <code>r--</code>，命中记一组。</li><li><strong>三处去重</strong>：<code>i</code>、<code>j</code> 各自跳过和前一个相同的值；命中后 <code>l</code>、<code>r</code> 也各跳过重复值，同一四元组只记一次。</li><li>四个 <code>1e9</code> 相加会超 <code>int</code>，<code>sum</code> 必须声明成 <code>long</code> 再和 <code>target</code> 比较。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n³)，空间复杂度 O(log n)（排序栈；不计返回值）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; fourSum(<span class="k">int</span>[] nums, <span class="k">int</span> target) {</span><span class="ln"><span class="no">5</span>        <span class="t">Arrays</span>.sort(nums);</span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">8</span>        <span class="c">// 固定前两个数 i、j，在 (j, n) 区间用双指针找后两个数</span></span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n - <span class="n">3</span>; i++) {</span><span class="ln"><span class="no">10</span>            <span class="c">// i 去重：同一个开头数只当一次 i</span></span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (i &gt; <span class="n">0</span> &amp;&amp; nums[i] == nums[i - <span class="n">1</span>]) <span class="k">continue</span>;</span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> j = i + <span class="n">1</span>; j &lt; n - <span class="n">2</span>; j++) {</span><span class="ln"><span class="no">13</span>                <span class="c">// j 去重：同一个第二数只当一次 j</span></span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (j &gt; i + <span class="n">1</span> &amp;&amp; nums[j] == nums[j - <span class="n">1</span>]) <span class="k">continue</span>;</span><span class="ln"><span class="no">15</span>                <span class="k">int</span> l = j + <span class="n">1</span>, r = n - <span class="n">1</span>;</span><span class="ln"><span class="no">16</span>                <span class="k">while</span> (l &lt; r) {</span><span class="ln"><span class="no">17</span>                    <span class="c">// 四个 1e9 相加会超 int，和必须用 long 接</span></span><span class="ln"><span class="no">18</span>                    <span class="k">long</span> sum = (<span class="k">long</span>) nums[i] + nums[j] + nums[l] + nums[r];</span><span class="ln"><span class="no">19</span>                    <span class="k">if</span> (sum &lt; target) {</span><span class="ln"><span class="no">20</span>                        l++;    <span class="c">// 和太小：l 右移才可能变大</span></span><span class="ln"><span class="no">21</span>                    } <span class="k">else</span> <span class="k">if</span> (sum &gt; target) {</span><span class="ln"><span class="no">22</span>                        r--;    <span class="c">// 和太大：r 左移才可能变小</span></span><span class="ln"><span class="no">23</span>                    } <span class="k">else</span> {</span><span class="ln"><span class="no">24</span>                        ans.add(<span class="t">Arrays</span>.asList(nums[i], nums[j], nums[l], nums[r]));</span><span class="ln"><span class="no">25</span>                        l++;</span><span class="ln"><span class="no">26</span>                        r--;</span><span class="ln"><span class="no">27</span>                        <span class="c">// 命中后跳过重复值，同样的 (l, r) 只记一次</span></span><span class="ln"><span class="no">28</span>                        <span class="k">while</span> (l &lt; r &amp;&amp; nums[l] == nums[l - <span class="n">1</span>]) l++;</span><span class="ln"><span class="no">29</span>                        <span class="k">while</span> (l &lt; r &amp;&amp; nums[r] == nums[r + <span class="n">1</span>]) r--;</span><span class="ln"><span class="no">30</span>                    }</span><span class="ln"><span class="no">31</span>                }</span><span class="ln"><span class="no">32</span>            }</span><span class="ln"><span class="no">33</span>        }</span><span class="ln"><span class="no">34</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">35</span>    }</span><span class="ln"><span class="no">36</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个由 <code>n</code> 个整数组成的数组&nbsp;<code>nums</code> ，和一个目标值 <code>target</code> 。请你找出并返回满足下述全部条件且<strong>不重复</strong>的四元组&nbsp;<code>[nums[a], nums[b], nums[c], nums[d]]</code>&nbsp;（若两个四元组元素一一对应，则认为两个四元组重复）：</p>
+
+<ul>
+	<li><code>0 &lt;= a, b, c, d&nbsp;&lt; n</code></li>
+	<li><code>a</code>、<code>b</code>、<code>c</code> 和 <code>d</code> <strong>互不相同</strong></li>
+	<li><code>nums[a] + nums[b] + nums[c] + nums[d] == target</code></li>
+</ul>
+
+<p>你可以按 <strong>任意顺序</strong> 返回答案 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,0,-1,0,-2,2], target = 0
+<strong>输出：</strong>[[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [2,2,2,2,2], target = 8
+<strong>输出：</strong>[[2,2,2,2]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 200</code></li>
+	<li><code>-10<sup>9</sup> &lt;= nums[i] &lt;= 10<sup>9</sup></code></li>
+	<li><code>-10<sup>9</sup> &lt;= target &lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<Integer>> fourSum(int[] nums, int target) {", "        Arrays.sort(nums);", "        List<List<Integer>> ans = new ArrayList<>();", "        int n = nums.length;", "        // 固定前两个数 i、j，在 (j, n) 区间用双指针找后两个数", "        for (int i = 0; i < n - 3; i++) {", "            // i 去重：同一个开头数只当一次 i", "            if (i > 0 && nums[i] == nums[i - 1]) continue;", "            for (int j = i + 1; j < n - 2; j++) {", "                // j 去重：同一个第二数只当一次 j", "                if (j > i + 1 && nums[j] == nums[j - 1]) continue;", "                int l = j + 1, r = n - 1;", "                while (l < r) {", "                    // 四个 1e9 相加会超 int，和必须用 long 接", "                    long sum = (long) nums[i] + nums[j] + nums[l] + nums[r];", "                    if (sum < target) {", "                        l++;    // 和太小：l 右移才可能变大", "                    } else if (sum > target) {", "                        r--;    // 和太大：r 左移才可能变小", "                    } else {", "                        ans.add(Arrays.asList(nums[i], nums[j], nums[l], nums[r]));", "                        l++;", "                        r--;", "                        // 命中后跳过重复值，同样的 (l, r) 只记一次", "                        while (l < r && nums[l] == nums[l - 1]) l++;", "                        while (l < r && nums[r] == nums[r + 1]) r--;", "                    }", "                }", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 18. 四数之和 —— 图解：复刻 Solution.java 的「排序 + 固定 i、j + 双指针」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 0, -1, 0, -2, 2], target: 0 };
+
+function trace(input) {
+  var nums = input.nums.slice().sort(function (a, b) { return a - b; });
+  var target = input.target;
+  var n = nums.length;
+  var frames = [];
+  var ans = [];
+  var shot = { small: false, hit: false, dupJ: false };
+
+  var SORTED = 'Arrays.sort(nums);';
+  var SMALL = 'if (sum < target) {';
+  var HIT = 'ans.add(Arrays.asList(nums[i], nums[j], nums[l], nums[r]));';
+  var DUPJ = 'if (j > i + 1 && nums[j] == nums[j - 1]) continue;';
+
+  // 数组面板：[0, i) 是试过的开头（dim），[l, r] 是找后两个数的窗口（win）
+  function numsPanel(p) {
+    var marks = {};
+    var k;
+    for (k = 0; k < p.before; k++) marks[k] = 'dim';
+    for (k = p.l; k <= p.r; k++) marks[k] = 'win';
+    if (p.cur != null) marks[p.cur] = 'cur';
+    var pointers = [];
+    if (p.i != null) pointers.push({ at: p.i, label: 'i', cls: 'p-prev' });
+    if (p.j != null) pointers.push({ at: p.j, label: 'j', cls: 'p-mid' });
+    if (p.l != null) pointers.push({ at: p.l, label: 'l', cls: 'p-left' });
+    if (p.r != null) pointers.push({ at: p.r, label: 'r', cls: 'p-right' });
+    var range = p.l != null && p.r >= p.l ? { from: p.l, to: p.r, label: '找后两个数' } : null;
+    return Viz.cells(nums.map(String), { title: '排序后的 nums', marks: marks, pointers: pointers, range: range });
+  }
+  function varsPanel(sum) {
+    return Viz.vars([
+      { name: 'target', v: target, cls: '' },
+      { name: 'sum', v: sum == null ? '—' : sum, cls: sum == null ? '' : (sum === target ? 'done' : 'chg') },
+      { name: '已记录', v: ans.length + ' 组', cls: '' }
+    ]);
+  }
+  function snap(at, key, p, sum) { frames.push(Viz.frame(at, key, [numsPanel(p), varsPanel(sum)])); }
+
+  if (n >= 4) {
+    snap(SORTED, '排序后固定 i、j 两个数，用 l、r 双指针在右边找后两个数',
+      { before: 0, l: 2, r: n - 1, i: 0, j: 1 }, null);
+  }
+
+  for (var i = 0; i + 3 < n; i++) {
+    if (i > 0 && nums[i] === nums[i - 1]) continue;
+    for (var j = i + 1; j + 2 < n; j++) {
+      if (j > i + 1 && nums[j] === nums[j - 1]) {
+        if (!shot.dupJ) {
+          shot.dupJ = true;
+          snap(DUPJ, 'j 撞上重复的 ' + nums[j] + '：直接跳过，四元组才不会重复',
+            { before: i, l: j + 1, r: n - 1, i: i, j: j }, null);
+        }
+        continue;
+      }
+      var l = j + 1, r = n - 1;
+      while (l < r) {
+        var sum = nums[i] + nums[j] + nums[l] + nums[r];
+        if (sum < target) {
+          if (!shot.small) {
+            shot.small = true;
+            snap(SMALL, 'sum=' + sum + ' < target=' + target + '：l 右移，和才可能变大',
+              { before: i, l: l, r: r, i: i, j: j, cur: l }, sum);
+          }
+          l++;
+        } else if (sum > target) {
+          r--;
+        } else {
+          ans.push([nums[i], nums[j], nums[l], nums[r]]);
+          if (!shot.hit) {
+            shot.hit = true;
+            snap(HIT, 'sum 正中 target：记下 [' + [nums[i], nums[j], nums[l], nums[r]].join(',') + ']，l、r 内缩',
+              { before: i, l: l, r: r, i: i, j: j }, sum);
+          }
+          l++;
+          r--;
+          while (l < r && nums[l] === nums[l - 1]) l++;
+          while (l < r && nums[r] === nums[r + 1]) r--;
+        }
+      }
+    }
+  }
+
+  function norm(quads) {
+    var out = quads.map(function (q) { return q.slice(); });
+    out.sort(function (a, b) {
+      for (var k = 0; k < 4; k++) if (a[k] !== b[k]) return a[k] - b[k];
+      return 0;
+    });
+    return out;
+  }
+  var brief = ans.slice(0, 2).map(function (q) { return '[' + q.join(',') + ']'; }).join(' ');
+  frames.push(Viz.frame('return ans;',
+    ans.length === 0 ? '扫完：没有和为 target 的四元组，返回空列表'
+      : '扫完：共 ' + ans.length + ' 组不重复四元组（' + brief + (ans.length > 2 ? ' …' : '') + '）',
+    [Viz.cells(nums.map(String), { title: '排序后的 nums', marks: {} }), varsPanel(null)]));
+  return { frames: frames, result: norm(ans) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

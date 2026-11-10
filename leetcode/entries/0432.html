@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>全 O(1) 的数据结构 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 780 / 1159</span>
+  <nav class="pn"><a href="0351.html">上一篇</a><a href="1208.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">432. </span>全 O(1) 的数据结构</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">设计</li><li class="aux">哈希表</li><li class="aux">链表</li><li class="tag">设计</li><li class="tag">哈希表</li><li class="tag">链表</li><li class="tag">双向链表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">哈希表 key→桶 + 计数桶双向链表：inc/dec 把 key 在相邻计数桶之间挪（缺桶就建、空桶就摘），最大/最小计数就是链表两端，全 O(1)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>链表上每个桶装「计数相同」的全部 key，从 <code>head</code> 到 <code>tail</code> 计数严格递增；<code>getMaxKey</code>/<code>getMinKey</code> 取 <code>tail.prev</code>/<code>head.next</code> 桶里的任意 key。</li><li><code>inc</code>：key 挪到 <code>count+1</code> 的桶（就是右边相邻的位置，缺就插一个新桶）；新 key 直接进计数 1 的桶。</li><li><code>dec</code>：减到 0 连 key 一起删；否则挪到 <code>count−1</code> 的桶（左边相邻，缺就插）。</li><li>挪完旧桶可能空掉，顺手从链表摘除——相邻插入/删除都是 O(1)，所以每个操作整体 O(1)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1) 每次操作，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">AllOne</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 计数桶按 count 从小到大串成双向链表，每个桶装计数相同的全部 key</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">class</span> <span class="t">Node</span> {</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> count;</span><span class="ln"><span class="no">7</span>        <span class="t">Set</span>&lt;<span class="t">String</span>&gt; keys = <span class="k">new</span> <span class="t">LinkedHashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="t">Node</span> prev, next;</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>        <span class="t">Node</span>(<span class="k">int</span> count) {</span><span class="ln"><span class="no">11</span>            <span class="k">this</span>.count = count;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Node</span> head = <span class="k">new</span> <span class="t">Node</span>(-<span class="n">1</span>);   <span class="c">// head.next：计数最小的桶</span></span><span class="ln"><span class="no">16</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Node</span> tail = <span class="k">new</span> <span class="t">Node</span>(-<span class="n">1</span>);   <span class="c">// tail.prev：计数最大的桶</span></span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Node</span>&gt; map = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    <span class="k">public</span> <span class="t">AllOne</span>() {</span><span class="ln"><span class="no">20</span>        head.next = tail;</span><span class="ln"><span class="no">21</span>        tail.prev = head;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span> </span><span class="ln"><span class="no">24</span>    <span class="k">public</span> <span class="k">void</span> inc(<span class="t">String</span> key) {</span><span class="ln"><span class="no">25</span>        <span class="t">Node</span> cur = map.get(key);</span><span class="ln"><span class="no">26</span>        <span class="k">if</span> (cur == <span class="k">null</span>) {</span><span class="ln"><span class="no">27</span>            <span class="t">Node</span> b = nextBucket(head, <span class="n">1</span>);              <span class="c">// 新 key：放进（必要时新建）计数 1 的桶</span></span><span class="ln"><span class="no">28</span>            b.keys.add(key);</span><span class="ln"><span class="no">29</span>            map.put(key, b);</span><span class="ln"><span class="no">30</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">31</span>        }</span><span class="ln"><span class="no">32</span>        <span class="t">Node</span> b = nextBucket(cur, cur.count + <span class="n">1</span>);       <span class="c">// 挪到右边相邻的计数桶</span></span><span class="ln"><span class="no">33</span>        b.keys.add(key);</span><span class="ln"><span class="no">34</span>        map.put(key, b);</span><span class="ln"><span class="no">35</span>        removeKey(cur, key);</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span> </span><span class="ln"><span class="no">38</span>    <span class="k">public</span> <span class="k">void</span> dec(<span class="t">String</span> key) {</span><span class="ln"><span class="no">39</span>        <span class="t">Node</span> cur = map.get(key);</span><span class="ln"><span class="no">40</span>        <span class="k">if</span> (cur.count == <span class="n">1</span>) {                          <span class="c">// 减到 0：整个 key 删掉</span></span><span class="ln"><span class="no">41</span>            map.remove(key);</span><span class="ln"><span class="no">42</span>            removeKey(cur, key);</span><span class="ln"><span class="no">43</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">44</span>        }</span><span class="ln"><span class="no">45</span>        <span class="t">Node</span> b = prevBucket(cur, cur.count - <span class="n">1</span>);       <span class="c">// 挪到左边相邻的计数桶</span></span><span class="ln"><span class="no">46</span>        b.keys.add(key);</span><span class="ln"><span class="no">47</span>        map.put(key, b);</span><span class="ln"><span class="no">48</span>        removeKey(cur, key);</span><span class="ln"><span class="no">49</span>    }</span><span class="ln"><span class="no">50</span> </span><span class="ln"><span class="no">51</span>    <span class="k">public</span> <span class="t">String</span> getMaxKey() {</span><span class="ln"><span class="no">52</span>        <span class="k">return</span> tail.prev == head ? <span class="s">""</span> : tail.prev.keys.iterator().next();</span><span class="ln"><span class="no">53</span>    }</span><span class="ln"><span class="no">54</span> </span><span class="ln"><span class="no">55</span>    <span class="k">public</span> <span class="t">String</span> getMinKey() {</span><span class="ln"><span class="no">56</span>        <span class="k">return</span> head.next == tail ? <span class="s">""</span> : head.next.keys.iterator().next();</span><span class="ln"><span class="no">57</span>    }</span><span class="ln"><span class="no">58</span> </span><span class="ln"><span class="no">59</span>    <span class="c">/** 在 node 右边找计数为 count 的桶，没有就在中间插一个新桶。 */</span></span><span class="ln"><span class="no">60</span>    <span class="k">private</span> <span class="t">Node</span> nextBucket(<span class="t">Node</span> node, <span class="k">int</span> count) {</span><span class="ln"><span class="no">61</span>        <span class="k">if</span> (node.next.count == count) <span class="k">return</span> node.next;</span><span class="ln"><span class="no">62</span>        <span class="t">Node</span> b = <span class="k">new</span> <span class="t">Node</span>(count);</span><span class="ln"><span class="no">63</span>        insertAfter(node, b);</span><span class="ln"><span class="no">64</span>        <span class="k">return</span> b;</span><span class="ln"><span class="no">65</span>    }</span><span class="ln"><span class="no">66</span> </span><span class="ln"><span class="no">67</span>    <span class="c">/** 在 node 左边找计数为 count 的桶，没有就在中间插一个新桶。 */</span></span><span class="ln"><span class="no">68</span>    <span class="k">private</span> <span class="t">Node</span> prevBucket(<span class="t">Node</span> node, <span class="k">int</span> count) {</span><span class="ln"><span class="no">69</span>        <span class="k">if</span> (node.prev.count == count) <span class="k">return</span> node.prev;</span><span class="ln"><span class="no">70</span>        <span class="t">Node</span> b = <span class="k">new</span> <span class="t">Node</span>(count);</span><span class="ln"><span class="no">71</span>        insertAfter(node.prev, b);</span><span class="ln"><span class="no">72</span>        <span class="k">return</span> b;</span><span class="ln"><span class="no">73</span>    }</span><span class="ln"><span class="no">74</span> </span><span class="ln"><span class="no">75</span>    <span class="k">private</span> <span class="k">void</span> insertAfter(<span class="t">Node</span> a, <span class="t">Node</span> b) {</span><span class="ln"><span class="no">76</span>        b.prev = a;</span><span class="ln"><span class="no">77</span>        b.next = a.next;</span><span class="ln"><span class="no">78</span>        a.next.prev = b;</span><span class="ln"><span class="no">79</span>        a.next = b;</span><span class="ln"><span class="no">80</span>    }</span><span class="ln"><span class="no">81</span> </span><span class="ln"><span class="no">82</span>    <span class="c">/** 从桶里删 key；桶空了就把它从链表上摘掉。 */</span></span><span class="ln"><span class="no">83</span>    <span class="k">private</span> <span class="k">void</span> removeKey(<span class="t">Node</span> bucket, <span class="t">String</span> key) {</span><span class="ln"><span class="no">84</span>        bucket.keys.remove(key);</span><span class="ln"><span class="no">85</span>        <span class="k">if</span> (bucket.keys.isEmpty()) {</span><span class="ln"><span class="no">86</span>            bucket.prev.next = bucket.next;</span><span class="ln"><span class="no">87</span>            bucket.next.prev = bucket.prev;</span><span class="ln"><span class="no">88</span>        }</span><span class="ln"><span class="no">89</span>    }</span><span class="ln"><span class="no">90</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>请你设计一个用于存储字符串计数的数据结构，并能够返回计数最小和最大的字符串。</p>
+
+<p>实现 <code>AllOne</code> 类：</p>
+
+<ul>
+	<li><code>AllOne()</code> 初始化数据结构的对象。</li>
+	<li><code>inc(String key)</code> 字符串 <code>key</code> 的计数增加 <code>1</code> 。如果数据结构中尚不存在 <code>key</code> ，那么插入计数为 <code>1</code> 的 <code>key</code> 。</li>
+	<li><code>dec(String key)</code> 字符串 <code>key</code> 的计数减少 <code>1</code> 。如果 <code>key</code> 的计数在减少后为 <code>0</code> ，那么需要将这个 <code>key</code> 从数据结构中删除。测试用例保证：在减少计数前，<code>key</code> 存在于数据结构中。</li>
+	<li><code>getMaxKey()</code> 返回任意一个计数最大的字符串。如果没有元素存在，返回一个空字符串 <code>""</code> 。</li>
+	<li><code>getMinKey()</code> 返回任意一个计数最小的字符串。如果没有元素存在，返回一个空字符串 <code>""</code> 。</li>
+</ul>
+
+<p><strong>注意：</strong>每个函数都应当满足 <code>O(1)</code> 平均时间复杂度。</p>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入</strong>
+["AllOne", "inc", "inc", "getMaxKey", "getMinKey", "inc", "getMaxKey", "getMinKey"]
+[[], ["hello"], ["hello"], [], [], ["leet"], [], []]
+<strong>输出</strong>
+[null, null, null, "hello", "hello", null, "hello", "leet"]
+
+<strong>解释</strong>
+AllOne allOne = new AllOne();
+allOne.inc("hello");
+allOne.inc("hello");
+allOne.getMaxKey(); // 返回 "hello"
+allOne.getMinKey(); // 返回 "hello"
+allOne.inc("leet");
+allOne.getMaxKey(); // 返回 "hello"
+allOne.getMinKey(); // 返回 "leet"
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= key.length &lt;= 10</code></li>
+	<li><code>key</code> 由小写英文字母组成</li>
+	<li>测试用例保证：在每次调用 <code>dec</code> 时，数据结构中总存在 <code>key</code></li>
+	<li>最多调用 <code>inc</code>、<code>dec</code>、<code>getMaxKey</code> 和 <code>getMinKey</code> 方法 <code>5 * 10<sup>4</sup></code> 次</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class AllOne {", "    // 计数桶按 count 从小到大串成双向链表，每个桶装计数相同的全部 key", "    private static class Node {", "        int count;", "        Set<String> keys = new LinkedHashSet<>();", "        Node prev, next;", "", "        Node(int count) {", "            this.count = count;", "        }", "    }", "", "    private final Node head = new Node(-1);   // head.next：计数最小的桶", "    private final Node tail = new Node(-1);   // tail.prev：计数最大的桶", "    private final Map<String, Node> map = new HashMap<>();", "", "    public AllOne() {", "        head.next = tail;", "        tail.prev = head;", "    }", "", "    public void inc(String key) {", "        Node cur = map.get(key);", "        if (cur == null) {", "            Node b = nextBucket(head, 1);              // 新 key：放进（必要时新建）计数 1 的桶", "            b.keys.add(key);", "            map.put(key, b);", "            return;", "        }", "        Node b = nextBucket(cur, cur.count + 1);       // 挪到右边相邻的计数桶", "        b.keys.add(key);", "        map.put(key, b);", "        removeKey(cur, key);", "    }", "", "    public void dec(String key) {", "        Node cur = map.get(key);", "        if (cur.count == 1) {                          // 减到 0：整个 key 删掉", "            map.remove(key);", "            removeKey(cur, key);", "            return;", "        }", "        Node b = prevBucket(cur, cur.count - 1);       // 挪到左边相邻的计数桶", "        b.keys.add(key);", "        map.put(key, b);", "        removeKey(cur, key);", "    }", "", "    public String getMaxKey() {", "        return tail.prev == head ? \"\" : tail.prev.keys.iterator().next();", "    }", "", "    public String getMinKey() {", "        return head.next == tail ? \"\" : head.next.keys.iterator().next();", "    }", "", "    /** 在 node 右边找计数为 count 的桶，没有就在中间插一个新桶。 */", "    private Node nextBucket(Node node, int count) {", "        if (node.next.count == count) return node.next;", "        Node b = new Node(count);", "        insertAfter(node, b);", "        return b;", "    }", "", "    /** 在 node 左边找计数为 count 的桶，没有就在中间插一个新桶。 */", "    private Node prevBucket(Node node, int count) {", "        if (node.prev.count == count) return node.prev;", "        Node b = new Node(count);", "        insertAfter(node.prev, b);", "        return b;", "    }", "", "    private void insertAfter(Node a, Node b) {", "        b.prev = a;", "        b.next = a.next;", "        a.next.prev = b;", "        a.next = b;", "    }", "", "    /** 从桶里删 key；桶空了就把它从链表上摘掉。 */", "    private void removeKey(Node bucket, String key) {", "        bucket.keys.remove(key);", "        if (bucket.keys.isEmpty()) {", "            bucket.prev.next = bucket.next;", "            bucket.next.prev = bucket.prev;", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 432. 全 O(1) 的数据结构 —— 图解：复刻 Solution.java 的「计数桶双向链表」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  ops: [['inc', 'a'], ['inc', 'b'], ['inc', 'a'], ['max'], ['min'], ['dec', 'a'], ['max'], ['min'], ['dec', 'b'], ['min']]
+};
+
+function trace(input) {
+  var cnt = {};    // key -> 计数
+  var out = [];
+  var frames = [];
+
+  var NEW = 'Node b = nextBucket(head, 1);';
+  var UP = 'Node b = nextBucket(cur, cur.count + 1);';
+  var QMAX = 'return tail.prev == head ? "" : tail.prev.keys.iterator().next();';
+  var DOWN = 'Node b = prevBucket(cur, cur.count - 1);';
+  var QMIN = 'return head.next == tail ? "" : head.next.keys.iterator().next();';
+
+  // 把计数表按 count 分组成桶（模拟链表上从低到高的桶序）
+  function buckets() {
+    var byCount = {};
+    Object.keys(cnt).forEach(function (k) {
+      (byCount[cnt[k]] = byCount[cnt[k]] || []).push(k);
+    });
+    return Object.keys(byCount).map(Number).sort(function (x, y) { return x - y; })
+      .map(function (c) { return { count: c, keys: byCount[c].sort() }; });
+  }
+  function tablePanel(hotCount) {
+    var rows = buckets().map(function (b) {
+      return { k: 'count ' + b.count, v: b.keys.join('\u3001'), cls: b.count === hotCount ? 'hit' : '' };
+    });
+    return Viz.table('计数桶（左小右大）', rows, { hint: '（桶空了就从链表上摘掉）' });
+  }
+  function snap(at, key, hotCount, vars) {
+    frames.push(Viz.frame(at, key, [tablePanel(hotCount), Viz.vars(vars || [])]));
+  }
+
+  function extreme(max) {
+    var ks = Object.keys(cnt);
+    if (!ks.length) return [];
+    var best = cnt[ks[0]];
+    ks.forEach(function (k) { best = max ? Math.max(best, cnt[k]) : Math.min(best, cnt[k]); });
+    return ks.filter(function (k) { return cnt[k] === best; }).sort();
+  }
+
+  input.ops.forEach(function (op, i) {
+    var kind = op[0], key = op[1];
+    if (kind === 'inc') {
+      cnt[key] = (cnt[key] || 0) + 1;
+      if (i === 0) snap(NEW, '新 key 进计数 1 的桶：inc(a) 后链表上只有一个桶', 1, [{ name: '刚执行', v: 'inc(a)', cls: 'new' }]);
+      if (i === 2) snap(UP, 'a 从 1 升到 2：挪进右边新开的桶，原来的桶还剩 b', 2, [{ name: '刚执行', v: 'inc(a)', cls: 'new' }]);
+    } else if (kind === 'dec') {
+      cnt[key]--;
+      if (cnt[key] === 0) delete cnt[key];
+      if (i === 5) snap(DOWN, 'dec(a)：从 2 降回 1，落进 b 那个桶；空掉的 2 号桶被摘除', 1, [{ name: '刚执行', v: 'dec(a)', cls: 'new' }]);
+    } else if (kind === 'max') {
+      var mx = extreme(true);
+      out.push(mx);
+      if (i === 3) snap(QMAX, 'getMaxKey：取最右边（计数最大）桶里的任意 key，O(1)', mx.length ? buckets().slice(-1)[0].count : null,
+        [{ name: 'getMaxKey()', v: mx.join('、'), cls: 'done' }]);
+    } else {
+      var mn = extreme(false);
+      out.push(mn);
+      if (i === 9) snap(QMIN, 'getMinKey：取最左边（计数最小）桶里的任意 key，O(1)', mn.length ? buckets()[0].count : null,
+        [{ name: 'getMinKey()', v: mn.join('、'), cls: 'done' }]);
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

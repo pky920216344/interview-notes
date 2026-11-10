@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>马戏团人塔 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 713 / 1159</span>
+  <nav class="pn"><a href="0610.html">上一篇</a><a href="1367.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 17.08. </span>马戏团人塔</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">动态规划</li><li class="aux">二分查找</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">动态规划</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按（身高升序、同身高体重降序）排序，问题变成体重序列上的最长严格递增子序列，二分做到 O(n log n)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>能叠起来 = 身高、体重都严格递增。先按身高升序排，同身高让体重大的在前——同身高的人体重必然递减，永远选不出一串。</li><li>排完后只需在体重序列上求<strong>最长严格递增子序列</strong>（LIS）。</li><li><code>tails[k]</code> 维护「长度 k+1 的递增子序列的最小结尾」：每个体重二分找第一个 <code>≥ w</code> 的位置，接不上尾巴就替换（为后面留更小的余地），能接上就长度 +1。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> bestSeqAtIndex(<span class="k">int</span>[] height, <span class="k">int</span>[] weight) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = height.length;</span><span class="ln"><span class="no">6</span>        <span class="t">Integer</span>[] order = <span class="k">new</span> <span class="t">Integer</span>[n];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) order[i] = i;</span><span class="ln"><span class="no">8</span>        <span class="c">// 身高升序；同身高体重大的在前：同身高的人永远叠不到一起</span></span><span class="ln"><span class="no">9</span>        <span class="t">Arrays</span>.sort(order, (a, b) -&gt;</span><span class="ln"><span class="no">10</span>                height[a] != height[b] ? height[a] - height[b] : weight[b] - weight[a]);</span><span class="ln"><span class="no">11</span>        <span class="c">// 在体重序列上求最长严格递增子序列：tails[k] = 长度 k+1 的最小结尾</span></span><span class="ln"><span class="no">12</span>        <span class="k">int</span>[] tails = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">13</span>        <span class="k">int</span> len = <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> id : order) {</span><span class="ln"><span class="no">15</span>            <span class="k">int</span> w = weight[id], lo = <span class="n">0</span>, hi = len;</span><span class="ln"><span class="no">16</span>            <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">17</span>                <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">18</span>                <span class="k">if</span> (tails[mid] &lt; w) lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">19</span>                <span class="k">else</span> hi = mid;</span><span class="ln"><span class="no">20</span>            }</span><span class="ln"><span class="no">21</span>            tails[lo] = w;   <span class="c">// 接不上尾巴时 lo == len，这一步就是追加</span></span><span class="ln"><span class="no">22</span>            <span class="k">if</span> (lo == len) len++;</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> len;</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>有个马戏团正在设计叠罗汉的表演节目，一个人要站在另一人的肩膀上。出于实际和美观的考虑，在上面的人要比下面的人矮一点且轻一点。已知马戏团每个人的身高和体重，请编写代码计算叠罗汉最多能叠几个人。</p>
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入：</strong>height = [65,70,56,75,60,68] weight = [100,150,90,190,95,110]
+<strong>输出：</strong>6
+<strong>解释：</strong>从上往下数，叠罗汉最多能叠 6 层：(56,90), (60,95), (65,100), (68,110), (70,150), (75,190)</pre>
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>height.length == weight.length <= 10000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int bestSeqAtIndex(int[] height, int[] weight) {", "        int n = height.length;", "        Integer[] order = new Integer[n];", "        for (int i = 0; i < n; i++) order[i] = i;", "        // 身高升序；同身高体重大的在前：同身高的人永远叠不到一起", "        Arrays.sort(order, (a, b) ->", "                height[a] != height[b] ? height[a] - height[b] : weight[b] - weight[a]);", "        // 在体重序列上求最长严格递增子序列：tails[k] = 长度 k+1 的最小结尾", "        int[] tails = new int[n];", "        int len = 0;", "        for (int id : order) {", "            int w = weight[id], lo = 0, hi = len;", "            while (lo < hi) {", "                int mid = (lo + hi) >>> 1;", "                if (tails[mid] < w) lo = mid + 1;", "                else hi = mid;", "            }", "            tails[lo] = w;   // 接不上尾巴时 lo == len，这一步就是追加", "            if (lo == len) len++;", "        }", "        return len;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 17.08 马戏团人塔 —— 图解：排序成一维后，在体重序列上跑二分版最长递增子序列。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { height: [2, 1, 3, 2, 4], weight: [3, 5, 4, 7, 6] };
+
+function trace(input) {
+  var h = input.height, w = input.weight, n = h.length;
+  var frames = [];
+
+  var SORT = 'Arrays.sort(order, (a, b) ->';
+  var PUT = 'tails[lo] = w;';
+  var GROW = 'if (lo == len) len++;';
+  var RET = 'return len;';
+
+  // 排序：身高升序、同身高体重降序（与 Java 比较器一致）
+  var ids = [];
+  for (var i = 0; i < n; i++) ids.push(i);
+  ids.sort(function (a, b) { return h[a] !== h[b] ? h[a] - h[b] : w[b] - w[a]; });
+
+  var seq = ids.map(function (id) { return w[id]; });   // 排好序的体重序列
+
+  function seqPanel(marks) {
+    return Viz.cells(seq, { title: '排序后的体重序列（身高已升序）', marks: marks || {} });
+  }
+  function tailsPanel(tails, marks, lo) {
+    var pointers = lo != null && lo < tails.length ? [{ at: lo, label: 'lo', cls: 'p-mid' }] : [];
+    return Viz.cells(tails.slice(), { title: 'tails[k]：长度 k+1 的最小结尾', marks: marks || {}, pointers: pointers });
+  }
+  function varsPanel(wv, lo, len) {
+    return Viz.vars([
+      { name: 'w（当前体重）', v: String(wv) },
+      { name: 'lo（二分落点）', v: lo == null ? '—' : String(lo) },
+      { name: 'len（当前最长）', v: String(len) }
+    ]);
+  }
+  function seqMarks(idx) {
+    var marks = {};
+    for (var k = 0; k < idx; k++) marks[k] = 'win';
+    marks[idx] = 'cur';
+    return marks;
+  }
+  function allWin(arr) {
+    var m = {};
+    for (var k = 0; k < arr.length; k++) m[k] = 'win';
+    return m;
+  }
+
+  // 跑 LIS：tails[k] = 长度 k+1 的最小结尾；记录每次 grow / replace 事件
+  var tails = [], len = 0, events = [];
+  for (var i = 0; i < n; i++) {
+    var wv = seq[i], lo = 0, hi = len;
+    while (lo < hi) {
+      var mid = (lo + hi) >> 1;
+      if (tails[mid] < wv) lo = mid + 1; else hi = mid;
+    }
+    var prev = tails.slice();
+    tails[lo] = wv;
+    if (lo === len) { len++; events.push({ type: 'grow', idx: i, w: wv, lo: lo, tails: tails.slice(), len: len }); }
+    else events.push({ type: 'replace', idx: i, w: wv, lo: lo, tails: tails.slice(), len: len, prev: prev });
+  }
+
+  // 开局帧
+  frames.push(Viz.frame(SORT, '排序后体重序列 [' + seq.join(',') + ']：问题变成体重上的最长严格递增子序列',
+    [seqPanel({}), Viz.vars([{ name: 'len（当前最长）', v: '0' }])]));
+
+  // 挑关键时刻：第二次 grow（tails 稳定增长）、第一次 replace（替换）、最后一次 grow
+  var grows = events.filter(function (e) { return e.type === 'grow'; });
+  var replaces = events.filter(function (e) { return e.type === 'replace'; });
+  var picks = [];
+  if (grows.length >= 2) picks.push(grows[1]);
+  if (replaces.length) picks.push(replaces[0]);
+  if (grows.length && (grows.length < 2 || grows[grows.length - 1] !== grows[1])) picks.push(grows[grows.length - 1]);
+  picks.sort(function (a, b) { return a.idx - b.idx; });
+
+  picks.forEach(function (e) {
+    var tm = {};
+    if (e.type === 'replace') { tm[e.lo] = 'new'; }
+    else { for (var k = 0; k < e.tails.length; k++) tm[k] = 'win'; }
+    var key = e.type === 'replace'
+      ? '体重 ' + e.w + ' 接不上尾巴：二分到第一个 ≥' + e.w + ' 的位置替换（同身高的旧值让位）'
+      : '体重 ' + e.w + ' 接上尾巴追加：tails=[' + e.tails.join(',') + ']，长度 ' + e.len;
+    frames.push(Viz.frame(e.type === 'replace' ? PUT : GROW, key,
+      [seqPanel(seqMarks(e.idx)), tailsPanel(e.tails, tm, e.lo), varsPanel(e.w, e.lo, e.len)]));
+  });
+
+  frames.push(Viz.frame(RET, '扫完：最长严格递增子序列长度 ' + len + '，最多叠 ' + len + ' 人',
+    [seqPanel(allWin(seq)), tailsPanel(tails, allWin(tails), null),
+      Viz.vars([{ name: 'len（答案）', v: String(len) }])]));
+
+  return { frames: frames, result: len };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

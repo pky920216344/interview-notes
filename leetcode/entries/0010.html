@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>正则表达式匹配 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 148 / 1159</span>
+  <nav class="pn"><a href="0445.html">上一篇</a><a href="offer-40.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">10. </span>正则表达式匹配</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 40</li><li class="algo">动态规划</li><li class="tag">递归</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">DP：dp[i][j] 表示 s 前 i 个与 p 前 j 个能否整体匹配；普通字符抄左上，x* 看「配零个」或「再吃一个」。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i][j]</code>：s 前 i 个、p 前 j 个能否整体匹配；<code>dp[0][0]=true</code>，第 0 行沿 <code>x*</code> 传 <code>dp[0][j-2]</code>。</li><li><code>p[j]</code> 是普通字符或 <code>.</code>：配得上 s[i] 就 <code>dp[i][j] = dp[i-1][j-1]</code>。</li><li><code>p[j]</code> 是 <code>*</code>：<code>dp[i][j] = dp[i][j-2]</code>（x\* 配零个），或 x 配得上 s[i] 时 <code>dp[i-1][j]</code>（x\* 再多吃一个）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> isMatch(<span class="t">String</span> s, <span class="t">String</span> p) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = s.length(), n = p.length();</span><span class="ln"><span class="no">4</span>        <span class="c">// dp[i][j]：s 前 i 个字符与 p 前 j 个字符能否整体匹配</span></span><span class="ln"><span class="no">5</span>        <span class="k">boolean</span>[][] dp = <span class="k">new</span> <span class="k">boolean</span>[m + <span class="n">1</span>][n + <span class="n">1</span>];</span><span class="ln"><span class="no">6</span>        dp[<span class="n">0</span>][<span class="n">0</span>] = <span class="k">true</span>;</span><span class="ln"><span class="no">7</span>        <span class="c">// 空串能被 x*y*… 匹配：每个 x* 都取零个</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">2</span>; j &lt;= n; j++) {</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (p.charAt(j - <span class="n">1</span>) == <span class="s">'*'</span>) dp[<span class="n">0</span>][j] = dp[<span class="n">0</span>][j - <span class="n">2</span>];</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= m; i++) {</span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt;= n; j++) {</span><span class="ln"><span class="no">13</span>                <span class="k">if</span> (p.charAt(j - <span class="n">1</span>) == <span class="s">'*'</span>) {</span><span class="ln"><span class="no">14</span>                    <span class="c">// x* 配零个：跳过 x*；或 x 配得上 s[i]：x* 再多吃一个字符</span></span><span class="ln"><span class="no">15</span>                    dp[i][j] = dp[i][j - <span class="n">2</span>] || (charMatch(s, p, i, j) &amp;&amp; dp[i - <span class="n">1</span>][j]);</span><span class="ln"><span class="no">16</span>                } <span class="k">else</span> <span class="k">if</span> (charMatch(s, p, i, j)) {</span><span class="ln"><span class="no">17</span>                    <span class="c">// 普通字符或 '.' 配对成功：看双方各少一个的前缀</span></span><span class="ln"><span class="no">18</span>                    dp[i][j] = dp[i - <span class="n">1</span>][j - <span class="n">1</span>];</span><span class="ln"><span class="no">19</span>                }</span><span class="ln"><span class="no">20</span>            }</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> dp[m][n];</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span> </span><span class="ln"><span class="no">25</span>    <span class="c">// p 的第 j 个模式字符能否匹配 s 的第 i 个字符；j 处是 '*' 时看它前面的 x</span></span><span class="ln"><span class="no">26</span>    <span class="k">private</span> <span class="k">boolean</span> charMatch(<span class="t">String</span> s, <span class="t">String</span> p, <span class="k">int</span> i, <span class="k">int</span> j) {</span><span class="ln"><span class="no">27</span>        <span class="k">char</span> pc = p.charAt(j - <span class="n">1</span>);</span><span class="ln"><span class="no">28</span>        <span class="k">if</span> (pc == <span class="s">'*'</span>) pc = p.charAt(j - <span class="n">2</span>);</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> pc == <span class="s">'.'</span> || pc == s.charAt(i - <span class="n">1</span>);</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串&nbsp;<code>s</code>&nbsp;和一个字符规律&nbsp;<code>p</code>，请你来实现一个支持 <code>'.'</code>&nbsp;和&nbsp;<code>'*'</code>&nbsp;的正则表达式匹配。</p>
+
+<ul>
+	<li><code>'.'</code> 匹配任意单个字符</li>
+	<li><code>'*'</code> 匹配零个或多个前面的那一个元素</li>
+</ul>
+
+<p>返回一个布尔值，表示匹配是否覆盖整个输入字符串（而非部分）。</p>
+&nbsp;
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "aa", p = "a"
+<strong>输出：</strong>false
+<strong>解释：</strong>"a" 无法匹配 "aa" 整个字符串。
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "aa", p = "a*"
+<strong>输出：</strong>true
+<strong>解释：</strong>因为 '*' 代表可以匹配零个或多个前面的那一个元素, 在这里前面的元素就是 'a'。因此，字符串 "aa" 可被视为 'a' 重复了一次。
+</pre>
+
+<p><strong>示例&nbsp;3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "ab", p = ".*"
+<strong>输出：</strong>true
+<strong>解释：</strong>".*" 表示可匹配零个或多个（'*'）任意字符（'.'）。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length&nbsp;&lt;= 20</code></li>
+	<li><code>1 &lt;= p.length&nbsp;&lt;= 20</code></li>
+	<li><code>s</code>&nbsp;只包含从&nbsp;<code>a-z</code>&nbsp;的小写字母。</li>
+	<li><code>p</code>&nbsp;只包含从&nbsp;<code>a-z</code>&nbsp;的小写字母，以及字符&nbsp;<code>.</code>&nbsp;和&nbsp;<code>*</code>。</li>
+	<li>保证每次出现字符&nbsp;<code>*</code> 时，前面都匹配到有效的字符</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean isMatch(String s, String p) {", "        int m = s.length(), n = p.length();", "        // dp[i][j]：s 前 i 个字符与 p 前 j 个字符能否整体匹配", "        boolean[][] dp = new boolean[m + 1][n + 1];", "        dp[0][0] = true;", "        // 空串能被 x*y*… 匹配：每个 x* 都取零个", "        for (int j = 2; j <= n; j++) {", "            if (p.charAt(j - 1) == '*') dp[0][j] = dp[0][j - 2];", "        }", "        for (int i = 1; i <= m; i++) {", "            for (int j = 1; j <= n; j++) {", "                if (p.charAt(j - 1) == '*') {", "                    // x* 配零个：跳过 x*；或 x 配得上 s[i]：x* 再多吃一个字符", "                    dp[i][j] = dp[i][j - 2] || (charMatch(s, p, i, j) && dp[i - 1][j]);", "                } else if (charMatch(s, p, i, j)) {", "                    // 普通字符或 '.' 配对成功：看双方各少一个的前缀", "                    dp[i][j] = dp[i - 1][j - 1];", "                }", "            }", "        }", "        return dp[m][n];", "    }", "", "    // p 的第 j 个模式字符能否匹配 s 的第 i 个字符；j 处是 '*' 时看它前面的 x", "    private boolean charMatch(String s, String p, int i, int j) {", "        char pc = p.charAt(j - 1);", "        if (pc == '*') pc = p.charAt(j - 2);", "        return pc == '.' || pc == s.charAt(i - 1);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 10. 正则表达式匹配 —— 图解：复刻 Solution.java 的二维 DP，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'aab', p: 'a*b' };
+
+function trace(input) {
+  var s = input.s, p = input.p;
+  var m = s.length, n = p.length;
+  var frames = [];
+
+  // 与 Solution.java 相同的 DP
+  var dp = [];
+  var i, j;
+  for (i = 0; i <= m; i++) { dp.push([]); for (j = 0; j <= n; j++) dp[i].push(false); }
+  dp[0][0] = true;
+  for (j = 2; j <= n; j++) if (p.charAt(j - 1) === '*') dp[0][j] = dp[0][j - 2];
+  var charMatch = function (ci, cj) {
+    var pc = p.charAt(cj - 1);
+    if (pc === '*') pc = p.charAt(cj - 2);
+    return pc === '.' || pc === s.charAt(ci - 1);
+  };
+  var events = [];   // 有转移发生的格子（star 必记；普通字符配上了才记）
+  for (i = 1; i <= m; i++) {
+    for (j = 1; j <= n; j++) {
+      if (p.charAt(j - 1) === '*') {
+        dp[i][j] = dp[i][j - 2] || (charMatch(i, j) && dp[i - 1][j]);
+        events.push({ i: i, j: j, star: true });
+      } else if (charMatch(i, j)) {
+        dp[i][j] = dp[i - 1][j - 1];
+        events.push({ i: i, j: j, star: false });
+      }
+    }
+  }
+
+  function gridPanel(marks) {
+    var rows = [], r, c;
+    for (r = 0; r <= m; r++) {
+      var row = [];
+      for (c = 0; c <= n; c++) row.push(dp[r][c] ? 'T' : '·');
+      rows.push(row);
+    }
+    var rl = ['∅'], cl = ['∅'];
+    for (r = 0; r < m; r++) rl.push(s.charAt(r));
+    for (c = 0; c < n; c++) cl.push(p.charAt(c));
+    return Viz.grid(rows, {
+      title: 'dp[i][j]：s 前 i 个 vs p 前 j 个（T=能整体匹配）',
+      marks: marks || {}, rowLabels: rl, colLabels: cl, corner: 'i＼j'
+    });
+  }
+  // 已算完的格子淡化，来源格 hit，当前格 new
+  function cellMarks(ev, sources) {
+    var mk = {}, r, c;
+    for (r = 0; r <= m; r++) for (c = 0; c <= n; c++) if (r < ev.i || (r === ev.i && c < ev.j)) mk[r + ',' + c] = 'dim';
+    (sources || []).forEach(function (src) { mk[src[0] + ',' + src[1]] = 'hit'; });
+    mk[ev.i + ',' + ev.j] = 'new';
+    return mk;
+  }
+  var find = function (fi, fj, star) {
+    for (var k = 0; k < events.length; k++) {
+      var ev = events[k];
+      if (ev.i === fi && ev.j === fj && ev.star === star) return ev;
+    }
+    return null;
+  };
+  var bv = function (x) { return x ? 'T' : '·'; };
+
+  var ROW0 = "if (p.charAt(j - 1) == '*') dp[0][j] = dp[0][j - 2];";
+  var STAR = 'dp[i][j] = dp[i][j - 2] || (charMatch(s, p, i, j) && dp[i - 1][j]);';
+  var NORM = 'dp[i][j] = dp[i - 1][j - 1];';
+  var FINAL = 'return dp[m][n];';
+
+  // 帧 1：第 0 行
+  var mk1 = {};
+  for (j = 0; j <= n; j++) if (dp[0][j]) mk1['0,' + j] = 'win';
+  frames.push(Viz.frame(ROW0, '第 0 行：空串只能靠 x* 配零个，dp[0][j] = dp[0][j-2]', [gridPanel(mk1)]));
+
+  // 帧 2：第一个普通配对（s[0] 配 p[0]）
+  var ev11 = find(1, 1, false);
+  if (ev11) {
+    frames.push(Viz.frame(NORM, '「' + s.charAt(0) + '」配「' + p.charAt(0) + '」成功 → 抄左上 dp[0][0]=' + bv(dp[0][0]),
+      [gridPanel(cellMarks(ev11, [[0, 0]]))]));
+  }
+
+  // 帧 3：x* 再吃一个字符（最容易被忘的转移）
+  var ev22 = find(2, 2, true);
+  if (ev22) {
+    frames.push(Viz.frame(STAR,
+      'x* 再吃一个：dp[2][0]=' + bv(dp[2][0]) + '（零个）不通，看 dp[1][2]=' + bv(dp[1][2]) + ' → ' + bv(dp[2][2]),
+      [gridPanel(cellMarks(ev22, [[2, 0], [1, 2]]))]));
+  }
+
+  // 帧 4：x* 两条路都走不通的反例
+  var ev32 = find(3, 2, true);
+  if (ev32) {
+    frames.push(Viz.frame(STAR,
+      '「' + s.charAt(2) + '」对 x*：x 配不上 s[i]，配零个 dp[3][0]=' + bv(dp[3][0]) + ' → ·',
+      [gridPanel(cellMarks(ev32, [[3, 0]]))]));
+  }
+
+  // 帧 5：终点
+  frames.push(Viz.frame(FINAL, '终点 dp[' + m + '][' + n + ']=' + bv(dp[m][n]) + (dp[m][n] ? '：「' + p + '」整体匹配「' + s + '」' : '：不能整体匹配'),
+    [gridPanel((function () { var mk = {}; mk[m + ',' + n] = 'done'; return mk; })())]));
+
+  return { frames: frames, result: dp[m][n] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

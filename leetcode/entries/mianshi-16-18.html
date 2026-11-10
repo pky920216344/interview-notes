@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>模式匹配 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 916 / 1159</span>
+  <nav class="pn"><a href="1640.html">上一篇</a><a href="1234.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 16.18. </span>模式匹配</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">模拟</li><li class="tag">数学</li><li class="tag">字符串</li><li class="tag">回溯</li><li class="tag">枚举</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">数出 a、b 各出现几次，枚举 a 串长 lenA，由总长方程解出 lenB，再按段校验「同字母同串、a≠b」。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先处理空：空模式只匹配空串；value 为空时两种字母都出现就得都映射成 <code>""</code>（相同，非法）。</li><li>设 a 串长 <code>lenA</code>：由 <code>ca·lenA + cb·lenB = len</code> 解出 <code>lenB</code>（<code>cb=0</code> 时要求余量恰好为 0）。</li><li>对每组 <code>(lenA, lenB)</code> 走一遍 pattern 切分：所有 a 段相同、所有 b 段相同才算成立。</li><li>两种字母都出现时还要求 <code>a ≠ b</code>；任一组成立即 true，全失败返回 false。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(len²)（len 为 value 长度），空间复杂度 O(len)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> patternMatching(<span class="t">String</span> pattern, <span class="t">String</span> value) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> ca = <span class="n">0</span>, cb = <span class="n">0</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; pattern.length(); i++) {</span><span class="ln"><span class="no">5</span>            <span class="k">if</span> (pattern.charAt(i) == <span class="s">'a'</span>) ca++;</span><span class="ln"><span class="no">6</span>            <span class="k">else</span> cb++;</span><span class="ln"><span class="no">7</span>        }</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> len = value.length();</span><span class="ln"><span class="no">9</span>        <span class="k">if</span> (ca == <span class="n">0</span> &amp;&amp; cb == <span class="n">0</span>) <span class="k">return</span> len == <span class="n">0</span>;   <span class="c">// 空模式只匹配空串</span></span><span class="ln"><span class="no">10</span>        <span class="k">if</span> (len == <span class="n">0</span>) <span class="k">return</span> ca == <span class="n">0</span> || cb == <span class="n">0</span>;   <span class="c">// 空串要两种字母都映射成 ""，相同即非法</span></span><span class="ln"><span class="no">11</span>        <span class="c">// 枚举 a 串长 lenA；b 串长由总长方程解出（b 不出现时长度为 0）</span></span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> lenA = <span class="n">0</span>; lenA * ca &lt;= len; lenA++) {</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (ca == <span class="n">0</span> &amp;&amp; lenA &gt; <span class="n">0</span>) <span class="k">break</span>;        <span class="c">// 没有 a：a 串长只能是 0</span></span><span class="ln"><span class="no">14</span>            <span class="k">int</span> rest = len - lenA * ca;</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (cb == <span class="n">0</span> ? rest != <span class="n">0</span> : rest % cb != <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">16</span>            <span class="k">int</span> lenB = cb == <span class="n">0</span> ? <span class="n">0</span> : rest / cb;</span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (matches(pattern, value, lenA, lenB)) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> <span class="k">false</span>;   <span class="c">// 所有 (lenA, lenB) 组合都不成立</span></span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>    <span class="c">/** 按 (lenA, lenB) 把 value 切给 pattern：所有 a 段相同、所有 b 段相同，且 a ≠ b。 */</span></span><span class="ln"><span class="no">23</span>    <span class="k">private</span> <span class="k">boolean</span> matches(<span class="t">String</span> pattern, <span class="t">String</span> value, <span class="k">int</span> lenA, <span class="k">int</span> lenB) {</span><span class="ln"><span class="no">24</span>        <span class="k">int</span> pos = <span class="n">0</span>;</span><span class="ln"><span class="no">25</span>        <span class="t">String</span> a = <span class="k">null</span>, b = <span class="k">null</span>;</span><span class="ln"><span class="no">26</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; pattern.length(); i++) {</span><span class="ln"><span class="no">27</span>            <span class="k">if</span> (pattern.charAt(i) == <span class="s">'a'</span>) {</span><span class="ln"><span class="no">28</span>                <span class="t">String</span> sub = value.substring(pos, pos + lenA);</span><span class="ln"><span class="no">29</span>                <span class="k">if</span> (a == <span class="k">null</span>) a = sub;</span><span class="ln"><span class="no">30</span>                <span class="k">else</span> <span class="k">if</span> (!a.equals(sub)) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">31</span>                pos += lenA;</span><span class="ln"><span class="no">32</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">33</span>                <span class="t">String</span> sub = value.substring(pos, pos + lenB);</span><span class="ln"><span class="no">34</span>                <span class="k">if</span> (b == <span class="k">null</span>) b = sub;</span><span class="ln"><span class="no">35</span>                <span class="k">else</span> <span class="k">if</span> (!b.equals(sub)) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">36</span>                pos += lenB;</span><span class="ln"><span class="no">37</span>            }</span><span class="ln"><span class="no">38</span>        }</span><span class="ln"><span class="no">39</span>        <span class="k">return</span> a == <span class="k">null</span> || b == <span class="k">null</span> || !a.equals(b);   <span class="c">// 两种字母都出现时不能同串</span></span><span class="ln"><span class="no">40</span>    }</span><span class="ln"><span class="no">41</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你有两个字符串，即<code>pattern</code>和<code>value</code>。 <code>pattern</code>字符串由字母<code>"a"</code>和<code>"b"</code>组成，用于描述字符串中的模式。例如，字符串<code>"catcatgocatgo"</code>匹配模式<code>"aabab"</code>（其中<code>"cat"</code>是<code>"a"</code>，<code>"go"</code>是<code>"b"</code>），该字符串也匹配像<code>"a"</code>、<code>"ab"</code>和<code>"b"</code>这样的模式。但需注意<code>"a"</code>和<code>"b"</code>不能同时表示相同的字符串。编写一个方法判断<code>value</code>字符串是否匹配<code>pattern</code>字符串。</p>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong> pattern = "abba", value = "dogcatcatdog"
+<strong>输出：</strong> true
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong> pattern = "abba", value = "dogcatcatfish"
+<strong>输出：</strong> false
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong> pattern = "aaaa", value = "dogcatcatdog"
+<strong>输出：</strong> false
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre>
+<strong>输入：</strong> pattern = "abba", value = "dogdogdogdog"
+<strong>输出：</strong> true
+<strong>解释：</strong> "a"="dogdog",b=""，反之也符合规则
+</pre>
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= len(pattern) &lt;= 1000</code></li>
+	<li><code>0 &lt;= len(value) &lt;= 1000</code></li>
+	<li>你可以假设<code>pattern</code>只包含字母<code>"a"</code>和<code>"b"</code>，<code>value</code>仅包含小写字母。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean patternMatching(String pattern, String value) {", "        int ca = 0, cb = 0;", "        for (int i = 0; i < pattern.length(); i++) {", "            if (pattern.charAt(i) == 'a') ca++;", "            else cb++;", "        }", "        int len = value.length();", "        if (ca == 0 && cb == 0) return len == 0;   // 空模式只匹配空串", "        if (len == 0) return ca == 0 || cb == 0;   // 空串要两种字母都映射成 \"\"，相同即非法", "        // 枚举 a 串长 lenA；b 串长由总长方程解出（b 不出现时长度为 0）", "        for (int lenA = 0; lenA * ca <= len; lenA++) {", "            if (ca == 0 && lenA > 0) break;        // 没有 a：a 串长只能是 0", "            int rest = len - lenA * ca;", "            if (cb == 0 ? rest != 0 : rest % cb != 0) continue;", "            int lenB = cb == 0 ? 0 : rest / cb;", "            if (matches(pattern, value, lenA, lenB)) return true;", "        }", "        return false;   // 所有 (lenA, lenB) 组合都不成立", "    }", "", "    /** 按 (lenA, lenB) 把 value 切给 pattern：所有 a 段相同、所有 b 段相同，且 a ≠ b。 */", "    private boolean matches(String pattern, String value, int lenA, int lenB) {", "        int pos = 0;", "        String a = null, b = null;", "        for (int i = 0; i < pattern.length(); i++) {", "            if (pattern.charAt(i) == 'a') {", "                String sub = value.substring(pos, pos + lenA);", "                if (a == null) a = sub;", "                else if (!a.equals(sub)) return false;", "                pos += lenA;", "            } else {", "                String sub = value.substring(pos, pos + lenB);", "                if (b == null) b = sub;", "                else if (!b.equals(sub)) return false;", "                pos += lenB;", "            }", "        }", "        return a == null || b == null || !a.equals(b);   // 两种字母都出现时不能同串", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 16.18. 模式匹配 —— 图解：复刻 Solution.java 的「枚举 lenA、按段校验」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { pattern: 'abba', value: 'xyzyzx' };
+
+function trace(input) {
+  var pattern = input.pattern, value = input.value;
+  var frames = [];
+  var ca = 0, cb = 0;
+  for (var i = 0; i < pattern.length; i++) { if (pattern[i] === 'a') ca++; else cb++; }
+  var len = value.length;
+
+  function cellsPanel(marks, range) {
+    return Viz.cells(value.split(''), { title: 'value', marks: marks || {}, range: range || null });
+  }
+  function mapPanel(a, b, hit) {
+    var rows = [];
+    if (ca > 0) rows.push({ k: 'a →', v: a == null ? '（未定）' : '「' + a + '」×' + ca, cls: hit === 'a' ? 'hit' : '' });
+    if (cb > 0) rows.push({ k: 'b →', v: b == null ? '（未定）' : '「' + b + '」×' + cb, cls: hit === 'b' ? 'hit' : '' });
+    return Viz.table('两种字母各映射到一个定长串', rows);
+  }
+  function varsPanel(lenA, lenB) {
+    return Viz.vars([
+      { name: 'lenA', v: String(lenA) },
+      { name: 'lenB', v: String(lenB) },
+      { name: '方程', v: ca + '·lenA + ' + cb + '·lenB = ' + len }
+    ]);
+  }
+
+  var result = false;
+  if (ca === 0 && cb === 0) {
+    result = len === 0;
+    frames.push(Viz.frame('if (ca == 0 && cb == 0) return len == 0;', '空模式：只有 value 也是空串才匹配', [cellsPanel(null, null), varsPanel(0, 0)]));
+    return { frames: frames, result: result };
+  }
+  if (len === 0) {
+    result = ca === 0 || cb === 0;
+    frames.push(Viz.frame('if (len == 0) return ca == 0 || cb == 0;', 'value 为空：两种字母都出现就得都映射成空串（相同，非法）', [cellsPanel(null, null), mapPanel(null, null, null)]));
+    return { frames: frames, result: result };
+  }
+
+  var sawEnum = false, sawFail = false;
+  for (var lenA = 0; lenA * ca <= len; lenA++) {
+    if (ca === 0 && lenA > 0) break;
+    var rest = len - lenA * ca;
+    if (cb === 0 ? rest !== 0 : rest % cb !== 0) continue;
+    var lenB = cb === 0 ? 0 : rest / cb;
+    // 按 (lenA, lenB) 切分并校验：所有 a 段相同、所有 b 段相同
+    var pos = 0, a = null, b = null, ok = true, failAt = -1, failKind = '';
+    for (var pi = 0; pi < pattern.length; pi++) {
+      if (pattern[pi] === 'a') {
+        var sub = value.slice(pos, pos + lenA);
+        if (a == null) a = sub;
+        else if (a !== sub) { ok = false; failAt = pos; failKind = 'a'; break; }
+        pos += lenA;
+      } else {
+        var sub2 = value.slice(pos, pos + lenB);
+        if (b == null) b = sub2;
+        else if (b !== sub2) { ok = false; failAt = pos; failKind = 'b'; break; }
+        pos += lenB;
+      }
+    }
+    if (ok && a != null && b != null && a === b) ok = false;
+    if (!sawEnum) {
+      sawEnum = true;
+      frames.push(Viz.frame('for (int lenA = 0; lenA * ca <= len; lenA++) {',
+        'a 出现 ' + ca + ' 次、b 出现 ' + cb + ' 次：先试 lenA=' + lenA + '，b 段长 ' + lenB, [cellsPanel(null, null), mapPanel(a, b, null), varsPanel(lenA, lenB)]));
+    }
+    if (!ok && !sawFail) {
+      sawFail = true;
+      var wl = failKind === 'b' ? lenB : lenA;
+      var stored = failKind === 'b' ? b : a;
+      var fresh = value.slice(failAt, failAt + wl);
+      frames.push(Viz.frame(failKind === 'b' ? 'else if (!b.equals(sub)) return false;' : 'else if (!a.equals(sub)) return false;',
+        'lenA=' + lenA + '：两个 ' + failKind + ' 段「' + stored + '」≠「' + fresh + '」→ 这组长度作废',
+        [cellsPanel({ [failAt]: 'bad' }, { from: failAt, to: failAt + wl - 1, label: '不相等的 ' + failKind + ' 段' }), mapPanel(a, b, failKind), varsPanel(lenA, lenB)]));
+    }
+    if (ok) {
+      result = true;
+      var marks = {}, from = 0;
+      for (var si = 0; si < pattern.length; si++) {
+        var sl = pattern[si] === 'a' ? lenA : lenB;
+        for (var k = from; k < from + sl; k++) marks[k] = pattern[si] === 'a' ? 'win' : 'chg';
+        from += sl;
+      }
+      frames.push(Viz.frame('return a == null || b == null || !a.equals(b);',
+        'lenA=' + lenA + '：切成 ' + pattern.split('').join('|') + ' 各段相同，且「' + a + '」≠「' + b + '」→ 匹配',
+        [cellsPanel(marks, null), mapPanel(a, b, null), varsPanel(lenA, lenB)]));
+      break;
+    }
+  }
+  if (!result && !sawFail) {
+    frames.push(Viz.frame('return false;   // 所有 (lenA, lenB) 组合都不成立', '所有可行的 lenA 都无解或校验失败 → 不匹配', [cellsPanel(null, null), varsPanel(0, 0)]));
+  }
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

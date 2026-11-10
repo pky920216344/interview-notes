@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>查询球队积分 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 992 / 1159</span>
+  <nav class="pn"><a href="1230.html">上一篇</a><a href="0289.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1212. </span>查询球队积分</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">SQL</li><li class="tag">数据库</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">LEFT JOIN 把每队与其全部比赛拉到一行，CASE 按主/客身份判胜平负计 3/1/0 分，SUM 后 COALESCE 给零比赛队补 0。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>连接条件 <code>t.team_id IN (m.host_team, m.guest_team)</code> 把一场比赛同时拉给主客两队；<strong>必须 LEFT JOIN</strong>，否则没打过球的队会被整行丢掉。</li><li>CASE 的判定顺序：先匹配主队身份再匹配客队身份，各按比分比大小给 3/1/0；都不匹配（理论上不会发生）给 0。</li><li><code>COALESCE(SUM(...), 0)</code> 处理「一场没打」的队：LEFT JOIN 出来的 m 全为 NULL，SUM 为 NULL，兜底成 0。</li><li>排序按题目要求：总分降序、同分按 team_id 升序（GROUP BY 里带上 team_id 才能按它排序）。</li></ul></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(M)（M 为比赛场数），空间复杂度 O(M)</span><button type="button" class="btn" id="copy-code">复制 SQL 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span>-- 1212（codetop 1212）查询球队积分（MySQL，会员题）</span><span class="ln"><span class="no">2</span>-- 题意：Teams(team_id, team_name)、Matches(match_id, host_team, guest_team, host_goals, guest_goals)。</span><span class="ln"><span class="no">3</span>-- 胜 3 分、平 1 分、负 0 分。返回每队（队名, 总分）：没比赛的队也得 0 分出现；按总分降序、同分按 team_id 升序。</span><span class="ln"><span class="no">4</span>-- 主客场各自判胜负计分，LEFT JOIN 保证零比赛球队也在结果里。</span><span class="ln"><span class="no">5</span>SELECT t.team_name,</span><span class="ln"><span class="no">6</span>       COALESCE(SUM(</span><span class="ln"><span class="no">7</span>           CASE</span><span class="ln"><span class="no">8</span>               WHEN m.host_team = t.team_id AND m.host_goals &gt; m.guest_goals THEN 3</span><span class="ln"><span class="no">9</span>               WHEN m.host_team = t.team_id AND m.host_goals = m.guest_goals THEN 1</span><span class="ln"><span class="no">10</span>               WHEN m.guest_team = t.team_id AND m.guest_goals &gt; m.host_goals THEN 3</span><span class="ln"><span class="no">11</span>               WHEN m.guest_team = t.team_id AND m.guest_goals = m.host_goals THEN 1</span><span class="ln"><span class="no">12</span>               ELSE 0</span><span class="ln"><span class="no">13</span>           END</span><span class="ln"><span class="no">14</span>       ), 0) AS num_points</span><span class="ln"><span class="no">15</span>FROM Teams t</span><span class="ln"><span class="no">16</span>LEFT JOIN Matches m ON t.team_id IN (m.host_team, m.guest_team)</span><span class="ln"><span class="no">17</span>GROUP BY t.team_id, t.team_name</span><span class="ln"><span class="no">18</span>ORDER BY num_points DESC, t.team_id ASC;</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["-- 1212（codetop 1212）查询球队积分（MySQL，会员题）", "-- 题意：Teams(team_id, team_name)、Matches(match_id, host_team, guest_team, host_goals, guest_goals)。", "-- 胜 3 分、平 1 分、负 0 分。返回每队（队名, 总分）：没比赛的队也得 0 分出现；按总分降序、同分按 team_id 升序。", "-- 主客场各自判胜负计分，LEFT JOIN 保证零比赛球队也在结果里。", "SELECT t.team_name,", "       COALESCE(SUM(", "           CASE", "               WHEN m.host_team = t.team_id AND m.host_goals > m.guest_goals THEN 3", "               WHEN m.host_team = t.team_id AND m.host_goals = m.guest_goals THEN 1", "               WHEN m.guest_team = t.team_id AND m.guest_goals > m.host_goals THEN 3", "               WHEN m.guest_team = t.team_id AND m.guest_goals = m.host_goals THEN 1", "               ELSE 0", "           END", "       ), 0) AS num_points", "FROM Teams t", "LEFT JOIN Matches m ON t.team_id IN (m.host_team, m.guest_team)", "GROUP BY t.team_id, t.team_name", "ORDER BY num_points DESC, t.team_id ASC;"]}</script>
+
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>单词转换 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 821 / 1159</span>
+  <nav class="pn"><a href="1139.html">上一篇</a><a href="0529.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 17.22. </span>单词转换</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">广度优先搜索</li><li class="aux">哈希表</li><li class="tag">广度优先搜索</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">回溯</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">BFS 逐层扩展「一步之差」的词，入队时记父指针；碰到终点就沿父指针回溯出最短序列。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>终点不在字典直接返回空；从 <code>beginWord</code> 开始 BFS，每个词把每个位置试 26 个字母生成邻居。</li><li>邻居<strong>在字典里且没有父指针</strong>才入队：第一次到达即最短层，父指针就定死。</li><li>父指针表 <code>parent[w] = 上一个词</code> 起点记 <code>null</code>，终点出队即可停止扩展。</li><li>回溯：从 <code>endWord</code> 沿父指针走到 <code>beginWord</code>，<code>addFirst</code> 边走边头插，天然反转为起点→终点。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(L·26·N)（L 词长，N 字典大小），空间复杂度 O(N·L)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; findLadders(<span class="t">String</span> beginWord, <span class="t">String</span> endWord, <span class="t">List</span>&lt;<span class="t">String</span>&gt; wordList) {</span><span class="ln"><span class="no">5</span>        <span class="t">Set</span>&lt;<span class="t">String</span>&gt; dict = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;(wordList);</span><span class="ln"><span class="no">6</span>        <span class="c">// 终点不在字典里，永远变不出来</span></span><span class="ln"><span class="no">7</span>        <span class="k">if</span> (!dict.contains(endWord)) <span class="k">return</span> <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="c">// parent[w] = w 的上一个词；beginWord 的前驱记 null</span></span><span class="ln"><span class="no">9</span>        <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">String</span>&gt; parent = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">10</span>        parent.put(beginWord, <span class="k">null</span>);</span><span class="ln"><span class="no">11</span>        <span class="t">Deque</span>&lt;<span class="t">String</span>&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">12</span>        q.add(beginWord);</span><span class="ln"><span class="no">13</span>        <span class="k">while</span> (!q.isEmpty()) {</span><span class="ln"><span class="no">14</span>            <span class="t">String</span> cur = q.poll();</span><span class="ln"><span class="no">15</span>            <span class="c">// 终点出队即可回溯，父指针在入队时已记好</span></span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (cur.equals(endWord)) <span class="k">break</span>;</span><span class="ln"><span class="no">17</span>            <span class="c">// 每个位置试 26 个字母，生成所有「一步之差」的词</span></span><span class="ln"><span class="no">18</span>            <span class="k">char</span>[] cs = cur.toCharArray();</span><span class="ln"><span class="no">19</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; cs.length; i++) {</span><span class="ln"><span class="no">20</span>                <span class="k">char</span> old = cs[i];</span><span class="ln"><span class="no">21</span>                <span class="k">for</span> (<span class="k">char</span> ch = <span class="s">'a'</span>; ch &lt;= <span class="s">'z'</span>; ch++) {</span><span class="ln"><span class="no">22</span>                    <span class="k">if</span> (ch == old) <span class="k">continue</span>;</span><span class="ln"><span class="no">23</span>                    cs[i] = ch;</span><span class="ln"><span class="no">24</span>                    <span class="t">String</span> next = <span class="k">new</span> <span class="t">String</span>(cs);</span><span class="ln"><span class="no">25</span>                    <span class="c">// 在字典里且没访问过（没父指针）才入队：保证第一次到达即最短</span></span><span class="ln"><span class="no">26</span>                    <span class="k">if</span> (dict.contains(next) &amp;&amp; !parent.containsKey(next)) {</span><span class="ln"><span class="no">27</span>                        parent.put(next, cur);</span><span class="ln"><span class="no">28</span>                        q.add(next);</span><span class="ln"><span class="no">29</span>                    }</span><span class="ln"><span class="no">30</span>                }</span><span class="ln"><span class="no">31</span>                cs[i] = old;</span><span class="ln"><span class="no">32</span>            }</span><span class="ln"><span class="no">33</span>        }</span><span class="ln"><span class="no">34</span>        <span class="k">if</span> (!parent.containsKey(endWord)) <span class="k">return</span> <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">35</span>        <span class="c">// 从终点沿父指针走回起点，再反转成起点→终点</span></span><span class="ln"><span class="no">36</span>        <span class="t">LinkedList</span>&lt;<span class="t">String</span>&gt; path = <span class="k">new</span> <span class="t">LinkedList</span>&lt;&gt;();</span><span class="ln"><span class="no">37</span>        <span class="k">for</span> (<span class="t">String</span> w = endWord; w != <span class="k">null</span>; w = parent.get(w)) path.addFirst(w);</span><span class="ln"><span class="no">38</span>        <span class="k">return</span> path;</span><span class="ln"><span class="no">39</span>    }</span><span class="ln"><span class="no">40</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定字典中的两个词，长度相等。写一个方法，把一个词转换成另一个词， 但是一次只能改变一个字符。每一步得到的新词都必须能在字典中找到。</p>
+
+<p>编写一个程序，返回一个可能的转换序列。如有多个可能的转换序列，你可以返回任何一个。</p>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+beginWord = "hit",
+endWord = "cog",
+wordList = ["hot","dot","dog","lot","log","cog"]
+
+<strong>输出：</strong>
+["hit","hot","dot","lot","log","cog"]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+beginWord = "hit"
+endWord = "cog"
+wordList = ["hot","dot","dog","lot","log"]
+
+<strong>输出：</strong>[]
+
+<strong>解释：</strong><em>endWord</em> "cog" 不在字典中，所以不存在符合要求的转换序列。</pre>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<String> findLadders(String beginWord, String endWord, List<String> wordList) {", "        Set<String> dict = new HashSet<>(wordList);", "        // 终点不在字典里，永远变不出来", "        if (!dict.contains(endWord)) return new ArrayList<>();", "        // parent[w] = w 的上一个词；beginWord 的前驱记 null", "        Map<String, String> parent = new HashMap<>();", "        parent.put(beginWord, null);", "        Deque<String> q = new ArrayDeque<>();", "        q.add(beginWord);", "        while (!q.isEmpty()) {", "            String cur = q.poll();", "            // 终点出队即可回溯，父指针在入队时已记好", "            if (cur.equals(endWord)) break;", "            // 每个位置试 26 个字母，生成所有「一步之差」的词", "            char[] cs = cur.toCharArray();", "            for (int i = 0; i < cs.length; i++) {", "                char old = cs[i];", "                for (char ch = 'a'; ch <= 'z'; ch++) {", "                    if (ch == old) continue;", "                    cs[i] = ch;", "                    String next = new String(cs);", "                    // 在字典里且没访问过（没父指针）才入队：保证第一次到达即最短", "                    if (dict.contains(next) && !parent.containsKey(next)) {", "                        parent.put(next, cur);", "                        q.add(next);", "                    }", "                }", "                cs[i] = old;", "            }", "        }", "        if (!parent.containsKey(endWord)) return new ArrayList<>();", "        // 从终点沿父指针走回起点，再反转成起点→终点", "        LinkedList<String> path = new LinkedList<>();", "        for (String w = endWord; w != null; w = parent.get(w)) path.addFirst(w);", "        return path;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 17.22. 单词转换 —— 图解：复刻 Solution.java 的 BFS + 父指针回溯，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { begin: 'hit', end: 'cog', wordList: ['hot', 'dot', 'dog', 'lot', 'log', 'cog'] };
+
+function trace(input) {
+  var begin = input.begin, end = input.end;
+  var dict = Object.create(null);
+  input.wordList.forEach(function (w) { dict[w] = true; });
+  var frames = [];
+  var queue = [];
+  var parent = Object.create(null);   // 词 -> 上一个词；begin 的前驱用 '' 表示 null
+  var seen = [];                      // 入队顺序，表格才稳定
+
+  function queuePanel(title) {
+    var items = queue.slice();
+    return Viz.cells(items, {
+      title: title || (items.length ? '队列 queue（按层扩展）' : '队列 queue（空）'), hideIndex: true,
+      pointers: items.length ? [{ at: 0, label: '队首', cls: 'p-head' }] : []
+    });
+  }
+  function parentPanel(hit) {
+    var rows = seen.map(function (w) {
+      return { k: w, v: parent[w] === '' ? '—（起点）' : '← ' + parent[w], cls: w === hit ? 'hit' : '' };
+    });
+    return Viz.table('父指针 parent：词 → 上一个词', rows);
+  }
+  function snap(at, key, hitW, extra) {
+    var panels = [queuePanel(), parentPanel(hitW)];
+    if (extra) panels.push(extra);
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  if (!dict[end]) {
+    snap('if (!dict.contains(endWord)) return new ArrayList<>();', '终点 ' + end + ' 不在字典里：永远变不出来，返回空');
+    return { frames: frames, result: [] };
+  }
+  parent[begin] = '';
+  seen.push(begin);
+  queue.push(begin);
+  snap('q.add(beginWord);', '起点 ' + begin + ' 入队：父指针为空', begin);
+
+  var shotNew = 0;
+  var found = false;
+  while (queue.length) {
+    var cur = queue.shift();
+    if (cur === end) {
+      found = true;
+      snap('if (cur.equals(endWord)) break;', '出队到终点 ' + end + '：父指针入队时就记好了，立刻停止扩展', end);
+      break;
+    }
+    var cs = cur.split('');
+    var stop = false;
+    for (var i = 0; i < cs.length && !stop; i++) {
+      var old = cs[i];
+      for (var c = 97; c <= 122 && !stop; c++) {
+        var ch = String.fromCharCode(c);
+        if (ch === old) continue;
+        cs[i] = ch;
+        var next = cs.join('');
+        if (dict[next] && !(next in parent)) {
+          parent[next] = cur;
+          seen.push(next);
+          queue.push(next);
+          if (shotNew < 2) {
+            shotNew++;
+            snap('parent.put(next, cur);',
+              shotNew === 1
+                ? cur + ' 换第 ' + (i + 1) + ' 个字母得 ' + next + '：在字典里且没来过，入队并记父指针'
+                : '同层继续扩展：' + cur + ' 变出 ' + next + '，同层词的父指针都指向它',
+              next);
+          }
+          if (next === end) stop = true;   // 终点已入队，这一层扩完就到它出队了
+        }
+      }
+      cs[i] = old;
+    }
+  }
+
+  if (!found) {
+    snap('if (!parent.containsKey(endWord)) return new ArrayList<>();',
+      '队列空了还没碰到 ' + end + '：不可达，返回空',
+      null);
+    return { frames: frames, result: [] };
+  }
+
+  // 从终点沿父指针走回起点，反转即起点→终点
+  var path = [];
+  for (var w = end; ; w = parent[w]) {
+    path.unshift(w);
+    if (parent[w] === '') break;
+  }
+  snap('for (String w = endWord; w != null; w = parent.get(w)) path.addFirst(w);',
+    '回溯：' + path.slice().reverse().join(' ← ') + '，反转成起点→终点',
+    end,
+    Viz.cells(path.slice(), {
+      title: '转换序列（最短，' + path.length + ' 个词）', hideIndex: true,
+      pointers: [{ at: 0, label: '起点', cls: 'p-head' }, { at: path.length - 1, label: '终点', cls: 'p-tail' }]
+    }));
+
+  return { frames: frames, result: path };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

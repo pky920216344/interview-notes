@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>删除最短的子数组使剩余数组有序 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 805 / 1159</span>
+  <nav class="pn"><a href="0799.html">上一篇</a><a href="0669.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1574. </span>删除最短的子数组使剩余数组有序</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">双指针</li><li class="tag">栈</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">二分查找</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">先量出左升前缀和右升后缀，答案是「只留一边」或「前后缀拼接」三类候选的最小值；拼接用双指针找第一个能接上的位置。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>l</code> 扫到左端最长非递减前缀的末尾，<code>r</code> 找右端最长非递减后缀的开头；<code>l == n-1</code> 说明本来有序，返回 0。</li><li>两类平凡候选：只留前缀（删 <code>n-1-l</code>）或只留后缀（删 <code>r</code>）。</li><li>拼接候选：<code>i</code> 在前缀里、<code>j</code> 在后缀里，要 <code>arr[i] &lt;= arr[j]</code>，删中间 <code>j-i-1</code> 个；<code>i</code> 右移时 <code>j</code> 只会右移（单调）。</li><li>关键不变量：<strong>删掉的窗口外两段必须各自非递减</strong>，这就是只用 <code>l</code>、<code>r</code> 作边界的原因。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> findLengthOfShortestSubarray(<span class="k">int</span>[] arr) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = arr.length;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> l = <span class="n">0</span>;                          <span class="c">// 左侧最长非递减前缀的末尾下标</span></span><span class="ln"><span class="no">5</span>        <span class="k">while</span> (l + <span class="n">1</span> &lt; n &amp;&amp; arr[l] &lt;= arr[l + <span class="n">1</span>]) l++;</span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (l == n - <span class="n">1</span>) <span class="k">return</span> <span class="n">0</span>;           <span class="c">// 整个数组已经有序</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> r = n - <span class="n">1</span>;                      <span class="c">// 右侧最长非递减后缀的开头下标</span></span><span class="ln"><span class="no">8</span>        <span class="k">while</span> (r &gt; <span class="n">0</span> &amp;&amp; arr[r - <span class="n">1</span>] &lt;= arr[r]) r--;</span><span class="ln"><span class="no">9</span>        <span class="k">int</span> ans = <span class="t">Math</span>.min(n - <span class="n">1</span> - l, r);   <span class="c">// 只留前缀 或 只留后缀</span></span><span class="ln"><span class="no">10</span>        <span class="c">// 再试「前缀 + 后缀」拼起来：i 在前缀里右移，j 在后缀里找第一个 &gt;= arr[i] 的位置</span></span><span class="ln"><span class="no">11</span>        <span class="k">int</span> i = <span class="n">0</span>, j = r;</span><span class="ln"><span class="no">12</span>        <span class="k">while</span> (i &lt;= l &amp;&amp; j &lt; n) {</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (arr[i] &lt;= arr[j]) { ans = <span class="t">Math</span>.min(ans, j - i - <span class="n">1</span>); i++; }</span><span class="ln"><span class="no">14</span>            <span class="k">else</span> j++;                       <span class="c">// arr[j] 太小，后缀起点右移</span></span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>arr</code>&nbsp;，请你删除一个子数组（可以为空），使得 <code>arr</code>&nbsp;中剩下的元素是 <strong>非递减</strong> 的。</p>
+
+<p>一个子数组指的是原数组中连续的一个子序列。</p>
+
+<p>请你返回满足题目要求的最短子数组的长度。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [1,2,3,10,4,2,3,5]
+<strong>输出：</strong>3
+<strong>解释：</strong>我们需要删除的最短子数组是 [10,4,2] ，长度为 3 。剩余元素形成非递减数组 [1,2,3,3,5] 。
+另一个正确的解为删除子数组 [3,10,4] 。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [5,4,3,2,1]
+<strong>输出：</strong>4
+<strong>解释：</strong>由于数组是严格递减的，我们只能保留一个元素。所以我们需要删除长度为 4 的子数组，要么删除 [5,4,3,2]，要么删除 [4,3,2,1]。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [1,2,3]
+<strong>输出：</strong>0
+<strong>解释：</strong>数组已经是非递减的了，我们不需要删除任何元素。
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [1]
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= arr.length &lt;= 10^5</code></li>
+	<li><code>0 &lt;= arr[i] &lt;= 10^9</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int findLengthOfShortestSubarray(int[] arr) {", "        int n = arr.length;", "        int l = 0;                          // 左侧最长非递减前缀的末尾下标", "        while (l + 1 < n && arr[l] <= arr[l + 1]) l++;", "        if (l == n - 1) return 0;           // 整个数组已经有序", "        int r = n - 1;                      // 右侧最长非递减后缀的开头下标", "        while (r > 0 && arr[r - 1] <= arr[r]) r--;", "        int ans = Math.min(n - 1 - l, r);   // 只留前缀 或 只留后缀", "        // 再试「前缀 + 后缀」拼起来：i 在前缀里右移，j 在后缀里找第一个 >= arr[i] 的位置", "        int i = 0, j = r;", "        while (i <= l && j < n) {", "            if (arr[i] <= arr[j]) { ans = Math.min(ans, j - i - 1); i++; }", "            else j++;                       // arr[j] 太小，后缀起点右移", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1574. 删除最短的子数组使剩余数组有序 —— 图解：复刻 Solution.java 的「前后缀 + 拼接双指针」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [1, 2, 3, 10, 4, 2, 3, 5] };
+
+function trace(input) {
+  var a = input.arr;
+  var n = a.length;
+  var frames = [];
+
+  function cellsPanel(marks, pointers, range) {
+    return Viz.cells(a, { title: '数组 arr', marks: marks || {}, pointers: pointers || [], range: range || null });
+  }
+  function varsPanel(extra) {
+    var items = [{ name: 'ans（当前最短删除长度）', v: ans === Infinity ? '∞' : ans }];
+    (extra || []).forEach(function (e) { items.push(e); });
+    return Viz.vars(items);
+  }
+  function snap(at, key, marks, pointers, range, extra) {
+    frames.push(Viz.frame(at, key, [cellsPanel(marks, pointers, range), varsPanel(extra)]));
+  }
+
+  var ans = Infinity, best = null;   // best = [from, to] 当前最优删除窗口
+
+  // 1) 左升前缀
+  var l = 0;
+  while (l + 1 < n && a[l] <= a[l + 1]) l++;
+  var lMarks = {};
+  for (var i = 0; i <= l; i++) lMarks[i] = 'win';
+  if (l < n - 1) lMarks[l + 1] = 'bad';
+  snap('while (l + 1 < n && arr[l] <= arr[l + 1]) l++;',
+    l === n - 1 ? '一路升到底：数组本来有序，返回 0' : '左升前缀到下标 ' + l + '，下一对开始掉头',
+    lMarks, [{ at: l, label: 'l', cls: 'p-left' }], { from: 0, to: l, label: '非递减前缀' });
+
+  if (l === n - 1) return { frames: frames, result: 0 };
+
+  // 2) 右升后缀 + 两个平凡候选
+  var r = n - 1;
+  while (r > 0 && a[r - 1] <= a[r]) r--;
+  var m2 = {};
+  for (i = 0; i <= l; i++) m2[i] = 'win';
+  for (i = r; i < n; i++) m2[i] = 'win';
+  m2[r - 1] = 'bad';
+  if (n - 1 - l < ans) { ans = n - 1 - l; best = [l + 1, n - 1]; }
+  if (r < ans) { ans = r; best = [0, r - 1]; }
+  snap('int ans = Math.min(n - 1 - l, r);',
+    '右升后缀从 ' + r + ' 开始；只留一边至少要删 ' + ans + ' 个',
+    m2, [{ at: l, label: 'l', cls: 'p-left' }, { at: r, label: 'r', cls: 'p-right' }],
+    { from: r, to: n - 1, label: '非递减后缀' });
+
+  // 3) 拼接双指针：第一个能接上的 (i, j)
+  var j = r;
+  i = 0;
+  var fired = false;
+  while (i <= l && j < n) {
+    if (a[i] <= a[j]) {
+      if (j - i - 1 < ans) { ans = j - i - 1; best = [i + 1, j - 1]; }
+      if (!fired) {
+        fired = true;
+        var m3 = {};
+        for (var k = 0; k <= l; k++) m3[k] = 'win';
+        for (k = r; k < n; k++) m3[k] = 'win';
+        m3[j] = 'cur';
+        snap('if (arr[i] <= arr[j]) { ans = Math.min(ans, j - i - 1); i++; }',
+          '前缀的 ' + a[i] + ' 能接上后缀的 ' + a[j] + '：删中间 ' + (j - i - 1) + ' 个（下标 ' + (i + 1) + '~' + (j - 1) + '）',
+          m3, [{ at: i, label: 'i', cls: 'p-left' }, { at: j, label: 'j', cls: 'p-right' }],
+          null, [{ name: '本轮候选 j-i-1', v: j - i - 1 }]);
+      }
+      i++;
+    } else {
+      j++;
+    }
+  }
+
+  // 4) 最终结果：标出删除窗口
+  var mf = {};
+  for (k = 0; k < n; k++) mf[k] = k >= best[0] && k <= best[1] ? 'dim' : 'win';
+  snap('return ans;',
+    '最短删 ' + ans + ' 个：删下标 ' + best[0] + '~' + best[1] + '，剩下两段拼起来有序',
+    mf, null, null, null);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

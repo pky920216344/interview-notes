@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>任务调度器 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 431 / 1159</span>
+  <nav class="pn"><a href="0694.html">上一篇</a><a href="0147.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">621. </span>任务调度器</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 6</li><li class="algo">数学</li><li class="aux">贪心</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">计数</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">只算公式：max(任务总数, (maxFreq−1)×(n+1)+ties)，ties 是并列最大频次的任务种数，不用真的排程。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>把出现最多的任务排成 <code>maxFreq−1</code> 个大块，每块 <code>n+1</code> 格：同一任务的相邻两次正好隔 <code>n</code> 格。</li><li>每块末位放并列最大频次的任务，末尾再接 <code>ties</code> 个：这个框架就是下界 <code>(maxFreq−1)×(n+1)+ties</code>。</li><li>其他任务往空格里塞永远塞得下（它们不带新冷却），填得满就不用待命，所以答案是 <code>max(任务总数, 框架)</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> leastInterval(<span class="k">char</span>[] tasks, <span class="k">int</span> n) {</span><span class="ln"><span class="no">3</span>        <span class="c">// cnt：每种任务的出现次数</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] cnt = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">char</span> t : tasks) cnt[t - <span class="s">'A'</span>]++;</span><span class="ln"><span class="no">6</span>        <span class="c">// maxFreq：最大频次；ties：并列最大频次的任务种数</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> maxFreq = <span class="n">0</span>, ties = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> c : cnt) {</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (c &gt; maxFreq) { maxFreq = c; ties = <span class="n">1</span>; }</span><span class="ln"><span class="no">10</span>            <span class="k">else</span> <span class="k">if</span> (c == maxFreq &amp;&amp; c &gt; <span class="n">0</span>) ties++;</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="c">// 下界框架：maxFreq-1 个大块每块 n+1 格，末尾再排 ties 个并列任务</span></span><span class="ln"><span class="no">13</span>        <span class="k">return</span> <span class="t">Math</span>.max(tasks.length, (maxFreq - <span class="n">1</span>) * (n + <span class="n">1</span>) + ties);</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个用字符数组&nbsp;<code>tasks</code> 表示的 CPU 需要执行的任务列表，用字母 A 到 Z 表示，以及一个冷却时间 <code>n</code>。每个周期或时间间隔允许完成一项任务。任务可以按任何顺序完成，但有一个限制：两个<strong> 相同种类</strong> 的任务之间必须有长度为<code>n</code>的冷却时间。</p>
+
+<p>返回完成所有任务所需要的<strong> 最短时间间隔</strong>&nbsp;。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<div class="example-block"><strong>输入：</strong>tasks = ["A","A","A","B","B","B"], n = 2</div>
+
+<div class="example-block"><strong>输出：</strong>8</div>
+
+<div class="example-block"><strong>解释：</strong></div>
+
+<div class="example-block">在完成任务 A 之后，你必须等待两个间隔。对任务 B 来说也是一样。在第 3 个间隔，A 和 B 都不能完成，所以你需要待命。在第 4 个间隔，由于已经经过了 2 个间隔，你可以再次执行 A 任务。</div>
+
+<div class="example-block">&nbsp;</div>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<div class="example-block">
+<p><b>输入：</b>tasks = ["A","C","A","B","D","B"], n = 1</p>
+
+<p><b>输出：</b>6</p>
+
+<p><b>解释：</b>一种可能的序列是：A -&gt; B -&gt; C -&gt; D -&gt; A -&gt; B。</p>
+
+<p>由于冷却间隔为 1，你可以在完成另一个任务后重复执行这个任务。</p>
+</div>
+
+<p><strong>示例 3：</strong></p>
+
+<div class="example-block"><strong>输入：</strong>tasks = ["A","A","A","B","B","B"], n = 3</div>
+
+<div class="example-block"><strong>输出：</strong>10</div>
+
+<div class="example-block"><strong>解释：</strong>一种可能的序列为：A -&gt; B -&gt; idle -&gt; idle -&gt; A -&gt; B -&gt; idle -&gt; idle -&gt; A -&gt; B。</div>
+
+<div class="example-block">只有两种任务类型，A 和 B，需要被 3 个间隔分割。这导致重复执行这些任务的间隔当中有两次待命状态。</div>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= tasks.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>tasks[i]</code> 是大写英文字母</li>
+	<li><code>0 &lt;= n &lt;= 100</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int leastInterval(char[] tasks, int n) {", "        // cnt：每种任务的出现次数", "        int[] cnt = new int[26];", "        for (char t : tasks) cnt[t - 'A']++;", "        // maxFreq：最大频次；ties：并列最大频次的任务种数", "        int maxFreq = 0, ties = 0;", "        for (int c : cnt) {", "            if (c > maxFreq) { maxFreq = c; ties = 1; }", "            else if (c == maxFreq && c > 0) ties++;", "        }", "        // 下界框架：maxFreq-1 个大块每块 n+1 格，末尾再排 ties 个并列任务", "        return Math.max(tasks.length, (maxFreq - 1) * (n + 1) + ties);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 621. 任务调度器 —— 图解：复刻 Solution.java 的「频次公式」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { tasks: 'AAABBB', n: 2 };
+
+function trace(input) {
+  var tasks = input.tasks || '';
+  var n = input.n || 0;
+  var frames = [];
+
+  var cnt = {};
+  for (var i = 0; i < tasks.length; i++) cnt[tasks[i]] = (cnt[tasks[i]] || 0) + 1;
+  var keys = Object.keys(cnt).sort();
+  var maxFreq = 0, ties = 0, top = '', tiesRest = [];
+  keys.forEach(function (k) {
+    if (cnt[k] > maxFreq) { maxFreq = cnt[k]; ties = 1; top = k; tiesRest = []; }
+    else if (cnt[k] === maxFreq) { ties++; tiesRest.push(k); }
+  });
+
+  function countPanel(hitSet) {
+    var rows = keys.map(function (k) {
+      return { k: k, v: '×' + cnt[k], cls: hitSet && hitSet[k] ? 'hit' : '' };
+    });
+    return Viz.table('每种任务的次数', rows, { hint: '（只列出现过的）' });
+  }
+
+  var formula = (maxFreq - 1) * (n + 1) + ties;
+
+  frames.push(Viz.frame('int[] cnt = new int[26];', '先数每种任务出现几次，后面全看最大频次',
+    [countPanel(null)]));
+
+  var hit = {};
+  hit[top] = true;
+  tiesRest.forEach(function (k) { hit[k] = true; });
+  frames.push(Viz.frame('if (c > maxFreq) { maxFreq = c; ties = 1; }',
+    '最大频次 ' + maxFreq + '；并列最大频次的任务共 ' + ties + ' 种',
+    [countPanel(hit),
+     Viz.vars([{ name: 'maxFreq', v: maxFreq, cls: 'chg' }, { name: 'ties', v: ties, cls: 'chg' }])]));
+
+  // 下界框架：maxFreq-1 个大块（最高频任务 + n 格冷却），末尾接其余并列任务
+  var sk = [];
+  for (var r = 0; r < maxFreq - 1; r++) {
+    sk.push({ v: top, cls: 'win' });
+    for (var s = 0; s < n; s++) sk.push({ v: '·', cls: 'dim' });
+  }
+  sk.push({ v: top, cls: 'win' });
+  tiesRest.forEach(function (k) { sk.push({ v: k, cls: 'new' }); });
+  frames.push(Viz.frame('// 下界框架：maxFreq-1 个大块每块 n+1 格，末尾再排 ties 个并列任务',
+    '框架共 ' + formula + ' 格：每块 ' + top + ' 到下一个 ' + top + ' 隔 ' + n + ' 格',
+    [Viz.cells(sk.map(function (c) { return c.v; }), {
+      title: '下界框架（' + top + ' = 最高频任务，· = 冷却空格，' + (tiesRest.join('') || '无') + ' = 并列任务）',
+      marks: sk.map(function (c) { return c.cls; })
+    })]));
+
+  frames.push(Viz.frame('return Math.max(tasks.length, (maxFreq - 1) * (n + 1) + ties);',
+    '任务填得满框架就不待命：ans = max(' + tasks.length + ', ' + formula + ')',
+    [Viz.vars([
+      { name: '任务总数', v: tasks.length },
+      { name: '(maxFreq−1)×(n+1)+ties', v: formula, cls: 'chg' },
+      { name: '答案', v: Math.max(tasks.length, formula), cls: 'done' }
+    ])]));
+
+  return { frames: frames, result: Math.max(tasks.length, formula) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

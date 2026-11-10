@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>漂亮数组 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1100 / 1159</span>
+  <nav class="pn"><a href="0323.html">上一篇</a><a href="0689.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">932. </span>漂亮数组</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">分治</li><li class="aux">哈希表</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">分治</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">分治：f(n) = f(⌈n/2⌉)×2−1（全奇）拼 f(⌊n/2⌋)×2（全偶）——奇段在前偶段在后，跨段必无中项。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>线性变换保持漂亮：若 A 漂亮，<code>2A−1</code>、<code>2A</code> 也漂亮（等式两边同乘同加减仍成立）。</li><li>奇 + 偶 = 奇 ≠ <code>2·nums[k]</code>（偶数）：i、j 一奇一偶时直接无解，只剩同段内的情形。</li><li><code>f(⌈n/2⌉)</code> 是 1..⌈n/2⌉ 的排列，<code>×2−1</code> 恰好铺满 <code>[1,n]</code> 的全部奇数；<code>f(⌊n/2⌋)×2</code> 同理铺偶数，拼接即长度 n 的排列。</li><li>哈希表记忆化子问题，避免重复递归。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="k">int</span>[]&gt; memo = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="k">int</span>[] beautifulArray(<span class="k">int</span> n) {</span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] cached = memo.get(n);</span><span class="ln"><span class="no">8</span>        <span class="k">if</span> (cached != <span class="k">null</span>) <span class="k">return</span> cached;</span><span class="ln"><span class="no">9</span>        <span class="k">if</span> (n == <span class="n">1</span>) <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{<span class="n">1</span>};</span><span class="ln"><span class="no">10</span>        <span class="k">int</span>[] res = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> i = <span class="n">0</span>;</span><span class="ln"><span class="no">12</span>        <span class="c">// 左半：f(⌈n/2⌉) 整体 ×2−1，正好是 [1,n] 里全部奇数</span></span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> x : beautifulArray((n + <span class="n">1</span>) / <span class="n">2</span>)) res[i++] = x * <span class="n">2</span> - <span class="n">1</span>;</span><span class="ln"><span class="no">14</span>        <span class="c">// 右半：f(⌊n/2⌋) 整体 ×2，正好是全部偶数</span></span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> x : beautifulArray(n / <span class="n">2</span>)) res[i++] = x * <span class="n">2</span>;</span><span class="ln"><span class="no">16</span>        memo.put(n, res);</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> res;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>如果长度为 <code>n</code> 的数组 <code>nums</code> 满足下述条件，则认为该数组是一个 <strong>漂亮数组</strong> ：</p>
+
+<ul>
+	<li><code>nums</code> 是由范围 <code>[1, n]</code> 的整数组成的一个排列。</li>
+	<li>对于每个 <code>0 &lt;= i &lt; j &lt; n</code> ，均不存在下标 <code>k</code>（<code>i &lt; k &lt; j</code>）使得 <code>2 * nums[k] == nums[i] + nums[j]</code> 。</li>
+</ul>
+
+<p>给你整数 <code>n</code> ，返回长度为 <code>n</code> 的任一 <strong>漂亮数组</strong> 。本题保证对于给定的 <code>n</code> 至少存在一个有效答案。</p>
+
+
+
+<p><strong class="example">示例 1 ：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 4
+<strong>输出：</strong>[2,1,4,3]
+</pre>
+
+<p><strong class="example">示例 2 ：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 5
+<strong>输出：</strong>[3,1,2,5,4]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 1000</code></li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private Map<Integer, int[]> memo = new HashMap<>();", "", "    public int[] beautifulArray(int n) {", "        int[] cached = memo.get(n);", "        if (cached != null) return cached;", "        if (n == 1) return new int[]{1};", "        int[] res = new int[n];", "        int i = 0;", "        // 左半：f(⌈n/2⌉) 整体 ×2−1，正好是 [1,n] 里全部奇数", "        for (int x : beautifulArray((n + 1) / 2)) res[i++] = x * 2 - 1;", "        // 右半：f(⌊n/2⌋) 整体 ×2，正好是全部偶数", "        for (int x : beautifulArray(n / 2)) res[i++] = x * 2;", "        memo.put(n, res);", "        return res;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 932. 漂亮数组 —— 图解：复刻 Solution.java 的分治：f(n) = [f(⌈n/2⌉)×2−1] + [f(⌊n/2⌋)×2]。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 5 };
+
+function trace(input) {
+  var frames = [];
+  var story = input.n === 5;   // 图解只在 n=5 的示例上演，随机用例只算结果
+
+  function f(n) {
+    if (n === 1) return [1];
+    var top5 = story && n === 5;
+    if (top5) {
+      frames.push(Viz.frame('for (int x : beautifulArray((n + 1) / 2)) res[i++] = x * 2 - 1;',
+        'n=' + n + '：奇数要 ' + Math.ceil(n / 2) + ' 个、偶数要 ' + Math.floor(n / 2) + ' 个，分头递归',
+        [Viz.vars([
+          { name: 'n', v: String(n), cls: '' },
+          { name: '奇数个数 ⌈n/2⌉', v: String(Math.ceil(n / 2)), cls: 'win' },
+          { name: '偶数个数 ⌊n/2⌋', v: String(Math.floor(n / 2)), cls: 'win' }
+        ])]));
+    }
+    var oddRaw = f(Math.floor((n + 1) / 2));
+    var evenRaw = f(Math.floor(n / 2));
+    var res = [], i = 0;
+    for (var k = 0; k < oddRaw.length; k++) res[i++] = oddRaw[k] * 2 - 1;
+    if (top5) {
+      frames.push(Viz.frame('for (int x : beautifulArray(n / 2)) res[i++] = x * 2;',
+        '递归回 f(' + Math.floor((n + 1) / 2) + ')=' + oddRaw + '，×2−1 → 奇数 ' + res.join(','),
+        [cells('递归结果（原值）', oddRaw, 'cur'), cells('res：奇数已就位', res, 'win')]));
+    }
+    for (var k = 0; k < evenRaw.length; k++) res[i++] = evenRaw[k] * 2;
+    if (top5) {
+      var marks = {};
+      for (var m = 0; m < res.length; m++) marks[m] = m < oddRaw.length ? 'done' : 'new';
+      frames.push(Viz.frame('memo.put(n, res);',
+        '递归回 f(' + Math.floor(n / 2) + ')=' + evenRaw + '，×2 → 偶数，数组填满',
+        [cells('递归结果（原值）', evenRaw, 'cur'), cells('res 填满', res, marks)]));
+    }
+    return res;
+  }
+
+  var res = f(input.n);
+  if (story) {
+    var all = {};
+    for (var k = 0; k < res.length; k++) all[k] = 'done';
+    frames.push(Viz.frame('return res;', '拼好 [' + res.join(',') + ']：奇前偶后，跨段取数凑不出中项', [cells('漂亮数组', res, all)]));
+  }
+  return { frames: frames, result: res };
+}
+
+function cells(title, arr, marks) {
+  return Viz.cells(arr.slice(), { title: title, marks: marks || {} });
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

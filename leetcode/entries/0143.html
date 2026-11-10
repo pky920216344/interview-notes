@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>重排链表 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 25 / 1159</span>
+  <nav class="pn"><a href="0054.html">上一篇</a><a href="0141.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">143. </span>重排链表</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 259</li><li class="algo">链表</li><li class="aux">双指针</li><li class="tag">栈</li><li class="tag">递归</li><li class="tag">链表</li><li class="tag">双指针</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">三步：快慢指针找中点，反转后半段，再把前后两半交替合并（前一个、后一个……）。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>快慢指针：<code>slow</code> 走一步、<code>fast</code> 走两步，走不动时 <code>slow</code> 停在前半段最后一个结点（奇数个时前半段多一个）。</li><li><code>second = reverse(slow.next)</code> 反转后半段，紧接着 <code>slow.next = null</code> 断开前半段，否则最后会成环。</li><li>交替合并：每轮先存好 <code>n1</code>、<code>n2</code>，再 <code>first.next = second</code>、<code>second.next = n1</code>，两个指针各进一步。</li><li>后半段不会比前半段长，所以 <code>second</code> 用完时就合并完了；链表为空或只有一个结点直接返回。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">void</span> reorderList(<span class="t">ListNode</span> head) {</span><span class="ln"><span class="no">3</span>        <span class="k">if</span> (head == <span class="k">null</span> || head.next == <span class="k">null</span>) <span class="k">return</span>;</span><span class="ln"><span class="no">4</span>        <span class="c">// 1. 快慢指针找中点：slow 停在前半段的最后一个结点</span></span><span class="ln"><span class="no">5</span>        <span class="t">ListNode</span> slow = head, fast = head;</span><span class="ln"><span class="no">6</span>        <span class="k">while</span> (fast.next != <span class="k">null</span> &amp;&amp; fast.next.next != <span class="k">null</span>) {</span><span class="ln"><span class="no">7</span>            slow = slow.next;</span><span class="ln"><span class="no">8</span>            fast = fast.next.next;</span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="c">// 2. 后半段反转，并和前半段断开</span></span><span class="ln"><span class="no">11</span>        <span class="t">ListNode</span> second = reverse(slow.next);</span><span class="ln"><span class="no">12</span>        slow.next = <span class="k">null</span>;</span><span class="ln"><span class="no">13</span>        <span class="c">// 3. 前后两半交替接：前一个、后一个、前一个……</span></span><span class="ln"><span class="no">14</span>        <span class="t">ListNode</span> first = head;</span><span class="ln"><span class="no">15</span>        <span class="k">while</span> (second != <span class="k">null</span>) {</span><span class="ln"><span class="no">16</span>            <span class="t">ListNode</span> n1 = first.next, n2 = second.next;</span><span class="ln"><span class="no">17</span>            first.next = second;</span><span class="ln"><span class="no">18</span>            second.next = n1;</span><span class="ln"><span class="no">19</span>            first = n1;</span><span class="ln"><span class="no">20</span>            second = n2;</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span> </span><span class="ln"><span class="no">24</span>    <span class="k">private</span> <span class="t">ListNode</span> reverse(<span class="t">ListNode</span> head) {</span><span class="ln"><span class="no">25</span>        <span class="t">ListNode</span> prev = <span class="k">null</span>;</span><span class="ln"><span class="no">26</span>        <span class="k">while</span> (head != <span class="k">null</span>) {</span><span class="ln"><span class="no">27</span>            <span class="t">ListNode</span> next = head.next;</span><span class="ln"><span class="no">28</span>            head.next = prev;</span><span class="ln"><span class="no">29</span>            prev = head;</span><span class="ln"><span class="no">30</span>            head = next;</span><span class="ln"><span class="no">31</span>        }</span><span class="ln"><span class="no">32</span>        <span class="k">return</span> prev;</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个单链表 <code>L</code><em> </em>的头节点 <code>head</code> ，单链表 <code>L</code> 表示为：</p>
+
+<pre>
+L<sub>0</sub> → L<sub>1</sub> → … → L<sub>n - 1</sub> → L<sub>n</sub>
+</pre>
+
+<p>请将其重新排列后变为：</p>
+
+<pre>
+L<sub>0</sub> → L<sub>n</sub> → L<sub>1</sub> → L<sub>n - 1</sub> → L<sub>2</sub> → L<sub>n - 2</sub> → …</pre>
+
+<p>不能只是单纯的改变节点内部的值，而是需要实际的进行节点交换。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/7aa7a5518ba9.png" style="width: 240px; " /></p>
+
+<pre>
+<strong>输入：</strong>head = [1,2,3,4]
+<strong>输出：</strong>[1,4,2,3]</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/67228f406ba3.png" style="width: 320px; " /></p>
+
+<pre>
+<strong>输入：</strong>head = [1,2,3,4,5]
+<strong>输出：</strong>[1,5,2,4,3]</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>链表的长度范围为 <code>[1, 5 * 10<sup>4</sup>]</code></li>
+	<li><code>1 &lt;= node.val &lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public void reorderList(ListNode head) {", "        if (head == null || head.next == null) return;", "        // 1. 快慢指针找中点：slow 停在前半段的最后一个结点", "        ListNode slow = head, fast = head;", "        while (fast.next != null && fast.next.next != null) {", "            slow = slow.next;", "            fast = fast.next.next;", "        }", "        // 2. 后半段反转，并和前半段断开", "        ListNode second = reverse(slow.next);", "        slow.next = null;", "        // 3. 前后两半交替接：前一个、后一个、前一个……", "        ListNode first = head;", "        while (second != null) {", "            ListNode n1 = first.next, n2 = second.next;", "            first.next = second;", "            second.next = n1;", "            first = n1;", "            second = n2;", "        }", "    }", "", "    private ListNode reverse(ListNode head) {", "        ListNode prev = null;", "        while (head != null) {", "            ListNode next = head.next;", "            head.next = prev;", "            prev = head;", "            head = next;", "        }", "        return prev;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 143. 重排链表 —— 图解：复刻 Solution.java 的「快慢指针找中点 → 反转后半段 → 前后两半交替合并」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { head: [1, 2, 3, 4, 5, 6] };
+
+function trace(input) {
+  var frames = [];
+
+  function node(v) { return { v: v, next: null }; }
+  var head = null;
+  (function () {
+    var t = null;
+    input.head.forEach(function (x) { var u = node(x); if (t === null) head = u; else t.next = u; t = u; });
+  })();
+
+  function valsOf(h) { var a = []; for (var p = h; p !== null; p = p.next) a.push(p.v); return a; }
+  // 值用箭头连起来；太长就截断，免得说明文字超长
+  function arrow(vals, max) { return vals.length > max ? vals.slice(0, max - 1).join('→') + '→…' : vals.join('→'); }
+
+  // 一条链画成一个面板：直线箭头，尾巴画 ∅。
+  // o.win：标青色的结点；o.fresh：标蓝色的结点；o.done：全标绿色；o.hot：这些结点的出边画成「新写入」的颜色
+  function chain(from, title, ptrs, o) {
+    o = o || {};
+    var nodes = [], edges = [], marks = {}, pointers = [];
+    for (var p = from; p !== null; p = p.next) nodes.push(p);
+    nodes.forEach(function (u, i) {
+      if (o.done) marks[i] = 'done';
+      else if (o.win && o.win.indexOf(u) >= 0) marks[i] = 'win';
+      else if (o.fresh && o.fresh.indexOf(u) >= 0) marks[i] = 'new';
+      if (i + 1 < nodes.length) edges.push([i, i + 1, o.hot && o.hot.indexOf(u) >= 0 ? 'new' : '']);
+    });
+    ptrs.forEach(function (q) {
+      var at = nodes.indexOf(q[1]);
+      if (at >= 0) pointers.push({ at: at, label: q[0], cls: q[2] });
+    });
+    return Viz.list(nodes.map(function (u) { return u.v; }), { title: title, marks: marks, edges: edges, nulls: nodes.length ? [nodes.length - 1] : [], pointers: pointers });
+  }
+
+  // 下面照着 Java 一行行复刻
+  function reverse(h) {
+    var prev = null;
+    while (h !== null) {
+      var next = h.next;
+      h.next = prev;
+      prev = h;
+      h = next;
+    }
+    return prev;
+  }
+
+  if (head === null || head.next === null) return { frames: frames, result: valsOf(head) };
+
+  var slow = head, fast = head;
+  while (fast.next !== null && fast.next.next !== null) {
+    slow = slow.next;
+    fast = fast.next.next;
+  }
+  var front = [];   // 前半段：head 到 slow
+  for (var p = head; p !== null; p = p.next) { front.push(p); if (p === slow) break; }
+  frames.push(Viz.frame('fast = fast.next.next;', '快慢指针：fast 走不动时，slow 停在前半段末尾',
+    [chain(head, '链表（青色是前半段）', [['slow', slow, 'p-slow'], ['fast', fast, 'p-fast']], { win: front })]));
+
+  var second = reverse(slow.next);
+  slow.next = null;
+  var back = [];    // 反转后的后半段
+  for (p = second; p !== null; p = p.next) back.push(p);
+  frames.push(Viz.frame('slow.next = null;', '后半段反转成 ' + arrow(valsOf(second), 4) + '，并在 slow 处和前半段断开',
+    [chain(head, '前半段（从 head 起）', [['head', head, 'p-head'], ['slow', slow, 'p-slow']], { win: front }),
+     chain(second, '后半段，已反转（从 second 起）', [['second', second, 'p-next']], { fresh: back, hot: back })]));
+
+  var first = head, woven = [], round = 0;
+  while (second !== null) {
+    var n1 = first.next, n2 = second.next;
+    first.next = second;
+    second.next = n1;
+    woven.push(first, second);
+    first = n1;
+    second = n2;
+    round++;
+    if (round === 1) {
+      var panels = [chain(head, '从 head 起：已接好的（青色）+ 前半段剩下的', [['first', first, 'p-head']], { win: woven, hot: woven })];
+      if (second !== null) panels.push(chain(second, '后半段剩下的（从 second 起）', [['second', second, 'p-next']]));
+      frames.push(Viz.frame('second = n2;', '交替接上一对：' + woven[0].v + '→' + woven[1].v + (n1 !== null ? '→' + n1.v : '') + '，first、second 各进一步', panels));
+    }
+  }
+
+  frames.push(Viz.frame('while (second != null) {', 'second 用完了，交替接完：' + arrow(valsOf(head), 6),
+    [chain(head, '重排后的链表', [], { done: true })]));
+
+  return { frames: frames, result: valsOf(head) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

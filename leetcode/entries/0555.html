@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>分割连接字符串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1080 / 1159</span>
+  <nav class="pn"><a href="0835.html">上一篇</a><a href="1282.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">555. </span>分割连接字符串</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">模拟</li><li class="aux">贪心</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">字符串</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">枚举切分点落在哪个串的哪个字符后；其余串各自取原串/反串里大的朝向，切分串按「残尾+绕回残头」试两种朝向。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>不被切开的串整段出现，而反串长度不变：逐串独立取 <code>max(原串, 反串)</code> 就是它的最优朝向。</li><li>切分点在第 <code>i</code> 串的 <code>k</code> 字符后：正则串 = <code>o[k+1..] + i 之后的串 + i 之前的串 + o[0..k]</code>——环从切点后一位读起。</li><li>对第 <code>i</code> 串两种朝向、每个 <code>k</code> 都试一遍，取字典序最大的候选。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(L²)（L 为总字符数），空间复杂度 O(L)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> splitLoopedString(<span class="t">String</span>[] strs) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = strs.length;</span><span class="ln"><span class="no">6</span>        <span class="c">// 不参与切分的串一律取原串/反串中字典序大的朝向</span></span><span class="ln"><span class="no">7</span>        <span class="t">String</span>[] best = <span class="k">new</span> <span class="t">String</span>[n];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">9</span>            <span class="t">String</span> rev = <span class="k">new</span> <span class="t">StringBuilder</span>(strs[i]).reverse().toString();</span><span class="ln"><span class="no">10</span>            best[i] = rev.compareTo(strs[i]) &gt; <span class="n">0</span> ? rev : strs[i];</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="t">String</span> ans = <span class="s">""</span>;</span><span class="ln"><span class="no">13</span>        <span class="c">// 枚举切分点：它总落在某个串的某个字符后面</span></span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">15</span>            <span class="c">// 其余串按原顺序拼成两段：i 之后一段、i 之前一段（环回的顺序）</span></span><span class="ln"><span class="no">16</span>            <span class="t">StringBuilder</span> s1 = <span class="k">new</span> <span class="t">StringBuilder</span>(), s2 = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">17</span>            <span class="k">for</span> (<span class="k">int</span> j = i + <span class="n">1</span>; j &lt; n; j++) s1.append(best[j]);</span><span class="ln"><span class="no">18</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; i; j++) s2.append(best[j]);</span><span class="ln"><span class="no">19</span>            <span class="t">String</span> aft = s1.toString(), bef = s2.toString();</span><span class="ln"><span class="no">20</span>            <span class="t">String</span> rev = <span class="k">new</span> <span class="t">StringBuilder</span>(strs[i]).reverse().toString();</span><span class="ln"><span class="no">21</span>            <span class="k">for</span> (<span class="t">String</span> o : <span class="k">new</span> <span class="t">String</span>[]{strs[i], rev}) {</span><span class="ln"><span class="no">22</span>                <span class="c">// 切在 o[k] 后面：先读完 o[k+1..]，绕一圈最后读 o[0..k]</span></span><span class="ln"><span class="no">23</span>                <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; o.length(); k++) {</span><span class="ln"><span class="no">24</span>                    <span class="t">String</span> cand = o.substring(k + <span class="n">1</span>) + aft + bef + o.substring(<span class="n">0</span>, k + <span class="n">1</span>);</span><span class="ln"><span class="no">25</span>                    <span class="k">if</span> (cand.compareTo(ans) &gt; <span class="n">0</span>) ans = cand;</span><span class="ln"><span class="no">26</span>                }</span><span class="ln"><span class="no">27</span>            }</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String splitLoopedString(String[] strs) {", "        int n = strs.length;", "        // 不参与切分的串一律取原串/反串中字典序大的朝向", "        String[] best = new String[n];", "        for (int i = 0; i < n; i++) {", "            String rev = new StringBuilder(strs[i]).reverse().toString();", "            best[i] = rev.compareTo(strs[i]) > 0 ? rev : strs[i];", "        }", "        String ans = \"\";", "        // 枚举切分点：它总落在某个串的某个字符后面", "        for (int i = 0; i < n; i++) {", "            // 其余串按原顺序拼成两段：i 之后一段、i 之前一段（环回的顺序）", "            StringBuilder s1 = new StringBuilder(), s2 = new StringBuilder();", "            for (int j = i + 1; j < n; j++) s1.append(best[j]);", "            for (int j = 0; j < i; j++) s2.append(best[j]);", "            String aft = s1.toString(), bef = s2.toString();", "            String rev = new StringBuilder(strs[i]).reverse().toString();", "            for (String o : new String[]{strs[i], rev}) {", "                // 切在 o[k] 后面：先读完 o[k+1..]，绕一圈最后读 o[0..k]", "                for (int k = 0; k < o.length(); k++) {", "                    String cand = o.substring(k + 1) + aft + bef + o.substring(0, k + 1);", "                    if (cand.compareTo(ans) > 0) ans = cand;", "                }", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 555. 分割连接字符串（会员题）—— 图解：复刻 Solution.java 的「枚举切分点 + 其余串取大朝向」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { strs: ['abc', 'xyz'] };
+
+function trace(input) {
+  var strs = input.strs;
+  var n = strs.length;
+  var frames = [];
+  var BEST = 'best[i] = rev.compareTo(strs[i]) > 0 ? rev : strs[i];';
+  var CAND = 'String cand = o.substring(k + 1) + aft + bef + o.substring(0, k + 1);';
+  var RET = 'return ans;';
+
+  var best = [];
+  for (var i = 0; i < n; i++) {
+    var rv = strs[i].split('').reverse().join('');
+    best.push(rv > strs[i] ? rv : strs[i]);
+  }
+
+  function bestPanel(hits) {
+    var rows = strs.map(function (s, i) {
+      return { k: s, v: '反串 ' + strs[i].split('').reverse().join('') + '，取 ' + best[i], cls: hits && hits[i] ? 'hit' : '' };
+    });
+    return Viz.table('每个串先定朝向：取原串/反串中字典序大的', rows);
+  }
+  function cutPanel(o, k) {
+    var marks = {};
+    if (k >= 0) marks[k] = 'cur';
+    return Viz.cells(o.split(''), {
+      title: '切分串朝向 o（切在光标字符后面）', marks: marks,
+      pointers: k >= 0 ? [{ at: k, label: '切', cls: 'p-cur' }] : [], hideIndex: true
+    });
+  }
+  function varsPanel(cand, ans) {
+    return Viz.vars([
+      { name: '候选正则串', v: cand || '（无）', cls: 'chg' },
+      { name: 'ans（目前最大）', v: ans || '（空）' }
+    ]);
+  }
+
+  frames.push(Viz.frame(BEST, '先给每个串定朝向：abc→cba、xyz→zyx', [bestPanel(null)]));
+
+  var ans = '';
+  var shot = false;
+  for (i = 0; i < n; i++) {
+    var aft = '', bef = '';
+    for (var j = i + 1; j < n; j++) aft += best[j];
+    for (j = 0; j < i; j++) bef += best[j];
+    var rev = strs[i].split('').reverse().join('');
+    var orients = [strs[i], rev];
+    for (var oi = 0; oi < orients.length; oi++) {
+      var o = orients[oi];
+      for (var k = 0; k < o.length; k++) {
+        var cand = o.slice(k + 1) + aft + bef + o.slice(0, k + 1);
+        if (cand > ans) {
+          ans = cand;
+          // 示例里制胜的一刀：切在反串 cba 的 a 后面
+          if (!shot && o === 'cba' && k === 2 && cand === 'zyxcba') {
+            shot = true;
+            frames.push(Viz.frame(CAND, '切在 a 后面：先读 zyx，绕一圈最后读 cba', [cutPanel(o, k), varsPanel(cand, ans)]));
+          }
+        }
+      }
+    }
+  }
+
+  frames.push(Viz.frame(RET, '所有切分点试完：答案 = ' + ans, [bestPanel([0]), varsPanel('', ans)]));
+  return { frames: frames, result: ans };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

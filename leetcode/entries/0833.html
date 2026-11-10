@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字符串中的查找与替换 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 898 / 1159</span>
+  <nav class="pn"><a href="0157.html">上一篇</a><a href="0823.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">833. </span>字符串中的查找与替换</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">模拟</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">替换同时发生 → 每条都对着原 s 判定：先记下「每个位置该应用哪条替换」，再一趟扫描拼接（命中写 target、跳原段长）。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>关键：所有替换<strong>同时</strong>作用在原 <code>s</code> 上，所以每条替换都用原 <code>s</code> 判定 <code>sources[i]</code> 是否出现在 <code>indices[i]</code> 处（<code>s.startsWith(src, idx)</code>），互不影响。</li><li><code>match[pos]</code> 记录该位置要应用的替换编号（-1 表示原样），一条替换只占它自己的起点。</li><li>扫描拼接：有标记就写 <code>targets[m]</code> 并把 <code>pos</code> 跳过 <code>sources[m].length()</code>（<strong>跳的是原段长度</strong>），没标记就原样抄一个字符。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + 总替换长度)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> findReplaceString(<span class="t">String</span> s, <span class="k">int</span>[] indices, <span class="t">String</span>[] sources, <span class="t">String</span>[] targets) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] match = <span class="k">new</span> <span class="k">int</span>[n];   <span class="c">// match[pos] = 该位置要应用的替换编号，-1 表示原样保留</span></span><span class="ln"><span class="no">7</span>        <span class="t">Arrays</span>.fill(match, -<span class="n">1</span>);</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; indices.length; i++) {</span><span class="ln"><span class="no">9</span>            <span class="k">int</span> idx = indices[i];</span><span class="ln"><span class="no">10</span>            <span class="c">// 都对原 s 判断：替换同时发生，互不影响</span></span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (s.startsWith(sources[i], idx)) match[idx] = i;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> pos = <span class="n">0</span>; pos &lt; n; ) {</span><span class="ln"><span class="no">15</span>            <span class="k">int</span> m = match[pos];</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (m &lt; <span class="n">0</span>) { sb.append(s.charAt(pos++)); <span class="k">continue</span>; }</span><span class="ln"><span class="no">17</span>            sb.append(targets[m]);          <span class="c">// 命中：整段写成 target</span></span><span class="ln"><span class="no">18</span>            pos += sources[m].length();     <span class="c">// 跳过的是原段的长度</span></span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你会得到一个字符串 <code>s</code>&nbsp;(索引从 0 开始)，你必须对它执行 <code>k</code> 个替换操作。替换操作以三个长度均为 <code>k</code> 的并行数组给出：<code>indices</code>,&nbsp;<code>sources</code>,&nbsp;&nbsp;<code>targets</code>。</p>
+
+<p>要完成第 <code>i</code> 个替换操作:</p>
+
+<ol>
+	<li>检查 <strong>子字符串</strong> &nbsp;<code>sources[i]</code>&nbsp;是否出现在 <strong>原字符串</strong> <code>s</code> 的索引&nbsp;<code>indices[i]</code>&nbsp;处。</li>
+	<li>如果没有出现，&nbsp;<strong>什么也不做</strong>&nbsp;。</li>
+	<li>如果出现，则用&nbsp;<code>targets[i]</code>&nbsp;<strong>替换</strong>&nbsp;该子字符串。</li>
+</ol>
+
+<p>例如，如果 <code>s = "abcd"</code>&nbsp;，&nbsp;<code>indices[i] = 0</code> ,&nbsp;<code>sources[i] = "ab"</code>， <code>targets[i] = "eee"</code> ，那么替换的结果将是 <code>"<u>eee</u>cd"</code> 。</p>
+
+<p>所有替换操作必须 <strong>同时</strong> 发生，这意味着替换操作不应该影响彼此的索引。测试用例保证元素间<strong>不会重叠 </strong>。</p>
+
+<ul>
+	<li>例如，一个 <code>s = "abc"</code> ，&nbsp; <code>indices = [0,1]</code> ， <code>sources = ["ab"，"bc"]</code>&nbsp;的测试用例将不会生成，因为 <code>"ab"</code> 和 <code>"bc"</code> 替换重叠。</li>
+</ul>
+
+<p><em>在对 <code>s</code>&nbsp;执行所有替换操作后返回 <strong>结果字符串</strong> 。</em></p>
+
+<p><strong>子字符串</strong> 是字符串中连续的字符序列。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/3d25c267e7da.png" /></p>
+
+<pre>
+<strong>输入：</strong>s = "abcd", indices = [0,2], sources = ["a","cd"], targets = ["eee","ffff"]
+<strong>输出：</strong>"eeebffff"
+<strong>解释：
+</strong>"a" 从 s 中的索引 0 开始，所以它被替换为 "eee"。
+"cd" 从 s 中的索引 2 开始，所以它被替换为 "ffff"。
+</pre>
+
+<p><strong>示例 2：</strong><img src="../assets/img/0e7d34504ad9.png" /></p>
+
+<pre>
+<strong>输入：</strong>s = "abcd", indices = [0,2], sources = ["ab","ec"], targets = ["eee","ffff"]
+<strong>输出：</strong>"eeecd"
+<strong>解释：
+</strong>"ab" 从 s 中的索引 0 开始，所以它被替换为 "eee"。
+"ec" 没有从<strong>原始的</strong> S 中的索引 2 开始，所以它没有被替换。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 1000</code></li>
+	<li><code>k == indices.length == sources.length == targets.length</code></li>
+	<li><code>1 &lt;= k &lt;= 100</code></li>
+	<li><code>0 &lt;= indices[i] &lt; s.length</code></li>
+	<li><code>1 &lt;= sources[i].length, targets[i].length &lt;= 50</code></li>
+	<li><code>s</code> 仅由小写英文字母组成</li>
+	<li><code>sources[i]</code> 和 <code>targets[i]</code> 仅由小写英文字母组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String findReplaceString(String s, int[] indices, String[] sources, String[] targets) {", "        int n = s.length();", "        int[] match = new int[n];   // match[pos] = 该位置要应用的替换编号，-1 表示原样保留", "        Arrays.fill(match, -1);", "        for (int i = 0; i < indices.length; i++) {", "            int idx = indices[i];", "            // 都对原 s 判断：替换同时发生，互不影响", "            if (s.startsWith(sources[i], idx)) match[idx] = i;", "        }", "        StringBuilder sb = new StringBuilder();", "        for (int pos = 0; pos < n; ) {", "            int m = match[pos];", "            if (m < 0) { sb.append(s.charAt(pos++)); continue; }", "            sb.append(targets[m]);          // 命中：整段写成 target", "            pos += sources[m].length();     // 跳过的是原段的长度", "        }", "        return sb.toString();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 833. 字符串中的查找与替换 —— 图解：先对原 s 逐条判定，再一趟扫描拼接，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'abcd', indices: [0, 2], sources: ['ab', 'ec'], targets: ['eee', 'ffff'] };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+  var match = [];                       // match[pos] = 替换编号 / -1，对应 Java 里的 match
+  for (var p = 0; p < n; p++) match.push(-1);
+  var ok = [];                          // 每条替换是否命中（面板展示用）
+  var sb = [];
+  var CHECK = 'if (s.startsWith(sources[i], idx)) match[idx] = i;';
+
+  function cellsPanel(marks) {
+    var items = s.split('');
+    return Viz.cells(items, { title: '原字符串 s（所有判定都对它做）', marks: marks || {} });
+  }
+  function opsPanel() {
+    var rows = [];
+    for (var i = 0; i < input.indices.length; i++) {
+      rows.push({
+        k: 'idx ' + input.indices[i],
+        v: input.sources[i] + ' → ' + input.targets[i],
+        cls: ok[i] === undefined ? '' : (ok[i] ? 'hit' : 'dim')
+      });
+    }
+    return Viz.table('替换规则（判定结果）', rows);
+  }
+  function snap(at, key, marks, sbMark) {
+    var panels = [cellsPanel(marks), opsPanel()];
+    if (sb.length > 0) panels.push(Viz.cells(sb, { title: 'sb：正在拼接的结果', marks: sbMark || {} }));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  // 第一阶段：逐条对原 s 判定
+  for (var i = 0; i < input.indices.length; i++) {
+    var idx = input.indices[i], src = input.sources[i];
+    var hit = s.slice(idx, idx + src.length) === src;
+    ok[i] = hit;
+    if (hit) match[idx] = i;
+    if (i < 2) {                          // 只拍前两条的判定瞬间
+      var marks = {};
+      for (var d = 0; d < src.length; d++) marks[idx + d] = hit ? 'win' : 'bad';
+      snap(CHECK,
+        hit ? '「' + src + '」和 s[' + idx + '..) 相等 → 命中，记下这条替换'
+            : '「' + src + '」和 s[' + idx + '..) 不等 → 这条作废',
+        marks, null);
+    }
+  }
+
+  // 第二阶段：扫描拼接
+  var pos = 0;
+  var doneMarks = {};
+  for (i = 0; i < input.indices.length; i++) {
+    if (ok[i]) for (d = 0; d < input.sources[i].length; d++) doneMarks[input.indices[i] + d] = 'done';
+  }
+  var snappedHit = false, snappedPlain = false;
+  while (pos < n) {
+    var m = match[pos];
+    if (m < 0) {
+      var start = sb.length;
+      sb.push(s.charAt(pos));
+      if (!snappedPlain) {                // 先写后拍：sb 面板能看到刚写入的格子
+        snappedPlain = true;
+        var mk = {};   mk[pos] = 'cur';
+        var sbm = {};  sbm[start] = 'new';
+        snap('sb.append(s.charAt(pos++));', '没标记的位置：原样抄一个字符', mk, sbm);
+      }
+      pos++;
+    } else {
+      var start2 = sb.length, posStart = pos, t = input.targets[m];
+      for (var q = 0; q < t.length; q++) sb.push(t[q]);
+      pos += input.sources[m].length;
+      if (!snappedHit) {
+        snappedHit = true;
+        var mk2 = {};  mk2[posStart] = 'cur';
+        var sbm2 = {}; sbm2[start2] = 'new';
+        snap('sb.append(targets[m]);', '命中段：整段写成 target，pos 跳过原段长度', mk2, sbm2);
+      }
+    }
+  }
+
+  var result = sb.join('');
+  snap('return sb.toString();', '拼完：结果 ' + result, doneMarks, null);
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

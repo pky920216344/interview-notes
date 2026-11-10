@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>安排电影院座位 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 889 / 1159</span>
+  <nav class="pn"><a href="1417.html">上一篇</a><a href="0335.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1386. </span>安排电影院座位</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">哈希表</li><li class="aux">位运算</li><li class="tag">贪心</li><li class="tag">位运算</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">只统计出现过的行：每行 10 座压成位掩码，三个四人窗口 (2~5)(4~7)(6~9) 按占用情况计 0/1/2 户，空行直接 ×2。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>n</code> 高达 <code>10^9</code>，逐行开数组必炸；实际只有<strong>出现过的行</strong>会被预订破坏，用哈希表把每行压成 10 位掩码。</li><li>左块 <code>2~5</code> 和右块 <code>6~9</code> 座位不相交，<strong>两边都空 = 放 2 户</strong>；否则中块或任一侧空 = 放 1 户，全占 = 0。</li><li>没出现过的行整行空，每行贡献 2 户，<code>ans = 2×(n − 出现行数) + Σ出现行的贡献</code>。</li><li>每行的贡献只取决于掩码，无需真的安排座位顺序。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(预留座位数)，空间复杂度 O(预留座位数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> maxNumberOfFamilies(<span class="k">int</span> n, <span class="k">int</span>[][] reservedSeats) {</span><span class="ln"><span class="no">5</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; masks = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();   <span class="c">// 行号 -&gt; 该行被占座位的位掩码</span></span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span>[] r : reservedSeats) {</span><span class="ln"><span class="no">7</span>            masks.merge(r[<span class="n">0</span>], <span class="n">1</span> &lt;&lt; r[<span class="n">1</span>], (a, b) -&gt; a | b);</span><span class="ln"><span class="no">8</span>        }</span><span class="ln"><span class="no">9</span>        <span class="k">long</span> ans = <span class="n">2L</span> * (n - masks.size());              <span class="c">// 没出现过的行整行空，左右两块各坐一户</span></span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> mask : masks.values()) {                <span class="c">// 只逐个判断出现过的行</span></span><span class="ln"><span class="no">11</span>            <span class="k">int</span> left = 0b111100, mid = 0b11110000, right = 0b1111000000;   <span class="c">// 2~5、4~7、6~9 列</span></span><span class="ln"><span class="no">12</span>            <span class="k">if</span> ((mask &amp; left) == <span class="n">0</span> &amp;&amp; (mask &amp; right) == <span class="n">0</span>) ans += <span class="n">2</span>;       <span class="c">// 两边都空：放两户</span></span><span class="ln"><span class="no">13</span>            <span class="k">else</span> <span class="k">if</span> ((mask &amp; mid) == <span class="n">0</span> || (mask &amp; left) == <span class="n">0</span> || (mask &amp; right) == <span class="n">0</span>) ans += <span class="n">1</span>;</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> (<span class="k">int</span>) ans;</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p><img alt="" src="../assets/img/65923f1000bb.png" style="height: 149px; width: 400px;" /></p>
+
+<p>如上图所示，电影院的观影厅中有 <code>n</code>&nbsp;行座位，行编号从 1&nbsp;到 <code>n</code>&nbsp;，且每一行内总共有 10 个座位，列编号从 1 到 10 。</p>
+
+<p>给定一个二维数组&nbsp;<code>reservedSeats</code>&nbsp;，其中&nbsp;<code>reservedSeats[i] = [row<sub>i</sub>, seat<sub>i</sub>]</code> 表示第&nbsp;<code>row<sub>i</sub></code> 行的座位&nbsp;<code>seat<sub>i</sub></code> 已经被预定。</p>
+
+<p>四人小组必须被安排在同一排的四个座位上。该小组可以坐在以下座位块之一：</p>
+
+<ul>
+	<li>座位 <code>2, 3, 4, 5</code></li>
+	<li>座位 <code>4, 5, 6, 7</code></li>
+	<li>座位 <code>6, 7, 8, 9</code></li>
+</ul>
+
+<p>只有当该块中的所有座位都 <strong>没有</strong> 被预订时，才能使用该块。每个座位 <strong>最多</strong> 只能分配给一个小组。</p>
+
+<p>返回一个整数，表示可以分配的 <strong>最大</strong> 四人小组数量。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/c62e57306d3f.png" style="height: 96px; width: 400px;" /></p>
+
+<pre>
+<strong>输入：</strong>n = 3, reservedSeats = [[1,2],[1,3],[1,8],[2,6],[3,1],[3,10]]
+<strong>输出：</strong>4
+<strong>解释：</strong>上图所示是最优的安排方案，总共可以安排 4 个家庭。蓝色的叉表示被预约的座位，橙色的连续座位表示一个 4 人家庭。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 2, reservedSeats = [[2,1],[1,8],[2,6]]
+<strong>输出：</strong>2
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 4, reservedSeats = [[4,3],[1,4],[4,6],[1,7]]
+<strong>输出：</strong>4
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 10<sup>9</sup></code></li>
+	<li><code>1 &lt;=&nbsp;reservedSeats.length &lt;= min(10 * n, 10<sup>4</sup>)</code></li>
+	<li><code>reservedSeats[i]&nbsp;== [row<sub>i</sub>, seat<sub>i</sub>]</code></li>
+	<li><code>1&nbsp;&lt;=&nbsp;row<sub>i</sub> &lt;= n</code></li>
+	<li><code>1 &lt;=&nbsp;seat<sub>i</sub> &lt;= 10</code></li>
+	<li>所有&nbsp;<code>reservedSeats[i]</code> 都是互不相同的。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int maxNumberOfFamilies(int n, int[][] reservedSeats) {", "        Map<Integer, Integer> masks = new HashMap<>();   // 行号 -> 该行被占座位的位掩码", "        for (int[] r : reservedSeats) {", "            masks.merge(r[0], 1 << r[1], (a, b) -> a | b);", "        }", "        long ans = 2L * (n - masks.size());              // 没出现过的行整行空，左右两块各坐一户", "        for (int mask : masks.values()) {                // 只逐个判断出现过的行", "            int left = 0b111100, mid = 0b11110000, right = 0b1111000000;   // 2~5、4~7、6~9 列", "            if ((mask & left) == 0 && (mask & right) == 0) ans += 2;       // 两边都空：放两户", "            else if ((mask & mid) == 0 || (mask & left) == 0 || (mask & right) == 0) ans += 1;", "        }", "        return (int) ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1386. 安排电影院座位 —— 图解：复刻 Solution.java 的位掩码判断，拍「占用图 / 逐行判断 / 两户行 / 汇总」四帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 3, reservedSeats: [[1, 2], [1, 3], [1, 8], [2, 6], [3, 1], [3, 10]] };
+
+function trace(input) {
+  var n = input.n, reserved = input.reservedSeats;
+  var frames = [];
+
+  // --- 与 Java 一致：行号 -> 位掩码（座位 s 占第 s 位） ---
+  var masks = {}, order = [];                          // order 记行号出现顺序，保证面板稳定
+  var i, r;
+  for (i = 0; i < reserved.length; i++) {
+    r = reserved[i][0];
+    if (!(r in masks)) { masks[r] = 0; order.push(r); }
+    masks[r] |= 1 << reserved[i][1];
+  }
+  var LEFT = 0b111100, MID = 0b11110000, RIGHT = 0b1111000000;   // 2~5、4~7、6~9 列
+
+  // 座位图：每行 10 个座位，1 起始编号
+  function seatPanel(extra) {
+    var rows = [], marks = {}, rowLabels = [], colLabels = [];
+    var c;
+    for (c = 0; c < 10; c++) colLabels.push(String(c + 1));
+    for (r = 1; r <= n; r++) {
+      var line = [];
+      rowLabels.push('第' + r + '行');
+      for (c = 1; c <= 10; c++) line.push((masks[r] & 1 << c) ? '✕' : '·');
+      if (masks[r] !== undefined) {
+        for (c = 1; c <= 10; c++) if (masks[r] & 1 << c) marks[(r - 1) + ',' + (c - 1)] = 'bad';
+      }
+      rows.push(line);
+    }
+    if (extra) {
+      var keys = Object.keys(extra.marks || {});
+      for (i = 0; i < keys.length; i++) marks[keys[i]] = extra.marks[keys[i]];
+    }
+    return Viz.grid(rows, { title: '座位图（✕ 已预订；黄/绿：还能用的窗口）', marks: marks, rowLabels: rowLabels, colLabels: colLabels });
+  }
+
+  function rowBlocks(row, cls) {                       // 某行的三个窗口 (2..5)(4..7)(6..9) 标色
+    var m = {}, name, a;
+    var spans = [[LEFT, 2, 5], [MID, 4, 7], [RIGHT, 6, 9]];
+    for (a = 0; a < 3; a++) {
+      if (masks[row] !== undefined && (masks[row] & spans[a][0])) continue;   // 有预订的窗口不标
+      for (var s = spans[a][1]; s <= spans[a][2]; s++) m[(row - 1) + ',' + (s - 1)] = cls;
+    }
+    return m;
+  }
+
+  // 帧 1：先处理完全没出现过的行
+  var freeRows = n - order.length;
+  frames.push(Viz.frame('long ans = 2L * (n - masks.size());',
+    '从没被预订的 ' + freeRows + ' 行整行空，每行稳拿 2 户，先记 ' + 2 * freeRows,
+    [seatPanel({}), Viz.vars([{ name: '空行数', v: freeRows }, { name: '先记', v: 2 * freeRows, cls: 'done' }])]));
+
+  // 帧 2：逐行判断（取第一行演示三个窗口怎么看）
+  var firstRow = order.length ? order[0] : 1;
+  frames.push(Viz.frame('int left = 0b111100, mid = 0b11110000, right = 0b1111000000;',
+    order.length ? '出现过的行逐行判断：三个四人窗口 2~5 / 4~7 / 6~9 各剩哪几个'
+                 : '没有任何预订座位，每一行都是空行',
+    [seatPanel({ marks: rowBlocks(firstRow, 'win') }),
+     Viz.vars([{ name: '第' + firstRow + '行掩码', v: order.length ? '0b' + (masks[firstRow] >>> 0).toString(2) : '0' }])]));
+
+  // 帧 3：找一行「左右窗口都空」的，演示放两户；没有就演示 +1 行
+  var twoRow = -1, oneRow = -1, cur, cnt;
+  for (i = 0; i < order.length; i++) {
+    cur = order[i];
+    var m = masks[cur];
+    if ((m & LEFT) === 0 && (m & RIGHT) === 0) { if (twoRow < 0) twoRow = cur; }
+    else if ((m & MID) === 0 || (m & LEFT) === 0 || (m & RIGHT) === 0) { if (oneRow < 0) oneRow = cur; }
+  }
+  var demo = twoRow > 0 ? twoRow : (oneRow > 0 ? oneRow : firstRow);
+  var demoMarks = twoRow > 0
+    ? (function () {                                   // 放两户：只标真正用上的左右两块
+        var m = {}, a, spans = [[LEFT, 2, 5], [RIGHT, 6, 9]];
+        for (a = 0; a < 2; a++) for (var s = spans[a][1]; s <= spans[a][2]; s++) m[(twoRow - 1) + ',' + (s - 1)] = 'win';
+        return m;
+      })()
+    : rowBlocks(demo, 'win');
+  frames.push(Viz.frame('if ((mask & left) == 0 && (mask & right) == 0) ans += 2;',
+    twoRow > 0 ? '第' + twoRow + '行左右两块都空：中间只隔一个过道，放 2 户'
+               : (oneRow > 0 ? '第' + oneRow + '行只有一块窗口空着：放 1 户'
+                             : '没有出现过的行：全部按空行计'),
+    [seatPanel({ marks: demoMarks }),
+     Viz.vars([{ name: '第' + demo + '行贡献', v: twoRow > 0 ? 2 : (oneRow > 0 ? 1 : 0), cls: 'new' }])]));
+
+  // 帧 4：汇总
+  var ans = 2 * freeRows;
+  var sumRows = 0;
+  for (i = 0; i < order.length; i++) {
+    cur = order[i];
+    var mm = masks[cur];
+    cnt = (mm & LEFT) === 0 && (mm & RIGHT) === 0 ? 2 : ((mm & MID) === 0 || (mm & LEFT) === 0 || (mm & RIGHT) === 0 ? 1 : 0);
+    ans += cnt;
+    sumRows += cnt;
+  }
+  frames.push(Viz.frame('return (int) ans;',
+    '汇总：空行贡献 ' + 2 * freeRows + ' + 出现行合计 ' + sumRows + ' = ' + ans + ' 户',
+    [seatPanel({}), Viz.vars([{ name: '空行贡献', v: 2 * freeRows }, { name: '出现行合计', v: sumRows }, { name: '总户数', v: ans, cls: 'done' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

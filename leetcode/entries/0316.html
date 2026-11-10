@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>去除重复字母 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 183 / 1159</span>
+  <nav class="pn"><a href="0400.html">上一篇</a><a href="0017.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">316. </span>去除重复字母</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 28</li><li class="algo">单调栈</li><li class="aux">贪心</li><li class="tag">栈</li><li class="tag">贪心</li><li class="tag">字符串</li><li class="tag">单调栈</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">单调栈 + 剩余计数：字母已在栈里就跳过；栈顶比当前大且后面还会再来就弹掉，给更小的让位。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>remain[c]</code> 记每个字母还剩几个没读，弹栈前看一眼：后面还有就不怕丢。</li><li>当前字母已在栈里就只减 <code>remain</code>，绝不重复入栈——每个字母最终恰好一个。</li><li>栈顶比当前大且 <code>remain &gt; 0</code>：弹掉换小的，字典序更优；否则当前字母入栈。</li><li>栈底到栈顶就是答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(26)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">String</span> removeDuplicateLetters(<span class="t">String</span> s) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span>[] remain = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];      <span class="c">// 每个字母还剩几个没读过</span></span><span class="ln"><span class="no">4</span>        <span class="k">boolean</span>[] in = <span class="k">new</span> <span class="k">boolean</span>[<span class="n">26</span>];  <span class="c">// 是否已经在栈里</span></span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) remain[s.charAt(i) - <span class="s">'a'</span>]++;</span><span class="ln"><span class="no">6</span>        <span class="k">char</span>[] stack = <span class="k">new</span> <span class="k">char</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> top = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) {</span><span class="ln"><span class="no">9</span>            <span class="k">char</span> c = s.charAt(i);</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (!in[c - <span class="s">'a'</span>]) {</span><span class="ln"><span class="no">11</span>                <span class="c">// 栈顶比 c 大且后面还会再来：弹掉，给更小的 c 让位</span></span><span class="ln"><span class="no">12</span>                <span class="k">while</span> (top &gt; <span class="n">0</span> &amp;&amp; stack[top - <span class="n">1</span>] &gt; c &amp;&amp; remain[stack[top - <span class="n">1</span>] - <span class="s">'a'</span>] &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">13</span>                    in[stack[--top] - <span class="s">'a'</span>] = <span class="k">false</span>;</span><span class="ln"><span class="no">14</span>                }</span><span class="ln"><span class="no">15</span>                stack[top++] = c;</span><span class="ln"><span class="no">16</span>                in[c - <span class="s">'a'</span>] = <span class="k">true</span>;</span><span class="ln"><span class="no">17</span>            }</span><span class="ln"><span class="no">18</span>            remain[c - <span class="s">'a'</span>]--;</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> <span class="k">new</span> <span class="t">String</span>(stack, <span class="n">0</span>, top);</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串 <code>s</code> ，请你去除字符串中重复的字母，使得每个字母只出现一次。需保证 <strong>返回结果的<span>字典序</span>最小</strong>（要求不能打乱其他字符的相对位置）。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong><code>s = "bcabc"</code>
+<strong>输出<code>：</code></strong><code>"abc"</code>
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong><code>s = "cbacdcbc"</code>
+<strong>输出：</strong><code>"acdb"</code></pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>s</code> 由小写英文字母组成</li>
+</ul>
+
+
+
+<p><strong>注意：</strong>该题与 1081 <a href="https://leetcode.cn/problems/smallest-subsequence-of-distinct-characters">https://leetcode.cn/problems/smallest-subsequence-of-distinct-characters</a> 相同</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public String removeDuplicateLetters(String s) {", "        int[] remain = new int[26];      // 每个字母还剩几个没读过", "        boolean[] in = new boolean[26];  // 是否已经在栈里", "        for (int i = 0; i < s.length(); i++) remain[s.charAt(i) - 'a']++;", "        char[] stack = new char[26];", "        int top = 0;", "        for (int i = 0; i < s.length(); i++) {", "            char c = s.charAt(i);", "            if (!in[c - 'a']) {", "                // 栈顶比 c 大且后面还会再来：弹掉，给更小的 c 让位", "                while (top > 0 && stack[top - 1] > c && remain[stack[top - 1] - 'a'] > 0) {", "                    in[stack[--top] - 'a'] = false;", "                }", "                stack[top++] = c;", "                in[c - 'a'] = true;", "            }", "            remain[c - 'a']--;", "        }", "        return new String(stack, 0, top);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 316. 去除重复字母 —— 图解：复刻 Solution.java 的「单调栈 + 剩余计数」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'cbacdcb' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+
+  var A_POP = "while (top > 0 && stack[top - 1] > c && remain[stack[top - 1] - 'a'] > 0) {";
+  var A_PUSH = 'stack[top++] = c;';
+  var A_RET = 'return new String(stack, 0, top);';
+
+  var remain = {};    // 字母 -> 还剩几个没读
+  var inStack = {};   // 字母是否已在栈里
+  for (var i0 = 0; i0 < n; i0++) remain[s[i0]] = (remain[s[i0]] || 0) + 1;
+  var order = [];     // 出现过的字母，按首次出现顺序（表格才稳定）
+  for (var i1 = 0; i1 < n; i1++) if (order.indexOf(s[i1]) < 0) order.push(s[i1]);
+  var stack = [];
+
+  // s 面板：读过的变 dim，当前位置 cur
+  function sPanel(at) {
+    var marks = {};
+    for (var i = 0; i < n; i++) if (i < at) marks[i] = 'dim';
+    if (at < n) marks[at] = 'cur';
+    return Viz.cells(s.split(''), { title: '字符串 s', marks: marks });
+  }
+  // 栈面板：底在左顶在右；bad = 马上要被弹掉，new = 刚入栈
+  function stackPanel(bad, fresh) {
+    var marks = {};
+    if (bad != null) marks[bad] = 'bad';
+    if (fresh != null) marks[fresh] = 'new';
+    var pointers = stack.length ? [{ at: stack.length - 1, label: '栈顶', cls: 'p-tail' }] : [];
+    return Viz.cells(stack.slice(), { title: '栈（左底右顶）', marks: marks, pointers: pointers });
+  }
+  // 剩余表：hit = 这一步刚查过的字母
+  function remainPanel(hit) {
+    return Viz.table('remain：还剩几个没读', order.map(function (ch) {
+      return { k: ch, v: String(remain[ch]), cls: ch === hit ? 'hit' : '' };
+    }), { hint: '弹栈前看：后面还有就不怕丢' });
+  }
+
+  var f1 = false, f2 = false, f3 = false, f4 = false;
+  for (var i = 0; i < n; i++) {
+    var c = s[i];
+    if (!inStack[c]) {
+      if (!f2 && stack.length && stack[stack.length - 1] > c && remain[stack[stack.length - 1]] > 0) {
+        f2 = true;   // 第一次弹栈前：栈顶更大且后面还有
+        frames.push(Viz.frame(A_POP, '读到 ' + c + '：栈顶 ' + stack[stack.length - 1] + ' 比 ' + c + ' 大且后面还有，弹掉让位',
+          [sPanel(i), stackPanel(stack.length - 1, null), remainPanel(stack[stack.length - 1])]));
+      }
+      var pops = 0;
+      while (stack.length && stack[stack.length - 1] > c && remain[stack[stack.length - 1]] > 0) {
+        inStack[stack.pop()] = false;
+        pops++;
+        if (!f3 && pops === 2) {   // 第二次弹栈（比如连着让位两次）
+          f3 = true;
+          frames.push(Viz.frame(A_POP, '栈顶又比 ' + c + ' 大且后面还有：继续弹，让位到不能再让',
+            [sPanel(i), stackPanel(stack.length, null), remainPanel(c)]));
+        }
+      }
+      var top = stack[stack.length - 1];
+      var cantPop = !f4 && stack.length && top > c && remain[top] === 0;
+      stack.push(c);
+      inStack[c] = true;
+      if (!f1) {
+        f1 = true;
+        frames.push(Viz.frame(A_PUSH, '开局：第一个字母 ' + c + ' 入栈', [sPanel(i), stackPanel(null, stack.length - 1), remainPanel(c)]));
+      }
+      if (cantPop) {
+        f4 = true;   // 栈顶更大、但后面没有了：不能弹，只能排在它后面
+        frames.push(Viz.frame(A_PUSH, '栈顶 ' + top + ' 比 ' + c + ' 大，但后面没有 ' + top + ' 了：不能弹，' + c + ' 排在末尾',
+          [sPanel(i), stackPanel(null, stack.length - 1), remainPanel(top)]));
+      }
+    }
+    remain[c]--;
+  }
+
+  var result = stack.join('');
+  frames.push(Viz.frame(A_RET, '扫完：栈底到栈顶 ' + result + ' 就是字典序最小的去重结果',
+    [sPanel(n), stackPanel(null, null), remainPanel(null)]));
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

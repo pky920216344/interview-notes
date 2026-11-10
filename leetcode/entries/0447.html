@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>回旋镖的数量 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 902 / 1159</span>
+  <nav class="pn"><a href="0246.html">上一篇</a><a href="0630.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">447. </span>回旋镖的数量</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 1</li><li class="algo">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">数学</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">逐个点当拐点 i：哈希表统计其余点到 i 的距离平方，同一距离有 c 个点就贡献 c×(c−1) 个回旋镖。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>固定拐点 <code>i</code> 后，回旋镖形如 <code>(j, i, k)</code>：只要 <code>j</code>、<code>k</code> 到 <code>i</code> 等距即可，<code>j</code>、<code>k</code> 换顺序算两种 → <code>c</code> 个点贡献 <code>c×(c−1)</code>。</li><li>距离只算平方再比较，不开方就没有浮点误差。</li><li>用下标 <code>j != i</code> 跳过拐点自身，不能比数组内容（点可能值相同）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> numberOfBoomerangs(<span class="k">int</span>[][] points) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = points.length, ans = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="c">// 逐个点当拐点 i：到 i 距离相等的点有 c 个，选有序对 (j,k) 共 c×(c−1) 种</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">8</span>            <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; cnt = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">10</span>                <span class="k">if</span> (j == i) <span class="k">continue</span>;</span><span class="ln"><span class="no">11</span>                <span class="k">int</span> dx = points[i][<span class="n">0</span>] - points[j][<span class="n">0</span>], dy = points[i][<span class="n">1</span>] - points[j][<span class="n">1</span>];</span><span class="ln"><span class="no">12</span>                <span class="c">// 距离用平方比较，不开方就没有浮点误差</span></span><span class="ln"><span class="no">13</span>                cnt.merge(dx * dx + dy * dy, <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>            <span class="k">for</span> (<span class="k">int</span> c : cnt.values()) ans += c * (c - <span class="n">1</span>);</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定平面上<em>&nbsp;</em><code>n</code><em> </em>对 <strong>互不相同</strong> 的点&nbsp;<code>points</code> ，其中 <code>points[i] = [x<sub>i</sub>, y<sub>i</sub>]</code> 。<strong>回旋镖</strong> 是由点&nbsp;<code>(i, j, k)</code> 表示的元组 ，其中&nbsp;<code>i</code>&nbsp;和&nbsp;<code>j</code>&nbsp;之间的欧式距离和&nbsp;<code>i</code>&nbsp;和&nbsp;<code>k</code>&nbsp;之间的欧式距离相等（<strong>需要考虑元组的顺序</strong>）。</p>
+
+<p>返回平面上所有回旋镖的数量。</p>
+&nbsp;
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>points = [[0,0],[1,0],[2,0]]
+<strong>输出：</strong>2
+<strong>解释：</strong>两个回旋镖为 <strong>[[1,0],[0,0],[2,0]]</strong> 和 <strong>[[1,0],[2,0],[0,0]]</strong>
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>points = [[1,1],[2,2],[3,3]]
+<strong>输出：</strong>2
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>points = [[1,1]]
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n ==&nbsp;points.length</code></li>
+	<li><code>1 &lt;= n &lt;= 500</code></li>
+	<li><code>points[i].length == 2</code></li>
+	<li><code>-10<sup>4</sup> &lt;= x<sub>i</sub>, y<sub>i</sub> &lt;= 10<sup>4</sup></code></li>
+	<li>所有点都 <strong>互不相同</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int numberOfBoomerangs(int[][] points) {", "        int n = points.length, ans = 0;", "        // 逐个点当拐点 i：到 i 距离相等的点有 c 个，选有序对 (j,k) 共 c×(c−1) 种", "        for (int i = 0; i < n; i++) {", "            Map<Integer, Integer> cnt = new HashMap<>();", "            for (int j = 0; j < n; j++) {", "                if (j == i) continue;", "                int dx = points[i][0] - points[j][0], dy = points[i][1] - points[j][1];", "                // 距离用平方比较，不开方就没有浮点误差", "                cnt.merge(dx * dx + dy * dy, 1, Integer::sum);", "            }", "            for (int c : cnt.values()) ans += c * (c - 1);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 447. 回旋镖的数量 —— 图解：复刻 Solution.java 的「逐拐点统计等距点数，c×(c−1) 计数」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { points: [[0, 0], [1, 0], [2, 0]] };
+
+function trace(input) {
+  var pts = input.points;
+  var n = pts.length;
+  var frames = [];
+
+  var LOOP = 'for (int i = 0; i < n; i++) {';
+  var MERGE = 'cnt.merge(dx * dx + dy * dy, 1, Integer::sum);';
+  var ADD = 'for (int c : cnt.values()) ans += c * (c - 1);';
+  var RET = 'return ans;';
+
+  function label(p) { return '(' + p[0] + ',' + p[1] + ')'; }
+
+  function ptsPanel(pivot, marks) {
+    var pointers = pivot == null ? [] : [{ at: pivot, label: '拐点 i', cls: 'p-cur' }];
+    return Viz.cells(pts.map(label), { title: 'points', marks: marks || {}, pointers: pointers });
+  }
+
+  function distPanel(cnt, hot) {
+    var keys = Object.keys(cnt).sort(function (a, b) { return a - b; });
+    var rows = keys.map(function (d) {
+      return { k: '距离² ' + d, v: cnt[d] + ' 个点', cls: String(d) === String(hot) ? 'hit' : '' };
+    });
+    if (!rows.length) rows.push({ k: '—', v: '没有其他点', cls: '' });
+    return Viz.table('到拐点的距离平方 → 点数', rows);
+  }
+
+  function varsPanel(ans, cls) {
+    return Viz.vars([{ name: 'ans（已累计回旋镖数）', v: ans, cls: cls || '' }]);
+  }
+
+  var ans = 0;
+  if (n > 0) frames.push(Viz.frame(LOOP, '每个点轮流当拐点 i，先数清等距点', [ptsPanel(0), varsPanel(0)]));
+
+  for (var i = 0; i < n; i++) {
+    var cnt = {};
+    for (var j = 0; j < n; j++) {
+      if (j === i) continue;
+      var dx = pts[i][0] - pts[j][0], dy = pts[i][1] - pts[j][1];
+      var d = dx * dx + dy * dy;
+      cnt[d] = (cnt[d] || 0) + 1;
+    }
+    if (i === 0) {
+      frames.push(Viz.frame(ADD, '拐点 0：同距的点都不到 2 个，贡献 0',
+        [ptsPanel(0), distPanel(cnt), varsPanel(ans, '')]));
+    }
+    var add = 0;
+    for (var key in cnt) add += cnt[key] * (cnt[key] - 1);
+    if (i === 1) {
+      ans += add;
+      var mk = {};   // 把到拐点 1 等距的两个点标出来
+      for (var j2 = 0; j2 < n; j2++) {
+        if (j2 === i) continue;
+        var ddx = pts[i][0] - pts[j2][0], ddy = pts[i][1] - pts[j2][1];
+        if (ddx * ddx + ddy * ddy === 1) mk[j2] = 'win';
+      }
+      frames.push(Viz.frame(ADD, '拐点 1：距离²=1 的有 2 个，贡献 2×1=2',
+        [ptsPanel(1, mk), distPanel(cnt, 1), varsPanel(ans, 'chg')]));
+    } else {
+      ans += add;
+    }
+  }
+
+  frames.push(Viz.frame(RET, '拐点 2 也贡献 0，总共 ' + ans + ' 个回旋镖', [ptsPanel(null), varsPanel(ans, 'done')]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

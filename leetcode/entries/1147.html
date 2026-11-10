@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>段式回文 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1157 / 1159</span>
+  <nav class="pn"><a href="0562.html">上一篇</a><a href="0636.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1147. </span>段式回文</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">贪心</li><li class="aux">双指针</li><li class="tag">贪心</li><li class="tag">双指针</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="tag">哈希函数</li><li class="tag">滚动哈希</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">贪心双指针：每轮从两端找「最短的」相等前后缀配成一对摘掉（段越短段数越多）；剩下配不成对的中段记 1。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>双指针 <code>l</code>、<code>r</code> 夹住剩余段；每轮从 <code>len=1</code> 起试 <code>text[l..l+len) == text[r-len..r)</code>，取<strong>最短</strong>的相等前后缀。</li><li>取最短是对的：<code>aaaa</code> 若先摘 <code>aa|aa</code> 只得 2 段，逐字符摘得 4 段；对拍用暴力验证过。</li><li>一轮里连 <code>len=1</code> 都配不上（前后缀必然重叠），说明剩余部分只能整段独立 → 答案 <code>k+1</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> longestDecomposition(<span class="t">String</span> text) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = text.length(), l = <span class="n">0</span>, r = n, k = <span class="n">0</span>;</span><span class="ln"><span class="no">4</span>        <span class="c">// 每轮：从两端找「最短的」相等前后缀，配成一对摘掉（越短段数越多）</span></span><span class="ln"><span class="no">5</span>        <span class="k">while</span> (l &lt; r) {</span><span class="ln"><span class="no">6</span>            <span class="k">int</span> len = <span class="n">1</span>;</span><span class="ln"><span class="no">7</span>            <span class="k">while</span> (l + len &lt;= r - len &amp;&amp; !text.substring(l, l + len).equals(text.substring(r - len, r))) len++;</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (l + len &gt; r - len) <span class="k">break</span>;   <span class="c">// 一对都配不出来：剩下的整体就是一段</span></span><span class="ln"><span class="no">9</span>            k += <span class="n">2</span>;</span><span class="ln"><span class="no">10</span>            l += len;</span><span class="ln"><span class="no">11</span>            r -= len;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> l &lt; r ? k + <span class="n">1</span> : k;</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你会得到一个字符串&nbsp;<code>text</code>&nbsp;。你应该把它分成 <code>k</code>&nbsp;个子字符串&nbsp;<code>(subtext1, subtext2，…， subtextk)</code>&nbsp;，要求满足:</p>
+
+<ul>
+	<li><code>subtext<sub>i</sub></code><sub>&nbsp;</sub>是 <strong>非空&nbsp;</strong>字符串</li>
+	<li>所有子字符串的连接等于 <code>text</code> ( 即<code>subtext<sub>1</sub>&nbsp;+ subtext<sub>2</sub>&nbsp;+ ... + subtext<sub>k</sub>&nbsp;== text</code>&nbsp;)</li>
+	<li>对于所有 <font color="#c7254e"><font face="Menlo, Monaco, Consolas, Courier New, monospace"><span style="font-size:12.6px"><span style="background-color:#f9f2f4">i</span></span></font></font>&nbsp;的有效值( 即&nbsp;<code>1 &lt;= i&nbsp;&lt;= k</code> ) ，<code>subtext<sub>i</sub>&nbsp;== subtext<sub>k - i + 1</sub></code> 均成立</li>
+</ul>
+
+<p>返回<code>k</code>可能最大值。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>text = "ghiabcdefhelloadamhelloabcdefghi"
+<strong>输出：</strong>7
+<strong>解释：</strong>我们可以把字符串拆分成 "(ghi)(abcdef)(hello)(adam)(hello)(abcdef)(ghi)"。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>text = "merchant"
+<strong>输出：</strong>1
+<strong>解释：</strong>我们可以把字符串拆分成 "(merchant)"。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>text = "antaprezatepzapreanta"
+<strong>输出：</strong>11
+<strong>解释：</strong>我们可以把字符串拆分成 "(a)(nt)(a)(pre)(za)(tep)(za)(pre)(a)(nt)(a)"。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= text.length &lt;= 1000</code></li>
+	<li><code>text</code>&nbsp;仅由小写英文字符组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int longestDecomposition(String text) {", "        int n = text.length(), l = 0, r = n, k = 0;", "        // 每轮：从两端找「最短的」相等前后缀，配成一对摘掉（越短段数越多）", "        while (l < r) {", "            int len = 1;", "            while (l + len <= r - len && !text.substring(l, l + len).equals(text.substring(r - len, r))) len++;", "            if (l + len > r - len) break;   // 一对都配不出来：剩下的整体就是一段", "            k += 2;", "            l += len;", "            r -= len;", "        }", "        return l < r ? k + 1 : k;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1147. 段式回文 —— 图解：复刻 Solution.java 的「贪心双指针：每轮摘最短相等前后缀对」，5 张关键帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { text: 'abcabcabc' };
+
+function trace(input) {
+  var text = input.text || '';
+  var n = text.length;
+  var frames = [];
+  var l = 0, r = n, k = 0;
+
+  // 剩余段 [l, r)：已摘掉的对 done；正在比对的前后缀 win
+  function textPanel(len, whole) {
+    var marks = {};
+    var i;
+    for (i = 0; i < l; i++) marks[i] = 'done';
+    for (i = r; i < n; i++) marks[i] = 'done';
+    if (whole != null) {
+      for (i = whole[0]; i < whole[1]; i++) marks[i] = 'win';
+    } else if (len != null) {
+      for (i = l; i < Math.min(l + len, r); i++) marks[i] = 'win';
+      for (i = Math.max(r - len, l); i < r; i++) marks[i] = 'win';
+    }
+    var pointers = l < r ? [
+      { at: l, label: 'l', cls: 'p-left' },
+      { at: r - 1, label: 'r', cls: 'p-right' }
+    ] : [];
+    return Viz.cells(text.split(''), { title: 'text（两端向中间配对摘除）', marks: marks, pointers: pointers });
+  }
+  function varsPanel(len) {
+    var items = [{ name: 'k（已配成几段）', v: String(k), cls: k > 0 ? 'chg' : '' }];
+    if (len != null) items.push({ name: '正在试的段长 len', v: String(len) });
+    return Viz.vars(items);
+  }
+
+  var TRY = 'while (l + len <= r - len && !text.substring(l, l + len).equals(text.substring(r - len, r))) len++;';
+  var ADD = 'k += 2;';
+  var BRK = 'if (l + len > r - len) break;';
+  var RET = 'return l < r ? k + 1 : k;';
+
+  var round = 0;
+  while (l < r) {
+    var len = 1;
+    while (l + len <= r - len && text.substring(l, l + len) !== text.substring(r - len, r)) len++;
+    var found = l + len <= r - len;
+    if (round === 0 && len > 1) {
+      frames.push(Viz.frame(TRY, '第 1 轮从 len=1 试起：两端 ' + text[l] + '≠' + text[r - 1] + '，配不上就加长',
+        [textPanel(1, null), varsPanel(1)]));
+    }
+    if (!found) break;
+    if (round === 0) {
+      frames.push(Viz.frame(ADD, 'len=' + len + ' 时前后缀相等：摘出一对（左右各一段），k += 2',
+        [textPanel(len, null), varsPanel(len)]));
+    }
+    k += 2;
+    l += len;
+    r -= len;
+    round++;
+  }
+
+  if (l < r) {
+    frames.push(Viz.frame(BRK, '剩下的「' + text.substring(l, r) + '」前后缀怎么都配不成对 → 整段记 1',
+      [textPanel(null, [l, r]), varsPanel(null)]));
+  }
+  var finMarks = {};
+  for (var i = 0; i < n; i++) finMarks[i] = 'done';
+  if (l < r) for (i = l; i < r; i++) finMarks[i] = 'win';
+  frames.push(Viz.frame(RET, '总共 ' + (k + (l < r ? 1 : 0)) + ' 段：' + (k / 2) + ' 对' + (l < r ? ' + 中间 1 段' : ''),
+    [Viz.cells(text.split(''), { title: 'text（绿色 = 中段，蓝 = 已配对）', marks: finMarks }), varsPanel(null)]));
+
+  return { frames: frames, result: k + (l < r ? 1 : 0) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

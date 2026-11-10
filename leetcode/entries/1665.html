@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>完成所有任务的最少初始能量 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1071 / 1159</span>
+  <nav class="pn"><a href="mianshi-16-20.html">上一篇</a><a href="1451.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1665. </span>完成所有任务的最少初始能量</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按「门槛−耗费」从大到小做：门槛高、耗得少的先趁能量多时做；答案 = max(已耗总和 + 当前门槛)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>执行顺序固定时，初始能量必须 ≥ 每一处的「前面已耗总和 + 该任务门槛」，答案就是这些值的最大值。</li><li>交换论证：<code>(门槛−耗费)</code> 大的任务先做不会更差——它门槛高却几乎不耗能量，放后面只会被前面的耗费垫得更高。</li><li>门槛与耗费都相同的任务先后无所谓：相邻交换不改变各处的「已耗+门槛」。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(log n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> minimumEffort(<span class="k">int</span>[][] tasks) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 按「门槛 − 耗费」从大到小排：门槛高、耗得少的先做</span></span><span class="ln"><span class="no">6</span>        <span class="t">Arrays</span>.sort(tasks, (x, y) -&gt; (y[<span class="n">1</span>] - y[<span class="n">0</span>]) - (x[<span class="n">1</span>] - x[<span class="n">0</span>]));</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> ans = <span class="n">0</span>, spent = <span class="n">0</span>;   <span class="c">// spent：排在前面已完成的任务总共耗掉多少</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span>[] t : tasks) {</span><span class="ln"><span class="no">9</span>            <span class="c">// 初始能量必须撑得住「已耗总和 + 本任务门槛」，取全程最大</span></span><span class="ln"><span class="no">10</span>            ans = <span class="t">Math</span>.max(ans, spent + t[<span class="n">1</span>]);</span><span class="ln"><span class="no">11</span>            spent += t[<span class="n">0</span>];</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个任务数组 <code>tasks</code> ，其中 <code>tasks[i] = [actual<sub>i</sub>, minimum<sub>i</sub>]</code> ：</p>
+
+<ul>
+	<li><code>actual<sub>i</sub></code> 是完成第 <code>i</code> 个任务 <strong>需要耗费</strong> 的实际能量。</li>
+	<li><code>minimum<sub>i</sub></code> 是开始第 <code>i</code> 个任务前需要达到的最低能量。</li>
+</ul>
+
+<p>比方说，如果任务为 <code>[10, 12]</code> 且你当前的能量为 <code>11</code> ，那么你不能开始这个任务。如果你当前的能量为 <code>13</code> ，你可以完成这个任务，且完成它后剩余能量为 <code>3</code> 。</p>
+
+<p>你可以按照 <strong>任意顺序</strong> 完成任务。</p>
+
+<p>请你返回完成所有任务的 <strong>最少</strong> 初始能量。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><b>输入：</b>tasks = [[1,2],[2,4],[4,8]]
+<b>输出：</b>8
+<strong>解释：</strong>
+一开始有 8 能量，我们按照如下顺序完成任务：
+    - 完成第 3 个任务，剩余能量为 8 - 4 = 4 。
+    - 完成第 2 个任务，剩余能量为 4 - 2 = 2 。
+    - 完成第 1 个任务，剩余能量为 2 - 1 = 1 。
+注意到尽管我们有能量剩余，但是如果一开始只有 7 能量是不能完成所有任务的，因为我们无法开始第 3 个任务。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><b>输入：</b>tasks = [[1,3],[2,4],[10,11],[10,12],[8,9]]
+<b>输出：</b>32
+<strong>解释：</strong>
+一开始有 32 能量，我们按照如下顺序完成任务：
+    - 完成第 1 个任务，剩余能量为 32 - 1 = 31 。
+    - 完成第 2 个任务，剩余能量为 31 - 2 = 29 。
+    - 完成第 3 个任务，剩余能量为 29 - 10 = 19 。
+    - 完成第 4 个任务，剩余能量为 19 - 10 = 9 。
+    - 完成第 5 个任务，剩余能量为 9 - 8 = 1 。</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><b>输入：</b>tasks = [[1,7],[2,8],[3,9],[4,10],[5,11],[6,12]]
+<b>输出：</b>27
+<strong>解释：</strong>
+一开始有 27 能量，我们按照如下顺序完成任务：
+    - 完成第 5 个任务，剩余能量为 27 - 5 = 22 。
+    - 完成第 2 个任务，剩余能量为 22 - 2 = 20 。
+    - 完成第 3 个任务，剩余能量为 20 - 3 = 17 。
+    - 完成第 1 个任务，剩余能量为 17 - 1 = 16 。
+    - 完成第 4 个任务，剩余能量为 16 - 4 = 12 。
+    - 完成第 6 个任务，剩余能量为 12 - 6 = 6 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= tasks.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>1 &lt;= actual<sub>​i</sub> &lt;= minimum<sub>i</sub> &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int minimumEffort(int[][] tasks) {", "        // 按「门槛 − 耗费」从大到小排：门槛高、耗得少的先做", "        Arrays.sort(tasks, (x, y) -> (y[1] - y[0]) - (x[1] - x[0]));", "        int ans = 0, spent = 0;   // spent：排在前面已完成的任务总共耗掉多少", "        for (int[] t : tasks) {", "            // 初始能量必须撑得住「已耗总和 + 本任务门槛」，取全程最大", "            ans = Math.max(ans, spent + t[1]);", "            spent += t[0];", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1665. 完成所有任务的最少初始能量 —— 图解：复刻 Solution.java 的「排序 + 一遍累加」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { tasks: [[1, 7], [2, 8], [3, 9], [4, 10], [5, 11], [6, 12]] };
+
+function trace(input) {
+  var tasks = input.tasks.slice().sort(function (p, q) { return (q[1] - q[0]) - (p[1] - p[0]); });
+  var frames = [];
+  var SORT = 'Arrays.sort(tasks, (x, y) -> (y[1] - y[0]) - (x[1] - x[0]));';
+  var UPD = 'ans = Math.max(ans, spent + t[1]);';
+  var RET = 'return ans;';
+
+  // 任务表：一行一个任务，标出耗费、门槛和排序键
+  function taskPanel(curIdx) {
+    var rows = tasks.map(function (t, i) {
+      return { k: '耗费 ' + t[0] + '，门槛 ' + t[1], v: '门槛−耗费 = ' + (t[1] - t[0]),
+        cls: i === curIdx ? 'cur' : (curIdx >= 0 && i < curIdx ? 'done' : '') };
+    });
+    return Viz.table('任务已按「门槛−耗费」从大到小排好', rows);
+  }
+  function varsPanel(spent, ans) {
+    return Viz.vars([
+      { name: 'spent（已耗总和）', v: spent },
+      { name: 'ans（目前答案）', v: ans }
+    ]);
+  }
+  function snap(at, key, curIdx, spent, ans) {
+    frames.push(Viz.frame(at, key, [taskPanel(curIdx), varsPanel(spent, ans)]));
+  }
+
+  snap(SORT, '按「门槛−耗费」从大到小：高门槛、低耗费的先做', -1, 0, 0);
+
+  var spent = 0, ans = 0;
+  for (var i = 0; i < tasks.length; i++) {
+    var t = tasks[i];
+    ans = Math.max(ans, spent + t[1]);
+    if (i === 0) snap(UPD, '第 1 个任务：初始能量至少要 ' + spent + '+' + t[1] + '=', i, spent, ans);
+    if (i === tasks.length - 1 && i > 0) snap(UPD, '最后一个：' + spent + '+' + t[1] + '=' + (spent + t[1]) + '，全程最大', i, spent, ans);
+    spent += t[0];
+  }
+
+  snap(RET, '答案 = 全程最大的「已耗总和+门槛」', tasks.length, spent, ans);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

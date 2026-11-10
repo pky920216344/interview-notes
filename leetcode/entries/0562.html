@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>矩阵中最长的连续1线段 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1156 / 1159</span>
+  <nav class="pn"><a href="0956.html">上一篇</a><a href="1147.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">562. </span>矩阵中最长的连续1线段</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">一遍扫矩阵，同时维护四个方向（水平/垂直/↘/↙）「以当前格结尾」的连续 1 长度，取最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每格为 1 时：水平接左格、垂直接上格、<code>↘</code> 接左上、<code>↙</code> 接右上，各 +1；为 0 则四个方向全归零。</li><li>三个方向数组按列存（<code>col/diag/anti</code>），水平只用一个变量 <code>row</code>，每行行首归零。</li><li>两个覆盖顺序细节：<code>↘</code> 的左上在本行已被覆盖，要用先暂存的<strong>旧值</strong>（<code>prevDiag</code>）；<code>↙</code> 的右上还没被本行覆盖，直接读就是上一行的值。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> longestLine(<span class="k">int</span>[][] mat) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = mat.length, n = mat[<span class="n">0</span>].length, ans = <span class="n">0</span>;</span><span class="ln"><span class="no">4</span>        <span class="c">// 一遍扫矩阵，同时维护四个方向「以当前格结尾」的连续 1 长度</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] col = <span class="k">new</span> <span class="k">int</span>[n];    <span class="c">// 垂直：来自上一行同列</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] diag = <span class="k">new</span> <span class="k">int</span>[n];   <span class="c">// 主对角线 ↘：来自左上</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] anti = <span class="k">new</span> <span class="k">int</span>[n];   <span class="c">// 反对角线 ↙：来自右上</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">9</span>            <span class="k">int</span> row = <span class="n">0</span>, prevDiag = <span class="n">0</span>;   <span class="c">// prevDiag = 上一行 diag[j-1]（左上的旧值）</span></span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">11</span>                <span class="k">if</span> (mat[i][j] == <span class="n">1</span>) {</span><span class="ln"><span class="no">12</span>                    row++;</span><span class="ln"><span class="no">13</span>                    col[j]++;</span><span class="ln"><span class="no">14</span>                    <span class="c">// ↘ 接左上：左上在本行已更新，用暂存的旧值</span></span><span class="ln"><span class="no">15</span>                    <span class="k">int</span> d = prevDiag + <span class="n">1</span>;</span><span class="ln"><span class="no">16</span>                    <span class="c">// ↙ 接右上：右上还没被本行覆盖，正好是上一行的值</span></span><span class="ln"><span class="no">17</span>                    <span class="k">int</span> a = (j + <span class="n">1</span> &lt; n ? anti[j + <span class="n">1</span>] : <span class="n">0</span>) + <span class="n">1</span>;</span><span class="ln"><span class="no">18</span>                    ans = <span class="t">Math</span>.max(ans, <span class="t">Math</span>.max(<span class="t">Math</span>.max(row, col[j]), <span class="t">Math</span>.max(d, a)));</span><span class="ln"><span class="no">19</span>                    prevDiag = diag[j];   <span class="c">// 旧 diag[j] 留给下一列当左上</span></span><span class="ln"><span class="no">20</span>                    diag[j] = d;</span><span class="ln"><span class="no">21</span>                    anti[j] = a;</span><span class="ln"><span class="no">22</span>                } <span class="k">else</span> {</span><span class="ln"><span class="no">23</span>                    row = <span class="n">0</span>;</span><span class="ln"><span class="no">24</span>                    col[j] = <span class="n">0</span>;</span><span class="ln"><span class="no">25</span>                    prevDiag = diag[j];</span><span class="ln"><span class="no">26</span>                    diag[j] = <span class="n">0</span>;</span><span class="ln"><span class="no">27</span>                    anti[j] = <span class="n">0</span>;</span><span class="ln"><span class="no">28</span>                }</span><span class="ln"><span class="no">29</span>            }</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int longestLine(int[][] mat) {", "        int m = mat.length, n = mat[0].length, ans = 0;", "        // 一遍扫矩阵，同时维护四个方向「以当前格结尾」的连续 1 长度", "        int[] col = new int[n];    // 垂直：来自上一行同列", "        int[] diag = new int[n];   // 主对角线 ↘：来自左上", "        int[] anti = new int[n];   // 反对角线 ↙：来自右上", "        for (int i = 0; i < m; i++) {", "            int row = 0, prevDiag = 0;   // prevDiag = 上一行 diag[j-1]（左上的旧值）", "            for (int j = 0; j < n; j++) {", "                if (mat[i][j] == 1) {", "                    row++;", "                    col[j]++;", "                    // ↘ 接左上：左上在本行已更新，用暂存的旧值", "                    int d = prevDiag + 1;", "                    // ↙ 接右上：右上还没被本行覆盖，正好是上一行的值", "                    int a = (j + 1 < n ? anti[j + 1] : 0) + 1;", "                    ans = Math.max(ans, Math.max(Math.max(row, col[j]), Math.max(d, a)));", "                    prevDiag = diag[j];   // 旧 diag[j] 留给下一列当左上", "                    diag[j] = d;", "                    anti[j] = a;", "                } else {", "                    row = 0;", "                    col[j] = 0;", "                    prevDiag = diag[j];", "                    diag[j] = 0;", "                    anti[j] = 0;", "                }", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 562. 矩阵中最长的连续1线段 —— 图解：复刻 Solution.java 的「一遍扫描 + 四方向长度」，5 张关键帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { mat: [[0, 1, 1, 0], [0, 1, 1, 0], [0, 1, 1, 0]] };
+
+function trace(input) {
+  var mat = input.mat;
+  var m = mat.length, n = mat[0].length;
+  var frames = [];
+  var col = new Array(n).fill(0), diag = new Array(n).fill(0), anti = new Array(n).fill(0);
+  var ans = 0;
+
+  // 矩阵面板：srcs 是本格要接上的来源格 [(r,c)...]，画 win
+  function matPanel(i, j, srcs, doneRun) {
+    var marks = {};
+    var r, c;
+    for (r = 0; r < m; r++) for (c = 0; c < n; c++) if (r < i || (r === i && c < j)) marks[r + ',' + c] = 'dim';
+    (srcs || []).forEach(function (s) { marks[s[0] + ',' + s[1]] = 'win'; });
+    if (i >= 0) marks[i + ',' + j] = 'cur';
+    (doneRun || []).forEach(function (s) { marks[s[0] + ',' + s[1]] = 'done'; });
+    return Viz.grid(mat, { title: 'mat：' + (i < 0 ? '扫完，绿色是找到的最长线' : '正在看 (' + i + ',' + j + ')'), marks: marks, corner: 'mat' });
+  }
+  // 三个方向数组摆成一张 3 行表：垂直 / ↘ / ↙
+  function dirPanel(j, hitRows) {
+    var marks = {};
+    (hitRows || []).forEach(function (r) { if (j >= 0) marks[r + ',' + j] = 'chg'; });
+    return Viz.grid([col.slice(), diag.slice(), anti.slice()], {
+      title: '到上一格为止的连续 1 长度（按列存）',
+      marks: marks, rowLabels: ['垂直 ↑', '对角 ↘', '反角 ↙'], corner: '方向'
+    });
+  }
+  function varsPanel(row, d, a) {
+    return Viz.vars([
+      { name: 'row（←水平）', v: String(row) },
+      { name: 'd（接左上 ↖）', v: String(d) },
+      { name: 'a（接右上 ↗）', v: String(a) },
+      { name: 'ans', v: String(ans), cls: 'done' }
+    ]);
+  }
+
+  frames.push(Viz.frame('int row = 0, prevDiag = 0;', '开局：逐格扫，四个方向各自数连续 1，每行行首 row 归零',
+    [matPanel(-1, -1, [], null), dirPanel(-1, []), varsPanel(0, 0, 0)]));
+
+  function maybeSnap(i, j, srcs, row, d, a) {
+    if (i === 0 && j === 1) {
+      frames.push(Viz.frame('int d = prevDiag + 1;',
+        '格 (0,1) 是 1：水平接左格、垂直接上格、↘ 接左上、↙ 接右上，来源是 1 就 +1',
+        [matPanel(i, j, srcs), dirPanel(j, [0, 1, 2]), varsPanel(row, d, a)]));
+    } else if (i === 1 && j === 1) {
+      frames.push(Viz.frame('int a = (j + 1 < n ? anti[j + 1] : 0) + 1;',
+        '格 (1,1)：↙ 接右上的 (0,2)——右上还没被本行覆盖，正好是上一行的值',
+        [matPanel(i, j, srcs), dirPanel(j, [0, 1, 2]), varsPanel(row, d, a)]));
+    } else if (i === 2 && j === 1) {
+      frames.push(Viz.frame('ans = Math.max(ans, Math.max(Math.max(row, col[j]), Math.max(d, a)));',
+        '格 (2,1)：垂直方向数到 3，ans 更新为 3',
+        [matPanel(i, j, srcs), dirPanel(j, [0]), varsPanel(row, d, a)]));
+    }
+  }
+
+  for (var i = 0; i < m; i++) {
+    var row = 0, prevDiag = 0;
+    for (var j = 0; j < n; j++) {
+      if (mat[i][j] === 1) {
+        row++;
+        col[j]++;
+        var d = prevDiag + 1;
+        var a = (j + 1 < n ? anti[j + 1] : 0) + 1;
+        var srcs = [[i, j - 1], [i - 1, j], [i - 1, j - 1], [i - 1, j + 1]].filter(function (s) {
+          return s[0] >= 0 && s[0] < m && s[1] >= 0 && s[1] < n && mat[s[0]][s[1]] === 1;
+        });
+        ans = Math.max(ans, Math.max(Math.max(row, col[j]), Math.max(d, a)));
+        prevDiag = diag[j];   // 旧 diag[j] 留给下一列当左上
+        diag[j] = d;
+        anti[j] = a;
+        maybeSnap(i, j, srcs, row, d, a);
+      } else {
+        row = 0;
+        col[j] = 0;
+        prevDiag = diag[j];
+        diag[j] = 0;
+        anti[j] = 0;
+      }
+    }
+  }
+
+  // 找一条达到 ans 的垂直线段标 done（图解示例恰好是垂直方向拿到最大）
+  var doneRun = [];
+  for (var k = 0; k < n && !doneRun.length; k++) {
+    if (col[k] === ans && ans > 0) for (var r = m - ans; r < m; r++) doneRun.push([r, k]);
+  }
+  frames.push(Viz.frame('return ans;', '扫完：最长连续 1 线段长 ' + ans,
+    [matPanel(-1, -1, [], doneRun), dirPanel(-1, []), varsPanel(0, 0, 0)]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

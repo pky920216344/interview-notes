@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最大频率栈 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 380 / 1159</span>
+  <nav class="pn"><a href="0722.html">上一篇</a><a href="0852.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">895. </span>最大频率栈</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 9</li><li class="algo">设计</li><li class="aux">哈希表</li><li class="aux">栈</li><li class="tag">栈</li><li class="tag">设计</li><li class="tag">哈希表</li><li class="tag">有序集合</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">双哈希（val→次数、频次→按新旧摞的 val 组）加 maxFreq：push 进对应频次组，pop 取最大频次组的栈顶。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>freq[val]</code> 是出现次数；每次 push 往 <code>groups[新次数]</code> 的栈顶摞一个条目，<code>maxFreq</code> 取最大。</li><li><code>pop</code> 取 <code>groups[maxFreq]</code> 的栈顶 = 最大频次里最近压入的；然后 val 次数减 1。</li><li>关键不变式：val 更早压入时的低频条目一直留在原组里，弹出后<strong>不用</strong>重新插回低频组。</li><li>组空了才 <code>maxFreq--</code>；更低频的组必然非空（到过频次 f 的 val 在 1..f 各组都有条目）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 每步 O(1)，空间复杂度 O(压入总次数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">FreqStack</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; freq = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();           <span class="c">// val → 当前出现次数</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt;&gt; groups = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();  <span class="c">// 频次 → 该频次的 val，按新旧摞放</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">int</span> maxFreq = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">FreqStack</span>() { }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">public</span> <span class="k">void</span> push(<span class="k">int</span> val) {</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> f = freq.merge(val, <span class="n">1</span>, <span class="t">Integer</span>::sum);   <span class="c">// 次数也是 val 的「辈分」</span></span><span class="ln"><span class="no">12</span>        groups.computeIfAbsent(f, k -&gt; <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;()).push(val);</span><span class="ln"><span class="no">13</span>        maxFreq = <span class="t">Math</span>.max(maxFreq, f);</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="k">public</span> <span class="k">int</span> pop() {</span><span class="ln"><span class="no">17</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; group = groups.get(maxFreq);</span><span class="ln"><span class="no">18</span>        <span class="k">int</span> val = group.pop();   <span class="c">// 最大频次组里最近压入的那个</span></span><span class="ln"><span class="no">19</span>        freq.merge(val, -<span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">20</span>        <span class="k">if</span> (group.isEmpty()) groups.remove(maxFreq--);   <span class="c">// 组空了最大频次才降级</span></span><span class="ln"><span class="no">21</span>        <span class="k">return</span> val;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>设计一个类似堆栈的数据结构，将元素推入堆栈，并从堆栈中弹出<strong>出现频率</strong>最高的元素。</p>
+
+<p>实现 <code>FreqStack</code>&nbsp;类:</p>
+
+<ul>
+	<li><meta charset="UTF-8" /><code>FreqStack()</code>&nbsp;构造一个空的堆栈。</li>
+	<li><meta charset="UTF-8" /><code>void push(int val)</code>&nbsp;将一个整数&nbsp;<code>val</code>&nbsp;压入栈顶。</li>
+	<li><meta charset="UTF-8" /><code>int pop()</code>&nbsp;删除并返回堆栈中出现频率最高的元素。
+	<ul>
+		<li>如果出现频率最高的元素不只一个，则移除并返回最接近栈顶的元素。</li>
+	</ul>
+	</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+["FreqStack","push","push","push","push","push","push","pop","pop","pop","pop"],
+[[],[5],[7],[5],[7],[4],[5],[],[],[],[]]
+<strong>输出：</strong>[null,null,null,null,null,null,null,5,7,5,4]
+<strong>解释：</strong>
+FreqStack = new FreqStack();
+freqStack.push (5);//堆栈为 [5]
+freqStack.push (7);//堆栈是 [5,7]
+freqStack.push (5);//堆栈是 [5,7,5]
+freqStack.push (7);//堆栈是 [5,7,5,7]
+freqStack.push (4);//堆栈是 [5,7,5,7,4]
+freqStack.push (5);//堆栈是 [5,7,5,7,4,5]
+freqStack.pop ();//返回 5 ，因为 5 出现频率最高。堆栈变成 [5,7,5,7,4]。
+freqStack.pop ();//返回 7 ，因为 5 和 7 出现频率最高，但7最接近顶部。堆栈变成 [5,7,5,4]。
+freqStack.pop ();//返回 5 ，因为 5 出现频率最高。堆栈变成 [5,7,4]。
+freqStack.pop ();//返回 4 ，因为 4, 5 和 7 出现频率最高，但 4 是最接近顶部的。堆栈变成 [5,7]。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= val &lt;= 10<sup>9</sup></code></li>
+	<li><code>push</code>&nbsp;和 <code>pop</code>&nbsp;的操作数不大于 <code>2 * 10<sup>4</sup></code>。</li>
+	<li>输入保证在调用&nbsp;<code>pop</code>&nbsp;之前堆栈中至少有一个元素。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class FreqStack {", "    private final Map<Integer, Integer> freq = new HashMap<>();           // val → 当前出现次数", "    private final Map<Integer, Deque<Integer>> groups = new HashMap<>();  // 频次 → 该频次的 val，按新旧摞放", "    private int maxFreq = 0;", "", "    public FreqStack() { }", "", "    public void push(int val) {", "        int f = freq.merge(val, 1, Integer::sum);   // 次数也是 val 的「辈分」", "        groups.computeIfAbsent(f, k -> new ArrayDeque<>()).push(val);", "        maxFreq = Math.max(maxFreq, f);", "    }", "", "    public int pop() {", "        Deque<Integer> group = groups.get(maxFreq);", "        int val = group.pop();   // 最大频次组里最近压入的那个", "        freq.merge(val, -1, Integer::sum);", "        if (group.isEmpty()) groups.remove(maxFreq--);   // 组空了最大频次才降级", "        return val;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 895. 最大频率栈 —— 图解：复刻 Solution.java 的「双哈希 + maxFreq」，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { ops: [['push', 5], ['push', 7], ['push', 5], ['push', 7], ['push', 4], ['push', 5], ['pop'], ['pop'], ['pop'], ['pop']] };
+
+function trace(input) {
+  var freq = {};     // val → 当前次数
+  var groups = {};   // 频次 → 该频次的 val（数组尾是栈顶）
+  var maxFreq = 0;
+  var out = [], frames = [], captured = {}, popCount = 0;
+  var ops = input.ops;
+
+  var PUSH2 = 'groups.computeIfAbsent(f, k -> new ArrayDeque<>()).push(val);';
+  var POP1 = 'int val = group.pop();';
+  var POP2 = 'if (group.isEmpty()) groups.remove(maxFreq--);';
+
+  var lastPush = -1;
+  ops.forEach(function (op, k) { if (op[0] === 'push') lastPush = k; });
+
+  function push(tag, at, key, panels) {
+    if (captured[tag]) return;
+    captured[tag] = true;
+    frames.push(Viz.frame(at, key, panels));
+  }
+  // 每个频次一行，从底到顶排；badGroup/badCol 标出即将弹出（或刚弹出）的那格
+  function groupsPanel(badRow, badCol, badCls) {
+    var fs = Object.keys(groups).map(Number).sort(function (a, b) { return b - a; });
+    var width = 1;
+    fs.forEach(function (f) { width = Math.max(width, groups[f].length); });
+    var rows = [], rowIdx = {};
+    fs.forEach(function (f, r) {
+      rowIdx[f] = r;
+      var row = groups[f].slice();
+      while (row.length < width) row.push('');
+      rows.push(row);
+    });
+    var marks = {};
+    if (badRow != null) marks[rowIdx[badRow] + ',' + badCol] = badCls;
+    return Viz.grid(rows, { title: 'groups：每个频次一摞（右端是栈顶）', rowLabels: fs.map(function (f) { return '频次 ' + f; }), marks: marks });
+  }
+  function freqPanel(hit) {
+    var keys = Object.keys(freq).map(Number).sort(function (a, b) { return a - b; });
+    return Viz.table('freq：val → 当前次数', keys.map(function (v) {
+      return { k: String(v), v: String(freq[v]), cls: v === hit ? 'hit' : '' };
+    }));
+  }
+  function varsPanel(ret) {
+    var items = [{ name: 'maxFreq', v: String(maxFreq) }];
+    if (ret !== undefined) items.push({ name: 'pop 返回', v: String(ret), cls: 'new' });
+    return Viz.vars(items);
+  }
+
+  ops.forEach(function (op, idx) {
+    if (op[0] === 'push') {
+      var v = op[1];
+      freq[v] = (freq[v] || 0) + 1;
+      var f = freq[v];
+      (groups[f] = groups[f] || []).push(v);
+      if (f > maxFreq) maxFreq = f;
+      if (idx === lastPush) push('pushed', PUSH2, '每次压入往对应频次组摞一个：5 三次、7 两次、4 一次，maxFreq=3',
+        [groupsPanel(null, null, ''), freqPanel(), varsPanel()]);
+    } else {
+      if (!groups[maxFreq] || !groups[maxFreq].length) return;   // 输入保证 pop 时非空，防御而已
+      popCount++;
+      var g = groups[maxFreq];
+      var val = g[g.length - 1];
+      if (popCount === 1) push('pop1', POP1, 'pop：取最大频次组（频次 ' + maxFreq + '）的栈顶 → ' + val,
+        [groupsPanel(maxFreq, g.length - 1, 'bad'), freqPanel(val), varsPanel()]);
+      if (popCount === 2) push('pop2', POP1, '5、7 并列最大频次：取最近压入的 ' + val + '（栈顶就是最新）',
+        [groupsPanel(maxFreq, g.length - 1, 'bad'), freqPanel(val), varsPanel()]);
+      if (popCount === 4) push('pop4', POP1, '大家都是 1 次：最近压入的 ' + val + ' 在栈顶，直接弹',
+        [groupsPanel(maxFreq, g.length - 1, 'bad'), freqPanel(val), varsPanel()]);
+      g.pop();
+      freq[val]--;
+      var emptied = g.length === 0;
+      if (emptied) { delete groups[maxFreq]; maxFreq--; }   // 对应 Java 的 groups.remove(maxFreq--)
+      if (popCount === 1 && emptied) push('down', POP2, '频次 ' + (maxFreq + 1) + ' 组空了，maxFreq 降到 ' + maxFreq + '；5 的旧条目还在低频组里',
+        [groupsPanel(null, null, ''), freqPanel(val), varsPanel(val)]);
+      if (popCount === 2 && !emptied) push('stay', POP2, '频次 ' + maxFreq + ' 组还剩 5：maxFreq 停在 ' + maxFreq + ' 不动',
+        [groupsPanel(null, null, ''), freqPanel(val), varsPanel(val)]);
+      out.push(val);
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

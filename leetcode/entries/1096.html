@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>花括号展开 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1057 / 1159</span>
+  <nav class="pn"><a href="0181.html">上一篇</a><a href="mianshi-17-12.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1096. </span>花括号展开 II</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">深度优先搜索/递归</li><li class="tag">栈</li><li class="tag">广度优先搜索</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">回溯</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">递归下降：花括号里是逗号并集，每一支是因子连乘，因子是一段字母或再一层花括号；TreeSet 去重排序。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>文法三层：<code>union := item (',' item)*</code>、<code>item := factor*</code>、<code>factor := 字母段 | '{' union '}'</code>。</li><li><code>item</code> 从空串（单位元）开始，每读一个因子做一次笛卡尔积，遇 <code>,</code>、<code>}</code> 或结尾停。</li><li>递归进 <code>'{'</code> 解一层嵌套，出来吃掉 <code>'}'</code>；<code>union</code> 把各支 <code>addAll</code> 成并集。</li><li>全程用 <code>TreeSet</code>：自动去重 + 字典序，最后转 <code>ArrayList</code> 输出。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(输出规模)（结果本身指数级，题目如此），空间复杂度 O(输出规模)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="t">String</span> s;</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">int</span> i;   <span class="c">// 当前读到的字符下标</span></span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; braceExpansionII(<span class="t">String</span> expression) {</span><span class="ln"><span class="no">8</span>        s = expression;</span><span class="ln"><span class="no">9</span>        i = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">return</span> <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(union());</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="c">/** union := item (',' item)*：逗号分隔的各支取并集 */</span></span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="t">TreeSet</span>&lt;<span class="t">String</span>&gt; union() {</span><span class="ln"><span class="no">15</span>        <span class="t">TreeSet</span>&lt;<span class="t">String</span>&gt; res = item();</span><span class="ln"><span class="no">16</span>        <span class="k">while</span> (i &lt; s.length() &amp;&amp; s.charAt(i) == <span class="s">','</span>) {</span><span class="ln"><span class="no">17</span>            i++;</span><span class="ln"><span class="no">18</span>            res.addAll(item());</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> res;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span> </span><span class="ln"><span class="no">23</span>    <span class="c">/** item := factor factor ...：因子连着拼，直到 ',' '}' 或结尾 */</span></span><span class="ln"><span class="no">24</span>    <span class="k">private</span> <span class="t">TreeSet</span>&lt;<span class="t">String</span>&gt; item() {</span><span class="ln"><span class="no">25</span>        <span class="t">TreeSet</span>&lt;<span class="t">String</span>&gt; res = <span class="k">new</span> <span class="t">TreeSet</span>&lt;&gt;();</span><span class="ln"><span class="no">26</span>        res.add(<span class="s">""</span>);   <span class="c">// 单位元：空串乘任何因子不变</span></span><span class="ln"><span class="no">27</span>        <span class="k">while</span> (i &lt; s.length() &amp;&amp; s.charAt(i) != <span class="s">','</span> &amp;&amp; s.charAt(i) != <span class="s">'}'</span>) {</span><span class="ln"><span class="no">28</span>            res = product(res, factor());</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> res;</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span> </span><span class="ln"><span class="no">33</span>    <span class="c">/** factor := 一段字母 | '{' union '}' */</span></span><span class="ln"><span class="no">34</span>    <span class="k">private</span> <span class="t">TreeSet</span>&lt;<span class="t">String</span>&gt; factor() {</span><span class="ln"><span class="no">35</span>        <span class="k">if</span> (s.charAt(i) == <span class="s">'{'</span>) {</span><span class="ln"><span class="no">36</span>            i++;</span><span class="ln"><span class="no">37</span>            <span class="t">TreeSet</span>&lt;<span class="t">String</span>&gt; res = union();</span><span class="ln"><span class="no">38</span>            i++;   <span class="c">// 吃掉 '}'</span></span><span class="ln"><span class="no">39</span>            <span class="k">return</span> res;</span><span class="ln"><span class="no">40</span>        }</span><span class="ln"><span class="no">41</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">42</span>        <span class="k">while</span> (i &lt; s.length() &amp;&amp; s.charAt(i) &gt;= <span class="s">'a'</span> &amp;&amp; s.charAt(i) &lt;= <span class="s">'z'</span>) {</span><span class="ln"><span class="no">43</span>            sb.append(s.charAt(i++));</span><span class="ln"><span class="no">44</span>        }</span><span class="ln"><span class="no">45</span>        <span class="t">TreeSet</span>&lt;<span class="t">String</span>&gt; res = <span class="k">new</span> <span class="t">TreeSet</span>&lt;&gt;();</span><span class="ln"><span class="no">46</span>        res.add(sb.toString());</span><span class="ln"><span class="no">47</span>        <span class="k">return</span> res;</span><span class="ln"><span class="no">48</span>    }</span><span class="ln"><span class="no">49</span> </span><span class="ln"><span class="no">50</span>    <span class="c">/** 笛卡尔积：a 中每个串都接上 b 中每个串 */</span></span><span class="ln"><span class="no">51</span>    <span class="k">private</span> <span class="t">TreeSet</span>&lt;<span class="t">String</span>&gt; product(<span class="t">TreeSet</span>&lt;<span class="t">String</span>&gt; a, <span class="t">TreeSet</span>&lt;<span class="t">String</span>&gt; b) {</span><span class="ln"><span class="no">52</span>        <span class="t">TreeSet</span>&lt;<span class="t">String</span>&gt; res = <span class="k">new</span> <span class="t">TreeSet</span>&lt;&gt;();</span><span class="ln"><span class="no">53</span>        <span class="k">for</span> (<span class="t">String</span> x : a) <span class="k">for</span> (<span class="t">String</span> y : b) res.add(x + y);</span><span class="ln"><span class="no">54</span>        <span class="k">return</span> res;</span><span class="ln"><span class="no">55</span>    }</span><span class="ln"><span class="no">56</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>如果你熟悉 Shell 编程，那么一定了解过花括号展开，它可以用来生成任意字符串。</p>
+
+<p>花括号展开的表达式可以看作一个由 <strong>花括号</strong>、<strong>逗号</strong> 和 <strong>小写英文字母</strong> 组成的字符串，定义下面几条语法规则：</p>
+
+<ul>
+	<li>如果只给出单一的元素&nbsp;<code>x</code>，那么表达式表示的字符串就只有&nbsp;<code>"x"</code>。<code>R(x) = {x}</code>
+
+	<ul>
+		<li>例如，表达式 <code>"a"</code> 表示字符串 <code>"a"</code>。</li>
+		<li>而表达式 <code>"w"</code> 就表示字符串 <code>"w"</code>。</li>
+	</ul>
+	</li>
+	<li>当两个或多个表达式并列，以逗号分隔，我们取这些表达式中元素的并集。<code>R({e_1,e_2,...}) = R(e_1)&nbsp;∪ R(e_2)&nbsp;∪ ...</code>
+	<ul>
+		<li>例如，表达式 <code>"{a,b,c}"</code> 表示字符串&nbsp;<code>"a","b","c"</code>。</li>
+		<li>而表达式 <code>"{{a,b},{b,c}}"</code> 也可以表示字符串&nbsp;<code>"a","b","c"</code>。</li>
+	</ul>
+	</li>
+	<li>要是两个或多个表达式相接，中间没有隔开时，我们从这些表达式中各取一个元素依次连接形成字符串。<code>R(e_1 + e_2) = {a + b for (a, b) in&nbsp;R(e_1)&nbsp;× R(e_2)}</code>
+	<ul>
+		<li>例如，表达式 <code>"{a,b}{c,d}"</code> 表示字符串&nbsp;<code>"ac","ad","bc","bd"</code>。</li>
+	</ul>
+	</li>
+	<li>表达式之间允许嵌套，单一元素与表达式的连接也是允许的。
+	<ul>
+		<li>例如，表达式 <code>"a{b,c,d}"</code> 表示字符串&nbsp;<code>"ab","ac","ad"​​​​​​</code>。</li>
+		<li>例如，表达式 <code>"a{b,c}{d,e}f{g,h}"</code> 可以表示字符串&nbsp;<code>"abdfg", "abdfh", "abefg", "abefh", "acdfg", "acdfh", "acefg", "acefh"</code>。</li>
+	</ul>
+	</li>
+</ul>
+
+<p>给出表示基于给定语法规则的表达式&nbsp;<code>expression</code>，返回它所表示的所有字符串组成的有序列表。</p>
+
+<p>假如你希望以「集合」的概念了解此题，也可以通过点击 “<strong>显示英文描述</strong>” 获取详情。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>expression = "{a,b}{c,{d,e}}"
+<strong>输出：</strong>["ac","ad","ae","bc","bd","be"]</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>expression = "{{a,z},a{b,c},{ab,z}}"
+<strong>输出：</strong>["a","ab","ac","z"]
+<strong>解释：</strong>输出中 <strong>不应 </strong>出现重复的组合结果。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= expression.length &lt;= 60</code></li>
+	<li><code>expression[i]</code> 由 <code>'{'</code>，<code>'}'</code>，<code>','</code>&nbsp;或小写英文字母组成</li>
+	<li>给出的表达式&nbsp;<code>expression</code>&nbsp;用以表示一组基于题目描述中语法构造的字符串</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private String s;", "    private int i;   // 当前读到的字符下标", "", "    public List<String> braceExpansionII(String expression) {", "        s = expression;", "        i = 0;", "        return new ArrayList<>(union());", "    }", "", "    /** union := item (',' item)*：逗号分隔的各支取并集 */", "    private TreeSet<String> union() {", "        TreeSet<String> res = item();", "        while (i < s.length() && s.charAt(i) == ',') {", "            i++;", "            res.addAll(item());", "        }", "        return res;", "    }", "", "    /** item := factor factor ...：因子连着拼，直到 ',' '}' 或结尾 */", "    private TreeSet<String> item() {", "        TreeSet<String> res = new TreeSet<>();", "        res.add(\"\");   // 单位元：空串乘任何因子不变", "        while (i < s.length() && s.charAt(i) != ',' && s.charAt(i) != '}') {", "            res = product(res, factor());", "        }", "        return res;", "    }", "", "    /** factor := 一段字母 | '{' union '}' */", "    private TreeSet<String> factor() {", "        if (s.charAt(i) == '{') {", "            i++;", "            TreeSet<String> res = union();", "            i++;   // 吃掉 '}'", "            return res;", "        }", "        StringBuilder sb = new StringBuilder();", "        while (i < s.length() && s.charAt(i) >= 'a' && s.charAt(i) <= 'z') {", "            sb.append(s.charAt(i++));", "        }", "        TreeSet<String> res = new TreeSet<>();", "        res.add(sb.toString());", "        return res;", "    }", "", "    /** 笛卡尔积：a 中每个串都接上 b 中每个串 */", "    private TreeSet<String> product(TreeSet<String> a, TreeSet<String> b) {", "        TreeSet<String> res = new TreeSet<>();", "        for (String x : a) for (String y : b) res.add(x + y);", "        return res;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1096. 花括号展开 II —— 图解：复刻 Solution.java 的递归下降解析，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { expression: '{b,c{d}}' };
+
+function trace(input) {
+  var s = input.expression;
+  var n = s.length;
+  var frames = [];
+  var i = 0;                       // 当前读到的下标（对应 Java 的字段 i）
+  var shown = { letter: 0, comma: 0, nest: 0, prod: 0 };
+
+  var LETTER = 'sb.append(s.charAt(i++));';
+  var ADD = 'res.addAll(item());';
+  var NEST = 'TreeSet<String> res = union();';
+  var PROD = 'res = product(res, factor());';
+  var RET = 'return new ArrayList<>(union());';
+
+  function brief(txt) { return txt.length > 26 ? txt.slice(0, 26) + '…' : txt; }
+
+  // 表达式面板：已消费 dim，正在看的格 cur
+  function exprPanel(o) {
+    var marks = {}, k;
+    for (k = 0; k < o.consumed && k < n; k++) marks[k] = 'dim';
+    if (o.cur != null && o.cur < n) marks[o.cur] = 'cur';
+    var pointers = o.cur != null && o.cur < n ? [{ at: o.cur, label: 'i', cls: 'p-cur' }] : [];
+    return Viz.cells(s.split(''), { title: '表达式', marks: marks, pointers: pointers });
+  }
+
+  function setPanel(title, arr, cls) {
+    var marks = {}, k;
+    for (k = 0; k < arr.length; k++) marks[k] = cls || '';
+    return Viz.cells(arr, { title: title, marks: marks });
+  }
+
+  function snap(at, key, o, arr, title, cls) {
+    frames.push(Viz.frame(at, key, [exprPanel(o), setPanel(title, arr, cls)]));
+  }
+
+  // 集合运算：去重 + 字典序（对应 Java 的 TreeSet）
+  function product(a, b) {
+    var seen = {}, x, y;
+    for (x = 0; x < a.length; x++) for (y = 0; y < b.length; y++) seen[a[x] + b[y]] = true;
+    return Object.keys(seen).sort();
+  }
+
+  function addAll(a, b) {
+    var seen = {}, k;
+    for (k = 0; k < a.length; k++) seen[a[k]] = true;
+    for (k = 0; k < b.length; k++) seen[b[k]] = true;
+    return Object.keys(seen).sort();
+  }
+
+  function union() {
+    var res = item();
+    while (i < n && s[i] === ',') {
+      i++;
+      var branch = item();
+      if (shown.comma < 1) {
+        shown.comma++;
+        snap(ADD, '遇逗号：已完成的分支「' + brief(res.join(',')) + '」并入并集，重开一支',
+          { consumed: i, cur: i }, res, '并集里已有的分支', 'win');
+      }
+      res = addAll(res, branch);
+    }
+    return res;
+  }
+
+  function item() {
+    var res = [''];
+    while (i < n && s[i] !== ',' && s[i] !== '}') {
+      var before = res;
+      res = product(res, factor());
+      // 值得画的拼接：左边不再是空串单位元（真正发生了「接上一个因子」）
+      if (shown.prod < 2 && (before.length > 1 || before[0] !== '')) {
+        shown.prod++;
+        snap(PROD, '因子相接：笛卡尔积得「' + brief(res.join(',')) + '」',
+          { consumed: i, cur: i }, res, '当前段的积（拼接结果）', 'new');
+      }
+    }
+    return res;
+  }
+
+  function factor() {
+    if (s[i] === '{') {
+      i++;
+      var res = union();
+      i++;   // 吃掉 '}'
+      if (shown.nest < 1) {
+        shown.nest++;
+        snap(NEST, '内层花括号递归完：得「' + brief(res.join(',')) + '」，回到外层',
+          { consumed: i, cur: i }, res, '内层并集的结果', '');
+      }
+      return res;
+    }
+    var sb = '';
+    while (i < n && s[i] >= 'a' && s[i] <= 'z') { sb += s[i]; i++; }
+    if (shown.letter < 1) {
+      shown.letter++;
+      snap(LETTER, '读到一段字母「' + sb + '」：作为一个因子',
+        { consumed: i, cur: i }, [sb], '当前段的积（还没拼）', '');
+    }
+    return [sb];
+  }
+
+  var result = union();
+  snap(RET, '并集完成：去重、按字典序输出 [' + brief(result.join(', ')) + ']',
+    { consumed: n, cur: null }, result, '输出（去重 + 字典序）', 'done');
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

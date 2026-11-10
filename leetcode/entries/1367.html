@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉树中的链表 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 714 / 1159</span>
+  <nav class="pn"><a href="mianshi-17-08.html">上一篇</a><a href="1263.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1367. </span>二叉树中的链表</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">链表</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">双层 DFS：外层把树里每个结点都当成链表起点试一遍；内层从起点沿树向下，值相等才继续走孩子。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>外层 <code>isSubPath</code>：对每个结点问「以我为开头能匹配吗」，不行就递归问左右子树——保证不漏任何起点。</li><li>内层 <code>match</code>：链表和树同步往下走，值相等才能继续；<strong>链表走完返回 true，树走完了返回 false</strong>，两个终止条件顺序不能反。</li><li>内层失败后不「原地重启」：换起点的活全部交给外层递归，代码才不会绕晕。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n×L)，空间复杂度 O(H)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> isSubPath(<span class="t">ListNode</span> head, <span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">3</span>        <span class="k">if</span> (root == <span class="k">null</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">4</span>        <span class="c">// 从当前结点出发能匹配，或在左右子树里另找起点</span></span><span class="ln"><span class="no">5</span>        <span class="k">return</span> match(head, root) || isSubPath(head, root.left) || isSubPath(head, root.right);</span><span class="ln"><span class="no">6</span>    }</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="c">// 从 node 出发向下，逐个匹配链表结点</span></span><span class="ln"><span class="no">9</span>    <span class="k">private</span> <span class="k">boolean</span> match(<span class="t">ListNode</span> head, <span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">10</span>        <span class="k">if</span> (head == <span class="k">null</span>) <span class="k">return</span> <span class="k">true</span>;   <span class="c">// 链表走完：整条匹配成功</span></span><span class="ln"><span class="no">11</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="k">false</span>;  <span class="c">// 树走完了链表还没走完</span></span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (head.val != node.val) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">13</span>        <span class="c">// 值相等：沿左右孩子继续匹配下一个链表结点</span></span><span class="ln"><span class="no">14</span>        <span class="k">return</span> match(head.next, node.left) || match(head.next, node.right);</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一棵以&nbsp;<code>root</code>&nbsp;为根的二叉树和一个&nbsp;<code>head</code>&nbsp;为第一个节点的链表。</p>
+
+<p>如果在二叉树中，存在一条一直向下的路径，且每个点的数值恰好一一对应以&nbsp;<code>head</code>&nbsp;为首的链表中每个节点的值，那么请你返回 <code>True</code> ，否则返回 <code>False</code> 。</p>
+
+<p>一直向下的路径的意思是：从树中某个节点开始，一直连续向下的路径。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/2021d47bada7.png" style="height: 280px; width: 220px;"></strong></p>
+
+<pre><strong>输入：</strong>head = [4,2,8], root = [1,4,4,null,2,2,null,1,null,6,8,null,null,null,null,1,3]
+<strong>输出：</strong>true
+<strong>解释：</strong>树中蓝色的节点构成了与链表对应的子路径。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/f6c89911a98d.png" style="height: 280px; width: 220px;"></strong></p>
+
+<pre><strong>输入：</strong>head = [1,4,2,6], root = [1,4,4,null,2,2,null,1,null,6,8,null,null,null,null,1,3]
+<strong>输出：</strong>true
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>head = [1,4,2,6,8], root = [1,4,4,null,2,2,null,1,null,6,8,null,null,null,null,1,3]
+<strong>输出：</strong>false
+<strong>解释：</strong>二叉树中不存在一一对应链表的路径。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>二叉树和链表中的每个节点的值都满足&nbsp;<code>1 &lt;= node.val&nbsp;&lt;= 100</code>&nbsp;。</li>
+	<li>链表包含的节点数目在&nbsp;<code>1</code>&nbsp;到&nbsp;<code>100</code>&nbsp;之间。</li>
+	<li>二叉树包含的节点数目在&nbsp;<code>1</code>&nbsp;到&nbsp;<code>2500</code>&nbsp;之间。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean isSubPath(ListNode head, TreeNode root) {", "        if (root == null) return false;", "        // 从当前结点出发能匹配，或在左右子树里另找起点", "        return match(head, root) || isSubPath(head, root.left) || isSubPath(head, root.right);", "    }", "", "    // 从 node 出发向下，逐个匹配链表结点", "    private boolean match(ListNode head, TreeNode node) {", "        if (head == null) return true;   // 链表走完：整条匹配成功", "        if (node == null) return false;  // 树走完了链表还没走完", "        if (head.val != node.val) return false;", "        // 值相等：沿左右孩子继续匹配下一个链表结点", "        return match(head.next, node.left) || match(head.next, node.right);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1367 二叉树中的列表 —— 图解：外层逐个结点当起点，内层沿树向下逐个匹配链表。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { head: [4, 2, 8], root: [1, 4, 4, 2, null, 2, null, null, null, null, 8] };
+
+function trace(input) {
+  var head = input.head, level = input.root.slice();
+  while (level.length && level[level.length - 1] === null) level.pop();
+  var frames = [];
+  var root = buildTree(level);
+
+  var OUTER = 'return match(head, root) || isSubPath(head, root.left) || isSubPath(head, root.right);';
+  var DONE = 'if (head == null) return true;';
+  var VALFAIL = 'if (head.val != node.val) return false;';
+  var DOWN = 'return match(head.next, node.left) || match(head.next, node.right);';
+
+  function buildTree(lv) {
+    if (!lv.length || lv[0] === null) return null;
+    var rt = { val: lv[0], li: 0 }, q = [rt], i = 1;
+    while (q.length && i < lv.length) {
+      var cur = q.shift();
+      if (i < lv.length && lv[i] !== null) { cur.left = { val: lv[i], li: i }; q.push(cur.left); }
+      i++;
+      if (i < lv.length && lv[i] !== null) { cur.right = { val: lv[i], li: i }; q.push(cur.right); }
+      i++;
+    }
+    return rt;
+  }
+
+  function treePanel(marks, labels) {
+    return Viz.tree(level, { title: '二叉树 root', marks: marks || {}, labels: labels || [] });
+  }
+  function listPanel(matched, allWin) {
+    var marks = {};
+    for (var i = 0; i < head.length; i++) {
+      if (allWin || i < matched) marks[i] = 'win';
+      else if (i === matched) marks[i] = 'cur';
+    }
+    return Viz.list(head.map(String), { title: '链表 head', marks: marks });
+  }
+
+  // 前序遍历收集起点顺序（与 Java 外层递归一致）
+  var starts = [];
+  (function pre(node) { if (node) { starts.push(node); pre(node.left); pre(node.right); } })(root);
+
+  // 内层匹配：值相等才往孩子走；curBest 记录本次尝试匹配得最深的地方
+  var curBest = null;
+  function tryMatch(node, hi, path) {
+    if (hi === head.length) return path.slice();
+    if (!node || node.val !== head[hi]) {
+      if (!curBest || path.length > curBest.path.length) curBest = { path: path.slice(), hi: hi };
+      return null;
+    }
+    path.push(node);
+    var r = tryMatch(node.left, hi + 1, path) || tryMatch(node.right, hi + 1, path);
+    path.pop();
+    return r;
+  }
+
+  var fail = null, ok = null;
+  for (var s = 0; s < starts.length && !ok; s++) {
+    curBest = null;
+    var found = tryMatch(starts[s], 0, []);
+    if (found) ok = { start: starts[s], path: found };
+    else if (curBest && (!fail || curBest.path.length > fail.best.path.length)) fail = { start: starts[s], best: curBest };
+  }
+
+  // 第 1 帧：外层从根开始逐个找起点
+  frames.push(Viz.frame(OUTER, root ? '外层 DFS：把每个结点都当起点试一遍，先试根 ' + root.val : '空树：直接返回 false',
+    [treePanel(root ? { 0: 'cur' } : {}, root ? [{ at: 0, label: '起点', cls: 'p-cur' }] : []), listPanel(0)]));
+
+  // 第 2 帧：最深的一次失败（有的起点匹配了一半走不下去）
+  if (fail && fail.best.path.length > 0) {
+    var marks = {}, labels = [];
+    fail.best.path.forEach(function (nd) { marks[nd.li] = 'bad'; });
+    labels.push({ at: fail.start.li, label: '起点', cls: 'p-cur' });
+    frames.push(Viz.frame(VALFAIL, '从值 ' + fail.start.val + ' 出发匹配了 ' + fail.best.path.length
+      + ' 个就断了：下一个要 ' + head[fail.best.hi] + '，树里走不到', [treePanel(marks, labels), listPanel(fail.best.hi)]));
+  }
+
+  // 第 3 帧：成功的整条路径
+  if (ok) {
+    var m2 = {}, labels2 = [{ at: ok.start.li, label: '起点', cls: 'p-cur' }];
+    ok.path.forEach(function (nd) { m2[nd.li] = 'done'; });
+    frames.push(Viz.frame(DOWN, '从值 ' + ok.start.val + ' 出发：沿树向下 ' + ok.path.map(function (n) { return n.val; }).join('→')
+      + '，和链表完全一致', [treePanel(m2, labels2), listPanel(0, true)]));
+  }
+
+  // 最后一帧：结论
+  if (ok) {
+    frames.push(Viz.frame(DONE, '链表走完了：这条向下的路径就是答案，返回 true', [treePanel(m2Done()), listPanel(0, true)]));
+  } else {
+    frames.push(Viz.frame(OUTER, '所有起点都试过：树里不存在这样的向下路径，返回 false', [treePanel({}), listPanel(0)]));
+  }
+
+  function m2Done() {
+    var m = {};
+    if (ok) ok.path.forEach(function (nd) { m[nd.li] = 'done'; });
+    return m;
+  }
+
+  return { frames: frames, result: !!ok };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

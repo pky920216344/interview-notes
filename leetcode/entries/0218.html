@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>天际线问题 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1090 / 1159</span>
+  <nav class="pn"><a href="0710.html">上一篇</a><a href="1232.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">218. </span>天际线问题</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">扫描线/排序</li><li class="tag">树状数组</li><li class="tag">线段树</li><li class="tag">数组</li><li class="tag">分治</li><li class="tag">有序集合</li><li class="tag">排序</li><li class="tag">扫描线</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">扫描线事件按 (x, ±h) 排序：左端点存 −h、右端点存 +h；计数多重集维护当前最大高度，变化处输出关键点。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每栋楼拆成两个事件：左端点 <code>−h</code>、右端点 <code>+h</code>，按 <code>(x, 带符号高度)</code> 排序——同一 x 先加高的、先删矮的，自然不产生毛刺。</li><li><code>TreeMap&lt;高度, 楼数&gt;</code> 当多重集：加入 +1，删除 −1（减到 0 删键），<code>lastKey()</code> 就是当前最大高度。</li><li>最大高度与上一次不同才输出 <code>[x, 新高度]</code>；地面 <code>0</code> 常驻集合里，最后一栋楼结束时自动输出归零点。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; getSkyline(<span class="k">int</span>[][] buildings) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 扫描线事件：左端点存 -h（同一 x 先加高的），右端点存 +h（同一 x 先删矮的）</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; events = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span>[] b : buildings) {</span><span class="ln"><span class="no">8</span>            events.add(<span class="k">new</span> <span class="k">int</span>[]{b[<span class="n">0</span>], -b[<span class="n">2</span>]});</span><span class="ln"><span class="no">9</span>            events.add(<span class="k">new</span> <span class="k">int</span>[]{b[<span class="n">1</span>], b[<span class="n">2</span>]});</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        events.sort((a, b) -&gt; a[<span class="n">0</span>] != b[<span class="n">0</span>] ? <span class="t">Integer</span>.compare(a[<span class="n">0</span>], b[<span class="n">0</span>]) : <span class="t">Integer</span>.compare(a[<span class="n">1</span>], b[<span class="n">1</span>]));</span><span class="ln"><span class="no">12</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">13</span>        <span class="t">TreeMap</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; alive = <span class="k">new</span> <span class="t">TreeMap</span>&lt;&gt;();   <span class="c">// 高度 → 楼数，lastKey 即当前最大</span></span><span class="ln"><span class="no">14</span>        alive.put(<span class="n">0</span>, <span class="n">1</span>);                                     <span class="c">// 地面常驻，最后一栋楼结束自动归零</span></span><span class="ln"><span class="no">15</span>        <span class="k">int</span> prev = <span class="n">0</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span>[] e : events) {</span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (e[<span class="n">1</span>] &lt; <span class="n">0</span>) alive.merge(-e[<span class="n">1</span>], <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">18</span>            <span class="k">else</span> <span class="k">if</span> (alive.merge(e[<span class="n">1</span>], -<span class="n">1</span>, <span class="t">Integer</span>::sum) == <span class="n">0</span>) alive.remove(e[<span class="n">1</span>]);</span><span class="ln"><span class="no">19</span>            <span class="k">int</span> cur = alive.lastKey();</span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (cur != prev) {</span><span class="ln"><span class="no">21</span>                ans.add(<span class="t">Arrays</span>.asList(e[<span class="n">0</span>], cur));</span><span class="ln"><span class="no">22</span>                prev = cur;</span><span class="ln"><span class="no">23</span>            }</span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>城市的 <strong>天际线</strong> 是从远处观看该城市中所有建筑物形成的轮廓的外部轮廓。给你所有建筑物的位置和高度，请返回 <em>由这些建筑物形成的<strong> 天际线</strong></em> 。</p>
+
+<p>每个建筑物的几何信息由数组 <code>buildings</code> 表示，其中三元组 <code>buildings[i] = [lefti, righti, heighti]</code> 表示：</p>
+
+<ul>
+	<li><code>left<sub>i</sub></code> 是第 <code>i</code> 座建筑物左边缘的 <code>x</code> 坐标。</li>
+	<li><code>right<sub>i</sub></code> 是第 <code>i</code> 座建筑物右边缘的 <code>x</code> 坐标。</li>
+	<li><code>height<sub>i</sub></code> 是第 <code>i</code> 座建筑物的高度。</li>
+</ul>
+
+<p>你可以假设所有的建筑都是完美的长方形，在高度为 <code>0</code>&nbsp;的绝对平坦的表面上。</p>
+
+<p><strong>天际线</strong> 应该表示为由 “关键点” 组成的列表，格式 <code>[[x<sub>1</sub>,y<sub>1</sub>],[x<sub>2</sub>,y<sub>2</sub>],...]</code> ，并按 <strong>x 坐标 </strong>进行 <strong>排序</strong> 。<strong>关键点是水平线段的左端点</strong>。列表中最后一个点是最右侧建筑物的终点，<code>y</code> 坐标始终为 <code>0</code> ，仅用于标记天际线的终点。此外，任何两个相邻建筑物之间的地面都应被视为天际线轮廓的一部分。</p>
+
+<p><strong>注意：</strong>输出天际线中不得有连续的相同高度的水平线。例如 <code>[...[2 3], [4 5], [7 5], [11 5], [12 7]...]</code> 是不正确的答案；三条高度为 5 的线应该在最终输出中合并为一个：<code>[...[2 3], [4 5], [12 7], ...]</code></p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/1d4dc8949eac.jpg" style="height: 331px; width: 800px;" />
+<pre>
+<strong>输入：</strong>buildings = [[2,9,10],[3,7,15],[5,12,12],[15,20,10],[19,24,8]]
+<strong>输出：</strong>[[2,10],[3,15],[7,12],[12,0],[15,10],[20,8],[24,0]]
+<strong>解释：</strong>
+图 A显示输入的所有建筑物的位置和高度，
+图 B 显示由这些建筑物形成的天际线。图 B 中的红点表示输出列表中的关键点。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>buildings = [[0,2,3],[2,5,3]]
+<strong>输出：</strong>[[0,3],[5,0]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= buildings.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= left<sub>i</sub> &lt; right<sub>i</sub> &lt;= 2<sup>31</sup> - 1</code></li>
+	<li><code>1 &lt;= height<sub>i</sub> &lt;= 2<sup>31</sup> - 1</code></li>
+	<li><code>buildings</code> 按 <code>left<sub>i</sub></code> 非递减排序</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<Integer>> getSkyline(int[][] buildings) {", "        // 扫描线事件：左端点存 -h（同一 x 先加高的），右端点存 +h（同一 x 先删矮的）", "        List<int[]> events = new ArrayList<>();", "        for (int[] b : buildings) {", "            events.add(new int[]{b[0], -b[2]});", "            events.add(new int[]{b[1], b[2]});", "        }", "        events.sort((a, b) -> a[0] != b[0] ? Integer.compare(a[0], b[0]) : Integer.compare(a[1], b[1]));", "        List<List<Integer>> ans = new ArrayList<>();", "        TreeMap<Integer, Integer> alive = new TreeMap<>();   // 高度 → 楼数，lastKey 即当前最大", "        alive.put(0, 1);                                     // 地面常驻，最后一栋楼结束自动归零", "        int prev = 0;", "        for (int[] e : events) {", "            if (e[1] < 0) alive.merge(-e[1], 1, Integer::sum);", "            else if (alive.merge(e[1], -1, Integer::sum) == 0) alive.remove(e[1]);", "            int cur = alive.lastKey();", "            if (cur != prev) {", "                ans.add(Arrays.asList(e[0], cur));", "                prev = cur;", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 218. 天际线问题 —— 图解：复刻 Solution.java 的「扫描线事件 + 计数多重集」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { buildings: [[2, 9, 10], [3, 7, 15], [5, 12, 12]] };
+
+function trace(input) {
+  var bs = input.buildings;
+  var events = [];
+  bs.forEach(function (b) {
+    events.push([b[0], -b[2]]);    // 左端点：负高度，同 x 先加高的
+    events.push([b[1], b[2]]);     // 右端点：正高度，同 x 先删矮的
+  });
+  events.sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+
+  var alive = { 0: 1 };            // 高度 → 楼数（对应 Java 的 TreeMap），地面 0 常驻
+  var prev = 0, ans = [];
+  var frames = [];
+  var shown = { addEmit: 0, rmEmit: 0 };
+
+  function evPanel(curIdx) {
+    var items = [], marks = {};
+    events.forEach(function (e, i) {
+      items.push(e[0] + ':' + (e[1] < 0 ? '−' + (-e[1]) : '+' + e[1]));
+      if (i < curIdx) marks[i] = 'dim';
+      if (i === curIdx) marks[i] = 'cur';
+    });
+    var pointers = curIdx < events.length ? [{ at: curIdx, label: 'x', cls: 'p-cur' }] : [];
+    return Viz.cells(items, { title: '事件按 (x, ±h) 排序：负数=加楼，正数=撤楼', marks: marks,
+      pointers: pointers });
+  }
+  function alivePanel(chgH) {
+    var keys = Object.keys(alive).map(Number).sort(function (a, b) { return b - a; });
+    return Viz.table('还活着的高度（多重集），最大值决定天际线', keys.map(function (h) {
+      return { k: String(h), v: '× ' + alive[h], cls: h === chgH ? 'chg' : '' };
+    }), { hint: '地面 0 常驻，最后归零有兜底' });
+  }
+  function varsPanel(emit) {
+    var items = [{ name: 'prev（上一个最大）', v: prev }];
+    if (emit) items.push({ name: '刚记下的关键点', v: '[' + emit[0] + ',' + emit[1] + ']', cls: 'chg' });
+    return Viz.vars(items);
+  }
+  function maxKey() {
+    var best = -1;
+    for (var k in alive) { var v = Number(k); if (v > best) best = v; }
+    return best;
+  }
+
+  for (var i = 0; i < events.length; i++) {
+    var e = events[i], chg = null;
+    if (e[1] < 0) {
+      var h = -e[1];
+      alive[h] = (alive[h] || 0) + 1;
+      chg = h;
+    } else {
+      alive[e[1]] = alive[e[1]] - 1;
+      if (alive[e[1]] === 0) delete alive[e[1]];
+      chg = e[1];
+    }
+    var cur = maxKey();
+    if (cur !== prev) {
+      var emit = [e[0], cur];
+      ans.push(emit);
+      prev = cur;
+      if (e[1] < 0 && shown.addEmit < 2) {
+        shown.addEmit++;
+        frames.push(Viz.frame('int cur = alive.lastKey();',
+          'x=' + e[0] + ' 加进高 ' + (-e[1]) + '：最大高度跳到 ' + cur + '，记下 [' + e[0] + ',' + cur + ']',
+          [evPanel(i), alivePanel(chg), varsPanel(emit)]));
+      } else if (e[1] > 0 && shown.rmEmit < 1) {
+        shown.rmEmit++;
+        frames.push(Viz.frame('if (cur != prev) {',
+          'x=' + e[0] + ' 撤走高 ' + e[1] + '：最大高度降到 ' + cur + '，记下 [' + e[0] + ',' + cur + ']',
+          [evPanel(i), alivePanel(chg), varsPanel(emit)]));
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return ans;', '扫完所有事件：天际线共 ' + ans.length + ' 个关键点',
+    [evPanel(events.length), alivePanel(null),
+     Viz.vars(ans.map(function (p, k) { return { name: '关键点 ' + (k + 1), v: '[' + p[0] + ',' + p[1] + ']', cls: 'done' }; }))]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>N 皇后 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 472 / 1159</span>
+  <nav class="pn"><a href="0399.html">上一篇</a><a href="0633.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">52. </span>N 皇后 II</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 5</li><li class="algo">回溯</li><li class="aux">位运算</li><li class="tag">回溯</li><li class="tag">algorithm-x</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">还是逐行回溯，只是把三套冲突标记压成一个整数的位：cols 管列，ld/rw 管两条对角线，每降一行整体移一位。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>与 51 题同款逐行回溯：每行选一列，<code>row == n</code> 时解数加一，只计数不记录棋盘。</li><li>三个位掩码 <code>cols / ld / rw</code> 的第 c 位是 1 表示第 c 列被占：本行可选列 <code>avail = 全 1 &amp; ~(cols|ld|rw)</code>。</li><li><code>p = avail &amp; (-avail)</code> 取最低可用列；放进下一行时 <code>ld</code> 整体左移一位、<code>rw</code> 整体右移一位——斜线攻击随行下移平移一格。</li><li><code>n ≤ 9</code>，一个 <code>int</code> 装得下全部状态；回溯就是 <code>while</code> 里继续取下一个 <code>p</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n!)（剪枝后远小于），空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">int</span> n, count;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> totalNQueens(<span class="k">int</span> n) {</span><span class="ln"><span class="no">5</span>        <span class="k">this</span>.n = n;</span><span class="ln"><span class="no">6</span>        count = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        dfs(<span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>);</span><span class="ln"><span class="no">8</span>        <span class="k">return</span> count;</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="c">// 逐行放；cols/ld/rw 分别是列、左斜线、右斜线已占的列（按位记）</span></span><span class="ln"><span class="no">12</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span> row, <span class="k">int</span> cols, <span class="k">int</span> ld, <span class="k">int</span> rw) {</span><span class="ln"><span class="no">13</span>        <span class="k">if</span> (row == n) { count++; <span class="k">return</span>; }</span><span class="ln"><span class="no">14</span>        <span class="c">// 三个方向取并再取反，剩下的就是本行还能放的列</span></span><span class="ln"><span class="no">15</span>        <span class="k">int</span> avail = ((<span class="n">1</span> &lt;&lt; n) - <span class="n">1</span>) &amp; ~(cols | ld | rw);</span><span class="ln"><span class="no">16</span>        <span class="k">while</span> (avail != <span class="n">0</span>) {</span><span class="ln"><span class="no">17</span>            <span class="k">int</span> p = avail &amp; (-avail);   <span class="c">// 取最低一位可用列</span></span><span class="ln"><span class="no">18</span>            avail ^= p;                 <span class="c">// 从候选去掉，回溯后接着试下一个</span></span><span class="ln"><span class="no">19</span>            <span class="c">// 下一行：列原样继承，左斜线左移一位，右斜线右移一位</span></span><span class="ln"><span class="no">20</span>            dfs(row + <span class="n">1</span>, cols | p, (ld | p) &lt;&lt; <span class="n">1</span>, (rw | p) &gt;&gt; <span class="n">1</span>);</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p><strong>n&nbsp;皇后问题</strong> 研究的是如何将 <code>n</code>&nbsp;个皇后放置在 <code>n × n</code> 的棋盘上，并且使皇后彼此之间不能相互攻击。</p>
+
+<p>给你一个整数 <code>n</code> ，返回 <strong>n 皇后问题</strong> 不同的解决方案的数量。</p>
+
+
+
+<div class="original__bRMd">
+<div>
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/43abb8bd90c3.jpg" style="width: 600px; height: 268px;" />
+<pre>
+<strong>输入：</strong>n = 4
+<strong>输出：</strong>2
+<strong>解释：</strong>如上图所示，4 皇后问题存在两个不同的解法。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 1
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 9</code></li>
+</ul>
+</div>
+</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private int n, count;", "", "    public int totalNQueens(int n) {", "        this.n = n;", "        count = 0;", "        dfs(0, 0, 0, 0);", "        return count;", "    }", "", "    // 逐行放；cols/ld/rw 分别是列、左斜线、右斜线已占的列（按位记）", "    private void dfs(int row, int cols, int ld, int rw) {", "        if (row == n) { count++; return; }", "        // 三个方向取并再取反，剩下的就是本行还能放的列", "        int avail = ((1 << n) - 1) & ~(cols | ld | rw);", "        while (avail != 0) {", "            int p = avail & (-avail);   // 取最低一位可用列", "            avail ^= p;                 // 从候选去掉，回溯后接着试下一个", "            // 下一行：列原样继承，左斜线左移一位，右斜线右移一位", "            dfs(row + 1, cols | p, (ld | p) << 1, (rw | p) >> 1);", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 52. N 皇后 II —— 图解：按行放皇后的位运算回溯，cols/ld/rw 三个位掩码卡住所有攻击线。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 4 };
+
+function trace(input) {
+  var n = input.n;
+  var FULL = (1 << n) - 1;
+  var frames = [];
+  var count = 0;
+  var board = [];   // board[r] = 第 r 行皇后放的列，-1 表示还没放
+  for (var i = 0; i < n; i++) board.push(-1);
+  var lastSol = null;   // 最近一次放满的棋盘，最后一张图用它
+
+  var AVAIL = 'int avail = ((1 << n) - 1) & ~(cols | ld | rw);';
+  var WHILE = 'while (avail != 0) {';
+  var XORP = 'avail ^= p;';
+  var DONE = 'if (row == n) { count++; return; }';
+  var RET = 'return count;';
+
+  function bits(x) {
+    var s = '';
+    for (var k = n - 1; k >= 0; k--) s += ((x >> k) & 1) ? '1' : '0';
+    return s;
+  }
+  function boardRows(bd) {
+    var rows = [];
+    for (var r = 0; r < n; r++) {
+      var line = [];
+      for (var c = 0; c < n; c++) line.push(bd[r] === c ? 'Q' : '·');
+      rows.push(line);
+    }
+    return rows;
+  }
+  // bd：展示用的棋盘；row 之前是已确定的行，row 行标出被攻击格和当前候选格
+  function panels(bd, row, cols, ld, rw, avail, curCol, doneMode) {
+    var marks = {};
+    var r, c;
+    for (r = 0; r < n; r++) if (bd[r] >= 0) marks[r + ',' + bd[r]] = doneMode ? 'done' : 'win';
+    if (row < n && !doneMode) {
+      var attacked = (cols | ld | rw) & FULL;
+      for (c = 0; c < n; c++) if (attacked & (1 << c)) marks[row + ',' + c] = 'bad';
+      if (curCol != null) marks[row + ',' + curCol] = 'cur';
+    }
+    var grid = Viz.grid(boardRows(bd), { title: '棋盘（Q 是已放的皇后，· 是空位）', marks: marks });
+    var vars = Viz.vars([
+      { name: 'cols（列占用）', v: bits(cols) },
+      { name: 'ld（左斜线）', v: bits(ld) },
+      { name: 'rw（右斜线）', v: bits(rw) },
+      { name: 'avail（本行可选列）', v: bits(avail), cls: 'cur' },
+      { name: 'count（解数）', v: String(count) }
+    ]);
+    return [grid, vars];
+  }
+  function snap(at, key, bd, row, cols, ld, rw, avail, curCol, doneMode) {
+    frames.push(Viz.frame(at, key, panels(bd, row, cols, ld, rw, avail, curCol, doneMode)));
+  }
+
+  var snapOpen = false, snapDead = false, snapRe = false, snapFull = false, backtracked = false;
+
+  function dfs(row, cols, ld, rw) {
+    if (row === n) {
+      count++;
+      lastSol = board.slice();
+      if (!snapFull) {
+        snapFull = true;
+        snap(DONE, '第 ' + row + ' 行：n 个皇后互不攻击，找到一个解，count + 1', board, row, cols, ld, rw, 0, null, true);
+      }
+      return;
+    }
+    var avail = FULL & ~(cols | ld | rw);
+    if (!snapOpen) {
+      snapOpen = true;
+      snap(AVAIL, '开局：三个掩码全 0，第 0 行每一列都能放', board, row, cols, ld, rw, avail, null, false);
+    }
+    if (!snapDead && row > 0 && avail === 0) {
+      snapDead = true;
+      snap(WHILE, '第 ' + row + ' 行被三条线夹得没有可用列，while 直接跳过、回溯上一行', board, row, cols, ld, rw, avail, null, false);
+    }
+    while (avail !== 0) {
+      var p = avail & (-avail);
+      avail ^= p;
+      var c = 0;
+      while ((1 << c) !== p) c++;
+      if (backtracked && !snapRe) {
+        snapRe = true;
+        board[row] = c;
+        snap(XORP, '回溯回到第 ' + row + ' 行：撤掉刚才的列，改试下一个可用列 ' + c, board, row, cols, ld, rw, avail, c, false);
+      }
+      board[row] = c;
+      dfs(row + 1, cols | p, (ld | p) << 1, (rw | p) >> 1);
+      board[row] = -1;
+      backtracked = true;
+    }
+  }
+
+  dfs(0, 0, 0, 0);
+  var finBoard = lastSol ? lastSol : board;
+  snap(RET, '搜完全部分支：' + n + ' 皇后共 ' + count + ' 个解', finBoard, n, 0, 0, 0, 0, null, true);
+
+  return { frames: frames, result: count };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

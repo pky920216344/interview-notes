@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>中文数字转阿拉伯数字 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 378 / 1159</span>
+  <nav class="pn"><a href="0381.html">上一篇</a><a href="0722.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">补充题13. </span>中文数字转阿拉伯数字</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 9</li><li class="algo">模拟</li><li class="st-warn" title="codetop 自行补充的条目，力扣上没有对应页面，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">先找 亿/万 把串切成三节，每节按「攒数字、遇单位相乘」累加，零跳过；光杆十/百/千当作 1。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先找 <code>亿</code>：前面一段是亿节（×1e8）；亿之后再找 <code>万</code>，分成万节（×1e4）和个节；没有 <code>亿</code> 就只按 <code>万</code> 分。</li><li>节内读到数字先攒着，读到 <code>十/百/千</code> 就乘上去累加；<code>零</code> 没有值直接跳过（它只负责垫开位次）。</li><li>光杆的 <code>十/百/千</code>（前面没数字）按 1 算：<code>十</code> = 10、<code>三千六百四十六</code> 按位乘加。</li><li>节尾没挂单位的个位直接加上（<code>return v + num</code>）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(串长)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="c">// 中文数字 → 阿拉伯数字：先找 亿/万 把串分成三节，每节按「数字 × 单位」累加</span></span><span class="ln"><span class="no">3</span>    <span class="k">public</span> <span class="k">long</span> parse(<span class="t">String</span> cn) {</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> yi = cn.indexOf(<span class="s">'亿'</span>);</span><span class="ln"><span class="no">5</span>        <span class="k">if</span> (yi &gt;= <span class="n">0</span>) {</span><span class="ln"><span class="no">6</span>            <span class="k">int</span> wan = cn.indexOf(<span class="s">'万'</span>, yi + <span class="n">1</span>);   <span class="c">// 亿后面的万，是万节的尾巴</span></span><span class="ln"><span class="no">7</span>            <span class="k">long</span> ans = sec(cn, <span class="n">0</span>, yi) * <span class="n">100000000L</span>;</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (wan &gt;= <span class="n">0</span>) <span class="k">return</span> ans + sec(cn, yi + <span class="n">1</span>, wan) * <span class="n">10000L</span> + sec(cn, wan + <span class="n">1</span>, cn.length());</span><span class="ln"><span class="no">9</span>            <span class="k">return</span> ans + sec(cn, yi + <span class="n">1</span>, cn.length());</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> wan = cn.indexOf(<span class="s">'万'</span>);</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (wan &gt;= <span class="n">0</span>) <span class="k">return</span> sec(cn, <span class="n">0</span>, wan) * <span class="n">10000L</span> + sec(cn, wan + <span class="n">1</span>, cn.length());</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> sec(cn, <span class="n">0</span>, cn.length());</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="c">// 节 [from, to) 的值：读到数字先攒着，读到单位乘上去；零没有值直接跳过</span></span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="k">long</span> sec(<span class="t">String</span> s, <span class="k">int</span> from, <span class="k">int</span> to) {</span><span class="ln"><span class="no">18</span>        <span class="k">long</span> v = <span class="n">0</span>, num = <span class="n">0</span>;</span><span class="ln"><span class="no">19</span>        <span class="k">for</span> (<span class="k">int</span> i = from; i &lt; to; i++) {</span><span class="ln"><span class="no">20</span>            <span class="k">char</span> c = s.charAt(i);</span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (c == <span class="s">'零'</span>) { num = <span class="n">0</span>; <span class="k">continue</span>; }</span><span class="ln"><span class="no">22</span>            <span class="k">int</span> d = c == <span class="s">'两'</span> ? <span class="n">2</span> : <span class="s">"零一二三四五六七八九"</span>.indexOf(c);</span><span class="ln"><span class="no">23</span>            <span class="k">if</span> (d &gt;= <span class="n">1</span>) { num = d; <span class="k">continue</span>; }   <span class="c">// 攒数字，等后面的单位</span></span><span class="ln"><span class="no">24</span>            <span class="k">long</span> u = <span class="n">0</span>;</span><span class="ln"><span class="no">25</span>            <span class="k">if</span> (c == <span class="s">'十'</span>) u = <span class="n">10</span>;</span><span class="ln"><span class="no">26</span>            <span class="k">else</span> <span class="k">if</span> (c == <span class="s">'百'</span>) u = <span class="n">100</span>;</span><span class="ln"><span class="no">27</span>            <span class="k">else</span> <span class="k">if</span> (c == <span class="s">'千'</span>) u = <span class="n">1000</span>;</span><span class="ln"><span class="no">28</span>            <span class="k">if</span> (u &gt; <span class="n">0</span>) { v += (num == <span class="n">0</span> ? <span class="n">1</span> : num) * u; num = <span class="n">0</span>; }   <span class="c">// 光杆十/百/千当作 1</span></span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> v + num;   <span class="c">// 节尾没挂单位的个位直接加上</span></span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>这个条目没有现成的题面。</p></div></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    // 中文数字 → 阿拉伯数字：先找 亿/万 把串分成三节，每节按「数字 × 单位」累加", "    public long parse(String cn) {", "        int yi = cn.indexOf('亿');", "        if (yi >= 0) {", "            int wan = cn.indexOf('万', yi + 1);   // 亿后面的万，是万节的尾巴", "            long ans = sec(cn, 0, yi) * 100000000L;", "            if (wan >= 0) return ans + sec(cn, yi + 1, wan) * 10000L + sec(cn, wan + 1, cn.length());", "            return ans + sec(cn, yi + 1, cn.length());", "        }", "        int wan = cn.indexOf('万');", "        if (wan >= 0) return sec(cn, 0, wan) * 10000L + sec(cn, wan + 1, cn.length());", "        return sec(cn, 0, cn.length());", "    }", "", "    // 节 [from, to) 的值：读到数字先攒着，读到单位乘上去；零没有值直接跳过", "    private long sec(String s, int from, int to) {", "        long v = 0, num = 0;", "        for (int i = from; i < to; i++) {", "            char c = s.charAt(i);", "            if (c == '零') { num = 0; continue; }", "            int d = c == '两' ? 2 : \"零一二三四五六七八九\".indexOf(c);", "            if (d >= 1) { num = d; continue; }   // 攒数字，等后面的单位", "            long u = 0;", "            if (c == '十') u = 10;", "            else if (c == '百') u = 100;", "            else if (c == '千') u = 1000;", "            if (u > 0) { v += (num == 0 ? 1 : num) * u; num = 0; }   // 光杆十/百/千当作 1", "        }", "        return v + num;   // 节尾没挂单位的个位直接加上", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 补充题13. 中文数字转阿拉伯数字 —— 图解：复刻 Solution.java 的「找亿/万分节累加」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { cn: '一亿零五百二十万零一' };
+
+function trace(input) {
+  var cn = input.cn;
+  var frames = [], captured = {};
+  var rec = cn.length >= 1 && cn.length <= 14;
+
+  var FIND = "int yi = cn.indexOf('亿');";
+  var YISEC = 'long ans = sec(cn, 0, yi) * 100000000L;';
+  var ZERO = "if (c == '零') { num = 0; continue; }";
+  var UNIT = 'if (u > 0) { v += (num == 0 ? 1 : num) * u; num = 0; }';
+  var SUM = 'if (wan >= 0) return ans + sec(cn, yi + 1, wan) * 10000L + sec(cn, wan + 1, cn.length());';
+
+  function push(tag, at, key, panels) {
+    if (!rec || captured[tag]) return;
+    captured[tag] = true;
+    frames.push(Viz.frame(at, key, panels));
+  }
+  function clip(s, n) { return s.length > n ? s.slice(0, n) + '…' : s; }
+  // doneTo 之前整段已算完变灰；[winFrom, winTo] 是正在解析的节；cur 高亮当前字
+  function cnPanel(doneTo, winFrom, winTo, cur) {
+    var marks = {}, k;
+    for (k = 0; k < cn.length; k++) {
+      if (doneTo != null && k < doneTo) marks[k] = 'dim';
+      else if (winFrom != null && k >= winFrom && k <= winTo) marks[k] = 'win';
+    }
+    if (cur != null && cur >= 0 && cur < cn.length) marks[cur] = 'cur';
+    return Viz.cells(cn.split(''), { title: '中文数字串', marks: marks,
+      pointers: cur != null && cur >= 0 && cur < cn.length ? [{ at: cur, label: 'i', cls: 'p-cur' }] : [] });
+  }
+  function varsPanel(extra) {
+    var items = [];
+    if (extra) for (var k = 0; k < extra.length; k++) items.push(extra[k]);
+    return Viz.vars(items);
+  }
+
+  // 复刻 sec：返回节值；期间拍「跳零」「数字×单位」两帧
+  function sec(from, to) {
+    var v = 0, num = 0;
+    for (var i = from; i < to; i++) {
+      var c = cn[i];
+      if (c === '零') {
+        push('zero', ZERO, '「零」没有值直接跳过：它只是垫开位次，不影响累加',
+          [cnPanel(null, from, to - 1, i), varsPanel([{ name: '节内已累 v', v: String(v) }, { name: '攒着的数字', v: String(num) }])]);
+        num = 0;
+        continue;
+      }
+      var d = c === '两' ? 2 : '零一二三四五六七八九'.indexOf(c);
+      if (d >= 1) { num = d; continue; }
+      var u = c === '十' ? 10 : c === '百' ? 100 : c === '千' ? 1000 : 0;
+      if (u > 0) {
+        v += (num === 0 ? 1 : num) * u;
+        push('unit', UNIT, '攒着的 ' + (num === 0 ? 1 : num) + ' 乘上单位「' + c + '」；光杆' + c + '当作 1',
+          [cnPanel(null, from, to - 1, i), varsPanel([{ name: '节内已累 v', v: String(v) }])]);
+        num = 0;
+      }
+    }
+    return v + num;
+  }
+
+  var yi = cn.indexOf('亿');
+  var wan = yi >= 0 ? cn.indexOf('万', yi + 1) : cn.indexOf('万');
+  var ans = 0;
+
+  if (yi >= 0) {
+    push('find', FIND, '先找 亿/万 记号：整串分成 亿节、万节、个节 三段',
+      [cnPanel(null, 0, cn.length - 1, yi),
+       varsPanel([{ name: '亿 的位置', v: String(yi) }, { name: '万 的位置', v: String(wan) }])]);
+    var yv = sec(0, yi);
+    ans = yv * 100000000;
+    push('yisec', YISEC, '亿 前面那段是亿节的值：' + yv + ' × 一亿 = ' + ans,
+      [cnPanel(yi, null, null, null), varsPanel([{ name: '亿节值', v: String(yv) }, { name: 'ans（已累）', v: String(ans), cls: 'new' }])]);
+    if (wan >= 0) {
+      var wv = sec(yi + 1, wan);
+      ans += wv * 10000;
+      ans += sec(wan + 1, cn.length);
+    } else {
+      ans += sec(yi + 1, cn.length);
+    }
+  } else if (wan >= 0) {
+    push('find', FIND, '没有 亿：按 万 分成万节、个节两段',
+      [cnPanel(null, 0, cn.length - 1, wan), varsPanel([{ name: '万 的位置', v: String(wan) }])]);
+    var wv2 = sec(0, wan);
+    ans = wv2 * 10000;
+    ans += sec(wan + 1, cn.length);
+  } else {
+    ans = sec(0, cn.length);
+  }
+
+  push('sum', SUM, '三节加总：' + clip(cn, 14) + ' = ' + ans + '，与 supp-14 的 convert 互逆',
+    [Viz.vars([(function () { return { name: clip(cn, 14), v: String(ans), cls: 'done' }; })()])]);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

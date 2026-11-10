@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>至少有 K 个重复字符的最长子串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 185 / 1159</span>
+  <nav class="pn"><a href="0017.html">上一篇</a><a href="0253.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">395. </span>至少有 K 个重复字符的最长子串</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 28</li><li class="algo">分治</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">分治</li><li class="tag">滑动窗口</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">分治：统计区间频次，只要有一个字符出现 &lt; k 次，它就不能出现在任何合法子串里，拿它当分割点递归两侧。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每层先数 <code>[l, r)</code> 里 26 个字母的频次。</li><li>从左扫到第一个出现次数 <code>&lt; k</code> 的字符：任何包含它的子串都不合法，答案只可能在它两侧，递归 <code>[l, i)</code> 和 <code>[i+1, r)</code> 取最大。</li><li>扫完没找到坏字符：整段所有字符都 ≥ k，<code>r - l</code> 直接就是答案。</li><li>每层递归至少丢掉一个字符，层数 ≤ 26，每层总共扫 O(n)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(26n)，空间复杂度 O(26)（递归栈 O(26) 层）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> longestSubstring(<span class="t">String</span> s, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="k">return</span> dfs(s, <span class="n">0</span>, s.length(), k);</span><span class="ln"><span class="no">4</span>    }</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="c">// 区间 [l, r) 里所有字符都出现 ≥ k 次：整段就是答案；</span></span><span class="ln"><span class="no">7</span>    <span class="c">// 否则挑一个出现不足 k 次的字符当分割点——合法子串不可能包含它，答案只在两侧</span></span><span class="ln"><span class="no">8</span>    <span class="k">private</span> <span class="k">int</span> dfs(<span class="t">String</span> s, <span class="k">int</span> l, <span class="k">int</span> r, <span class="k">int</span> k) {</span><span class="ln"><span class="no">9</span>        <span class="k">int</span>[] cnt = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = l; i &lt; r; i++) cnt[s.charAt(i) - <span class="s">'a'</span>]++;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = l; i &lt; r; i++) {</span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (cnt[s.charAt(i) - <span class="s">'a'</span>] &lt; k) {</span><span class="ln"><span class="no">13</span>                <span class="k">return</span> <span class="t">Math</span>.max(dfs(s, l, i, k), dfs(s, i + <span class="n">1</span>, r, k));</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> r - l;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串 <code>s</code> 和一个整数 <code>k</code> ，请你找出 <code>s</code> 中的最长子串，&nbsp;要求该子串中的每一字符出现次数都不少于 <code>k</code> 。返回这一子串的长度。</p>
+
+<p>如果不存在这样的子字符串，则返回 0。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "aaabb", k = 3
+<strong>输出：</strong>3
+<strong>解释：</strong>最长子串为 "aaa" ，其中 'a' 重复了 3 次。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "ababbc", k = 2
+<strong>输出：</strong>5
+<strong>解释：</strong>最长子串为 "ababb" ，其中 'a' 重复了 2 次， 'b' 重复了 3 次。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>s</code> 仅由小写英文字母组成</li>
+	<li><code>1 &lt;= k &lt;= 10<sup>5</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int longestSubstring(String s, int k) {", "        return dfs(s, 0, s.length(), k);", "    }", "", "    // 区间 [l, r) 里所有字符都出现 ≥ k 次：整段就是答案；", "    // 否则挑一个出现不足 k 次的字符当分割点——合法子串不可能包含它，答案只在两侧", "    private int dfs(String s, int l, int r, int k) {", "        int[] cnt = new int[26];", "        for (int i = l; i < r; i++) cnt[s.charAt(i) - 'a']++;", "        for (int i = l; i < r; i++) {", "            if (cnt[s.charAt(i) - 'a'] < k) {", "                return Math.max(dfs(s, l, i, k), dfs(s, i + 1, r, k));", "            }", "        }", "        return r - l;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 395. 至少有K个重复字符的最长子串 —— 图解：复刻 Solution.java 的「频次分治」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'ababbc', k: 2 };
+
+function trace(input) {
+  var s = input.s, k = input.k;
+  var n = s.length;
+  var frames = [];
+
+  var A_CNT = "for (int i = l; i < r; i++) cnt[s.charAt(i) - 'a']++;";
+  var A_BAD = "if (cnt[s.charAt(i) - 'a'] < k) {";
+  var A_SPL = 'return Math.max(dfs(s, l, i, k), dfs(s, i + 1, r, k));';
+  var A_LEAF = 'return r - l;';
+  var A_TOP = 'return dfs(s, 0, s.length(), k);';
+
+  // s 面板：[l, r) 是当前处理的区间；o.win 画答案段，o.bad 标分割字符
+  function sPanel(l, r, o) {
+    o = o || {};
+    var marks = {};
+    for (var i = 0; i < n; i++) {
+      if (i < l || i >= r) marks[i] = 'dim';
+    }
+    if (o.win) for (var w = o.win[0]; w < o.win[1]; w++) marks[w] = 'done';
+    if (o.bad != null) marks[o.bad] = 'bad';
+    if (o.cur != null) marks[o.cur] = 'cur';
+    var range = r > l ? { from: l, to: r - 1, label: '当前区间 [' + l + ', ' + r + ')' } : null;
+    return Viz.cells(s.split(''), { title: '字符串 s', marks: marks, range: range });
+  }
+
+  function cntPanel(cnt, hit) {
+    var keys = [];
+    for (var i = 0; i < n; i++) if (keys.indexOf(s[i]) < 0) keys.push(s[i]);
+    return Viz.table('cnt：区间内的频次', keys.map(function (ch) {
+      var c = cnt[ch] || 0;
+      return { k: ch, v: String(c), cls: ch === hit ? 'hit' : (c > 0 && c < k ? 'bad' : '') };
+    }), { hint: '红 = 出现次数 < k，当分割点' });
+  }
+
+  var f1 = false, f2 = false, f3 = false, f4 = false;
+  var best = 0, bestL = 0, bestR = 0;
+
+  function dfs(l, r) {
+    var cnt = {};
+    for (var i = l; i < r; i++) cnt[s[i]] = (cnt[s[i]] || 0) + 1;
+    if (!f1 && l === 0 && r === n) {
+      f1 = true;
+      frames.push(Viz.frame(A_CNT, '开局：统计整个区间的频次，找出现次数不足 k 的字符',
+        [sPanel(l, r), cntPanel(cnt, null)]));
+    }
+    for (var j = l; j < r; j++) {
+      if ((cnt[s[j]] || 0) < k) {
+        if (!f2) {
+          f2 = true;
+          frames.push(Viz.frame(A_BAD, '字符 ' + s[j] + ' 只出现 ' + cnt[s[j]] + ' 次 < k = ' + k + '：含它的子串全不合法',
+            [sPanel(l, r, { cur: j, bad: j }), cntPanel(cnt, s[j])]));
+        }
+        if (!f3) {
+          f3 = true;
+          frames.push(Viz.frame(A_SPL, '以 ' + s[j] + ' 为界切成两段，答案在两侧取最大，它自己被丢掉',
+            [sPanel(l, r, { bad: j }), cntPanel(cnt, s[j])]));
+        }
+        return Math.max(dfs(l, j), dfs(j + 1, r));
+      }
+    }
+    if (r - l > best) { best = r - l; bestL = l; bestR = r; }
+    if (!f4) {
+      f4 = true;
+      frames.push(Viz.frame(A_LEAF, '区间里所有字符都出现 ≥ k 次：整段长 ' + (r - l) + '，直接就是答案',
+        [sPanel(l, r, { win: [l, r] }), cntPanel(cnt, null)]));
+    }
+    return r - l;
+  }
+
+  var result = dfs(0, n);
+  frames.push(Viz.frame(A_TOP, '分治结束：最长子串是 [' + bestL + ', ' + bestR + ')，长 ' + result,
+    [sPanel(0, n, { win: result > 0 ? [bestL, bestR] : null }), cntPanel({}, null)]));
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

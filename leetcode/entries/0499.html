@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>迷宫 III · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 859 / 1159</span>
+  <nav class="pn"><a href="0561.html">上一篇</a><a href="1661.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">499. </span>迷宫 III</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">图算法</li><li class="aux">堆</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="tag">数组</li><li class="tag">字符串</li><li class="tag">矩阵</li><li class="tag">最短路</li><li class="tag">dijkstra</li><li class="tag">堆（优先队列）</li><li class="tag">a-search</li><li class="tag">heuristic-search</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">还是「滚到撞墙」的停点图跑 Dijkstra；堆按（滚动距离, 方向串）排序，距离并列时字典序小的路线先弹；滚动途中扫过洞口直接掉进去。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>与 505 同款滚动建模：从停点沿一个方向 <code>while</code> 滚到撞墙，边权 = 滚过的格数；不同的是滚动途中<strong>扫过洞口就停</strong>（<code>fell</code>），终点是洞而不是停点。</li><li>最短距离用 Dijkstra；距离并列要输出字典序最小的方向串：堆元素带方向串，按 <code>(dist, 串)</code> 排序——边权 ≥ 1 保证首次弹出即定稿。</li><li>松弛条件是二元组比较：<code>dist</code> 更小才更新；<code>dist</code> 相等时新串字典序更小才更新。</li><li>方向串按 <code>d、l、r、u</code> 拼接；堆空还没弹到洞就是到不了，返回 <code>"impossible"</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m·n·(m+n)·log(m·n))，空间复杂度 O(m·n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> findShortestWay(<span class="k">int</span>[][] maze, <span class="k">int</span>[] ball, <span class="k">int</span>[] hole) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> m = maze.length, n = maze[<span class="n">0</span>].length;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[][] dist = <span class="k">new</span> <span class="k">int</span>[m][n];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span>[] row : dist) <span class="t">Arrays</span>.fill(row, <span class="t">Integer</span>.MAX_VALUE);</span><span class="ln"><span class="no">8</span>        <span class="t">String</span>[][] path = <span class="k">new</span> <span class="t">String</span>[m][n];</span><span class="ln"><span class="no">9</span>        dist[ball[<span class="n">0</span>]][ball[<span class="n">1</span>]] = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        path[ball[<span class="n">0</span>]][ball[<span class="n">1</span>]] = <span class="s">""</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">boolean</span>[][] done = <span class="k">new</span> <span class="k">boolean</span>[m][n];</span><span class="ln"><span class="no">12</span>        <span class="c">// 堆按 (滚动距离, 方向串) 排序：距离并列时，字典序小的路线先弹</span></span><span class="ln"><span class="no">13</span>        <span class="t">PriorityQueue</span>&lt;<span class="t">Node</span>&gt; pq = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;((a, b) -&gt; a.d != b.d ? a.d - b.d : a.s.compareTo(b.s));</span><span class="ln"><span class="no">14</span>        pq.add(<span class="k">new</span> <span class="t">Node</span>(<span class="n">0</span>, ball[<span class="n">0</span>], ball[<span class="n">1</span>], <span class="s">""</span>));</span><span class="ln"><span class="no">15</span>        <span class="c">// d l r u 四个方向；滚到洞口算到站，撞墙算停点</span></span><span class="ln"><span class="no">16</span>        <span class="k">int</span>[][] dirs = {{<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">0</span>, -<span class="n">1</span>}, {<span class="n">0</span>, <span class="n">1</span>}, {-<span class="n">1</span>, <span class="n">0</span>}};</span><span class="ln"><span class="no">17</span>        <span class="t">String</span>[] ch = {<span class="s">"d"</span>, <span class="s">"l"</span>, <span class="s">"r"</span>, <span class="s">"u"</span>};</span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (!pq.isEmpty()) {</span><span class="ln"><span class="no">19</span>            <span class="t">Node</span> cur = pq.poll();</span><span class="ln"><span class="no">20</span>            <span class="k">int</span> r = cur.r, c = cur.c;</span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (done[r][c]) <span class="k">continue</span>;   <span class="c">// 边权 ≥ 1，首次弹出即定稿</span></span><span class="ln"><span class="no">22</span>            done[r][c] = <span class="k">true</span>;</span><span class="ln"><span class="no">23</span>            <span class="k">if</span> (r == hole[<span class="n">0</span>] &amp;&amp; c == hole[<span class="n">1</span>]) <span class="k">return</span> cur.s;</span><span class="ln"><span class="no">24</span>            <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; <span class="n">4</span>; k++) {</span><span class="ln"><span class="no">25</span>                <span class="k">int</span> nr = r, nc = c, len = <span class="n">0</span>;</span><span class="ln"><span class="no">26</span>                <span class="k">boolean</span> fell = <span class="k">false</span>;</span><span class="ln"><span class="no">27</span>                <span class="k">while</span> (open(maze, nr + dirs[k][<span class="n">0</span>], nc + dirs[k][<span class="n">1</span>])) {</span><span class="ln"><span class="no">28</span>                    nr += dirs[k][<span class="n">0</span>];</span><span class="ln"><span class="no">29</span>                    nc += dirs[k][<span class="n">1</span>];</span><span class="ln"><span class="no">30</span>                    len++;</span><span class="ln"><span class="no">31</span>                    <span class="k">if</span> (nr == hole[<span class="n">0</span>] &amp;&amp; nc == hole[<span class="n">1</span>]) { fell = <span class="k">true</span>; <span class="k">break</span>; }   <span class="c">// 滚过洞口就掉进去</span></span><span class="ln"><span class="no">32</span>                }</span><span class="ln"><span class="no">33</span>                <span class="k">if</span> (len == <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">34</span>                <span class="k">int</span> nd = cur.d + len;</span><span class="ln"><span class="no">35</span>                <span class="k">int</span> tr = fell ? hole[<span class="n">0</span>] : nr, tc = fell ? hole[<span class="n">1</span>] : nc;</span><span class="ln"><span class="no">36</span>                <span class="k">if</span> (done[tr][tc]) <span class="k">continue</span>;</span><span class="ln"><span class="no">37</span>                <span class="t">String</span> ns = cur.s + ch[k];</span><span class="ln"><span class="no">38</span>                <span class="c">// 距离更短才更优；距离并列时比方向串的字典序</span></span><span class="ln"><span class="no">39</span>                <span class="k">if</span> (nd &lt; dist[tr][tc] || (nd == dist[tr][tc] &amp;&amp; ns.compareTo(path[tr][tc]) &lt; <span class="n">0</span>)) {</span><span class="ln"><span class="no">40</span>                    dist[tr][tc] = nd;</span><span class="ln"><span class="no">41</span>                    path[tr][tc] = ns;</span><span class="ln"><span class="no">42</span>                    pq.add(<span class="k">new</span> <span class="t">Node</span>(nd, tr, tc, ns));</span><span class="ln"><span class="no">43</span>                }</span><span class="ln"><span class="no">44</span>            }</span><span class="ln"><span class="no">45</span>        }</span><span class="ln"><span class="no">46</span>        <span class="k">return</span> <span class="s">"impossible"</span>;</span><span class="ln"><span class="no">47</span>    }</span><span class="ln"><span class="no">48</span> </span><span class="ln"><span class="no">49</span>    <span class="k">private</span> <span class="k">boolean</span> open(<span class="k">int</span>[][] maze, <span class="k">int</span> r, <span class="k">int</span> c) {</span><span class="ln"><span class="no">50</span>        <span class="k">return</span> r &gt;= <span class="n">0</span> &amp;&amp; r &lt; maze.length &amp;&amp; c &gt;= <span class="n">0</span> &amp;&amp; c &lt; maze[<span class="n">0</span>].length &amp;&amp; maze[r][c] == <span class="n">0</span>;</span><span class="ln"><span class="no">51</span>    }</span><span class="ln"><span class="no">52</span> </span><span class="ln"><span class="no">53</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">class</span> <span class="t">Node</span> {</span><span class="ln"><span class="no">54</span>        <span class="k">int</span> d, r, c;</span><span class="ln"><span class="no">55</span>        <span class="t">String</span> s;</span><span class="ln"><span class="no">56</span> </span><span class="ln"><span class="no">57</span>        <span class="t">Node</span>(<span class="k">int</span> d, <span class="k">int</span> r, <span class="k">int</span> c, <span class="t">String</span> s) {</span><span class="ln"><span class="no">58</span>            <span class="k">this</span>.d = d;</span><span class="ln"><span class="no">59</span>            <span class="k">this</span>.r = r;</span><span class="ln"><span class="no">60</span>            <span class="k">this</span>.c = c;</span><span class="ln"><span class="no">61</span>            <span class="k">this</span>.s = s;</span><span class="ln"><span class="no">62</span>        }</span><span class="ln"><span class="no">63</span>    }</span><span class="ln"><span class="no">64</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String findShortestWay(int[][] maze, int[] ball, int[] hole) {", "        int m = maze.length, n = maze[0].length;", "        int[][] dist = new int[m][n];", "        for (int[] row : dist) Arrays.fill(row, Integer.MAX_VALUE);", "        String[][] path = new String[m][n];", "        dist[ball[0]][ball[1]] = 0;", "        path[ball[0]][ball[1]] = \"\";", "        boolean[][] done = new boolean[m][n];", "        // 堆按 (滚动距离, 方向串) 排序：距离并列时，字典序小的路线先弹", "        PriorityQueue<Node> pq = new PriorityQueue<>((a, b) -> a.d != b.d ? a.d - b.d : a.s.compareTo(b.s));", "        pq.add(new Node(0, ball[0], ball[1], \"\"));", "        // d l r u 四个方向；滚到洞口算到站，撞墙算停点", "        int[][] dirs = {{1, 0}, {0, -1}, {0, 1}, {-1, 0}};", "        String[] ch = {\"d\", \"l\", \"r\", \"u\"};", "        while (!pq.isEmpty()) {", "            Node cur = pq.poll();", "            int r = cur.r, c = cur.c;", "            if (done[r][c]) continue;   // 边权 ≥ 1，首次弹出即定稿", "            done[r][c] = true;", "            if (r == hole[0] && c == hole[1]) return cur.s;", "            for (int k = 0; k < 4; k++) {", "                int nr = r, nc = c, len = 0;", "                boolean fell = false;", "                while (open(maze, nr + dirs[k][0], nc + dirs[k][1])) {", "                    nr += dirs[k][0];", "                    nc += dirs[k][1];", "                    len++;", "                    if (nr == hole[0] && nc == hole[1]) { fell = true; break; }   // 滚过洞口就掉进去", "                }", "                if (len == 0) continue;", "                int nd = cur.d + len;", "                int tr = fell ? hole[0] : nr, tc = fell ? hole[1] : nc;", "                if (done[tr][tc]) continue;", "                String ns = cur.s + ch[k];", "                // 距离更短才更优；距离并列时比方向串的字典序", "                if (nd < dist[tr][tc] || (nd == dist[tr][tc] && ns.compareTo(path[tr][tc]) < 0)) {", "                    dist[tr][tc] = nd;", "                    path[tr][tc] = ns;", "                    pq.add(new Node(nd, tr, tc, ns));", "                }", "            }", "        }", "        return \"impossible\";", "    }", "", "    private boolean open(int[][] maze, int r, int c) {", "        return r >= 0 && r < maze.length && c >= 0 && c < maze[0].length && maze[r][c] == 0;", "    }", "", "    private static class Node {", "        int d, r, c;", "        String s;", "", "        Node(int d, int r, int c, String s) {", "            this.d = d;", "            this.r = r;", "            this.c = c;", "            this.s = s;", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 499. 迷宫 III —— 图解：复刻 Solution.java 的「停点图 Dijkstra + 方向串并列取字典序小」。
+// 会员题，只本地验证。约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { maze: [[0, 0, 0], [0, 1, 0], [0, 0, 0]], ball: [0, 0], hole: [2, 2] };
+
+function trace(input) {
+  var maze = input.maze, ball = input.ball, hole = input.hole;
+  var m = maze.length, n = maze[0].length;
+  var frames = [];
+  var DIRS = [[1, 0], [0, -1], [0, 1], [-1, 0]];
+  var CH = ['d', 'l', 'r', 'u'];
+  var INF = Infinity;
+
+  var INIT = 'dist[ball[0]][ball[1]] = 0;';
+  var ROLL = 'while (open(maze, nr + dirs[k][0], nc + dirs[k][1])) {';
+  var DROP = 'if (nr == hole[0] && nc == hole[1]) { fell = true; break; }';
+  var TIE = 'if (nd < dist[tr][tc] || (nd == dist[tr][tc] && ns.compareTo(path[tr][tc]) < 0)) {';
+  var HIT = 'if (r == hole[0] && c == hole[1]) return cur.s;';
+  var IMP = 'return "impossible";';
+
+  var dist = [], path = [], done = [];
+  for (var i = 0; i < m; i++) {
+    dist.push([]); path.push([]); done.push([]);
+    for (var j = 0; j < n; j++) { dist[i].push(INF); path[i].push(''); done[i].push(false); }
+  }
+  dist[ball[0]][ball[1]] = 0;
+  path[ball[0]][ball[1]] = '';
+
+  var open = function (r, c) { return r >= 0 && r < m && c >= 0 && c < n && maze[r][c] === 0; };
+  var dirName = function (dir) {
+    if (dir[0] === 1) return '下';
+    if (dir[0] === -1) return '上';
+    if (dir[1] === 1) return '右';
+    return '左';
+  };
+
+  function mazePanel(o) {
+    var marks = {};
+    for (var r = 0; r < m; r++) {
+      for (var c = 0; c < n; c++) if (maze[r][c] === 1) marks[r + ',' + c] = 'dim';
+    }
+    (o.path || []).forEach(function (p) { marks[p[0] + ',' + p[1]] = 'chg'; });
+    if (o.land) marks[o.land[0] + ',' + o.land[1]] = 'new';
+    if (o.cur) marks[o.cur[0] + ',' + o.cur[1]] = 'cur';
+    if (o.done) marks[hole[0] + ',' + hole[1]] = 'done';
+    return Viz.grid(maze.map(function (row) { return row.slice(); }), {
+      title: '迷宫（cur = 堆顶停点，chg = 这次滚过，new = 停点/落洞）',
+      marks: marks,
+      rowLabels: maze.map(function (_, r) { return 'r=' + r; }),
+      colLabels: maze[0].map(function (_, c) { return 'c=' + c; })
+    });
+  }
+
+  function distPanel(marks) {
+    var rows = dist.map(function (row) { return row.map(function (v) { return v === INF ? '∞' : String(v); }); });
+    return Viz.grid(rows, {
+      title: 'dist / 方向串',
+      marks: marks || {},
+      rowLabels: rows.map(function (_, r) { return 'r=' + r; }),
+      colLabels: rows[0].map(function (_, c) { return 'c=' + c; })
+    });
+  }
+
+  function varsPanel(extra) {
+    var items = [
+      { name: '起点 / 洞', v: '(' + ball + ') / (' + hole + ')', cls: '' },
+      { name: '洞当前 (dist, 串)', v: dist[hole[0]][hole[1]] === INF ? '∞' : dist[hole[0]][hole[1]] + ', "' + path[hole[0]][hole[1]] + '"', cls: '' }
+    ];
+    if (extra) items.push(extra);
+    return Viz.vars(items);
+  }
+
+  // 简易堆：每次取 (dist, 串) 最小的条目，与 Java 的 PriorityQueue 一致
+  var heap = [[0, ball[0], ball[1], '']];
+  function poll() {
+    var bi = 0;
+    for (var i = 1; i < heap.length; i++) {
+      if (heap[i][0] < heap[bi][0] || (heap[i][0] === heap[bi][0] && heap[i][3] < heap[bi][3])) bi = i;
+    }
+    return heap.splice(bi, 1)[0];
+  }
+
+  frames.push(Viz.frame(INIT, '开局：起点 dist=0、方向串空，其余停点都是 ∞', [mazePanel({}), distPanel(null), varsPanel(null)]));
+
+  var sawRoll = false, sawDrop = false, sawTie = false, ans = 'impossible';
+
+  while (heap.length) {
+    var top = poll();
+    var d = top[0], r = top[1], c = top[2], s = top[3];
+    if (done[r][c]) continue;
+    done[r][c] = true;
+    if (r === hole[0] && c === hole[1]) {
+      ans = s;
+      frames.push(Viz.frame(HIT, '堆顶就是洞：dist=' + d + '、方向串 "' + s + '" 已是距离最短且字典序最小',
+        [mazePanel({ done: true }), distPanel((function () { var mk = {}; mk[hole[0] + ',' + hole[1]] = 'done'; return mk; })()),
+         varsPanel({ name: '答案', v: '"' + s + '"', cls: 'done' })]));
+      return { frames: frames, result: ans };
+    }
+    for (var k = 0; k < 4; k++) {
+      var dir = DIRS[k];
+      var nr = r, nc = c, len = 0, fell = false;
+      var trail = [];
+      while (open(nr + dir[0], nc + dir[1])) {
+        nr += dir[0];
+        nc += dir[1];
+        len++;
+        trail.push([nr, nc]);
+        if (nr === hole[0] && nc === hole[1]) { fell = true; break; }
+      }
+      if (len === 0) continue;
+      var nd = d + len;
+      var tr = fell ? hole[0] : nr, tc = fell ? hole[1] : nc;
+      if (done[tr][tc]) continue;
+      var ns = s + CH[k];
+      var improved = nd < dist[tr][tc] || (nd === dist[tr][tc] && ns < path[tr][tc]);
+      if (improved) {
+        var hadOld = dist[tr][tc] !== INF;
+        dist[tr][tc] = nd;
+        path[tr][tc] = ns;
+        heap.push([nd, tr, tc, ns]);
+        if (fell && !sawDrop) {
+          sawDrop = true;
+          frames.push(Viz.frame(DROP, '从 (' + r + ',' + c + ') 串 "' + s + '" 向' + dirName(dir) + '滚 ' + len
+              + ' 格，中途扫过洞口：直接掉进去，dist=' + nd + '、串 "' + ns + '"',
+            [mazePanel({ cur: [r, c], path: trail, land: [tr, tc] }), distPanel((function () { var mk = {}; mk[tr + ',' + tc] = 'new'; return mk; })()),
+             varsPanel({ name: '新 (dist, 串)', v: nd + ', "' + ns + '"', cls: 'new' })]));
+        } else if (!fell && !sawRoll) {
+          sawRoll = true;
+          frames.push(Viz.frame(ROLL, '从 (' + r + ',' + c + ') 串 "' + s + '" 向' + dirName(dir) + '滚 ' + len
+              + ' 格撞墙停住：dist=' + nd + '、串 "' + ns + '"',
+            [mazePanel({ cur: [r, c], path: trail, land: [tr, tc] }), distPanel((function () { var mk = {}; mk[tr + ',' + tc] = 'new'; return mk; })()),
+             varsPanel({ name: '新 (dist, 串)', v: nd + ', "' + ns + '"', cls: 'new' })]));
+        }
+      } else if (!sawTie && nd === dist[tr][tc]) {
+        sawTie = true;
+        frames.push(Viz.frame(TIE, '从 (' + r + ',' + c + ') 串 "' + s + '" 也能以 dist=' + nd + ' 到 (' + tr + ',' + tc
+            + ')，但串 "' + ns + '" 的字典序比现值 "' + path[tr][tc] + '" 大，弃用',
+          [mazePanel({ cur: [r, c], path: trail, land: [tr, tc] }),
+           distPanel((function () { var mk = {}; mk[tr + ',' + tc] = 'bad'; return mk; })()),
+           varsPanel({ name: '候选 vs 现值', v: '"' + ns + '" > "' + path[tr][tc] + '"', cls: 'bad' })]));
+      }
+    }
+  }
+
+  frames.push(Viz.frame(IMP, '堆空了也没轮到洞：洞不在任何滚动路线上，返回 impossible',
+    [mazePanel({}), distPanel(null), varsPanel({ name: '答案', v: 'impossible', cls: 'bad' })]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

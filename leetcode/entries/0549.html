@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉树最长连续序列 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1146 / 1159</span>
+  <nav class="pn"><a href="0361.html">上一篇</a><a href="0609.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">549. </span>二叉树最长连续序列 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">动态规划</li><li class="aux">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉树</li><li class="tag">dp-on-trees</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">后序 DFS 给每个结点带两个数：向下最长升链、最长降链；拐弯路径长 = 升 + 降 − 1，全局取最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>路径可以「先向上再向下」拐一个弯（如 <code>1-2-3-4</code>），拐点两侧必是一条降链接一条升链。</li><li><code>dfs</code> 返回 <code>[inc, dec]</code>：孩子值 == <code>node.val+1</code> 接升链，== <code>node.val-1</code> 接降链，各自取最大。</li><li>每个结点处用 <code>inc + dec - 1</code>（自己被数了两次）更新答案；纯升/纯降路径自然被 <code>dec=1</code>/<code>inc=1</code> 覆盖。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">int</span> best;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> longestConsecutive2(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">5</span>        best = <span class="n">0</span>;                        <span class="c">// 防同一实例复用时残留旧值</span></span><span class="ln"><span class="no">6</span>        dfs(root);</span><span class="ln"><span class="no">7</span>        <span class="k">return</span> best;</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="c">// 返回 [inc, dec]：从 node 向下走的最长升链/降链长度（都含 node 自己）</span></span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">int</span>[] dfs(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[<span class="n">2</span>];</span><span class="ln"><span class="no">13</span>        <span class="k">int</span> inc = <span class="n">1</span>, dec = <span class="n">1</span>;</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="t">TreeNode</span> child : <span class="k">new</span> <span class="t">TreeNode</span>[]{node.left, node.right}) {</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (child == <span class="k">null</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">16</span>            <span class="k">int</span>[] c = dfs(child);</span><span class="ln"><span class="no">17</span>            <span class="c">// 孩子值差 ±1：把孩子的升链/降链接上来</span></span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (child.val == node.val + <span class="n">1</span>) inc = <span class="t">Math</span>.max(inc, c[<span class="n">0</span>] + <span class="n">1</span>);</span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (child.val == node.val - <span class="n">1</span>) dec = <span class="t">Math</span>.max(dec, c[<span class="n">1</span>] + <span class="n">1</span>);</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="c">// 路径可拐弯（如 1-2-3-4）：升链 + 降链 − 1，node 数了两次</span></span><span class="ln"><span class="no">22</span>        best = <span class="t">Math</span>.max(best, inc + dec - <span class="n">1</span>);</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{inc, dec};</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private int best;", "", "    public int longestConsecutive2(TreeNode root) {", "        best = 0;                        // 防同一实例复用时残留旧值", "        dfs(root);", "        return best;", "    }", "", "    // 返回 [inc, dec]：从 node 向下走的最长升链/降链长度（都含 node 自己）", "    private int[] dfs(TreeNode node) {", "        if (node == null) return new int[2];", "        int inc = 1, dec = 1;", "        for (TreeNode child : new TreeNode[]{node.left, node.right}) {", "            if (child == null) continue;", "            int[] c = dfs(child);", "            // 孩子值差 ±1：把孩子的升链/降链接上来", "            if (child.val == node.val + 1) inc = Math.max(inc, c[0] + 1);", "            if (child.val == node.val - 1) dec = Math.max(dec, c[1] + 1);", "        }", "        // 路径可拐弯（如 1-2-3-4）：升链 + 降链 − 1，node 数了两次", "        best = Math.max(best, inc + dec - 1);", "        return new int[]{inc, dec};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 549. 二叉树最长连续序列 II（会员题）—— 图解：自底向上传升链/降链，拐弯路径 = 升 + 降 − 1。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [2, 1, 3, null, null, null, 4] };
+
+function trace(input) {
+  var level = input.root.slice();
+  while (level.length && level[level.length - 1] === null) level.pop();
+  var frames = [];
+
+  function buildTree(lv) {
+    if (!lv.length || lv[0] === null) return null;
+    var rt = { val: lv[0], li: 0 }, q = [rt], i = 1;
+    while (q.length && i < lv.length) {
+      var cur = q.shift();
+      if (i < lv.length && lv[i] !== null) { cur.left = { val: lv[i], li: i }; q.push(cur.left); }
+      i++;
+      if (i < lv.length && lv[i] !== null) { cur.right = { val: lv[i], li: i }; q.push(cur.right); }
+      i++;
+    }
+    return rt;
+  }
+  var root = buildTree(level);
+
+  // 复刻 Java 的后序 DFS：每个结点算完时记一条事件
+  var events = [];
+  function dfs(node) {
+    if (!node) return { inc: 0, dec: 0 };
+    var inc = 1, dec = 1, from = [];
+    [node.left, node.right].forEach(function (child) {
+      if (!child) return;
+      var c = dfs(child);
+      if (child.val === node.val + 1) { inc = Math.max(inc, c.inc + 1); from.push(child.li); }
+      if (child.val === node.val - 1) { dec = Math.max(dec, c.dec + 1); from.push(child.li); }
+    });
+    var bestAfter = 0;
+    events.forEach(function (e) { bestAfter = Math.max(bestAfter, e.best); });
+    var own = inc + dec - 1;
+    events.push({ node: node, inc: inc, dec: dec, best: Math.max(bestAfter, own), from: from });
+    return { inc: inc, dec: dec };
+  }
+  dfs(root);
+  var finalBest = events.length ? events[events.length - 1].best : 0;
+
+  function treePanel(marks, labels) {
+    return Viz.tree(level, { title: '二叉树（拐弯路径 = 升链 + 降链 − 1）', marks: marks || {}, labels: labels || [] });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+
+  function marksFor(e, curCls) {
+    var marks = {};
+    (e.from || []).forEach(function (li) { marks[li] = 'win'; });
+    marks[e.node.li] = curCls;
+    return marks;
+  }
+
+  if (events.length) {
+    var leaf = null;
+    for (var i = 0; i < events.length; i++) if (!events[i].from.length) { leaf = events[i]; break; }
+    if (leaf && leaf !== events[events.length - 1]) {
+      frames.push(Viz.frame('int inc = 1, dec = 1;',
+        '结点 ' + leaf.node.val + ' 是叶子：升链、降链都只有自己，长 1',
+        [treePanel(marksFor(leaf, 'cur'), [{ at: leaf.node.li, label: 'inc=1 dec=1', cls: 'p-cur' }]),
+          varsPanel([{ name: 'best', v: String(leaf.best) }])]));
+    }
+
+    var joined = null;
+    for (var j = 0; j < events.length; j++) if (events[j].from.length) { joined = events[j]; break; }
+    if (joined) {
+      frames.push(Viz.frame('inc = Math.max(inc, c[0] + 1);',
+        '结点 ' + joined.node.val + ' 收孩子的货：值差 ±1 的链接上来，inc/dec 变长',
+        [treePanel(marksFor(joined, 'cur'), [
+          { at: joined.node.li, label: 'inc=' + joined.inc + ' dec=' + joined.dec, cls: 'p-cur' },
+          { at: joined.from[0], label: '孩子链', cls: 'p-next' }
+        ]), varsPanel([{ name: 'best', v: String(joined.best) }])]));
+    }
+
+    var top = events[events.length - 1];
+    frames.push(Viz.frame('best = Math.max(best, inc + dec - 1);',
+      '根 ' + top.node.val + '：inc=' + top.inc + '、dec=' + top.dec + '，拐弯路径长 ' + top.inc + '+' + top.dec + '−1=' + top.best,
+      [treePanel(marksFor(top, 'cur'), [{ at: top.node.li, label: 'inc=' + top.inc + ' dec=' + top.dec, cls: 'p-cur' }]),
+        varsPanel([{ name: 'best', v: String(top.best), cls: 'chg' }])]));
+
+    var marksAll = {};
+    events.forEach(function (e) { if (e.inc + e.dec - 1 === finalBest) marksAll[e.node.li] = 'done'; });
+    frames.push(Viz.frame('return best;', '全部结点算完：最长连续序列 ' + finalBest + ' 个结点',
+      [treePanel(marksAll, []), varsPanel([{ name: '答案', v: String(finalBest), cls: 'done' }])]));
+  } else {
+    frames.push(Viz.frame('return best;', '空树：返回 0',
+      [treePanel({}, []), varsPanel([{ name: '答案', v: '0' }])]));
+  }
+
+  return { frames: frames, result: finalBest };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

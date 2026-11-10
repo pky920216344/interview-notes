@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>煎饼排序 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 759 / 1159</span>
+  <nav class="pn"><a href="1090.html">上一篇</a><a href="0265.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">969. </span>煎饼排序</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">模拟</li><li class="aux">贪心</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">每轮把当前前缀的最大值先翻到顶、再整段翻到末位归位；前缀从 n 一路缩到 2。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>size</code> 从 n 降到 2：在 <code>arr[0..size)</code> 里找最大值下标 <code>maxI</code>。</li><li>已在末位就跳过；否则先 <code>k = maxI+1</code> 翻到顶，再 <code>k = size</code> 翻到末位——两步后它永久归位。</li><li>翻转只动前缀，已归位的后缀不再被碰；每轮至多 2 次翻转，总数 ≤ 2(n−1)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(1)（不算返回列表）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; pancakeSort(<span class="k">int</span>[] arr) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; res = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> size = arr.length; size &gt; <span class="n">1</span>; size--) {</span><span class="ln"><span class="no">7</span>            <span class="k">int</span> maxI = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; size; i++)</span><span class="ln"><span class="no">9</span>                <span class="k">if</span> (arr[i] &gt; arr[maxI]) maxI = i;      <span class="c">// 前缀里的最大值位置</span></span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (maxI == size - <span class="n">1</span>) <span class="k">continue</span>;            <span class="c">// 已在末位，不用翻</span></span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (maxI != <span class="n">0</span>) { reverse(arr, <span class="n">0</span>, maxI); res.add(maxI + <span class="n">1</span>); }   <span class="c">// 先翻到顶</span></span><span class="ln"><span class="no">12</span>            reverse(arr, <span class="n">0</span>, size - <span class="n">1</span>);                 <span class="c">// 再整段翻，落到末位</span></span><span class="ln"><span class="no">13</span>            res.add(size);</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> res;</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="k">private</span> <span class="k">void</span> reverse(<span class="k">int</span>[] a, <span class="k">int</span> l, <span class="k">int</span> r) {</span><span class="ln"><span class="no">19</span>        <span class="k">while</span> (l &lt; r) {</span><span class="ln"><span class="no">20</span>            <span class="k">int</span> t = a[l]; a[l] = a[r]; a[r] = t;</span><span class="ln"><span class="no">21</span>            l++; r--;</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>arr</code> ，请使用 <strong>煎饼翻转</strong><em> </em>完成对数组的排序。</p>
+
+<p>一次煎饼翻转的执行过程如下：</p>
+
+<ul>
+	<li>选择一个整数 <code>k</code> ，<code>1 <= k <= arr.length</code></li>
+	<li>反转子数组 <code>arr[0...k-1]</code>（<strong>下标从 0 开始</strong>）</li>
+</ul>
+
+<p>例如，<code>arr = [3,2,1,4]</code> ，选择 <code>k = 3</code> 进行一次煎饼翻转，反转子数组 <code>[3,2,1]</code> ，得到 <code>arr = [<strong>1</strong>,<strong>2</strong>,<strong>3</strong>,4]</code> 。</p>
+
+<p>以数组形式返回能使 <code>arr</code> 有序的煎饼翻转操作所对应的 <code>k</code> 值序列。任何将数组排序且翻转次数在 <code>10 * arr.length</code> 范围内的有效答案都将被判断为正确。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>[3,2,4,1]
+<strong>输出：</strong>[4,2,4,3]
+<strong>解释：</strong>
+我们执行 4 次煎饼翻转，k 值分别为 4，2，4，和 3。
+初始状态 arr = [3, 2, 4, 1]
+第一次翻转后（k = 4）：arr = [<strong>1</strong>, <strong>4</strong>, <strong>2</strong>, <strong>3</strong>]
+第二次翻转后（k = 2）：arr = [<strong>4</strong>, <strong>1</strong>, 2, 3]
+第三次翻转后（k = 4）：arr = [<strong>3</strong>, <strong>2</strong>, <strong>1</strong>, <strong>4</strong>]
+第四次翻转后（k = 3）：arr = [<strong>1</strong>, <strong>2</strong>, <strong>3</strong>, 4]，此时已完成排序。 
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>[1,2,3]
+<strong>输出：</strong>[]
+<strong>解释：
+</strong>输入已经排序，因此不需要翻转任何内容。
+请注意，其他可能的答案，如 [3，3] ，也将被判断为正确。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= arr.length <= 100</code></li>
+	<li><code>1 <= arr[i] <= arr.length</code></li>
+	<li><code>arr</code> 中的所有整数互不相同（即，<code>arr</code> 是从 <code>1</code> 到 <code>arr.length</code> 整数的一个排列）</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> pancakeSort(int[] arr) {", "        List<Integer> res = new ArrayList<>();", "        for (int size = arr.length; size > 1; size--) {", "            int maxI = 0;", "            for (int i = 1; i < size; i++)", "                if (arr[i] > arr[maxI]) maxI = i;      // 前缀里的最大值位置", "            if (maxI == size - 1) continue;            // 已在末位，不用翻", "            if (maxI != 0) { reverse(arr, 0, maxI); res.add(maxI + 1); }   // 先翻到顶", "            reverse(arr, 0, size - 1);                 // 再整段翻，落到末位", "            res.add(size);", "        }", "        return res;", "    }", "", "    private void reverse(int[] a, int l, int r) {", "        while (l < r) {", "            int t = a[l]; a[l] = a[r]; a[r] = t;", "            l++; r--;", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 969. 煎饼排序 —— 图解：复刻 Solution.java 的「最大值翻到顶、再翻到末位」归位法。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [3, 2, 4, 1] };
+
+function trace(input) {
+  var a = input.arr.slice();
+  var n = a.length;
+  var frames = [];
+  var res = [];
+
+  function cellsPanel(marks, pointers) {
+    return Viz.cells(a.slice(), { title: '数组（前 size 个是待排序前缀）', marks: marks || {}, pointers: pointers || [] });
+  }
+  function flip(k) {
+    for (var l = 0, r = k - 1; l < r; l++, r--) { var t = a[l]; a[l] = a[r]; a[r] = t; }
+    res.push(k);
+  }
+  function placedMarks(from) {
+    var m = {};
+    for (var i = from; i < n; i++) m[i] = 'done';
+    return m;
+  }
+
+  var seenFirst = false, seenTop = false, seenPlace = false;
+  for (var size = n; size > 1; size--) {
+    var maxI = 0;
+    for (var i = 1; i < size; i++) if (a[i] > a[maxI]) maxI = i;
+    if (maxI === size - 1) continue;
+    if (!seenFirst) {
+      seenFirst = true;
+      var m = placedMarks(size);
+      m[maxI] = 'cur';
+      frames.push(Viz.frame('if (arr[i] > arr[maxI]) maxI = i;',
+        '前缀里最大值 ' + a[maxI] + ' 在下标 ' + maxI + '：先翻 k=' + (maxI + 1) + ' 到顶，再翻 k=' + size + ' 归位',
+        [cellsPanel(m, [{ at: maxI, label: 'max', cls: 'p-cur' }])]));
+    }
+    if (maxI !== 0) {
+      flip(maxI + 1);
+      if (!seenTop) {
+        seenTop = true;
+        var mt = placedMarks(size);
+        for (var t = 0; t <= maxI; t++) mt[t] = 'chg';
+        frames.push(Viz.frame('if (maxI != 0) { reverse(arr, 0, maxI); res.add(maxI + 1); }',
+          '翻 k=' + (maxI + 1) + '：最大值 ' + a[0] + ' 到了顶部', [cellsPanel(mt)]));
+      }
+    }
+    flip(size);
+    if (!seenPlace) {
+      seenPlace = true;
+      frames.push(Viz.frame('reverse(arr, 0, size - 1);',
+        '翻 k=' + size + '：最大值落到末位归位，前缀缩到 ' + (size - 1),
+        [cellsPanel(placedMarks(size - 1))]));
+    }
+  }
+
+  var resStr = res.join(',');
+  frames.push(Viz.frame('return res;', '全部归位：翻转序列 k = [' + resStr + ']，共 ' + res.length + ' 次',
+    [cellsPanel(placedMarks(0)), Viz.vars([{ name: '翻转序列', v: resStr || '（无）' }])]));
+  return { frames: frames, result: res };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

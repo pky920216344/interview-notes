@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>图像渲染 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 638 / 1159</span>
+  <nav class="pn"><a href="0377.html">上一篇</a><a href="0797.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">733. </span>图像渲染</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 3</li><li class="algo">广度优先搜索</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">BFS 洪水填充：从起点出发，只向「还是旧颜色」的四邻扩散，入队前先染色防重复；起点新旧同色时直接原样返回。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>起点颜色等于目标颜色时必须直接返回，否则会把新颜色当旧色无限扩散。</li><li>BFS：出队一个像素，四邻里仍是旧颜色的「先染色再入队」，保证每个像素至多进队一次。</li><li>连通才扩散：斜对角、被异色隔开的像素都不动。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[][] floodFill(<span class="k">int</span>[][] image, <span class="k">int</span> sr, <span class="k">int</span> sc, <span class="k">int</span> color) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> old = image[sr][sc];</span><span class="ln"><span class="no">6</span>        <span class="c">// 起点已经是目标色：再染会把新颜色当「旧色」扩散，直接返回</span></span><span class="ln"><span class="no">7</span>        <span class="k">if</span> (old == color) <span class="k">return</span> image;</span><span class="ln"><span class="no">8</span>        image[sr][sc] = color;</span><span class="ln"><span class="no">9</span>        <span class="t">Queue</span>&lt;<span class="k">int</span>[]&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">10</span>        q.add(<span class="k">new</span> <span class="k">int</span>[]{sr, sc});</span><span class="ln"><span class="no">11</span>        <span class="k">int</span>[][] dirs = {{-<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">0</span>, -<span class="n">1</span>}, {<span class="n">0</span>, <span class="n">1</span>}};</span><span class="ln"><span class="no">12</span>        <span class="k">while</span> (!q.isEmpty()) {</span><span class="ln"><span class="no">13</span>            <span class="k">int</span>[] p = q.poll();</span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span>[] d : dirs) {</span><span class="ln"><span class="no">15</span>                <span class="k">int</span> r = p[<span class="n">0</span>] + d[<span class="n">0</span>], c = p[<span class="n">1</span>] + d[<span class="n">1</span>];</span><span class="ln"><span class="no">16</span>                <span class="c">// 只扩散「还是旧颜色」的连通像素</span></span><span class="ln"><span class="no">17</span>                <span class="k">if</span> (r &lt; <span class="n">0</span> || r &gt;= image.length || c &lt; <span class="n">0</span> || c &gt;= image[<span class="n">0</span>].length || image[r][c] != old) <span class="k">continue</span>;</span><span class="ln"><span class="no">18</span>                image[r][c] = color;   <span class="c">// 入队前就染色，保证每个像素至多入队一次</span></span><span class="ln"><span class="no">19</span>                q.add(<span class="k">new</span> <span class="k">int</span>[]{r, c});</span><span class="ln"><span class="no">20</span>            }</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> image;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>有一幅以&nbsp;<code>m x n</code>&nbsp;的二维整数数组表示的图画&nbsp;<code>image</code>&nbsp;，其中&nbsp;<code>image[i][j]</code>&nbsp;表示该图画的像素值大小。你也被给予三个整数 <code>sr</code> ,&nbsp; <code>sc</code> 和 <code>color</code> 。你应该从像素&nbsp;<code>image[sr][sc]</code>&nbsp;开始对图像进行上色&nbsp;<strong>填充</strong> 。</p>
+
+<p>为了完成 <strong>上色工作</strong>：</p>
+
+<ol>
+	<li>从初始像素开始，将其颜色改为 <code>color</code>。</li>
+	<li>对初始坐标的 <strong>上下左右四个方向上</strong> 相邻且与初始像素的原始颜色同色的像素点执行相同操作。</li>
+	<li>通过检查与初始像素的原始颜色相同的相邻像素并修改其颜色来继续 <strong>重复</strong> 此过程。</li>
+	<li>当 <strong>没有</strong> 其它原始颜色的相邻像素时 <strong>停止</strong> 操作。</li>
+</ol>
+
+<p>最后返回经过上色渲染&nbsp;<strong>修改</strong> 后的图像&nbsp;。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<p><img src="../assets/img/eb3548d721ac.jpg" /></p>
+
+<div class="example-block"><strong>输入：</strong>image = [[1,1,1],[1,1,0],[1,0,1]]，sr = 1, sc = 1, color = 2</div>
+
+<div class="example-block"><strong>输出：</strong>[[2,2,2],[2,2,0],[2,0,1]]</div>
+
+<div class="example-block"><b>解释：</b>在图像的正中间，坐标 <code>(sr,sc)=(1,1)</code>&nbsp;（即红色像素）,在路径上所有符合条件的像素点的颜色都被更改成相同的新颜色（即蓝色像素）。</div>
+
+<div class="example-block">注意，右下角的像素 <strong>没有</strong> 更改为2，因为它不是在上下左右四个方向上与初始点相连的像素点。</div>
+
+<div class="example-block">&nbsp;</div>
+
+<p><strong>示例 2:</strong></p>
+
+<div class="example-block"><strong>输入：</strong>image = [[0,0,0],[0,0,0]], sr = 0, sc = 0, color = 0</div>
+
+<div class="example-block"><strong>输出：</strong>[[0,0,0],[0,0,0]]</div>
+
+<div class="example-block"><strong>解释：</strong>初始像素已经用 0 着色，这与目标颜色相同。因此，不会对图像进行任何更改。</div>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>m == image.length</code></li>
+	<li><code>n == image[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 50</code></li>
+	<li><code>0 &lt;= image[i][j], color &lt; 2<sup>16</sup></code></li>
+	<li><code>0 &lt;= sr &lt;&nbsp;m</code></li>
+	<li><code>0 &lt;= sc &lt;&nbsp;n</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[][] floodFill(int[][] image, int sr, int sc, int color) {", "        int old = image[sr][sc];", "        // 起点已经是目标色：再染会把新颜色当「旧色」扩散，直接返回", "        if (old == color) return image;", "        image[sr][sc] = color;", "        Queue<int[]> q = new ArrayDeque<>();", "        q.add(new int[]{sr, sc});", "        int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};", "        while (!q.isEmpty()) {", "            int[] p = q.poll();", "            for (int[] d : dirs) {", "                int r = p[0] + d[0], c = p[1] + d[1];", "                // 只扩散「还是旧颜色」的连通像素", "                if (r < 0 || r >= image.length || c < 0 || c >= image[0].length || image[r][c] != old) continue;", "                image[r][c] = color;   // 入队前就染色，保证每个像素至多入队一次", "                q.add(new int[]{r, c});", "            }", "        }", "        return image;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 733 图像渲染 —— 图解：复刻 Solution.java 的「BFS 洪水填充」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { image: [[1, 1, 1], [1, 1, 0], [1, 0, 1]], sr: 1, sc: 1, color: 2 };
+
+function trace(input) {
+  var img = input.image.map(function (row) { return row.slice(); });
+  var m = img.length, n = img[0].length;
+  var sr = input.sr, sc = input.sc, color = input.color;
+  var old = img[sr][sc];
+  var frames = [];
+  var queue = [];       // BFS 队列，存 "r,c" 字符串
+  var colored = {};     // 已染成新色的格子 "r,c" -> true
+  var processed = {};   // 已出队处理的格子 "r,c" -> true
+
+  var SEED = 'image[sr][sc] = color;';
+  var PAINT = 'image[r][c] = color;';
+  var POLL = 'int[] p = q.poll();';
+  var LOOP = 'while (!q.isEmpty()) {';
+
+  function gridPanel(showQueue) {
+    var marks = {};
+    for (var r = 0; r < m; r++) {
+      for (var c = 0; c < n; c++) {
+        var k = r + ',' + c;
+        if (colored[k]) marks[k] = 'new';             // 已染成新色
+        else if (img[r][c] !== old) marks[k] = 'dim'; // 不是旧色，不扩散
+      }
+    }
+    if (showQueue) {
+      for (var i = 0; i < queue.length; i++) marks[queue[i]] = 'hit';   // 队列里待处理的
+    }
+    for (var p in processed) marks[p] = 'done';
+    return Viz.grid(img.map(function (row) { return row.slice(); }),
+      { title: '图像 image（旧色 ' + old + ' → 新色 ' + color + '）', marks: marks, corner: 'image' });
+  }
+
+  function queuePanel(curIdx) {
+    var marks = {};
+    if (curIdx != null) marks[curIdx] = 'cur';
+    return Viz.cells(queue.slice(), { title: 'BFS 队列（待处理的格子）', marks: marks, hideIndex: true });
+  }
+
+  if (old !== color) {
+    img[sr][sc] = color;
+    colored[sr + ',' + sc] = true;
+    queue.push(sr + ',' + sc);
+    frames.push(Viz.frame(SEED, '起点 (' + sr + ',' + sc + ') 染成 ' + color + ' 入队，旧色是 ' + old,
+      [gridPanel(true), queuePanel(0)]));
+
+    var dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    var expanded = 0;
+    while (queue.length) {
+      var cur = queue.shift();
+      processed[cur] = true;
+      var pr = Number(cur.split(',')[0]), pc = Number(cur.split(',')[1]);
+      var newly = [];
+      for (var d = 0; d < 4; d++) {
+        var r = pr + dirs[d][0], c = pc + dirs[d][1];
+        if (r < 0 || r >= m || c < 0 || c >= n || img[r][c] !== old) continue;
+        img[r][c] = color;
+        colored[r + ',' + c] = true;
+        queue.push(r + ',' + c);
+        newly.push(r + ',' + c);
+      }
+      expanded++;
+      if (expanded === 1) {
+        frames.push(Viz.frame(PAINT, '处理 (' + pr + ',' + pc + ')：' + newly.length + ' 个旧色邻居染色入队，其余跳过',
+          [gridPanel(true), queuePanel(0)]));
+      } else if (expanded === 2) {
+        frames.push(Viz.frame(POLL, '处理队头 (' + pr + ',' + pc + ')：继续把旧色邻居染色入队',
+          [gridPanel(true), queuePanel(0)]));
+      }
+    }
+    frames.push(Viz.frame(LOOP, '队空：与起点连通的旧色像素全变成 ' + color + '，不连通的保持原样',
+      [gridPanel(false), queuePanel(null)]));
+  } else {
+    frames.push(Viz.frame(SEED, '起点已是新色：直接返回原图，什么都不做', [gridPanel(false)]));
+  }
+
+  return { frames: frames, result: img };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

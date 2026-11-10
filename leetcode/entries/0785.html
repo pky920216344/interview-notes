@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>判断二分图 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 493 / 1159</span>
+  <nav class="pn"><a href="0513.html">上一篇</a><a href="1031.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">785. </span>判断二分图</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">广度优先搜索</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">图</li><li class="tag">graph-coloring</li><li class="tag">bipartite-graph</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">BFS 染色：起点染 +1，出队时把未染色的邻居全染成反色；发现相邻同色就不是二分图；图不连通就每个未染色点都当一次起点。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>二分图 ⇔ 只用两种颜色染色且每条边两端异色；<code>color[u]</code> 取 <code>0</code>（未染）/<code>1</code>/<code>-1</code>。</li><li>BFS：起点染 <code>1</code> 入队；出队 <code>u</code> 时，未染色的邻居染成 <code>-color[u]</code> 入队，已染色的邻居若与 <code>u</code> 同色，直接返回 <code>false</code>。</li><li>图可能不连通：外层循环对每个未染色结点都开一次新 BFS，各连通块互不影响。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + m)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> isBipartite(<span class="k">int</span>[][] graph) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = graph.length;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] color = <span class="k">new</span> <span class="k">int</span>[n];   <span class="c">// 0 未染色，1 / -1 两种颜色</span></span><span class="ln"><span class="no">7</span>        <span class="c">// 图可能不连通：每个未染色的点都要当一次起点</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> s = <span class="n">0</span>; s &lt; n; s++) {</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (color[s] != <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">10</span>            <span class="t">Queue</span>&lt;<span class="t">Integer</span>&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>            color[s] = <span class="n">1</span>;</span><span class="ln"><span class="no">12</span>            q.add(s);</span><span class="ln"><span class="no">13</span>            <span class="k">while</span> (!q.isEmpty()) {</span><span class="ln"><span class="no">14</span>                <span class="k">int</span> u = q.poll();</span><span class="ln"><span class="no">15</span>                <span class="k">for</span> (<span class="k">int</span> v : graph[u]) {</span><span class="ln"><span class="no">16</span>                    <span class="c">// 相邻同色：怎么染都冲突，不是二分图</span></span><span class="ln"><span class="no">17</span>                    <span class="k">if</span> (color[v] == color[u]) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">18</span>                    <span class="k">if</span> (color[v] == <span class="n">0</span>) { color[v] = -color[u]; q.add(v); }</span><span class="ln"><span class="no">19</span>                }</span><span class="ln"><span class="no">20</span>            }</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">存在一个 <strong>无向图</strong> ，图中有 <code>n</code> 个节点。其中每个节点都有一个介于 <code>0</code> 到 <code>n - 1</code> 之间的唯一编号。给你一个二维数组 <code>graph</code> ，其中 <code>graph[u]</code> 是一个节点数组，由节点 <code>u</code> 的邻接节点组成。形式上，对于 <code>graph[u]</code> 中的每个 <code>v</code> ，都存在一条位于节点 <code>u</code> 和节点 <code>v</code> 之间的无向边。该无向图同时具有以下属性：
+<ul>
+	<li>不存在自环（<code>graph[u]</code> 不包含 <code>u</code>）。</li>
+	<li>不存在平行边（<code>graph[u]</code> 不包含重复值）。</li>
+	<li>如果 <code>v</code> 在 <code>graph[u]</code> 内，那么 <code>u</code> 也应该在 <code>graph[v]</code> 内（该图是无向图）</li>
+	<li>这个图可能不是连通图，也就是说两个节点 <code>u</code> 和 <code>v</code> 之间可能不存在一条连通彼此的路径。</li>
+</ul>
+
+<p><strong>二分图</strong> 定义：如果能将一个图的节点集合分割成两个独立的子集 <code>A</code> 和 <code>B</code> ，并使图中的每一条边的两个节点一个来自 <code>A</code> 集合，一个来自 <code>B</code> 集合，就将这个图称为 <strong>二分图</strong> 。</p>
+
+<p>如果图是二分图，返回 <code>true</code><em> </em>；否则，返回 <code>false</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/7289c5d36b57.jpg" style="width: 222px; height: 222px;" />
+<pre>
+<strong>输入：</strong>graph = [[1,2,3],[0,2],[0,1,3],[0,2]]
+<strong>输出：</strong>false
+<strong>解释：</strong><code>不能将节点分割成两个独立的子集，</code>以使每条边都连通一个子集中的一个节点与另一个子集中的一个节点。</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/f59e1c4f1cdb.jpg" style="width: 222px; height: 222px;" />
+<pre>
+<strong>输入：</strong>graph = [[1,3],[0,2],[1,3],[0,2]]
+<strong>输出：</strong>true
+<strong>解释：</strong><code>可以将节点分成两组: {0, 2} 和 {1, 3} 。</code></pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>graph.length == n</code></li>
+	<li><code>1 <= n <= 100</code></li>
+	<li><code>0 <= graph[u].length < n</code></li>
+	<li><code>0 <= graph[u][i] <= n - 1</code></li>
+	<li><code>graph[u]</code> 不会包含 <code>u</code></li>
+	<li><code>graph[u]</code> 的所有值 <strong>互不相同</strong></li>
+	<li>如果 <code>graph[u]</code> 包含 <code>v</code>，那么 <code>graph[v]</code> 也会包含 <code>u</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean isBipartite(int[][] graph) {", "        int n = graph.length;", "        int[] color = new int[n];   // 0 未染色，1 / -1 两种颜色", "        // 图可能不连通：每个未染色的点都要当一次起点", "        for (int s = 0; s < n; s++) {", "            if (color[s] != 0) continue;", "            Queue<Integer> q = new ArrayDeque<>();", "            color[s] = 1;", "            q.add(s);", "            while (!q.isEmpty()) {", "                int u = q.poll();", "                for (int v : graph[u]) {", "                    // 相邻同色：怎么染都冲突，不是二分图", "                    if (color[v] == color[u]) return false;", "                    if (color[v] == 0) { color[v] = -color[u]; q.add(v); }", "                }", "            }", "        }", "        return true;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 785 判断二分图 —— 图解：BFS 染色，相邻必须异色；不连通就一块一块染。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { graph: [[1, 3], [0, 2], [1, 3], [0, 2], [5, 6], [4, 6], [4, 5]] };
+
+function trace(input) {
+  var graph = input.graph;
+  var n = graph.length;
+  var frames = [];
+  var color = [];
+  for (var i = 0; i < n; i++) color.push(0);
+  var q = [];
+  var result = true;
+
+  var NEWLOOP = 'for (int s = 0; s < n; s++) {';
+  var START = 'color[s] = 1;';
+  var CONFLICT = 'if (color[v] == color[u]) return false;';
+  var NEI = 'if (color[v] == 0) { color[v] = -color[u]; q.add(v); }';
+
+  function colorPanel(curU, justColored) {
+    var rows = [];
+    for (var i = 0; i < n; i++) {
+      rows.push({
+        k: String(i),
+        v: color[i] === 0 ? '未染' : (color[i] > 0 ? '+1' : '-1'),
+        cls: i === curU ? 'hit' : (i === justColored ? 'new' : '')
+      });
+    }
+    return Viz.table('color[]：结点 → 颜色', rows, { hint: '相邻结点必须异色' });
+  }
+  function queuePanel() {
+    var pointers = q.length ? [{ at: 0, label: '队头', cls: 'p-left' }] : [];
+    return Viz.cells(q.length ? q.slice() : ['（空）'], { title: '队列 q', marks: {}, pointers: pointers });
+  }
+  function snap(at, key, curU, justColored) {
+    frames.push(Viz.frame(at, key, [colorPanel(curU, justColored), queuePanel()]));
+  }
+
+  var coloredOnce = false, neighborOnce = false, secondOnce = false, conflictOnce = false, blocks = 0;
+
+  for (var s = 0; s < n && result; s++) {
+    if (color[s] !== 0) continue;
+    if (coloredOnce && !secondOnce && frames.length < 5) {
+      snap(NEWLOOP, '第 ' + blocks + ' 个连通块染完了；外层循环找到未染色的 ' + s + '，开新一块', s, null);
+      secondOnce = true;
+    }
+    color[s] = 1;
+    q.push(s);
+    if (!coloredOnce) {
+      snap(START, '开局：' + s + ' 染 +1 入队，它的邻居之后都染 -1', s, s);
+      coloredOnce = true;
+    }
+    blocks++;
+    while (q.length) {
+      var u = q.shift();
+      for (var k = 0; k < graph[u].length && result; k++) {
+        var v = graph[u][k];
+        if (color[v] === color[u]) {
+          if (!conflictOnce && frames.length < 5) {
+            snap(CONFLICT, u + ' 和邻居 ' + v + ' 都是 ' + (color[u] > 0 ? '+1' : '-1') + '——相邻同色，返回 false', u, null);
+            conflictOnce = true;
+          }
+          result = false;
+          break;
+        }
+        if (color[v] === 0) {
+          color[v] = -color[u];
+          q.push(v);
+          if (!neighborOnce && frames.length < 5) {
+            snap(NEI, '出队 ' + u + '：未染的邻居染反色 ' + (color[v] > 0 ? '+1' : '-1') + ' 后入队', u, v);
+            neighborOnce = true;
+          }
+        }
+      }
+    }
+  }
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

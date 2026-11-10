@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>树的直径 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 636 / 1159</span>
+  <nav class="pn"><a href="1654.html">上一篇</a><a href="0377.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1245. </span>树的直径</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">广度优先搜索</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="tag">拓扑排序</li><li class="tag">dp-on-trees</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">两次 BFS：从任一点出发找最远点（必是直径一端），再从它出发找最远，第二次的距离就是直径（边数）。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>建无向邻接表；<code>bfs(s)</code> 返回「离 s 最远的结点和距离」。</li><li>第一次从 0 出发：树上离任一点最远的点<strong>必是直径的一端</strong>（反证可证，不用纠结）。</li><li>第二次从该点出发：最远距离即直径。n = 边数 + 1，单结点树直径为 0。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> treeDiameter(<span class="k">int</span>[][] edges) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = edges.length + <span class="n">1</span>;   <span class="c">// 树：结点数 = 边数 + 1，编号 0..n-1</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; g = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) g.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;());</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span>[] e : edges) {</span><span class="ln"><span class="no">9</span>            g.get(e[<span class="n">0</span>]).add(e[<span class="n">1</span>]);</span><span class="ln"><span class="no">10</span>            g.get(e[<span class="n">1</span>]).add(e[<span class="n">0</span>]);</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="c">// 两次 BFS：任取 0 出发找到的最远点 u，必是直径的一端</span></span><span class="ln"><span class="no">13</span>        <span class="k">int</span> u = bfs(g, <span class="n">0</span>)[<span class="n">0</span>];</span><span class="ln"><span class="no">14</span>        <span class="c">// 从 u 再找最远，距离就是直径（边数）</span></span><span class="ln"><span class="no">15</span>        <span class="k">return</span> bfs(g, u)[<span class="n">1</span>];</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="c">/** 从 s 出发 BFS，返回 {最远结点, 最远距离}；距离按边数计。 */</span></span><span class="ln"><span class="no">19</span>    <span class="k">private</span> <span class="k">int</span>[] bfs(<span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; g, <span class="k">int</span> s) {</span><span class="ln"><span class="no">20</span>        <span class="k">int</span> n = g.size();</span><span class="ln"><span class="no">21</span>        <span class="k">int</span>[] dist = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">22</span>        <span class="t">Arrays</span>.fill(dist, -<span class="n">1</span>);</span><span class="ln"><span class="no">23</span>        dist[s] = <span class="n">0</span>;</span><span class="ln"><span class="no">24</span>        <span class="k">int</span>[] q = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">25</span>        <span class="k">int</span> head = <span class="n">0</span>, tail = <span class="n">0</span>;</span><span class="ln"><span class="no">26</span>        q[tail++] = s;</span><span class="ln"><span class="no">27</span>        <span class="k">int</span> far = s;</span><span class="ln"><span class="no">28</span>        <span class="k">while</span> (head &lt; tail) {</span><span class="ln"><span class="no">29</span>            <span class="k">int</span> u = q[head++];</span><span class="ln"><span class="no">30</span>            <span class="k">if</span> (dist[u] &gt; dist[far]) far = u;   <span class="c">// 出现更远的结点就记住</span></span><span class="ln"><span class="no">31</span>            <span class="k">for</span> (<span class="k">int</span> v : g.get(u)) {</span><span class="ln"><span class="no">32</span>                <span class="k">if</span> (dist[v] == -<span class="n">1</span>) {</span><span class="ln"><span class="no">33</span>                    dist[v] = dist[u] + <span class="n">1</span>;</span><span class="ln"><span class="no">34</span>                    q[tail++] = v;</span><span class="ln"><span class="no">35</span>                }</span><span class="ln"><span class="no">36</span>            }</span><span class="ln"><span class="no">37</span>        }</span><span class="ln"><span class="no">38</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{far, dist[far]};</span><span class="ln"><span class="no">39</span>    }</span><span class="ln"><span class="no">40</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int treeDiameter(int[][] edges) {", "        int n = edges.length + 1;   // 树：结点数 = 边数 + 1，编号 0..n-1", "        List<List<Integer>> g = new ArrayList<>();", "        for (int i = 0; i < n; i++) g.add(new ArrayList<>());", "        for (int[] e : edges) {", "            g.get(e[0]).add(e[1]);", "            g.get(e[1]).add(e[0]);", "        }", "        // 两次 BFS：任取 0 出发找到的最远点 u，必是直径的一端", "        int u = bfs(g, 0)[0];", "        // 从 u 再找最远，距离就是直径（边数）", "        return bfs(g, u)[1];", "    }", "", "    /** 从 s 出发 BFS，返回 {最远结点, 最远距离}；距离按边数计。 */", "    private int[] bfs(List<List<Integer>> g, int s) {", "        int n = g.size();", "        int[] dist = new int[n];", "        Arrays.fill(dist, -1);", "        dist[s] = 0;", "        int[] q = new int[n];", "        int head = 0, tail = 0;", "        q[tail++] = s;", "        int far = s;", "        while (head < tail) {", "            int u = q[head++];", "            if (dist[u] > dist[far]) far = u;   // 出现更远的结点就记住", "            for (int v : g.get(u)) {", "                if (dist[v] == -1) {", "                    dist[v] = dist[u] + 1;", "                    q[tail++] = v;", "                }", "            }", "        }", "        return new int[]{far, dist[far]};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1245 树的直径 —— 图解：复刻 Solution.java 的「两次 BFS」，在 3 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { edges: [[0, 1], [0, 2], [1, 3], [1, 4]] };
+
+function trace(input) {
+  var edges = input.edges;
+  var n = edges.length + 1;
+  var adj = [];
+  for (var i = 0; i < n; i++) adj.push([]);
+  edges.forEach(function (e) {
+    adj[e[0]].push(e[1]);
+    adj[e[1]].push(e[0]);
+  });
+  var frames = [];
+
+  var BFS1 = 'int u = bfs(g, 0)[0];';
+  var BFS2 = 'return bfs(g, u)[1];';
+
+  function bfs(s) {
+    var dist = [];
+    for (var i = 0; i < n; i++) dist.push(-1);
+    dist[s] = 0;
+    var q = [s], far = s;
+    for (var head = 0; head < q.length; head++) {
+      var u = q[head];
+      if (dist[u] > dist[far]) far = u;
+      for (var k = 0; k < adj[u].length; k++) {
+        var v = adj[u][k];
+        if (dist[v] === -1) { dist[v] = dist[u] + 1; q.push(v); }
+      }
+    }
+    return { far: far, dist: dist };
+  }
+
+  var r1 = bfs(0);
+  var u = r1.far;
+  var r2 = bfs(u);
+  var diameter = r2.dist[r2.far];
+
+  // 试着把树画成二叉层序（每个结点至多 2 个孩子）；不行就退回「按 BFS 序排成一排」
+  var binary = true;
+  var parent = [], pos = [], order = [0], level = [0];
+  parent[0] = -1; pos[0] = 0;
+  for (var head = 0; head < order.length && binary; head++) {
+    var node = order[head];
+    var kids = [];
+    for (var k = 0; k < adj[node].length; k++) {
+      if (adj[node][k] !== parent[node]) kids.push(adj[node][k]);
+    }
+    if (kids.length > 2) { binary = false; break; }
+    for (var s = 0; s < 2; s++) {
+      var kid = kids[s];
+      if (kid == null) level.push(null);
+      else { parent[kid] = node; pos[kid] = level.length; level.push(kid); order.push(kid); }
+    }
+  }
+  while (level.length && level[level.length - 1] === null) level.pop();
+
+  function graphPanel(labels) {
+    if (binary) {
+      var ls = labels.map(function (l) { return { at: pos[l.at], label: l.label, cls: l.cls }; });
+      return Viz.tree(level, { title: '这棵树（BFS 分层画出）', labels: ls });
+    }
+    var marks = {}, items = [];
+    labels.forEach(function (l) { marks[order.indexOf(l.at)] = l.cls === 'p-head' ? 'cur' : 'hit'; });
+    for (var i = 0; i < n; i++) items.push(String(order[i]));
+    return Viz.cells(items, { title: '结点（按 BFS 序，树太宽改用一排展示）', marks: marks });
+  }
+
+  function distPanel(dist, hotId) {
+    var rows = [];
+    for (var v = 0; v < n; v++) {
+      rows.push({ k: '结点 ' + v, v: String(dist[v]), cls: v === hotId ? 'hit' : '' });
+    }
+    return Viz.table('BFS 距离表（到出发点的边数）', rows, { hint: '（-1 不会出现：树全连通）' });
+  }
+
+  frames.push(Viz.frame(BFS1, '第一次 BFS 从 0 出发：最远是结点 ' + u + '（距 ' + r1.dist[u] + '），必是直径一端',
+    [graphPanel([{ at: 0, label: '出发', cls: 'p-head' }, { at: u, label: '最远', cls: 'p-cur' }]), distPanel(r1.dist, u)]));
+
+  frames.push(Viz.frame(BFS2, '第二次 BFS 从结点 ' + u + ' 出发，再找最远',
+    [graphPanel([{ at: u, label: '出发', cls: 'p-head' }]), distPanel(r1.dist, u)]));
+
+  frames.push(Viz.frame(BFS2, '从 ' + u + ' 最远到 ' + r2.far + '（距 ' + diameter + '）：这就是直径',
+    [graphPanel([{ at: u, label: '出发', cls: 'p-head' }, { at: r2.far, label: '最远', cls: 'p-cur' }]),
+      Viz.vars([{ name: '直径', v: String(diameter), cls: 'done' }])]));
+
+  return { frames: frames, result: diameter };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

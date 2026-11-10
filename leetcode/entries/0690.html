@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>员工的重要性 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 973 / 1159</span>
+  <nav class="pn"><a href="0163.html">上一篇</a><a href="0372.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">690. </span>员工的重要性</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 1</li><li class="algo">深度优先搜索/递归</li><li class="aux">哈希表</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">哈希表建 id→员工 索引，从目标 id DFS：每人的答案 = 自己的重要度 + 各下属递归之和。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>输入是无序数组，先花 O(n) 建 <code>id → 员工</code> 哈希表，之后找人不用再扫。</li><li><code>dfs(id)</code>：重要度先加上自己，再对每个直系下属递归累加，返回子树和。</li><li>重要度可能为负，但求和照常加，不需要特判。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="c">// 力扣判题机自带 Employee 的定义，这里补上以便本地编译</span></span><span class="ln"><span class="no">4</span><span class="k">class</span> <span class="t">Employee</span> {</span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="k">int</span> id;</span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="k">int</span> importance;</span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; subordinates;</span><span class="ln"><span class="no">8</span>}</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="k">int</span> getImportance(<span class="t">List</span>&lt;<span class="t">Employee</span>&gt; employees, <span class="k">int</span> id) {</span><span class="ln"><span class="no">12</span>        <span class="c">// 先把 id → 员工 建好索引，DFS 时 O(1) 找人</span></span><span class="ln"><span class="no">13</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Employee</span>&gt; map = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="t">Employee</span> e : employees) map.put(e.id, e);</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> dfs(map, id);</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="c">// 员工 id 连同整棵子树的重要度之和</span></span><span class="ln"><span class="no">19</span>    <span class="k">private</span> <span class="k">int</span> dfs(<span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Employee</span>&gt; map, <span class="k">int</span> id) {</span><span class="ln"><span class="no">20</span>        <span class="t">Employee</span> e = map.get(id);</span><span class="ln"><span class="no">21</span>        <span class="k">int</span> sum = e.importance;</span><span class="ln"><span class="no">22</span>        <span class="k">for</span> (<span class="k">int</span> sub : e.subordinates) {</span><span class="ln"><span class="no">23</span>            sum += dfs(map, sub);</span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> sum;</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你有一个保存员工信息的数据结构，它包含了员工唯一的 id ，重要度和直系下属的 id 。</p>
+
+<p>给定一个员工数组&nbsp;<code>employees</code>，其中：</p>
+
+<ul>
+	<li><code>employees[i].id</code> 是第&nbsp;<code>i</code>&nbsp;个员工的 ID。</li>
+	<li><code>employees[i].importance</code>&nbsp;是第&nbsp;<code>i</code>&nbsp;个员工的重要度。</li>
+	<li><code>employees[i].subordinates</code> 是第 <code>i</code> 名员工的直接下属的 ID 列表。</li>
+</ul>
+
+<p>给定一个整数&nbsp;<code>id</code>&nbsp;表示一个员工的 ID，返回这个员工和他所有下属的重要度的 <strong>总和</strong>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/555de7cdb83c.png" style="width: 400px; height: 258px;" /></strong></p>
+
+<pre>
+<strong>输入：</strong>employees = [[1,5,[2,3]],[2,3,[]],[3,3,[]]], id = 1
+<strong>输出：</strong>11
+<strong>解释：</strong>
+员工 1 自身的重要度是 5 ，他有两个直系下属 2 和 3 ，而且 2 和 3 的重要度均为 3 。因此员工 1 的总重要度是 5 + 3 + 3 = 11 。
+</pre>
+
+
+
+<p><strong>示例 2：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/ad4e37f5b732.png" style="width: 362px; height: 361px;" /></strong></p>
+
+<pre>
+<strong>输入：</strong>employees = [[1,2,[5]],[5,-3,[]]], id = 5
+<strong>输出：</strong>-3
+<strong>解释：</strong>员工 5 的重要度为 -3 并且没有直接下属。
+因此，员工 5 的总重要度为 -3。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= employees.length &lt;= 2000</code></li>
+	<li><code>1 &lt;= employees[i].id &lt;= 2000</code></li>
+	<li>所有的&nbsp;<code>employees[i].id</code>&nbsp;<strong>互不相同</strong>。</li>
+	<li><code>-100 &lt;= employees[i].importance &lt;= 100</code></li>
+	<li>一名员工最多有一名直接领导，并可能有多名下属。</li>
+	<li><code>employees[i].subordinates</code>&nbsp;中的 ID 都有效。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "// 力扣判题机自带 Employee 的定义，这里补上以便本地编译", "class Employee {", "    public int id;", "    public int importance;", "    public List<Integer> subordinates;", "}", "", "class Solution {", "    public int getImportance(List<Employee> employees, int id) {", "        // 先把 id → 员工 建好索引，DFS 时 O(1) 找人", "        Map<Integer, Employee> map = new HashMap<>();", "        for (Employee e : employees) map.put(e.id, e);", "        return dfs(map, id);", "    }", "", "    // 员工 id 连同整棵子树的重要度之和", "    private int dfs(Map<Integer, Employee> map, int id) {", "        Employee e = map.get(id);", "        int sum = e.importance;", "        for (int sub : e.subordinates) {", "            sum += dfs(map, sub);", "        }", "        return sum;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 690. 员工的重要性 —— 图解：从目标员工 DFS，每个结点完成后它的「子树和」向上汇总。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { employees: [[1, 5, [2, 3]], [2, 3, []], [3, 3, []]], id: 1 };
+
+function trace(input) {
+  var info = {};   // id -> { imp: 重要度, kids: 下属 id 列表 }
+  input.employees.forEach(function (e) { info[e[0]] = { imp: e[1], kids: e[2] }; });
+  var q = input.id;
+  var frames = [];
+  var status = {};   // id -> 'cur' | 'done'
+
+  // 以 q 为根的子树按 BFS 排出层序数组，供 Viz.tree 画
+  var level = [];
+  (function bfs() {
+    var queue = [q];
+    while (queue.length) {
+      var id = queue.shift();
+      level.push(id);
+      info[id].kids.forEach(function (k) { queue.push(k); });
+    }
+  })();
+
+  function treePanel() {
+    var marks = {}, labels = [];
+    level.forEach(function (id, idx) {
+      if (status[id]) marks[idx] = status[id];
+      labels.push({ at: idx, label: 'i=' + info[id].imp, cls: '' });
+    });
+    return Viz.tree(level, { title: '员工层级（圈内是 id，下方是重要度）', marks: marks, labels: labels });
+  }
+
+  function varsPanel(done, val) {
+    return Viz.vars([
+      { name: '刚完成', v: done == null ? '—' : '员工 ' + done },
+      { name: '它的子树和', v: val == null ? '—' : val, cls: 'chg' }
+    ]);
+  }
+
+  var START = 'return dfs(map, id);';
+  var END = 'return sum;';
+  var firedLeaf = false, firedInner = false;
+
+  function dfs(id) {
+    status[id] = 'cur';
+    var e = info[id];
+    var s = e.imp;
+    e.kids.forEach(function (k) { s += dfs(k); });
+    status[id] = 'done';
+    var leaf = e.kids.length === 0;
+    if (leaf && !firedLeaf) {
+      firedLeaf = true;
+      frames.push(Viz.frame(END, '叶子 ' + id + ' 完成：子树和就是自己的 ' + s, [treePanel(), varsPanel(id, s)]));
+    } else if (!leaf && !firedInner) {
+      firedInner = true;
+      frames.push(Viz.frame(END, '员工 ' + id + ' 汇总完下属：子树和 ' + s, [treePanel(), varsPanel(id, s)]));
+    }
+    return s;
+  }
+
+  frames.push(Viz.frame(START, '从员工 ' + q + ' 开始 DFS：先标记它，再深入下属', [treePanel(), varsPanel(null, null)]));
+  var ans = dfs(q);
+  frames.push(Viz.frame(START, '统计完：总重要度 = ' + ans, [treePanel(), varsPanel(q, ans)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

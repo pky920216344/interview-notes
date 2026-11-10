@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>水资源分配优化 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1130 / 1159</span>
+  <nav class="pn"><a href="lcp-04.html">上一篇</a><a href="1341.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1168. </span>水资源分配优化</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">图算法</li><li class="aux">并查集</li><li class="tag">并查集</li><li class="tag">图</li><li class="tag">kruskals-algorithm</li><li class="tag">最小生成树</li><li class="tag">prims-algorithm</li><li class="tag">堆（优先队列）</li><li class="tag">boruvkas-algorithm</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">加虚拟水源点 0，井费变成 0→i 的边权；所有边一起跑 Kruskal 最小生成树。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每个房子要么自建井、要么靠管道连到有水的房子：造虚拟水源 <code>0</code>，向房子 <code>i</code> 连权 <code>wells[i-1]</code> 的边。</li><li>「建井」和「铺管」统一成 <code>n+1</code> 个点的最小生成树：Kruskal 按边权从小到大试，并查集判环，能连就连。</li><li>选满 <code>n</code> 条边即停（<code>n+1</code> 个点的生成树恰 <code>n</code> 条边），答案为选中边权之和。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(E log E)，空间复杂度 O(n + m)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">Arrays</span>;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span>[] parent;</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="k">int</span> minCostToSupplyWater(<span class="k">int</span> n, <span class="k">int</span>[] wells, <span class="k">int</span>[][] pipes) {</span><span class="ln"><span class="no">7</span>        <span class="c">// 虚拟水源 0：建井费用是边 (0, i)；所有边一起跑 Kruskal 最小生成树</span></span><span class="ln"><span class="no">8</span>        <span class="k">int</span>[][] edges = <span class="k">new</span> <span class="k">int</span>[pipes.length + n][];</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; pipes.length; i++) edges[i] = pipes[i];</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) edges[pipes.length + i] = <span class="k">new</span> <span class="k">int</span>[]{<span class="n">0</span>, i + <span class="n">1</span>, wells[i]};</span><span class="ln"><span class="no">11</span>        <span class="t">Arrays</span>.sort(edges, (x, y) -&gt; x[<span class="n">2</span>] - y[<span class="n">2</span>]);</span><span class="ln"><span class="no">12</span>        parent = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt;= n; i++) parent[i] = i;</span><span class="ln"><span class="no">14</span>        <span class="k">int</span> ans = <span class="n">0</span>, picked = <span class="n">0</span>;</span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span>[] e : edges) {</span><span class="ln"><span class="no">16</span>            <span class="k">int</span> a = find(e[<span class="n">0</span>]), b = find(e[<span class="n">1</span>]);</span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (a == b) <span class="k">continue</span>;   <span class="c">// 两端已连通，这条边成环不要</span></span><span class="ln"><span class="no">18</span>            parent[a] = b;</span><span class="ln"><span class="no">19</span>            ans += e[<span class="n">2</span>];</span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (++picked == n) <span class="k">break</span>;   <span class="c">// n+1 个点的生成树只要 n 条边</span></span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span> </span><span class="ln"><span class="no">25</span>    <span class="k">private</span> <span class="k">int</span> find(<span class="k">int</span> x) {</span><span class="ln"><span class="no">26</span>        <span class="k">while</span> (parent[x] != x) {</span><span class="ln"><span class="no">27</span>            parent[x] = parent[parent[x]];   <span class="c">// 路径减半</span></span><span class="ln"><span class="no">28</span>            x = parent[x];</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> x;</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.Arrays;", "", "class Solution {", "    private int[] parent;", "", "    public int minCostToSupplyWater(int n, int[] wells, int[][] pipes) {", "        // 虚拟水源 0：建井费用是边 (0, i)；所有边一起跑 Kruskal 最小生成树", "        int[][] edges = new int[pipes.length + n][];", "        for (int i = 0; i < pipes.length; i++) edges[i] = pipes[i];", "        for (int i = 0; i < n; i++) edges[pipes.length + i] = new int[]{0, i + 1, wells[i]};", "        Arrays.sort(edges, (x, y) -> x[2] - y[2]);", "        parent = new int[n + 1];", "        for (int i = 0; i <= n; i++) parent[i] = i;", "        int ans = 0, picked = 0;", "        for (int[] e : edges) {", "            int a = find(e[0]), b = find(e[1]);", "            if (a == b) continue;   // 两端已连通，这条边成环不要", "            parent[a] = b;", "            ans += e[2];", "            if (++picked == n) break;   // n+1 个点的生成树只要 n 条边", "        }", "        return ans;", "    }", "", "    private int find(int x) {", "        while (parent[x] != x) {", "            parent[x] = parent[parent[x]];   // 路径减半", "            x = parent[x];", "        }", "        return x;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1168. 水资源分配优化 —— 图解：复刻 Solution.java 的「虚拟水源 + Kruskal」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 3, wells: [1, 2, 2], pipes: [[1, 2, 1], [2, 3, 1]] };
+
+function trace(input) {
+  var n = input.n;
+  var wells = input.wells;
+  var pipes = input.pipes;
+  var frames = [];
+
+  var A_WELL = 'edges[pipes.length + i] = new int[]{0, i + 1, wells[i]};';
+  var A_SORT = 'Arrays.sort(edges, (x, y) -> x[2] - y[2]);';
+  var A_ADD = 'ans += e[2];';
+  var A_RET = 'return ans;';
+
+  // 边列表：先管道后井边，与 Java 构造顺序一致
+  var edges = pipes.map(function (p) { return { a: p[0], b: p[1], w: p[2], well: false }; });
+  for (var i = 0; i < n; i++) edges.push({ a: 0, b: i + 1, w: wells[i], well: true });
+  var sorted = edges.slice();
+  sorted.sort(function (x, y) { return x.w - y.w; });   // 稳定排序，与 Java 相同的平局顺序
+
+  var pickedOf = {};   // 边对象 → 'done' | 'dim'
+  function pick(edge, cls) { pickedOf[edges.indexOf(edge)] = cls; }
+
+  function edgeLabel(e) {
+    return e.a + '–' + e.b;
+  }
+  function edgePanel() {
+    var rows = sorted.map(function (e) {
+      var idx = edges.indexOf(e);
+      return { k: edgeLabel(e), v: e.w + (e.well ? '（井）' : ''), cls: pickedOf[idx] || (e.well ? 'new' : '') };
+    });
+    return Viz.table('边（水源 0 的虚边 = 建井费）', rows);
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: '已选边数', v: pickedCount() + ' / ' + n },
+      { name: '总费用', v: totalCost }
+    ]);
+  }
+  var totalCost = 0;
+  function pickedCount() {
+    var c = 0;
+    Object.keys(pickedOf).forEach(function (k) { if (pickedOf[k] === 'done') c++; });
+    return c;
+  }
+  function snap(at, key) {
+    frames.push(Viz.frame(at, key, [edgePanel(), varsPanel()]));
+  }
+
+  snap(A_WELL, '给每口井虚一条水源边：建井费就是 0→i 的边权');
+  snap(A_SORT, '所有边按费用从小到大排队：能连就连，成环就跳过');
+
+  // 并查集 + Kruskal
+  var parent = [];
+  for (var p = 0; p <= n; p++) parent.push(p);
+  function find(x) {
+    while (parent[x] !== x) {
+      parent[x] = parent[parent[x]];
+      x = parent[x];
+    }
+    return x;
+  }
+  var picked = 0;
+  for (var t = 0; t < sorted.length; t++) {
+    var e = sorted[t];
+    var ra = find(e.a), rb = find(e.b);
+    if (ra === rb) {
+      pick(e, 'dim');
+      continue;
+    }
+    parent[ra] = rb;
+    totalCost += e.w;
+    pick(e, 'done');
+    picked++;
+    if (picked === n) {
+      snap(A_ADD, '选满 ' + n + ' 条边（' + (n + 1) + ' 个点）：生成树完成，停止');
+      break;
+    }
+  }
+  snap(A_RET, '总费用 = 各选中边权之和 = ' + totalCost);
+
+  return { frames: frames, result: totalCost };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

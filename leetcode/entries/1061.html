@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>按字典序排列最小的等效字符串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1004 / 1159</span>
+  <nav class="pn"><a href="mianshi-04-01.html">上一篇</a><a href="0860.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1061. </span>按字典序排列最小的等效字符串</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">并查集</li><li class="tag">并查集</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">并查集把 26 个字母按等价对连通；合并时永远让字典序小的当根，这样 find(x) 直接就是组内最小字母。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>s1[i]</code> 与 <code>s2[i]</code> 等价 → 两个字母 union；等价具有传递性，并查集天然维护传递闭包。</li><li>关键技巧：<code>union</code> 时把大的代表挂到小的代表下面，根永远是组内字典序最小的字母。</li><li><code>baseStr</code> 逐字符替换成 <code>find(c)</code>，拼起来就是答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + L·α)，空间复杂度 O(26)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="c">// parent[x]：字母 x 的代表；合并时永远把大的代表挂到小的代表下，根就是组内最小字母</span></span><span class="ln"><span class="no">3</span>    <span class="k">private</span> <span class="k">int</span>[] parent = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">4</span> </span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="t">String</span> smallestEquivalentString(<span class="t">String</span> s1, <span class="t">String</span> s2, <span class="t">String</span> baseStr) {</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; <span class="n">26</span>; i++) parent[i] = i;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s1.length(); i++) union(s1.charAt(i) - <span class="s">'a'</span>, s2.charAt(i) - <span class="s">'a'</span>);</span><span class="ln"><span class="no">8</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">char</span> c : baseStr.toCharArray()) sb.append((<span class="k">char</span>) (<span class="s">'a'</span> + find(c - <span class="s">'a'</span>)));</span><span class="ln"><span class="no">10</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="k">private</span> <span class="k">int</span> find(<span class="k">int</span> x) {</span><span class="ln"><span class="no">14</span>        <span class="k">while</span> (parent[x] != x) x = parent[x];</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> x;</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="k">private</span> <span class="k">void</span> union(<span class="k">int</span> a, <span class="k">int</span> b) {</span><span class="ln"><span class="no">19</span>        <span class="k">int</span> ra = find(a), rb = find(b);</span><span class="ln"><span class="no">20</span>        <span class="k">if</span> (ra == rb) <span class="k">return</span>;</span><span class="ln"><span class="no">21</span>        <span class="c">// 让字典序小的当根：之后 find 直接得到组内最小字母</span></span><span class="ln"><span class="no">22</span>        <span class="k">if</span> (ra &lt; rb) parent[rb] = ra; <span class="k">else</span> parent[ra] = rb;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给出长度相同的两个字符串<code>s1</code> 和&nbsp;<code>s2</code>&nbsp;，还有一个字符串&nbsp;<code>baseStr</code>&nbsp;。</p>
+
+<p>其中 &nbsp;<code>s1[i]</code>&nbsp;和&nbsp;<code>s2[i]</code>&nbsp; 是一组等价字符。</p>
+
+<ul>
+	<li>举个例子，如果&nbsp;<code>s1 = "abc"</code> 且&nbsp;<code>s2 = "cde"</code>，那么就有&nbsp;<code>'a' == 'c', 'b' == 'd', 'c' == 'e'</code>。</li>
+</ul>
+
+<p>等价字符遵循任何等价关系的一般规则：</p>
+
+<ul>
+	<li><strong>&nbsp;自反性&nbsp;</strong>：<code>'a' == 'a'</code></li>
+	<li>&nbsp;<strong>对称性&nbsp;</strong>：<code>'a' == 'b'</code> 则必定有 <code>'b' == 'a'</code></li>
+	<li>&nbsp;<strong>传递性</strong> ：<code>'a' == 'b'</code> 且 <code>'b' == 'c'</code> 就表明 <code>'a' == 'c'</code></li>
+</ul>
+
+<p>例如，&nbsp;<code>s1 = "abc"</code>&nbsp;和&nbsp;<code>s2 = "cde"</code>&nbsp;的等价信息和之前的例子一样，那么&nbsp;<code>baseStr = "eed"</code>&nbsp;, <code>"acd"</code>&nbsp;或&nbsp;<code>"aab"</code>，这三个字符串都是等价的，而&nbsp;<code>"aab"</code>&nbsp;是&nbsp;<code>baseStr</code>&nbsp;的按字典序最小的等价字符串</p>
+
+<p>利用<em>&nbsp;</em><code>s1</code>&nbsp;和&nbsp;<code>s2</code>&nbsp;的等价信息，找出并返回<em>&nbsp;</em><code>baseStr</code><em>&nbsp;</em>的按字典序排列最小的等价字符串。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s1 = "parker", s2 = "morris", baseStr = "parser"
+<strong>输出：</strong>"makkek"
+<strong>解释：</strong>根据 <code>A</code> 和 <code>B</code> 中的等价信息，我们可以将这些字符分为 <code>[m,p]</code>, <code>[a,o]</code>, <code>[k,r,s]</code>, <code>[e,i]</code> 共 4 组。每组中的字符都是等价的，并按字典序排列。所以答案是 <code>"makkek"</code>。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s1 = "hello", s2 = "world", baseStr = "hold"
+<strong>输出：</strong>"hdld"
+<strong>解释：</strong>根据 <code>A</code> 和 <code>B</code> 中的等价信息，我们可以将这些字符分为 <code>[h,w]</code>, <code>[d,e,o]</code>, <code>[l,r]</code> 共 3 组。所以只有 S 中的第二个字符 <code>'o'</code> 变成 <code>'d'</code>，最后答案为 <code>"hdld"</code>。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s1 = "leetcode", s2 = "programs", baseStr = "sourcecode"
+<strong>输出：</strong>"aauaaaaada"
+<strong>解释：</strong>我们可以把 <code>A</code> 和 <code>B</code> 中的等价字符分为 <code>[a,o,e,r,s,c]</code>, <code>[l,p]</code>, <code>[g,t]</code> 和 <code>[d,m]</code> 共 4 组，因此 <code>S</code> 中除了 <code>'u'</code> 和 <code>'d'</code> 之外的所有字母都转化成了 <code>'a'</code>，最后答案为 <code>"aauaaaaada"</code>。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s1.length, s2.length, baseStr &lt;= 1000</code></li>
+	<li><code>s1.length == s2.length</code></li>
+	<li>字符串<code>s1</code>,&nbsp;<code>s2</code>, and&nbsp;<code>baseStr</code>&nbsp;仅由从&nbsp;<code>'a'</code> 到&nbsp;<code>'z'</code>&nbsp;的小写英文字母组成。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    // parent[x]：字母 x 的代表；合并时永远把大的代表挂到小的代表下，根就是组内最小字母", "    private int[] parent = new int[26];", "", "    public String smallestEquivalentString(String s1, String s2, String baseStr) {", "        for (int i = 0; i < 26; i++) parent[i] = i;", "        for (int i = 0; i < s1.length(); i++) union(s1.charAt(i) - 'a', s2.charAt(i) - 'a');", "        StringBuilder sb = new StringBuilder();", "        for (char c : baseStr.toCharArray()) sb.append((char) ('a' + find(c - 'a')));", "        return sb.toString();", "    }", "", "    private int find(int x) {", "        while (parent[x] != x) x = parent[x];", "        return x;", "    }", "", "    private void union(int a, int b) {", "        int ra = find(a), rb = find(b);", "        if (ra == rb) return;", "        // 让字典序小的当根：之后 find 直接得到组内最小字母", "        if (ra < rb) parent[rb] = ra; else parent[ra] = rb;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1061. 按字典序排列最小的等效字符串 —— 图解：复刻 Solution.java 的并查集，在 4 个关键时刻拍快照。
+// 面板是「字母 → 组代表」表：合并时永远让字典序小的当根，所以根 = 组内最小字母。
+
+var STORY_INPUT = { s1: 'hello', s2: 'world', baseStr: 'hold' };
+
+function trace(input) {
+  var frames = [];
+  var parent = {};
+  for (var i = 0; i < 26; i++) parent[i] = i;
+
+  function find(x) { while (parent[x] !== x) x = parent[x]; return x; }
+
+  // 只展示出现过的字母，按字母序
+  var involved = {};
+  for (var i = 0; i < input.s1.length; i++) { involved[input.s1[i]] = true; involved[input.s2[i]] = true; }
+  for (var j = 0; j < input.baseStr.length; j++) involved[input.baseStr[j]] = true;
+  var letters = Object.keys(involved).sort();
+
+  function panel(title, hitPair) {
+    var rows = letters.map(function (ch) {
+      var x = ch.charCodeAt(0) - 97;
+      var root = String.fromCharCode(97 + find(x));
+      var cls = hitPair && (ch === hitPair[0] || ch === hitPair[1]) ? 'hit' : (root !== ch ? 'dim' : '');
+      return { k: ch, v: root, cls: cls };
+    });
+    return Viz.table(title, rows, { hint: 'dim = 挂在别的代表下面' });
+  }
+  function snap(at, key, title, hitPair) { frames.push(Viz.frame(at, key, [panel(title, hitPair)])); }
+
+  var UNION = 'if (ra < rb) parent[rb] = ra; else parent[ra] = rb;';
+  var MAP = "sb.append((char) ('a' + find(c - 'a')));";
+
+  for (var p = 0; p < input.s1.length; p++) {
+    var a = input.s1.charCodeAt(p) - 97, b = input.s2.charCodeAt(p) - 97;
+    var ra = find(a), rb = find(b);
+    if (ra !== rb) {
+      if (ra < rb) parent[rb] = ra; else parent[ra] = rb;
+      if (p === 0 || p === 2) {
+        var pair = [input.s1[p], input.s2[p]];
+        snap(UNION, '等价对「' + pair[0] + '== ' + pair[1] + '」：两组合并，字典序小的当新代表', '字母 → 组代表（黄 = 本步合并的两个字母）', pair);
+      }
+    }
+  }
+  snap(UNION, '所有等价对并完：每列的根就是该组最小字母', '字母 → 组代表（灰 = 非根）', null);
+
+  var out = '';
+  var mb = [];
+  for (var q = 0; q < input.baseStr.length; q++) {
+    var c = input.baseStr[q];
+    var root = String.fromCharCode(97 + find(c.charCodeAt(0) - 97));
+    out += root;
+    mb.push({ i: q, root: root, same: root === c });
+  }
+  var marks = {};
+  mb.forEach(function (m) { if (!m.same) marks[m.i] = 'chg'; });
+  var cells = Viz.cells(input.baseStr.split(''), { title: 'baseStr 逐字符换成组内最小字母', marks: marks });
+  frames.push(Viz.frame(MAP, '查询：baseStr 每个字符映射到所在组的最小字母 → ' + out, [cells, panel('字母 → 组代表', null)]));
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

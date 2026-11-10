@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最多可以参加的会议数目 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 501 / 1159</span>
+  <nav class="pn"><a href="0449.html">上一篇</a><a href="offer-19.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1353. </span>最多可以参加的会议数目</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">贪心</li><li class="aux">堆</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按开始日排序后逐天推进；已开始会议的结束日入小根堆，先弹掉过期的，再贪心参加结束最早的堆顶。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>贪心：每天在「已开始且未过期」的会议里<strong>参加结束最早的</strong>，把更晚结束的留给后面的日子。</li><li>会议按开始日排序，<code>day</code> 逐天推进；堆空且下一场会议还没开始时，<code>day</code> 直接跳到那个开始日。</li><li>每天三步：把堆顶结束日 <code>&lt; day</code> 的过期会议弹出 → 把今天开始的会议结束日入堆 → 弹出堆顶参加，<code>ans++</code>。</li><li>堆里始终是「今天还能参加」的会议；结束日越早越紧迫，所以堆顶就是当天该参加的那场。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> maxEvents(<span class="k">int</span>[][] events) {</span><span class="ln"><span class="no">5</span>        <span class="t">Arrays</span>.sort(events, (a, b) -&gt; a[<span class="n">0</span>] - b[<span class="n">0</span>]);   <span class="c">// 会议按开始日从早到晚</span></span><span class="ln"><span class="no">6</span>        <span class="c">// 小根堆存「已开始会议」的结束日，堆顶是最先结束的</span></span><span class="ln"><span class="no">7</span>        <span class="t">PriorityQueue</span>&lt;<span class="t">Integer</span>&gt; heap = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> ans = <span class="n">0</span>, i = <span class="n">0</span>, n = events.length, day = <span class="n">1</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">while</span> (i &lt; n || !heap.isEmpty()) {</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (heap.isEmpty() &amp;&amp; events[i][<span class="n">0</span>] &gt; day) day = events[i][<span class="n">0</span>];   <span class="c">// 空档直接跳到下一场会议开始</span></span><span class="ln"><span class="no">11</span>            <span class="k">while</span> (i &lt; n &amp;&amp; events[i][<span class="n">0</span>] &lt;= day) heap.add(events[i++][<span class="n">1</span>]);</span><span class="ln"><span class="no">12</span>            <span class="k">while</span> (!heap.isEmpty() &amp;&amp; heap.peek() &lt; day) heap.poll();   <span class="c">// 今天之前就结束的已过期</span></span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (!heap.isEmpty()) { heap.poll(); ans++; }   <span class="c">// 今天参加结束最早的那场</span></span><span class="ln"><span class="no">14</span>            day++;</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个数组&nbsp;<code>events</code>，其中&nbsp;<code>events[i] = [startDay<sub>i</sub>, endDay<sub>i</sub>]</code>&nbsp;，表示会议&nbsp;<code>i</code>&nbsp;开始于&nbsp;<code>startDay<sub>i</sub></code>&nbsp;，结束于&nbsp;<code>endDay<sub>i</sub></code>&nbsp;。</p>
+
+<p>你可以在满足&nbsp;<code>startDay<sub>i</sub>&nbsp;&lt;= d &lt;= endDay<sub>i</sub></code><sub>&nbsp;</sub>中的任意一天&nbsp;<code>d</code>&nbsp;参加会议&nbsp;<code>i</code>&nbsp;。在任意一天&nbsp;<code>d</code>&nbsp;中只能参加一场会议。</p>
+
+<p>请你返回你可以参加的&nbsp;<strong>最大&nbsp;</strong>会议数目。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/b0a73438d4b4.png" style="height: 267px; width: 400px;" /></p>
+
+<pre>
+<strong>输入：</strong>events = [[1,2],[2,3],[3,4]]
+<strong>输出：</strong>3
+<strong>解释：</strong>你可以参加所有的三个会议。
+安排会议的一种方案如上图。
+第 1 天参加第一个会议。
+第 2 天参加第二个会议。
+第 3 天参加第三个会议。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>events= [[1,2],[2,3],[3,4],[1,2]]
+<strong>输出：</strong>4
+</pre>
+
+
+
+<p><strong>提示：</strong>​​​​​​</p>
+
+<ul>
+	<li><code>1 &lt;= events.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>events[i].length == 2</code></li>
+	<li><code>1 &lt;= startDay<sub>i</sub>&nbsp;&lt;= endDay<sub>i</sub>&nbsp;&lt;= 10<sup>5</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int maxEvents(int[][] events) {", "        Arrays.sort(events, (a, b) -> a[0] - b[0]);   // 会议按开始日从早到晚", "        // 小根堆存「已开始会议」的结束日，堆顶是最先结束的", "        PriorityQueue<Integer> heap = new PriorityQueue<>();", "        int ans = 0, i = 0, n = events.length, day = 1;", "        while (i < n || !heap.isEmpty()) {", "            if (heap.isEmpty() && events[i][0] > day) day = events[i][0];   // 空档直接跳到下一场会议开始", "            while (i < n && events[i][0] <= day) heap.add(events[i++][1]);", "            while (!heap.isEmpty() && heap.peek() < day) heap.poll();   // 今天之前就结束的已过期", "            if (!heap.isEmpty()) { heap.poll(); ans++; }   // 今天参加结束最早的那场", "            day++;", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1353. 最多可以参加的会议数目 —— 图解：按开始日排序 + 小根堆贪心，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { events: [[1, 3], [1, 1], [2, 2], [1, 1]] };
+
+function trace(input) {
+  var ev = input.events.map(function (e) { return [e[0], e[1]]; });
+  ev.sort(function (a, b) { return a[0] - b[0]; });   // 与 Java 相同：按开始日排序
+  var n = ev.length;
+  var heap = [];   // 已开始会议的结束日，保持升序（等价于小根堆，堆顶在左端）
+  var ans = 0, i = 0, day = 1;
+  var frames = [];
+
+  function evPanel(marks, ptrI) {
+    var pointers = ptrI != null && ptrI < n ? [{ at: ptrI, label: '下一个', cls: 'p-cur' }] : [];
+    return Viz.cells(ev.map(function (e) { return e[0] + '~' + e[1]; }),
+      { title: '会议（按开始日排序）', marks: marks || {}, pointers: pointers });
+  }
+  function heapPanel(marks) {
+    return Viz.cells(heap.map(String), { title: '小根堆：已开始会议的结束日', marks: marks || {},
+      pointers: heap.length ? [{ at: 0, label: '堆顶', cls: 'p-cur' }] : [] });
+  }
+  function varsPanel() {
+    return Viz.vars([{ name: 'day', v: day }, { name: 'ans', v: ans }]);
+  }
+
+  while (i < n || heap.length) {
+    if (!heap.length && ev[i][0] > day) day = ev[i][0];          // 空档直接跳到下一场会议开始
+    var addFrom = i;
+    while (i < n && ev[i][0] <= day) heap.push(ev[i++][1]);
+    heap.sort(function (a, b) { return a - b; });
+    if (addFrom < i && day === 1 && ans === 0) {
+      var m1 = {};
+      for (var k = 0; k < addFrom; k++) m1[k] = 'dim';
+      for (k = addFrom; k < i; k++) m1[k] = 'new';
+      frames.push(Viz.frame('while (i < n && events[i][0] <= day) heap.add(events[i++][1]);',
+        '第 ' + day + ' 天：' + (i - addFrom) + ' 场会议开始，结束日都入堆', [evPanel(m1, i), heapPanel(), varsPanel()]));
+    }
+    if (heap.length && heap[0] < day) {
+      var mE = {};
+      for (var k = 0; k < i; k++) mE[k] = 'dim';
+      frames.push(Viz.frame('while (!heap.isEmpty() && heap.peek() < day) heap.poll();',
+        '第 ' + day + ' 天：堆顶结束日 ' + heap[0] + ' 已过期，弹出', [evPanel(mE, i), heapPanel({ 0: 'bad' }), varsPanel()]));
+    }
+    while (heap.length && heap[0] < day) heap.shift();           // 今天之前就结束的已过期
+    if (heap.length) {
+      heap.shift(); ans++;                                       // 今天参加结束最早的那场
+      var m2 = {};
+      for (k = 0; k < i; k++) m2[k] = 'dim';
+      if (ans === 1)
+        frames.push(Viz.frame('if (!heap.isEmpty()) { heap.poll(); ans++; }',
+          '第 ' + day + ' 天参加结束最早的那场，ans=1', [evPanel(m2, i), heapPanel(), varsPanel()]));
+    }
+    day++;
+  }
+
+  var m3 = {};
+  for (k = 0; k < n; k++) m3[k] = 'dim';
+  frames.push(Viz.frame('return ans;', day - 1 + ' 天里参加了 ' + ans + ' 场会议',
+    [evPanel(m3, null), heapPanel(), Viz.vars([{ name: 'ans', v: ans }])]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

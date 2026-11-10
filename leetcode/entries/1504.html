@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>统计全 1 子矩形 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1086 / 1159</span>
+  <nav class="pn"><a href="0612.html">上一篇</a><a href="1222.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1504. </span>统计全 1 子矩形</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">单调栈</li><li class="tag">栈</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">逐行维护「往上连续 1 的高度」柱状图，每行用单调栈 O(n) 数出以该行为底的矩形数并累加。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>h[j]</code> = 从当前行往上连续 1 的高度（遇 0 清零）；每个全 1 矩形恰好在它的底边行被统计一次，不重不漏。</li><li>右下角在 <code>(本行, j)</code> 的矩形数 <code>acc[j] = h[j]×(j−left) + acc[left]</code>：<code>left</code> 是栈里留下的、高度严格小于 <code>h[j]</code> 的最近列。</li><li>弹栈条件用 <code>≥</code>（栈内严格递增），保证 <code>h[left] &lt; h[j]</code>，公式里「本段新矩形」和「更左延伸」两部分才不重叠。</li><li>每行把 <code>acc</code> 求和累进答案，总体 O(mn)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> numSubmat(<span class="k">int</span>[][] mat) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = mat.length, n = mat[<span class="n">0</span>].length;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] h = <span class="k">new</span> <span class="k">int</span>[n];        <span class="c">// h[j]：从当前行往上连续 1 的高度</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) h[j] = mat[i][j] == <span class="n">1</span> ? h[j] + <span class="n">1</span> : <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>            ans += countRow(h);      <span class="c">// 加上以本行为底的全 1 矩形数</span></span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="c">// 单调递增栈：acc[j] = 右下角在第 j 列、以本行为底的全 1 矩形数</span></span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="k">int</span> countRow(<span class="k">int</span>[] h) {</span><span class="ln"><span class="no">15</span>        <span class="k">int</span> n = h.length, sum = <span class="n">0</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">int</span>[] stack = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> top = <span class="n">0</span>;                 <span class="c">// 栈里放下标，对应高度严格递增</span></span><span class="ln"><span class="no">18</span>        <span class="k">int</span>[] acc = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">19</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">20</span>            <span class="k">while</span> (top &gt; <span class="n">0</span> &amp;&amp; h[stack[top - <span class="n">1</span>]] &gt;= h[j]) top--;</span><span class="ln"><span class="no">21</span>            <span class="k">int</span> left = top &gt; <span class="n">0</span> ? stack[top - <span class="n">1</span>] : -<span class="n">1</span>;</span><span class="ln"><span class="no">22</span>            <span class="c">// 宽度 (j-left) 内每个高度 ≤ h[j] 的矩形都成立，再接上更左处已算好的 acc[left]</span></span><span class="ln"><span class="no">23</span>            acc[j] = h[j] * (j - left) + (left &gt;= <span class="n">0</span> ? acc[left] : <span class="n">0</span>);</span><span class="ln"><span class="no">24</span>            sum += acc[j];</span><span class="ln"><span class="no">25</span>            stack[top++] = j;</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> sum;</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个&nbsp;<code>m x n</code>&nbsp;的二进制矩阵&nbsp;<code>mat</code>&nbsp;，请你返回有多少个&nbsp;<strong>子矩形</strong>&nbsp;的元素全部都是 1 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/4b477e7863c2.jpg" /></p>
+
+<pre>
+<strong>输入：</strong>mat = [[1,0,1],[1,1,0],[1,1,0]]
+<strong>输出：</strong>13
+<strong>解释：
+</strong>有 <strong>6</strong>&nbsp;个 1x1 的矩形。
+有 <strong>2</strong> 个 1x2 的矩形。
+有 <strong>3</strong> 个 2x1 的矩形。
+有 <strong>1</strong> 个 2x2 的矩形。
+有 <strong>1</strong> 个 3x1 的矩形。
+矩形数目总共 = 6 + 2 + 3 + 1 + 1 = <strong>13</strong>&nbsp;。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img src="../assets/img/e88dc7cf2e27.jpg" /></p>
+
+<pre>
+<strong>输入：</strong>mat = [[0,1,1,0],[0,1,1,1],[1,1,1,0]]
+<strong>输出：</strong>24
+<strong>解释：</strong>
+有 <strong>8</strong> 个 1x1 的子矩形。
+有 <strong>5</strong> 个 1x2 的子矩形。
+有 <strong>2</strong> 个 1x3 的子矩形。
+有 <strong>4</strong> 个 2x1 的子矩形。
+有 <strong>2</strong> 个 2x2 的子矩形。
+有 <strong>2</strong> 个 3x1 的子矩形。
+有 <strong>1</strong> 个 3x2 的子矩形。
+矩形数目总共 = 8 + 5 + 2 + 4 + 2 + 2 + 1 = <strong>24</strong><strong> 。</strong>
+
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= m, n &lt;= 150</code></li>
+	<li><code>mat[i][j]</code>&nbsp;仅包含&nbsp;<code>0</code>&nbsp;或&nbsp;<code>1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int numSubmat(int[][] mat) {", "        int m = mat.length, n = mat[0].length;", "        int[] h = new int[n];        // h[j]：从当前行往上连续 1 的高度", "        int ans = 0;", "        for (int i = 0; i < m; i++) {", "            for (int j = 0; j < n; j++) h[j] = mat[i][j] == 1 ? h[j] + 1 : 0;", "            ans += countRow(h);      // 加上以本行为底的全 1 矩形数", "        }", "        return ans;", "    }", "", "    // 单调递增栈：acc[j] = 右下角在第 j 列、以本行为底的全 1 矩形数", "    private int countRow(int[] h) {", "        int n = h.length, sum = 0;", "        int[] stack = new int[n + 1];", "        int top = 0;                 // 栈里放下标，对应高度严格递增", "        int[] acc = new int[n];", "        for (int j = 0; j < n; j++) {", "            while (top > 0 && h[stack[top - 1]] >= h[j]) top--;", "            int left = top > 0 ? stack[top - 1] : -1;", "            // 宽度 (j-left) 内每个高度 ≤ h[j] 的矩形都成立，再接上更左处已算好的 acc[left]", "            acc[j] = h[j] * (j - left) + (left >= 0 ? acc[left] : 0);", "            sum += acc[j];", "            stack[top++] = j;", "        }", "        return sum;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1504. 统计全 1 子矩形 —— 图解：复刻 Solution.java 的「逐行高度 + 单调栈计 acc」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { mat: [[1, 0, 1], [1, 1, 0], [1, 1, 0]] };
+
+function trace(input) {
+  var mat = input.mat;
+  var m = mat.length, n = mat[0].length;
+  var h = [];
+  for (var j = 0; j < n; j++) h.push(0);
+  var ans = 0;
+  var frames = [];
+  var accSnaps = 0;
+  var rowSums = [];
+
+  function gridPanel(i, rect) {
+    var marks = {};
+    for (var r = 0; r < m; r++)
+      for (var c = 0; c < n; c++) {
+        if (r < i) marks[r + ',' + c] = 'dim';
+        else if (r === i) marks[r + ',' + c] = 'win';
+      }
+    if (rect)
+      for (var rr = rect[0]; rr <= rect[1]; rr++)
+        for (var cc = rect[2]; cc <= rect[3]; cc++) marks[rr + ',' + cc] = 'chg';
+    return Viz.grid(mat, { title: '矩阵（亮行 = 当前行）', marks: marks });
+  }
+  function hPanel(marks) {
+    return Viz.cells(h.map(String), { title: 'h[j]：从当前行往上连续 1 的高度', marks: marks || {} });
+  }
+
+  // 与 Java 相同的单调栈流程；顺带记录每列的 (left, acc[j])，供图解取最有代表性的一列
+  function countRow() {
+    var stack = [], acc = [], sum = 0, recs = [];
+    for (var jj = 0; jj < n; jj++) {
+      while (stack.length && h[stack[stack.length - 1]] >= h[jj]) stack.pop();
+      var left = stack.length ? stack[stack.length - 1] : -1;
+      acc[jj] = h[jj] * (jj - left) + (left >= 0 ? acc[left] : 0);
+      sum += acc[jj];
+      recs.push({ j: jj, left: left, accJ: acc[jj], hj: h[jj] });
+      stack.push(jj);
+    }
+    return { sum: sum, recs: recs };
+  }
+
+  for (var i = 0; i < m; i++) {
+    for (j = 0; j < n; j++) h[j] = mat[i][j] === 1 ? h[j] + 1 : 0;
+    var res = countRow();
+    rowSums.push(res.sum);
+    ans += res.sum;
+
+    if (i === 0) {
+      frames.push(Viz.frame('h[j] = mat[i][j] == 1 ? h[j] + 1 : 0;',
+        '逐行维护 h[j]：从这行往上连续 1 的高度，遇 0 清零', [gridPanel(i), hPanel({})]));
+    }
+    if ((i === 1 || i === 2) && accSnaps < 2) {
+      var bestR = null;                       // 讲公式：挑 acc 最大的那一列
+      for (j = 0; j < res.recs.length; j++)
+        if (res.recs[j].accJ > 0 && (bestR === null || res.recs[j].accJ >= bestR.accJ)) bestR = res.recs[j];
+      if (bestR) {
+        accSnaps++;
+        var r = bestR;
+        var hMarks = {};
+        for (var c = 0; c < n; c++) if (c <= r.left) hMarks[c] = 'dim';
+        for (c = r.left + 1; c < r.j; c++) hMarks[c] = 'win';
+        hMarks[r.j] = 'cur';
+        var rect = [i - r.hj + 1, i, r.left + 1, r.j];   // 以 (i, r.j) 为右下角的最大矩形
+        var vars = [
+          { name: '列 j', v: r.j, cls: 'cur' },
+          { name: 'left（栈里留下的）', v: r.left },
+          { name: 'h[j] × (j−left)', v: r.hj + ' × ' + (r.j - r.left) + ' = ' + r.hj * (r.j - r.left) },
+          { name: 'acc[left]', v: r.left >= 0 ? accLeftOf(res, r) : 0 },
+          { name: 'acc[j]', v: r.accJ, cls: 'chg' },
+          { name: '本行小计', v: res.sum }
+        ];
+        frames.push(Viz.frame('acc[j] = h[j] * (j - left) + (left >= 0 ? acc[left] : 0);',
+          accSnaps === 1 ? '右下角逐列数：acc[j] = h[j]×(j−left) + acc[left]'
+                         : '每一行都以「本行为底」数一遍，栈弹到更矮的列为止',
+          [gridPanel(i, rect), hPanel(hMarks), Viz.vars(vars)]));
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return ans;', '各行贡献 ' + rowSums.join('+') + ' = ' + ans + '，就是全部全 1 子矩形',
+    [gridPanel(m), Viz.vars([{ name: 'ans', v: ans, cls: 'done' }])]));
+  return { frames: frames, result: ans };
+
+  // acc[left] 的值：在 res.recs 里按列号取（left 一定 < j，已算过）
+  function accLeftOf(res, r) {
+    for (var k = 0; k < res.recs.length; k++) if (res.recs[k].j === r.left) return res.recs[k].accJ;
+    return 0;
+  }
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

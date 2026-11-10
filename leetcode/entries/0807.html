@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>保持城市天际线 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 555 / 1159</span>
+  <nav class="pn"><a href="0217.html">上一篇</a><a href="0980.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">807. </span>保持城市天际线</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">模拟</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">预计算每行最大、每列最大；每个格子最多能加到两者中较矮的那个，全部加上就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>从四个方向看，天际线其实只有两组：每行的最大值、每列的最大值。</li><li>格子 <code>(r,c)</code> 升高后既不能高过第 <code>r</code> 行的最大，也不能高过第 <code>c</code> 列的最大，上限是 <code>min(rowMax[r], colMax[c])</code>。</li><li>反过来这个上限一定能取到：把每格都加到 <code>min(rowMax, colMax)</code> 后，各行的最大格（本来就是行最大）不变，各列同理，天际线不动。</li><li>答案 = Σ <code>min(rowMax[r], colMax[c]) − grid[r][c]</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maxIncreaseKeepingSkyline(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = grid.length;</span><span class="ln"><span class="no">4</span>        <span class="c">// 四个方向的天际线其实只有两种：每行的最大（南北看）、每列的最大（东西看）</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] rowMax = <span class="k">new</span> <span class="k">int</span>[n], colMax = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; n; r++)</span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; n; c++) {</span><span class="ln"><span class="no">8</span>                rowMax[r] = <span class="t">Math</span>.max(rowMax[r], grid[r][c]);</span><span class="ln"><span class="no">9</span>                colMax[c] = <span class="t">Math</span>.max(colMax[c], grid[r][c]);</span><span class="ln"><span class="no">10</span>            }</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; n; r++)</span><span class="ln"><span class="no">13</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; n; c++)</span><span class="ln"><span class="no">14</span>                <span class="c">// 每格最高加到行、列天际线中较矮的那个，再多就顶穿某侧天际线</span></span><span class="ln"><span class="no">15</span>                ans += <span class="t">Math</span>.min(rowMax[r], colMax[c]) - grid[r][c];</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一座由 <code>n x n</code> 个街区组成的城市，每个街区都包含一座立方体建筑。给你一个下标从 <strong>0</strong> 开始的 <code>n x n</code> 整数矩阵 <code>grid</code> ，其中 <code>grid[r][c]</code> 表示坐落于 <code>r</code> 行 <code>c</code> 列的建筑物的 <strong>高度</strong> 。</p>
+
+<p>城市的 <strong>天际线</strong> 是从远处观察城市时，所有建筑物形成的外部轮廓。从东、南、西、北四个主要方向观测到的 <strong>天际线</strong> 可能不同。</p>
+
+<p>我们被允许为 <strong>任意数量的建筑物 </strong>的高度增加<strong> 任意增量（不同建筑物的增量可能不同）</strong> 。 高度为 <code>0</code> 的建筑物的高度也可以增加。然而，增加的建筑物高度 <strong>不能影响</strong> 从任何主要方向观察城市得到的 <strong>天际线</strong> 。</p>
+
+<p>在 <strong>不改变</strong> 从任何主要方向观测到的城市 <strong>天际线</strong> 的前提下，返回建筑物可以增加的 <strong>最大高度增量总和</strong> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/94ad1e47b58c.png" style="width: 700px; height: 603px;" />
+<pre>
+<strong>输入：</strong>grid = [[3,0,8,4],[2,4,5,7],[9,2,6,3],[0,3,1,0]]
+<strong>输出：</strong>35
+<strong>解释：</strong>建筑物的高度如上图中心所示。
+用红色绘制从不同方向观看得到的天际线。
+在不影响天际线的情况下，增加建筑物的高度：
+gridNew = [ [8, 4, 8, 7],
+            [7, 4, 7, 7],
+            [9, 4, 8, 7],
+            [3, 3, 3, 3] ]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>grid = [[0,0,0],[0,0,0],[0,0,0]]
+<strong>输出：</strong>0
+<strong>解释：</strong>增加任何建筑物的高度都会导致天际线的变化。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == grid.length</code></li>
+	<li><code>n == grid[r].length</code></li>
+	<li><code>2 &lt;= n &lt;= 50</code></li>
+	<li><code>0 &lt;= grid[r][c] &lt;= 100</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maxIncreaseKeepingSkyline(int[][] grid) {", "        int n = grid.length;", "        // 四个方向的天际线其实只有两种：每行的最大（南北看）、每列的最大（东西看）", "        int[] rowMax = new int[n], colMax = new int[n];", "        for (int r = 0; r < n; r++)", "            for (int c = 0; c < n; c++) {", "                rowMax[r] = Math.max(rowMax[r], grid[r][c]);", "                colMax[c] = Math.max(colMax[c], grid[r][c]);", "            }", "        int ans = 0;", "        for (int r = 0; r < n; r++)", "            for (int c = 0; c < n; c++)", "                // 每格最高加到行、列天际线中较矮的那个，再多就顶穿某侧天际线", "                ans += Math.min(rowMax[r], colMax[c]) - grid[r][c];", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 807 保持城市天际线 —— 图解：复刻 Solution.java 的「预计算行/列最大，每格加到 min」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[3, 0, 8, 4], [2, 4, 5, 7], [9, 2, 6, 3], [0, 3, 1, 0]] };
+
+function trace(input) {
+  var grid = input.grid, n = grid.length;
+  var rowMax = [], colMax = [], r, c;
+  for (r = 0; r < n; r++) { rowMax.push(0); colMax.push(0); }
+  for (r = 0; r < n; r++)
+    for (c = 0; c < n; c++) {
+      if (grid[r][c] > rowMax[r]) rowMax[r] = grid[r][c];
+      if (grid[r][c] > colMax[c]) colMax[c] = grid[r][c];
+    }
+  var frames = [];
+  var fired = { sky: false, up: false, cap: false };
+
+  function gridPanel(marks) {
+    return Viz.grid(grid.map(function (row) { return row.slice(); }),
+      { title: 'grid（每格是楼高）', marks: marks || {} });
+  }
+
+  function skyPanel(hitRow, hitCol) {
+    var rows = [
+      { k: '行最大', v: rowMax.join(', '), cls: hitRow != null ? 'hit' : '' },
+      { k: '列最大', v: colMax.join(', '), cls: hitCol != null ? 'hit' : '' }
+    ];
+    return Viz.table('两个方向的天际线', rows, { hint: '第 r 行 / 第 c 列的最高楼' });
+  }
+
+  function varsPanel(r, c, inc) {
+    return Viz.vars([
+      { name: '格子 (r,c)', v: '(' + r + ',' + c + ') 高 ' + grid[r][c] },
+      { name: 'min(行' + rowMax[r] + ', 列' + colMax[c] + ')', v: String(Math.min(rowMax[r], colMax[c])) },
+      { name: '增量', v: '+' + inc, cls: inc > 0 ? 'chg' : '' }
+    ]);
+  }
+
+  if (!fired.sky) {
+    fired.sky = true;
+    frames.push(Viz.frame('colMax[c] = Math.max(colMax[c], grid[r][c]);',
+      '先算两张天际线：每行的最大值、每列的最大值',
+      [gridPanel({}), skyPanel(null, null)]));
+  }
+
+  var ans = 0;
+  for (r = 0; r < n; r++)
+    for (c = 0; c < n; c++) {
+      var inc = Math.min(rowMax[r], colMax[c]) - grid[r][c];
+      var marks = {};
+      marks[r + ',' + c] = 'cur';
+      if (inc > 0 && !fired.up) {
+        fired.up = true;
+        frames.push(Viz.frame('ans += Math.min(rowMax[r], colMax[c]) - grid[r][c];',
+          '格子 (0,0) 的 3 能加到 min(行 8, 列 9)=8，增 5 也不顶穿天际线',
+          [gridPanel(marks), skyPanel(r, c), varsPanel(r, c, inc)]));
+      } else if (inc === 0 && fired.up && !fired.cap) {
+        fired.cap = true;
+        frames.push(Viz.frame('ans += Math.min(rowMax[r], colMax[c]) - grid[r][c];',
+          '格子 (0,2) 已经顶着 min(行 8, 列 8)=8，一丝都不能加',
+          [gridPanel(marks), skyPanel(r, c), varsPanel(r, c, inc)]));
+      }
+      ans += inc;
+    }
+
+  frames.push(Viz.frame('return ans;',
+    '每格都加到行列天际线中较矮者：总共加 ' + ans,
+    [gridPanel({}), skyPanel(null, null)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

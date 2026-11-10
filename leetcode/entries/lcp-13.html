@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>寻宝 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 675 / 1159</span>
+  <nav class="pn"><a href="0787.html">上一篇</a><a href="0219.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">LCP 13. </span>寻宝</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">动态规划</li><li class="aux">位运算</li><li class="aux">广度优先搜索</li><li class="tag">位运算</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">位掩码</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">关键点（S、O、M、T）两两最短路靠 BFS 预计算；搬石头触发机关的顺序用状压 DP：dp[mask][j] = 触发 mask 后站在 M_j 的最少步数。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每次只能搬一块石头，所以最优路线形如 <code>S → O → M → O → M … → T</code>：每触发一个机关，都得先绕到某个石堆。</li><li>从 S、每个 M、每个 O 各做一次 BFS（网格对称），得到关键点两两最短路。</li><li><code>start[j] = min_i d(S,O_i) + d(O_i,M_j)</code>；<code>cost[j][k] = min_i d(M_j,O_i) + d(O_i,M_k)</code>。</li><li>状压 DP：<code>dp[mask][j]</code> 从单机关起步，按 <code>dp[mask][j] + cost[j][k]</code> 转移到 <code>dp[mask∪{k}][k]</code>；答案 = <code>min_j dp[全][j] + d(M_j,T)</code>。</li><li>任一环节走不通（∞）就保持 ∞，最后全 ∞ 输出 <code>-1</code>；没有机关时直接 <code>d(S,T)</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(K²·O + 2^M·M²)（K = 关键点数，网格 BFS O(RC) 每次），空间复杂度 O(K·RC + 2^M·M)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">static</span> <span class="k">final</span> <span class="k">int</span> BIG = <span class="t">Integer</span>.MAX_VALUE / <span class="n">2</span>;</span><span class="ln"><span class="no">5</span>    <span class="k">static</span> <span class="k">final</span> <span class="k">int</span>[][] DIRS = {{<span class="n">1</span>, <span class="n">0</span>}, {-<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">0</span>, <span class="n">1</span>}, {<span class="n">0</span>, -<span class="n">1</span>}};</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="k">int</span> minimalSteps(<span class="t">String</span>[] maze) {</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> R = maze.length, C = maze[<span class="n">0</span>].length();</span><span class="ln"><span class="no">9</span>        <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; ms = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(), os = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">10</span>        <span class="k">int</span>[] s = <span class="k">null</span>, t = <span class="k">null</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; R; r++)</span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; C; c++) {</span><span class="ln"><span class="no">13</span>                <span class="k">char</span> ch = maze[r].charAt(c);</span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (ch == <span class="s">'S'</span>) s = <span class="k">new</span> <span class="k">int</span>[]{r, c};</span><span class="ln"><span class="no">15</span>                <span class="k">else</span> <span class="k">if</span> (ch == <span class="s">'T'</span>) t = <span class="k">new</span> <span class="k">int</span>[]{r, c};</span><span class="ln"><span class="no">16</span>                <span class="k">else</span> <span class="k">if</span> (ch == <span class="s">'M'</span>) ms.add(<span class="k">new</span> <span class="k">int</span>[]{r, c});</span><span class="ln"><span class="no">17</span>                <span class="k">else</span> <span class="k">if</span> (ch == <span class="s">'O'</span>) os.add(<span class="k">new</span> <span class="k">int</span>[]{r, c});</span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>        <span class="k">int</span> m = ms.size(), o = os.size();</span><span class="ln"><span class="no">20</span>        <span class="k">int</span>[][] dS = bfs(maze, s[<span class="n">0</span>], s[<span class="n">1</span>]);</span><span class="ln"><span class="no">21</span>        <span class="c">// 没有机关就不用搬石头：S 直走到 T</span></span><span class="ln"><span class="no">22</span>        <span class="k">if</span> (m == <span class="n">0</span>) <span class="k">return</span> dS[t[<span class="n">0</span>]][t[<span class="n">1</span>]] &gt;= BIG ? -<span class="n">1</span> : dS[t[<span class="n">0</span>]][t[<span class="n">1</span>]];</span><span class="ln"><span class="no">23</span>        <span class="c">// 关键点两两距离：从 S、每个 M、每个 O 各做一次 BFS</span></span><span class="ln"><span class="no">24</span>        <span class="k">int</span>[][][] dM = <span class="k">new</span> <span class="k">int</span>[m][R][C], dO = <span class="k">new</span> <span class="k">int</span>[o][R][C];</span><span class="ln"><span class="no">25</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) dM[i] = bfs(maze, ms.get(i)[<span class="n">0</span>], ms.get(i)[<span class="n">1</span>]);</span><span class="ln"><span class="no">26</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; o; i++) dO[i] = bfs(maze, os.get(i)[<span class="n">0</span>], os.get(i)[<span class="n">1</span>]);</span><span class="ln"><span class="no">27</span>        <span class="c">// start[j]：S 先到某个石堆、再搬石头到机关 j 的最少步数</span></span><span class="ln"><span class="no">28</span>        <span class="k">int</span>[] start = <span class="k">new</span> <span class="k">int</span>[m];</span><span class="ln"><span class="no">29</span>        <span class="t">Arrays</span>.fill(start, BIG);</span><span class="ln"><span class="no">30</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; m; j++)</span><span class="ln"><span class="no">31</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; o; i++)</span><span class="ln"><span class="no">32</span>                start[j] = <span class="t">Math</span>.min(start[j], safe(dS[os.get(i)[<span class="n">0</span>]][os.get(i)[<span class="n">1</span>]], dO[i][ms.get(j)[<span class="n">0</span>]][ms.get(j)[<span class="n">1</span>]]));</span><span class="ln"><span class="no">33</span>        <span class="c">// cost[j][k]：站在机关 j，回某个石堆搬石头再触发机关 k 的最少步数</span></span><span class="ln"><span class="no">34</span>        <span class="k">int</span>[][] cost = <span class="k">new</span> <span class="k">int</span>[m][m];</span><span class="ln"><span class="no">35</span>        <span class="k">for</span> (<span class="k">int</span>[] row : cost) <span class="t">Arrays</span>.fill(row, BIG);</span><span class="ln"><span class="no">36</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; m; j++)</span><span class="ln"><span class="no">37</span>            <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; m; k++) {</span><span class="ln"><span class="no">38</span>                <span class="k">if</span> (j == k) <span class="k">continue</span>;</span><span class="ln"><span class="no">39</span>                <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; o; i++)</span><span class="ln"><span class="no">40</span>                    cost[j][k] = <span class="t">Math</span>.min(cost[j][k], safe(dM[j][os.get(i)[<span class="n">0</span>]][os.get(i)[<span class="n">1</span>]], dO[i][ms.get(k)[<span class="n">0</span>]][ms.get(k)[<span class="n">1</span>]]));</span><span class="ln"><span class="no">41</span>            }</span><span class="ln"><span class="no">42</span>        <span class="c">// dp[mask][j]：已触发 mask 里的机关、正站在机关 j 的最少步数</span></span><span class="ln"><span class="no">43</span>        <span class="k">int</span>[][] dp = <span class="k">new</span> <span class="k">int</span>[<span class="n">1</span> &lt;&lt; m][m];</span><span class="ln"><span class="no">44</span>        <span class="k">for</span> (<span class="k">int</span>[] row : dp) <span class="t">Arrays</span>.fill(row, BIG);</span><span class="ln"><span class="no">45</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; m; j++) dp[<span class="n">1</span> &lt;&lt; j][j] = start[j];</span><span class="ln"><span class="no">46</span>        <span class="k">for</span> (<span class="k">int</span> mask = <span class="n">1</span>; mask &lt; <span class="n">1</span> &lt;&lt; m; mask++)</span><span class="ln"><span class="no">47</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; m; j++) {</span><span class="ln"><span class="no">48</span>                <span class="k">if</span> ((mask &amp; <span class="n">1</span> &lt;&lt; j) == <span class="n">0</span> || dp[mask][j] &gt;= BIG) <span class="k">continue</span>;</span><span class="ln"><span class="no">49</span>                <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; m; k++) {</span><span class="ln"><span class="no">50</span>                    <span class="k">if</span> ((mask &amp; <span class="n">1</span> &lt;&lt; k) != <span class="n">0</span> || cost[j][k] &gt;= BIG) <span class="k">continue</span>;</span><span class="ln"><span class="no">51</span>                    <span class="k">int</span> nxt = dp[mask][j] + cost[j][k];</span><span class="ln"><span class="no">52</span>                    <span class="k">if</span> (nxt &lt; dp[mask | <span class="n">1</span> &lt;&lt; k][k]) dp[mask | <span class="n">1</span> &lt;&lt; k][k] = nxt;</span><span class="ln"><span class="no">53</span>                }</span><span class="ln"><span class="no">54</span>            }</span><span class="ln"><span class="no">55</span>        <span class="k">int</span> ans = BIG;</span><span class="ln"><span class="no">56</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; m; j++)</span><span class="ln"><span class="no">57</span>            <span class="k">if</span> (dp[(<span class="n">1</span> &lt;&lt; m) - <span class="n">1</span>][j] &lt; BIG &amp;&amp; dM[j][t[<span class="n">0</span>]][t[<span class="n">1</span>]] &lt; BIG)</span><span class="ln"><span class="no">58</span>                ans = <span class="t">Math</span>.min(ans, dp[(<span class="n">1</span> &lt;&lt; m) - <span class="n">1</span>][j] + dM[j][t[<span class="n">0</span>]][t[<span class="n">1</span>]]);</span><span class="ln"><span class="no">59</span>        <span class="k">return</span> ans &gt;= BIG ? -<span class="n">1</span> : ans;</span><span class="ln"><span class="no">60</span>    }</span><span class="ln"><span class="no">61</span> </span><span class="ln"><span class="no">62</span>    <span class="c">/** a、b 都可达才返回 a+b，否则返回 BIG（防溢出）。 */</span></span><span class="ln"><span class="no">63</span>    <span class="k">private</span> <span class="k">int</span> safe(<span class="k">int</span> a, <span class="k">int</span> b) {</span><span class="ln"><span class="no">64</span>        <span class="k">return</span> a &gt;= BIG || b &gt;= BIG ? BIG : a + b;</span><span class="ln"><span class="no">65</span>    }</span><span class="ln"><span class="no">66</span> </span><span class="ln"><span class="no">67</span>    <span class="c">/** 从 (sr, sc) 出发的 BFS 距离场；墙和走不到的格子是 BIG。 */</span></span><span class="ln"><span class="no">68</span>    <span class="k">private</span> <span class="k">int</span>[][] bfs(<span class="t">String</span>[] maze, <span class="k">int</span> sr, <span class="k">int</span> sc) {</span><span class="ln"><span class="no">69</span>        <span class="k">int</span> R = maze.length, C = maze[<span class="n">0</span>].length();</span><span class="ln"><span class="no">70</span>        <span class="k">int</span>[][] d = <span class="k">new</span> <span class="k">int</span>[R][C];</span><span class="ln"><span class="no">71</span>        <span class="k">for</span> (<span class="k">int</span>[] row : d) <span class="t">Arrays</span>.fill(row, BIG);</span><span class="ln"><span class="no">72</span>        <span class="t">ArrayDeque</span>&lt;<span class="k">int</span>[]&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">73</span>        d[sr][sc] = <span class="n">0</span>;</span><span class="ln"><span class="no">74</span>        q.add(<span class="k">new</span> <span class="k">int</span>[]{sr, sc});</span><span class="ln"><span class="no">75</span>        <span class="k">while</span> (!q.isEmpty()) {</span><span class="ln"><span class="no">76</span>            <span class="k">int</span>[] cur = q.poll();</span><span class="ln"><span class="no">77</span>            <span class="k">for</span> (<span class="k">int</span>[] dir : DIRS) {</span><span class="ln"><span class="no">78</span>                <span class="k">int</span> nr = cur[<span class="n">0</span>] + dir[<span class="n">0</span>], nc = cur[<span class="n">1</span>] + dir[<span class="n">1</span>];</span><span class="ln"><span class="no">79</span>                <span class="k">if</span> (nr &lt; <span class="n">0</span> || nr &gt;= R || nc &lt; <span class="n">0</span> || nc &gt;= C || maze[nr].charAt(nc) == <span class="s">'#'</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">80</span>                <span class="k">if</span> (d[nr][nc] &gt; d[cur[<span class="n">0</span>]][cur[<span class="n">1</span>]] + <span class="n">1</span>) {</span><span class="ln"><span class="no">81</span>                    d[nr][nc] = d[cur[<span class="n">0</span>]][cur[<span class="n">1</span>]] + <span class="n">1</span>;</span><span class="ln"><span class="no">82</span>                    q.add(<span class="k">new</span> <span class="k">int</span>[]{nr, nc});</span><span class="ln"><span class="no">83</span>                }</span><span class="ln"><span class="no">84</span>            }</span><span class="ln"><span class="no">85</span>        }</span><span class="ln"><span class="no">86</span>        <span class="k">return</span> d;</span><span class="ln"><span class="no">87</span>    }</span><span class="ln"><span class="no">88</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>我们得到了一副藏宝图，藏宝图显示，在一个迷宫中存在着未被世人发现的宝藏。</p>
+
+<p>迷宫是一个二维矩阵，用一个字符串数组表示。它标识了唯一的入口（用 &#39;S&#39; 表示），和唯一的宝藏地点（用 &#39;T&#39; 表示）。但是，宝藏被一些隐蔽的机关保护了起来。在地图上有若干个机关点（用 &#39;M&#39; 表示），<strong>只有所有机关均被触发，才可以拿到宝藏。</strong></p>
+
+<p>要保持机关的触发，需要把一个重石放在上面。迷宫中有若干个石堆（用 &#39;O&#39; 表示），每个石堆都有<strong>无限</strong>个足够触发机关的重石。但是由于石头太重，我们一次只能搬<strong>一个</strong>石头到指定地点。</p>
+
+<p>迷宫中同样有一些墙壁（用 &#39;#&#39; 表示），我们不能走入墙壁。剩余的都是可随意通行的点（用 &#39;.&#39; 表示）。石堆、机关、起点和终点（无论是否能拿到宝藏）也是可以通行的。</p>
+
+<p>我们每步可以选择向上/向下/向左/向右移动一格，并且不能移出迷宫。搬起石头和放下石头不算步数。那么，从起点开始，我们最少需要多少步才能最后拿到宝藏呢？如果无法拿到宝藏，返回 -1 。</p>
+
+<p><strong>示例 1：</strong></p>
+
+<blockquote>
+<p>输入： [&quot;S#O&quot;, &quot;M..&quot;, &quot;M.T&quot;]</p>
+
+<p>输出：16</p>
+
+<p>解释：最优路线为： S-&gt;O, cost = 4, 去搬石头 O-&gt;第二行的M, cost = 3, M机关触发 第二行的M-&gt;O, cost = 3, 我们需要继续回去 O 搬石头。 O-&gt;第三行的M, cost = 4, 此时所有机关均触发 第三行的M-&gt;T, cost = 2，去T点拿宝藏。 总步数为16。 <img alt="图片.gif" src="../assets/img/65dce824eb95.gif" /></p>
+</blockquote>
+
+<p><strong>示例 2：</strong></p>
+
+<blockquote>
+<p>输入： [&quot;S#O&quot;, &quot;M.#&quot;, &quot;M.T&quot;]</p>
+
+<p>输出：-1</p>
+
+<p>解释：我们无法搬到石头触发机关</p>
+</blockquote>
+
+<p><strong>示例 3：</strong></p>
+
+<blockquote>
+<p>输入： [&quot;S#O&quot;, &quot;M.T&quot;, &quot;M..&quot;]</p>
+
+<p>输出：17</p>
+
+<p>解释：注意终点也是可以通行的。</p>
+</blockquote>
+
+<p><strong>限制：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= maze.length&nbsp;&lt;= 100</code></li>
+	<li><code>1 &lt;= maze[i].length&nbsp;&lt;= 100</code></li>
+	<li><code>maze[i].length == maze[j].length</code></li>
+	<li>S 和 T 有且只有一个</li>
+	<li>0 &lt;= M的数量 &lt;= 16</li>
+	<li>0 &lt;= O的数量 &lt;= 40，题目保证当迷宫中存在 M 时，一定存在至少一个 O 。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    static final int BIG = Integer.MAX_VALUE / 2;", "    static final int[][] DIRS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};", "", "    public int minimalSteps(String[] maze) {", "        int R = maze.length, C = maze[0].length();", "        List<int[]> ms = new ArrayList<>(), os = new ArrayList<>();", "        int[] s = null, t = null;", "        for (int r = 0; r < R; r++)", "            for (int c = 0; c < C; c++) {", "                char ch = maze[r].charAt(c);", "                if (ch == 'S') s = new int[]{r, c};", "                else if (ch == 'T') t = new int[]{r, c};", "                else if (ch == 'M') ms.add(new int[]{r, c});", "                else if (ch == 'O') os.add(new int[]{r, c});", "            }", "        int m = ms.size(), o = os.size();", "        int[][] dS = bfs(maze, s[0], s[1]);", "        // 没有机关就不用搬石头：S 直走到 T", "        if (m == 0) return dS[t[0]][t[1]] >= BIG ? -1 : dS[t[0]][t[1]];", "        // 关键点两两距离：从 S、每个 M、每个 O 各做一次 BFS", "        int[][][] dM = new int[m][R][C], dO = new int[o][R][C];", "        for (int i = 0; i < m; i++) dM[i] = bfs(maze, ms.get(i)[0], ms.get(i)[1]);", "        for (int i = 0; i < o; i++) dO[i] = bfs(maze, os.get(i)[0], os.get(i)[1]);", "        // start[j]：S 先到某个石堆、再搬石头到机关 j 的最少步数", "        int[] start = new int[m];", "        Arrays.fill(start, BIG);", "        for (int j = 0; j < m; j++)", "            for (int i = 0; i < o; i++)", "                start[j] = Math.min(start[j], safe(dS[os.get(i)[0]][os.get(i)[1]], dO[i][ms.get(j)[0]][ms.get(j)[1]]));", "        // cost[j][k]：站在机关 j，回某个石堆搬石头再触发机关 k 的最少步数", "        int[][] cost = new int[m][m];", "        for (int[] row : cost) Arrays.fill(row, BIG);", "        for (int j = 0; j < m; j++)", "            for (int k = 0; k < m; k++) {", "                if (j == k) continue;", "                for (int i = 0; i < o; i++)", "                    cost[j][k] = Math.min(cost[j][k], safe(dM[j][os.get(i)[0]][os.get(i)[1]], dO[i][ms.get(k)[0]][ms.get(k)[1]]));", "            }", "        // dp[mask][j]：已触发 mask 里的机关、正站在机关 j 的最少步数", "        int[][] dp = new int[1 << m][m];", "        for (int[] row : dp) Arrays.fill(row, BIG);", "        for (int j = 0; j < m; j++) dp[1 << j][j] = start[j];", "        for (int mask = 1; mask < 1 << m; mask++)", "            for (int j = 0; j < m; j++) {", "                if ((mask & 1 << j) == 0 || dp[mask][j] >= BIG) continue;", "                for (int k = 0; k < m; k++) {", "                    if ((mask & 1 << k) != 0 || cost[j][k] >= BIG) continue;", "                    int nxt = dp[mask][j] + cost[j][k];", "                    if (nxt < dp[mask | 1 << k][k]) dp[mask | 1 << k][k] = nxt;", "                }", "            }", "        int ans = BIG;", "        for (int j = 0; j < m; j++)", "            if (dp[(1 << m) - 1][j] < BIG && dM[j][t[0]][t[1]] < BIG)", "                ans = Math.min(ans, dp[(1 << m) - 1][j] + dM[j][t[0]][t[1]]);", "        return ans >= BIG ? -1 : ans;", "    }", "", "    /** a、b 都可达才返回 a+b，否则返回 BIG（防溢出）。 */", "    private int safe(int a, int b) {", "        return a >= BIG || b >= BIG ? BIG : a + b;", "    }", "", "    /** 从 (sr, sc) 出发的 BFS 距离场；墙和走不到的格子是 BIG。 */", "    private int[][] bfs(String[] maze, int sr, int sc) {", "        int R = maze.length, C = maze[0].length();", "        int[][] d = new int[R][C];", "        for (int[] row : d) Arrays.fill(row, BIG);", "        ArrayDeque<int[]> q = new ArrayDeque<>();", "        d[sr][sc] = 0;", "        q.add(new int[]{sr, sc});", "        while (!q.isEmpty()) {", "            int[] cur = q.poll();", "            for (int[] dir : DIRS) {", "                int nr = cur[0] + dir[0], nc = cur[1] + dir[1];", "                if (nr < 0 || nr >= R || nc < 0 || nc >= C || maze[nr].charAt(nc) == '#') continue;", "                if (d[nr][nc] > d[cur[0]][cur[1]] + 1) {", "                    d[nr][nc] = d[cur[0]][cur[1]] + 1;", "                    q.add(new int[]{nr, nc});", "                }", "            }", "        }", "        return d;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// LCP 13. 寻宝 —— 图解：复刻 Solution.java 的「关键点 BFS + 状压 DP」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { maze: ['S#O', 'M..', 'M.T'] };
+
+function trace(input) {
+  var maze = input.maze;
+  var R = maze.length, C = maze[0].length;
+  var BIG = 1073741823;
+  var s = null, t = null, ms = [], os = [];
+  for (var r = 0; r < R; r++)
+    for (var c = 0; c < C; c++) {
+      var ch = maze[r].charAt(c);
+      if (ch === 'S') s = [r, c];
+      else if (ch === 'T') t = [r, c];
+      else if (ch === 'M') ms.push([r, c]);
+      else if (ch === 'O') os.push([r, c]);
+    }
+  var m = ms.length, o = os.length;
+  var frames = [];
+
+  function bfs(sr, sc) {
+    var d = [];
+    for (var i = 0; i < R; i++) { var row = []; for (var j = 0; j < C; j++) row.push(BIG); d.push(row); }
+    d[sr][sc] = 0;
+    var q = [[sr, sc]], head = 0;
+    while (head < q.length) {
+      var cur = q[head++];
+      var dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+      for (var k = 0; k < 4; k++) {
+        var nr = cur[0] + dirs[k][0], nc = cur[1] + dirs[k][1];
+        if (nr < 0 || nr >= R || nc < 0 || nc >= C || maze[nr].charAt(nc) === '#') continue;
+        if (d[nr][nc] > d[cur[0]][cur[1]] + 1) {
+          d[nr][nc] = d[cur[0]][cur[1]] + 1;
+          q.push([nr, nc]);
+        }
+      }
+    }
+    return d;
+  }
+
+  function mapPanel(title) {
+    var rows = [], marks = {};
+    for (var i = 0; i < R; i++) {
+      var row = [];
+      for (var j = 0; j < C; j++) {
+        row.push(maze[i].charAt(j));
+        var ch2 = maze[i].charAt(j);
+        var cls = '';
+        if (ch2 === 'S') cls = 'hit';
+        else if (ch2 === 'T') cls = 'done';
+        else if (ch2 === 'M') cls = 'cur';
+        else if (ch2 === 'O') cls = 'new';
+        if (cls) marks[i + ',' + j] = cls;
+      }
+      rows.push(row);
+    }
+    return Viz.grid(rows, { title: title || '迷宫：S 起点 · T 宝藏 · M 机关 · O 石堆 · # 墙', marks: marks });
+  }
+
+  var dS = bfs(s[0], s[1]);
+
+  // —— 没有机关：S 直走到 T ——
+  if (m === 0) {
+    var direct = dS[t[0]][t[1]] >= BIG ? -1 : dS[t[0]][t[1]];
+    frames.push(Viz.frame('int[][] dS = bfs(maze, s[0], s[1]);',
+      '没有机关，不用搬石头：只需从 S 走到 T' + (direct < 0 ? '，但走不到' : '，最短 ' + direct + ' 步'),
+      [mapPanel(), Viz.vars([{ name: '机关数', v: 0 }, { name: 'S→T 步数', v: direct }])]));
+    frames.push(Viz.frame('return ans >= BIG ? -1 : ans;',
+      direct < 0 ? '没有通路 → 返回 -1' : '直接走到的步数就是答案',
+      [Viz.vars([{ name: '答案', v: direct }])]));
+    return { frames: frames, result: direct };
+  }
+
+  var dM = [], dO = [];
+  for (var i2 = 0; i2 < m; i2++) dM.push(bfs(ms[i2][0], ms[i2][1]));
+  for (var i3 = 0; i3 < o; i3++) dO.push(bfs(os[i3][0], os[i3][1]));
+
+  frames.push(Viz.frame('int[][] dS = bfs(maze, s[0], s[1]);',
+    '对每个关键点各做一次 BFS，得到关键点两两的最短步数（共 ' + m + ' 个机关、' + o + ' 个石堆）',
+    [mapPanel(), Viz.vars([{ name: '机关 M', v: m }, { name: '石堆 O', v: o }])]));
+
+  // start[j]：S 经某个石堆搬石头触发机关 j 的最少步数
+  var start = [];
+  for (var j = 0; j < m; j++) {
+    var vj = BIG;
+    for (var a = 0; a < o; a++) {
+      var d1 = dS[os[a][0]][os[a][1]], d2 = dO[a][ms[j][0]][ms[j][1]];
+      if (d1 < BIG && d2 < BIG) vj = Math.min(vj, d1 + d2);
+    }
+    start.push(vj);
+  }
+  frames.push(Viz.frame('int[] start = new int[m];',
+    '触发机关前必须先到石堆搬石头：start[j] = min_i d(S,O_i) + d(O_i,M_j)',
+    [Viz.table('start[j]：从 S 出发搬石头触发 M_j', start.map(function (v, idx) {
+      return { k: 'M' + (idx + 1), v: v >= BIG ? '∞' : String(v), cls: v >= BIG ? 'bad' : '' };
+    }), { hint: '∞ 表示这条链路走不通' })]));
+
+  // cost[j][k]：站在机关 j，回石堆再触发机关 k
+  var cost = [];
+  for (var jj = 0; jj < m; jj++) {
+    var row = [];
+    for (var kk = 0; kk < m; kk++) {
+      var vjk = BIG;
+      if (jj !== kk) {
+        for (var b = 0; b < o; b++) {
+          var d3 = dM[jj][os[b][0]][os[b][1]], d4 = dO[b][ms[kk][0]][ms[kk][1]];
+          if (d3 < BIG && d4 < BIG) vjk = Math.min(vjk, d3 + d4);
+        }
+      }
+      row.push(vjk);
+    }
+    cost.push(row);
+  }
+
+  // dp[mask][j]：已触发 mask、站在 M_j 的最少步数
+  var dp = [];
+  for (var sMask = 0; sMask < (1 << m); sMask++) { var row2 = []; for (var j2 = 0; j2 < m; j2++) row2.push(BIG); dp.push(row2); }
+  for (var j3 = 0; j3 < m; j3++) dp[1 << j3][j3] = start[j3];
+  var initRows = [];
+  for (var j4 = 0; j4 < m; j4++) initRows.push({ k: '触发 {M' + (j4 + 1) + '}，站 M' + (j4 + 1), v: start[j4] >= BIG ? '∞' : String(start[j4]), cls: '' });
+  frames.push(Viz.frame('int[][] dp = new int[1 << m][m];',
+    'dp[mask][j] = 触发 mask 里的机关后站在 M_j 的最少步数；起点是各 start[j]',
+    [Viz.table('dp 初始（只触发一个机关）', initRows)]));
+
+  for (var mask = 1; mask < (1 << m); mask++) {
+    for (var j5 = 0; j5 < m; j5++) {
+      if (((mask >> j5) & 1) === 0 || dp[mask][j5] >= BIG) continue;
+      for (var k5 = 0; k5 < m; k5++) {
+        if (((mask >> k5) & 1) !== 0 || cost[j5][k5] >= BIG) continue;
+        var nxt = dp[mask][j5] + cost[j5][k5];
+        if (nxt < dp[mask | (1 << k5)][k5]) dp[mask | (1 << k5)][k5] = nxt;
+      }
+    }
+  }
+
+  var full = (1 << m) - 1;
+  var finalRows = [];
+  var ans = BIG;
+  for (var j6 = 0; j6 < m; j6++) {
+    if (dp[full][j6] < BIG && dM[j6][t[0]][t[1]] < BIG) {
+      ans = Math.min(ans, dp[full][j6] + dM[j6][t[0]][t[1]]);
+      finalRows.push({ k: '全触发，站 M' + (j6 + 1), v: dp[full][j6] + ' + ' + dM[j6][t[0]][t[1]] + ' → T', cls: '' });
+    } else {
+      finalRows.push({ k: '全触发，站 M' + (j6 + 1), v: '∞', cls: 'bad' });
+    }
+  }
+  ans = ans >= BIG ? -1 : ans;
+
+  frames.push(Viz.frame('if (nxt < dp[mask | 1 << k][k]) dp[mask | 1 << k][k] = nxt;',
+    '转移：从 M_j 回石堆 i 再触发 M_k，一步加一个机关，直到触发满',
+    [Viz.table('cost[j][k]：M_j 经石堆到 M_k', cost.map(function (rowv, idx) {
+      return { k: 'M' + (idx + 1) + ' →', v: rowv.map(function (v) { return v >= BIG ? '∞' : String(v); }).join(' '), cls: '' };
+    }), { hint: '第 idx 行是站在 M(idx+1) 出发的花费' })]));
+
+  frames.push(Viz.frame('return ans >= BIG ? -1 : ans;',
+    ans < 0 ? '机关触发不齐或到不了 T → 返回 -1' : '全部触发后从最后的机关走到 T：最少 ' + ans + ' 步',
+    [Viz.table('dp 全触发层 + 走向 T', finalRows), Viz.vars([{ name: '答案', v: ans }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉树的最近公共祖先 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 883 / 1159</span>
+  <nav class="pn"><a href="0185.html">上一篇</a><a href="1650.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1644. </span>二叉树的最近公共祖先 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">深度优先搜索/递归</li><li class="aux">哈希表</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉树</li><li class="tag">lowest-common-ancestor</li><li class="tag">binary-lifting</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">先遍历一遍记下每个结点的父结点，把 p 的祖先链收进哈希集合；q 沿父链上走，第一个命中集合的就是最深的公共祖先；p、q 有谁不在树里直接返回 null。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>和 236 的唯一区别：p、q 可能不在树里。所以先<strong>全树遍历</strong>一遍，拿到父指针表的同时验证存在性，缺一个就返回 <code>null</code>。</li><li>从 <code>p</code> 沿父指针一路走到根，把沿途结点（含 <code>p</code>）收进 <code>HashSet</code>——这就是 p 的祖先链。</li><li><code>q</code> 同样往上走，<strong>第一个</strong>出现在集合里的结点就是最深的公共祖先；走到根都没命中才是不可能有（都在树里时不会发生）。</li><li>用显式栈而不是递归：这题树深可达 <code>10^5</code>，递归有爆栈风险。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="c">/*</span></span><span class="ln"><span class="no">2</span><span class="c"> * 力扣 1644 二叉树的最近公共祖先 II（会员题，本地验证即可，不提交）：</span></span><span class="ln"><span class="no">3</span><span class="c"> * 和 236 的区别是 p、q 可能根本不在树里，这时要返回 null。</span></span><span class="ln"><span class="no">4</span><span class="c"> */</span></span><span class="ln"><span class="no">5</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">TreeNode</span> lowestCommonAncestor(<span class="t">TreeNode</span> root, <span class="t">TreeNode</span> p, <span class="t">TreeNode</span> q) {</span><span class="ln"><span class="no">9</span>        <span class="t">Map</span>&lt;<span class="t">TreeNode</span>, <span class="t">TreeNode</span>&gt; parent = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();   <span class="c">// 结点 -&gt; 父结点</span></span><span class="ln"><span class="no">10</span>        <span class="t">Set</span>&lt;<span class="t">TreeNode</span>&gt; seen = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();               <span class="c">// 遍历到的所有结点，顺便验证 p、q 在不在</span></span><span class="ln"><span class="no">11</span>        <span class="t">Deque</span>&lt;<span class="t">TreeNode</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();         <span class="c">// 显式栈遍历，深树也不怕递归爆栈</span></span><span class="ln"><span class="no">12</span>        seen.add(root);</span><span class="ln"><span class="no">13</span>        stack.push(root);</span><span class="ln"><span class="no">14</span>        <span class="k">while</span> (!stack.isEmpty()) {</span><span class="ln"><span class="no">15</span>            <span class="t">TreeNode</span> node = stack.pop();</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (node.left != <span class="k">null</span>) { parent.put(node.left, node); seen.add(node.left); stack.push(node.left); }</span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (node.right != <span class="k">null</span>) { parent.put(node.right, node); seen.add(node.right); stack.push(node.right); }</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">if</span> (!seen.contains(p) || !seen.contains(q)) <span class="k">return</span> <span class="k">null</span>;   <span class="c">// 谁不在树里就没有 LCA</span></span><span class="ln"><span class="no">20</span>        <span class="t">Set</span>&lt;<span class="t">TreeNode</span>&gt; ancestors = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();          <span class="c">// p 的祖先链（含 p 自己）</span></span><span class="ln"><span class="no">21</span>        <span class="k">for</span> (<span class="t">TreeNode</span> a = p; a != <span class="k">null</span>; a = parent.get(a)) ancestors.add(a);</span><span class="ln"><span class="no">22</span>        <span class="k">for</span> (<span class="t">TreeNode</span> b = q; b != <span class="k">null</span>; b = parent.get(b)) {</span><span class="ln"><span class="no">23</span>            <span class="k">if</span> (ancestors.contains(b)) <span class="k">return</span> b;            <span class="c">// q 往上走，第一个命中 = 最深的公共祖先</span></span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> <span class="k">null</span>;                                        <span class="c">// 都在树里必有公共祖先，到不了这里</span></span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["/*", " * 力扣 1644 二叉树的最近公共祖先 II（会员题，本地验证即可，不提交）：", " * 和 236 的区别是 p、q 可能根本不在树里，这时要返回 null。", " */", "import java.util.*;", "", "class Solution {", "    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {", "        Map<TreeNode, TreeNode> parent = new HashMap<>();   // 结点 -> 父结点", "        Set<TreeNode> seen = new HashSet<>();               // 遍历到的所有结点，顺便验证 p、q 在不在", "        Deque<TreeNode> stack = new ArrayDeque<>();         // 显式栈遍历，深树也不怕递归爆栈", "        seen.add(root);", "        stack.push(root);", "        while (!stack.isEmpty()) {", "            TreeNode node = stack.pop();", "            if (node.left != null) { parent.put(node.left, node); seen.add(node.left); stack.push(node.left); }", "            if (node.right != null) { parent.put(node.right, node); seen.add(node.right); stack.push(node.right); }", "        }", "        if (!seen.contains(p) || !seen.contains(q)) return null;   // 谁不在树里就没有 LCA", "        Set<TreeNode> ancestors = new HashSet<>();          // p 的祖先链（含 p 自己）", "        for (TreeNode a = p; a != null; a = parent.get(a)) ancestors.add(a);", "        for (TreeNode b = q; b != null; b = parent.get(b)) {", "            if (ancestors.contains(b)) return b;            // q 往上走，第一个命中 = 最深的公共祖先", "        }", "        return null;                                        // 都在树里必有公共祖先，到不了这里", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1644. 二叉树的最近公共祖先 II —— 图解：复刻 Solution.java，拍「记父指针 / 验证存在 / 收集 p 祖先链 / q 上行命中」四帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [3, 5, 1, 6, 2, 0, 8, null, null, 7, 4], p: 7, q: 4 };
+
+function trace(input) {
+  var arr = input.root;
+  var frames = [];
+
+  // 力扣层序数组 -> 结点（idx 是层序下标）；树里的值互不相同，按值找结点
+  function build(a) {
+    if (!a.length || a[0] === null) return null;
+    var root = { idx: 0, val: a[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < a.length) {
+      var n = q.shift();
+      if (i < a.length) { if (a[i] !== null) { n.left = { idx: i, val: a[i], left: null, right: null }; q.push(n.left); } i++; }
+      if (i < a.length) { if (a[i] !== null) { n.right = { idx: i, val: a[i], left: null, right: null }; q.push(n.right); } i++; }
+    }
+    return root;
+  }
+  var root = build(arr);
+  var byIdx = {}, order = [];
+  (function walk(n) { if (n) { byIdx[n.idx] = n; order.push(n); walk(n.left); walk(n.right); } })(root);
+  function find(n, v) {
+    if (n === null) return null;
+    if (n.val === v) return n;
+    return find(n.left, v) || find(n.right, v);
+  }
+
+  // --- 与 Java 一致：显式栈遍历，记父指针 + 全部见过的结点 ---
+  var parent = {}, seen = {}, stack = [root], seenRoot = true;
+  seen[0] = true;
+  var popOrder = [];
+  while (stack.length) {
+    var node = stack.pop();
+    popOrder.push(node);
+    if (node.left) { parent[node.left.idx] = node; seen[node.left.idx] = true; stack.push(node.left); }
+    if (node.right) { parent[node.right.idx] = node; seen[node.right.idx] = true; stack.push(node.right); }
+  }
+  var p = find(root, input.p), q = find(root, input.q);
+  var pIn = p !== null && seen[p.idx], qIn = q !== null && seen[q.idx];
+
+  function treePanel(title, marks, labels) {
+    return Viz.tree(arr, { title: title, marks: marks || {}, labels: labels || [] });
+  }
+  function parentPanel(hitVal) {
+    var rows = order.map(function (n) {
+      var pv = n.idx === 0 ? '—（根）' : String(parent[n.idx].val);
+      return { k: String(n.val), v: pv, cls: n.val === hitVal ? 'hit' : '' };
+    });
+    return Viz.table('父指针表 parent：结点 → 父结点', rows);
+  }
+
+  // 帧 1：遍历整棵树，记父指针
+  frames.push(Viz.frame('stack.push(root);',
+    '先把整棵树遍历一遍：每个结点记下父结点（这题要自己造父指针）',
+    [treePanel('二叉树（从根出发收集全部结点）', {}, []),
+     parentPanel(null)]));
+
+  // 帧 2：验证 p、q 存在
+  var f2marks = {};
+  if (pIn) f2marks[p.idx] = 'win';
+  if (qIn) f2marks[q.idx] = 'new';
+  frames.push(Viz.frame('if (!seen.contains(p) || !seen.contains(q)) return null;',
+    pIn && qIn ? 'p = ' + input.p + '、q = ' + input.q + ' 都在树里，可以找 LCA'
+               : (pIn || qIn ? '有一个不在树里：直接返回 null' : 'p、q 都不在树里：返回 null'),
+    [treePanel('二叉树（黄：p；绿：q）', f2marks,
+      p ? [{ at: p.idx, label: 'p=' + input.p, cls: 'p-cur' }].concat(q && qIn ? [{ at: q.idx, label: 'q=' + input.q, cls: 'p-next' }] : []) : []),
+     Viz.vars([{ name: 'p 在树里', v: pIn ? '是' : '否', cls: pIn ? 'win' : 'bad' },
+               { name: 'q 在树里', v: qIn ? '是' : '否', cls: qIn ? 'win' : 'bad' }])]));
+
+  // 帧 3：收集 p 的祖先链（含 p 自己）
+  var chain = [], a = p;
+  while (a) { chain.push(a.idx); a = parent[a.idx] || null; }
+  var chainMarks = {};
+  chain.forEach(function (i) { chainMarks[i] = 'win'; });
+  frames.push(Viz.frame('for (TreeNode a = p; a != null; a = parent.get(a)) ancestors.add(a);',
+    pIn ? '把 p = ' + input.p + ' 的祖先链收进集合：' + chain.map(function (i) { return arr[i]; }).join(' → ')
+        : 'p 不在树里，这步不会执行（结果已是 null）',
+    [treePanel('二叉树（黄：p 的祖先链，含 p 自己）', chainMarks, []),
+     Viz.vars([{ name: 'p 的祖先链', v: chain.map(function (i) { return arr[i]; }).join(','), cls: 'win' }])]));
+
+  // 帧 4：q 沿父链上走，第一个命中的就是 LCA
+  var walkSeq = [], b = q, hit = null;
+  while (b) {
+    walkSeq.push(b.idx);
+    if (pIn && chain.indexOf(b.idx) >= 0) { hit = b; break; }
+    b = parent[b.idx] || null;
+  }
+  var hitMarks = {};
+  chain.forEach(function (i) { hitMarks[i] = 'win'; });
+  walkSeq.forEach(function (i) { if (!hit || i !== hit.idx) hitMarks[i] = hitMarks[i] === 'win' ? 'win' : 'dim'; });
+  if (hit) hitMarks[hit.idx] = 'done';
+  frames.push(Viz.frame('if (ancestors.contains(b)) return b;',
+    hit ? 'q = ' + input.q + ' 沿父链上走：' + walkSeq.map(function (i) { return arr[i]; }).join(' → ')
+        + (walkSeq.length > 1 ? '，走到 ' + hit.val + ' 首次命中祖先链 → LCA' : '，q 自己就在 p 的祖先链里')
+        : 'q 沿父链走到根也没命中 p 的祖先链 → 返回 null',
+    [treePanel('二叉树（绿：LCA；灰：q 走过但没命中）', hitMarks,
+      hit ? [{ at: hit.idx, label: 'LCA=' + hit.val, cls: 'p-cur' }] : []),
+     Viz.vars([{ name: 'LCA', v: hit ? hit.val : 'null', cls: 'done' }])]));
+
+  return { frames: frames, result: hit ? hit.val : null };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

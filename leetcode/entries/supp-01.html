@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>排序奇升偶降链表 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 135 / 1159</span>
+  <nav class="pn"><a href="0958.html">上一篇</a><a href="0135.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">补充题1. </span>排序奇升偶降链表</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 46</li><li class="algo">链表</li><li class="aux">双指针</li><li class="st-warn" title="codetop 自行补充的条目，力扣上没有对应页面，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">按位置拆成奇位链（升序）和偶位链（降序），偶链反转后也升序，两条归并即整条有序。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>奇数位结点本身升序、偶数位本身降序：按「位置」把链表摘成两条链（奇链、偶链），交替改 <code>next</code> 即可。</li><li>偶链是降序，反转一次变升序。</li><li>两条升序链归并（每次取较小的头）得到整体有序；全程只动指针，O(1) 额外空间。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="c">// 链表奇数位升序、偶数位降序：拆成两条链 → 反转偶链 → 归并</span></span><span class="ln"><span class="no">3</span>    <span class="k">public</span> <span class="t">ListNode</span> sort(<span class="t">ListNode</span> head) {</span><span class="ln"><span class="no">4</span>        <span class="k">if</span> (head == <span class="k">null</span> || head.next == <span class="k">null</span>) <span class="k">return</span> head;</span><span class="ln"><span class="no">5</span>        <span class="t">ListNode</span> odd = head, even = head.next;   <span class="c">// 奇位链、偶位链的头</span></span><span class="ln"><span class="no">6</span>        <span class="t">ListNode</span> o = odd, e = even;</span><span class="ln"><span class="no">7</span>        <span class="k">while</span> (e != <span class="k">null</span> &amp;&amp; e.next != <span class="k">null</span>) {</span><span class="ln"><span class="no">8</span>            <span class="c">// 交替摘结点：下一个奇位结点进奇链，下一个偶位结点进偶链</span></span><span class="ln"><span class="no">9</span>            o.next = e.next;</span><span class="ln"><span class="no">10</span>            o = o.next;</span><span class="ln"><span class="no">11</span>            e.next = o.next;</span><span class="ln"><span class="no">12</span>            e = e.next;</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="c">// 偶数长度时奇链尾还挂在偶链尾上，断开</span></span><span class="ln"><span class="no">15</span>        o.next = <span class="k">null</span>;</span><span class="ln"><span class="no">16</span>        <span class="c">// 偶链反转后也升序，两条归并</span></span><span class="ln"><span class="no">17</span>        <span class="k">return</span> merge(odd, reverse(even));</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span> </span><span class="ln"><span class="no">20</span>    <span class="c">// 反转链表：逐个头插到 prev 前面</span></span><span class="ln"><span class="no">21</span>    <span class="k">private</span> <span class="t">ListNode</span> reverse(<span class="t">ListNode</span> head) {</span><span class="ln"><span class="no">22</span>        <span class="t">ListNode</span> prev = <span class="k">null</span>;</span><span class="ln"><span class="no">23</span>        <span class="k">while</span> (head != <span class="k">null</span>) {</span><span class="ln"><span class="no">24</span>            <span class="t">ListNode</span> next = head.next;</span><span class="ln"><span class="no">25</span>            head.next = prev;</span><span class="ln"><span class="no">26</span>            prev = head;</span><span class="ln"><span class="no">27</span>            head = next;</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> prev;</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span> </span><span class="ln"><span class="no">32</span>    <span class="c">// 归并两条升序链：每次取较小的头接到 tail 后面</span></span><span class="ln"><span class="no">33</span>    <span class="k">private</span> <span class="t">ListNode</span> merge(<span class="t">ListNode</span> a, <span class="t">ListNode</span> b) {</span><span class="ln"><span class="no">34</span>        <span class="t">ListNode</span> dummy = <span class="k">new</span> <span class="t">ListNode</span>(<span class="n">0</span>), tail = dummy;</span><span class="ln"><span class="no">35</span>        <span class="k">while</span> (a != <span class="k">null</span> &amp;&amp; b != <span class="k">null</span>) {</span><span class="ln"><span class="no">36</span>            <span class="k">if</span> (a.val &lt;= b.val) { tail.next = a; a = a.next; }</span><span class="ln"><span class="no">37</span>            <span class="k">else</span> { tail.next = b; b = b.next; }</span><span class="ln"><span class="no">38</span>            tail = tail.next;</span><span class="ln"><span class="no">39</span>        }</span><span class="ln"><span class="no">40</span>        tail.next = a != <span class="k">null</span> ? a : b;</span><span class="ln"><span class="no">41</span>        <span class="k">return</span> dummy.next;</span><span class="ln"><span class="no">42</span>    }</span><span class="ln"><span class="no">43</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>这个条目没有现成的题面。</p></div></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    // 链表奇数位升序、偶数位降序：拆成两条链 → 反转偶链 → 归并", "    public ListNode sort(ListNode head) {", "        if (head == null || head.next == null) return head;", "        ListNode odd = head, even = head.next;   // 奇位链、偶位链的头", "        ListNode o = odd, e = even;", "        while (e != null && e.next != null) {", "            // 交替摘结点：下一个奇位结点进奇链，下一个偶位结点进偶链", "            o.next = e.next;", "            o = o.next;", "            e.next = o.next;", "            e = e.next;", "        }", "        // 偶数长度时奇链尾还挂在偶链尾上，断开", "        o.next = null;", "        // 偶链反转后也升序，两条归并", "        return merge(odd, reverse(even));", "    }", "", "    // 反转链表：逐个头插到 prev 前面", "    private ListNode reverse(ListNode head) {", "        ListNode prev = null;", "        while (head != null) {", "            ListNode next = head.next;", "            head.next = prev;", "            prev = head;", "            head = next;", "        }", "        return prev;", "    }", "", "    // 归并两条升序链：每次取较小的头接到 tail 后面", "    private ListNode merge(ListNode a, ListNode b) {", "        ListNode dummy = new ListNode(0), tail = dummy;", "        while (a != null && b != null) {", "            if (a.val <= b.val) { tail.next = a; a = a.next; }", "            else { tail.next = b; b = b.next; }", "            tail = tail.next;", "        }", "        tail.next = a != null ? a : b;", "        return dummy.next;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// supp-01. 排序奇升偶降链表 —— 图解：复刻 Solution.java 的「拆两条链 → 反转偶链 → 归并」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { head: [1, 8, 3, 6, 5, 4, 7] };
+
+function trace(input) {
+  var a = input.head;
+  var frames = [];
+
+  // 按 1 起始的位置拆：奇数位（下标偶数）升序，偶数位（下标奇数）降序
+  var odd = [], even = [];
+  for (var i = 0; i < a.length; i++) (i % 2 === 0 ? odd : even).push(a[i]);
+
+  function marks(list, cls) {
+    var m = {};
+    for (var i = 0; i < list.length; i++) m[i] = cls;
+    return m;
+  }
+  function short(list) {
+    return list.length <= 4 ? list.join(',') : list.slice(0, 4).join(',') + ',…';
+  }
+  function chain(list, title, m, extraEdges) {
+    return Viz.list(list, {
+      title: title,
+      marks: m || {},
+      edges: extraEdges || null,
+      nulls: extraEdges ? [] : (list.length ? [list.length - 1] : []),
+    });
+  }
+
+  // 帧 1：开局
+  var openMarks = {};
+  for (i = 0; i < a.length; i++) openMarks[i] = i % 2 === 0 ? 'win' : 'cur';
+  frames.push(Viz.frame('ListNode odd = head, even = head.next;',
+    '奇数位（青）升序、偶数位（黄）降序：按位置拆成两条链',
+    [chain(a, '原链表', openMarks)]));
+
+  // 帧 2：拆完
+  frames.push(Viz.frame('return merge(odd, reverse(even));',
+    '拆完：奇链 [' + short(odd) + '] 升序，偶链 [' + short(even) + '] 降序',
+    [chain(odd, '奇位链（升序）', marks(odd, 'win')), chain(even, '偶位链（降序）', marks(even, 'cur'))]));
+
+  // 帧 3：偶链反转
+  var rev = even.slice().reverse();
+  frames.push(Viz.frame('return merge(odd, reverse(even));',
+    '偶链反转后也升序：[' + short(rev) + ']',
+    [chain(odd, '奇位链（升序）', marks(odd, 'win')), chain(rev, '偶位链反转（升序）', marks(rev, 'new'))]));
+
+  // 帧 4：归并完成
+  var merged = [];
+  var x = 0, y = 0;
+  while (x < odd.length && y < rev.length) merged.push(odd[x] <= rev[y] ? odd[x++] : rev[y++]);
+  while (x < odd.length) merged.push(odd[x++]);
+  while (y < rev.length) merged.push(rev[y++]);
+  frames.push(Viz.frame('return dummy.next;',
+    '归并两条升序链 → 整条有序 [' + short(merged) + ']',
+    [chain(merged, '排序结果', marks(merged, 'done'))]));
+
+  return { frames: frames, result: merged };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

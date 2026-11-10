@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>黑名单中的随机数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1089 / 1159</span>
+  <nav class="pn"><a href="1647.html">上一篇</a><a href="0218.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">710. </span>黑名单中的随机数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">哈希表</li><li class="aux">设计</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">数学</li><li class="tag">二分查找</li><li class="tag">排序</li><li class="tag">随机化</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">白名单映射法：把 [0,m) 里的黑名单数映射到尾部 [m,n) 的补位白数，pick 抽 [0,m) 查表。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>白名单大小 <code>m = n − 黑名单个数</code>：pick 只在 <code>[0, m)</code> 里抽一次随机数，保证每个白数概率相同。</li><li><code>[m, n)</code> 段里的黑名单数不用管（抽不到）；<code>[0, m)</code> 段里的黑名单数依次映射到 <code>[m, n)</code> 里的非黑数（指针跳过黑的）。</li><li>两段的白名单个数恰好相等，映射必定一一对应；<code>pick</code> 查表：在映射里就换成补位白数，否则 <code>r</code> 本身就是白数。</li><li>只用黑名单集合，不开 O(n) 数组——n 可达 1e9。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 构造 O(B)，pick O(1)，空间复杂度 O(B)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span> m;                       <span class="c">// 白名单大小：pick 只在 [0, m) 里抽</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; map = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Random</span> rnd = <span class="k">new</span> <span class="t">Random</span>();</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">Solution</span>(<span class="k">int</span> n, <span class="k">int</span>[] blacklist) {</span><span class="ln"><span class="no">9</span>        m = n - blacklist.length;</span><span class="ln"><span class="no">10</span>        <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; black = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> b : blacklist) black.add(b);</span><span class="ln"><span class="no">12</span>        <span class="c">// 黑名单里落在 [0, m) 的数，依次映射到 [m, n) 里的非黑数上</span></span><span class="ln"><span class="no">13</span>        <span class="k">int</span> next = m;</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> b : blacklist) {</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (b &lt; m) {</span><span class="ln"><span class="no">16</span>                <span class="k">while</span> (black.contains(next)) next++;</span><span class="ln"><span class="no">17</span>                map.put(b, next++);</span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>    <span class="k">public</span> <span class="k">int</span> pick() {</span><span class="ln"><span class="no">23</span>        <span class="k">int</span> r = rnd.nextInt(m);</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> pickAt(r);</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span> </span><span class="ln"><span class="no">27</span>    <span class="c">// r 原位是黑名单数就用映射换成补位白数；否则 r 本身就是白数</span></span><span class="ln"><span class="no">28</span>    <span class="k">int</span> pickAt(<span class="k">int</span> r) {</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> map.getOrDefault(r, r);</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个整数 <code>n</code> 和一个 <strong>无重复</strong> 黑名单整数数组&nbsp;<code>blacklist</code>&nbsp;。设计一种算法，从 <code>[0, n - 1]</code> 范围内的任意整数中选取一个&nbsp;<strong>未加入&nbsp;</strong>黑名单&nbsp;<code>blacklist</code>&nbsp;的整数。任何在上述范围内且不在黑名单&nbsp;<code>blacklist</code>&nbsp;中的整数都应该有 <strong>同等的可能性</strong> 被返回。</p>
+
+<p>优化你的算法，使它最小化调用语言 <strong>内置</strong> 随机函数的次数。</p>
+
+<p>实现&nbsp;<code>Solution</code>&nbsp;类:</p>
+
+<ul>
+	<li><code>Solution(int n, int[] blacklist)</code>&nbsp;初始化整数 <code>n</code> 和被加入黑名单&nbsp;<code>blacklist</code>&nbsp;的整数</li>
+	<li><code>int pick()</code>&nbsp;返回一个范围为 <code>[0, n - 1]</code> 且不在黑名单&nbsp;<code>blacklist</code> 中的随机整数</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入</strong>
+["Solution", "pick", "pick", "pick", "pick", "pick", "pick", "pick"]
+[[7, [2, 3, 5]], [], [], [], [], [], [], []]
+<strong>输出</strong>
+[null, 0, 4, 1, 6, 1, 0, 4]
+
+<b>解释
+</b>Solution solution = new Solution(7, [2, 3, 5]);
+solution.pick(); // 返回0，任何[0,1,4,6]的整数都可以。注意，对于每一个pick的调用，
+                 // 0、1、4和6的返回概率必须相等(即概率为1/4)。
+solution.pick(); // 返回 4
+solution.pick(); // 返回 1
+solution.pick(); // 返回 6
+solution.pick(); // 返回 1
+solution.pick(); // 返回 0
+solution.pick(); // 返回 4
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 10<sup>9</sup></code></li>
+	<li><code>0 &lt;= blacklist.length &lt;= min(10<sup>5</sup>, n - 1)</code></li>
+	<li><code>0 &lt;= blacklist[i] &lt; n</code></li>
+	<li><code>blacklist</code>&nbsp;中所有值都 <strong>不同</strong></li>
+	<li>&nbsp;<code>pick</code>&nbsp;最多被调用&nbsp;<code>2 * 10<sup>4</sup></code>&nbsp;次</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private final int m;                       // 白名单大小：pick 只在 [0, m) 里抽", "    private final Map<Integer, Integer> map = new HashMap<>();", "    private final Random rnd = new Random();", "", "    public Solution(int n, int[] blacklist) {", "        m = n - blacklist.length;", "        Set<Integer> black = new HashSet<>();", "        for (int b : blacklist) black.add(b);", "        // 黑名单里落在 [0, m) 的数，依次映射到 [m, n) 里的非黑数上", "        int next = m;", "        for (int b : blacklist) {", "            if (b < m) {", "                while (black.contains(next)) next++;", "                map.put(b, next++);", "            }", "        }", "    }", "", "    public int pick() {", "        int r = rnd.nextInt(m);", "        return pickAt(r);", "    }", "", "    // r 原位是黑名单数就用映射换成补位白数；否则 r 本身就是白数", "    int pickAt(int r) {", "        return map.getOrDefault(r, r);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 710. 黑名单中的随机数 —— 图解：复刻 Solution.java 的「白名单映射法」，在 3 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 7, blacklist: [2, 3, 5], r: 2 };
+
+function trace(input) {
+  var n = input.n, blacklist = input.blacklist, r = input.r;
+  var m = n - blacklist.length;          // 白名单大小，对应 Java 的 m
+  var black = {};                        // 黑名单集合
+  blacklist.forEach(function (b) { black[b] = true; });
+  var map = {};                          // [0,m) 里的黑名单数 → 补位白数
+  var pairs = [];                        // 按映射顺序记录，表格才稳定
+  var next = m;
+  blacklist.forEach(function (b) {
+    if (b < m) {
+      while (black[next]) next++;
+      map[b] = next++;
+      pairs.push([b, map[b]]);
+    }
+  });
+  var out = (r in map) ? map[r] : r;
+  var frames = [];
+
+  // 数轴面板：0..n-1；bad=黑名单，new=映射补位，cur=抽中的 r，hit=最终返回
+  function axisPanel(marks, showM) {
+    var items = [];
+    for (var v = 0; v < n; v++) items.push(String(v));
+    var pointers = (showM && m < n) ? [{ at: m, label: 'm', cls: 'p-mid' }] : [];
+    return Viz.cells(items, { title: '[0, ' + n + ')：黑名单 ' + blacklist.join(',') + '，白名单大小 m = ' + m,
+      marks: marks || {}, pointers: pointers });
+  }
+  function mapPanel() {
+    return Viz.table('映射 map：黑名单原位 → 补位白数',
+      pairs.map(function (p) { return { k: String(p[0]), v: '→ ' + p[1], cls: '' }; }),
+      { hint: 'pick 抽到左边就换成右边' });
+  }
+
+  var marks1 = {};
+  blacklist.forEach(function (b) { marks1[b] = 'bad'; });
+  frames.push(Viz.frame('m = n - blacklist.length;',
+    '白名单大小 m = ' + n + ' − ' + blacklist.length + ' = ' + m + '：pick 只在 [0,' + m + ') 里抽',
+    [axisPanel(marks1, true)]));
+
+  if (pairs.length) {
+    var marks2 = {};
+    blacklist.forEach(function (b) { if (b < m) marks2[b] = 'bad'; });
+    pairs.forEach(function (p) { marks2[p[1]] = 'new'; });
+    frames.push(Viz.frame('map.put(b, next++);',
+      '[0,' + m + ') 里的黑名单数，依次映射到尾部 [m,' + n + ') 的非黑数',
+      [axisPanel(marks2, true), mapPanel()]));
+  }
+
+  var marks3 = {};
+  marks3[r] = 'cur';
+  if (out !== r) marks3[out] = 'hit'; else marks3[r] = 'hit';
+  frames.push(Viz.frame('return map.getOrDefault(r, r);',
+    out === r ? '抽到 r = ' + r + '：不在映射里，它本身就是白数，直接返回'
+              : '抽到 r = ' + r + '：原位在黑名单，查映射返回补位白数 ' + out,
+    [axisPanel(marks3, false), mapPanel(),
+     Viz.vars([{ name: 'r', v: r, cls: 'cur' }, { name: '返回', v: out, cls: 'done' }])]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

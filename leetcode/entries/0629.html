@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K 个逆序对数组 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 589 / 1159</span>
+  <nav class="pn"><a href="1162.html">上一篇</a><a href="1019.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">629. </span>K 个逆序对数组</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">动态规划</li><li class="aux">滑动窗口</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">递推 dp[i][j] = 上一行长 i 的滑动窗口和；用 run 增量维护窗口，O(nk) 收工。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>把新数 <code>i</code> 插进长度 <code>i-1</code> 的排列：插进从右数第 <code>t</code> 个空位就多 <code>t</code> 个逆序，<code>t ∈ [0, i-1]</code>。</li><li>所以 <code>dp[i][j] = Σ_{u=j-i+1..j} dp[i-1][u]</code>——上一行上长为 <code>i</code> 的窗口和，朴素算是 O(n²k)。</li><li>窗口随 <code>j</code> 右移一格：<code>run += dp[j]</code>、<code>run -= dp[j-i]</code>，均摊 O(1)，总 O(nk)。</li><li>全程取模；<code>k=0</code> 恒为 1（全升序），<code>k</code> 超过 <code>n(n-1)/2</code> 自然得 0。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(nk)，空间复杂度 O(k)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> kInversePairs(<span class="k">int</span> n, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="k">final</span> <span class="k">int</span> MOD = <span class="n">1_000_000_007</span>;</span><span class="ln"><span class="no">4</span>        <span class="c">// dp[j]：当前长度下恰有 j 个逆序对的排列数；长度 1 只有全升序 1 种</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[k + <span class="n">1</span>];</span><span class="ln"><span class="no">6</span>        dp[<span class="n">0</span>] = <span class="n">1</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">2</span>; i &lt;= n; i++) {</span><span class="ln"><span class="no">8</span>            <span class="k">int</span>[] ndp = <span class="k">new</span> <span class="k">int</span>[k + <span class="n">1</span>];</span><span class="ln"><span class="no">9</span>            <span class="c">// 新数 i 插进长度 i-1 的排列，往右空位插会新增 0..i-1 个逆序</span></span><span class="ln"><span class="no">10</span>            <span class="c">// 所以 ndp[j] = Σ_{u=j-i+1..j} dp[u]，用滑动窗口和维护</span></span><span class="ln"><span class="no">11</span>            <span class="k">long</span> run = <span class="n">0</span>;</span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt;= k; j++) {</span><span class="ln"><span class="no">13</span>                run += dp[j];              <span class="c">// 窗口右端扩进来 dp[j]</span></span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (j &gt;= i) run -= dp[j - i];   <span class="c">// 窗口左端滑出去 dp[j-i]</span></span><span class="ln"><span class="no">15</span>                ndp[j] = (<span class="k">int</span>) (run % MOD);</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>            dp = ndp;</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> dp[k];</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>对于一个整数数组&nbsp;<code>nums</code>，<strong>逆序对</strong>是一对满足 <code>0 &lt;= i &lt; j &lt; nums.length</code> 且&nbsp;<code>nums[i] &gt; nums[j]</code>的整数对&nbsp;<code>[i, j]</code>&nbsp;。</p>
+
+<p>给你两个整数&nbsp;<code>n</code>&nbsp;和&nbsp;<code>k</code>，找出所有包含从&nbsp;<code>1</code>&nbsp;到&nbsp;<code>n</code>&nbsp;的数字，且恰好拥有&nbsp;<code>k</code>&nbsp;个 <strong>逆序对</strong> 的不同的数组的个数。由于答案可能很大，只需要返回对 <code>10<sup>9</sup>&nbsp;+ 7</code> 取余的结果。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 3, k = 0
+<strong>输出：</strong>1
+<strong>解释：</strong>
+只有数组 [1,2,3] 包含了从1到3的整数并且正好拥有 0 个逆序对。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 3, k = 1
+<strong>输出：</strong>2
+<strong>解释：</strong>
+数组 [1,3,2] 和 [2,1,3] 都有 1 个逆序对。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 1000</code></li>
+	<li><code>0 &lt;= k &lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int kInversePairs(int n, int k) {", "        final int MOD = 1_000_000_007;", "        // dp[j]：当前长度下恰有 j 个逆序对的排列数；长度 1 只有全升序 1 种", "        int[] dp = new int[k + 1];", "        dp[0] = 1;", "        for (int i = 2; i <= n; i++) {", "            int[] ndp = new int[k + 1];", "            // 新数 i 插进长度 i-1 的排列，往右空位插会新增 0..i-1 个逆序", "            // 所以 ndp[j] = Σ_{u=j-i+1..j} dp[u]，用滑动窗口和维护", "            long run = 0;", "            for (int j = 0; j <= k; j++) {", "                run += dp[j];              // 窗口右端扩进来 dp[j]", "                if (j >= i) run -= dp[j - i];   // 窗口左端滑出去 dp[j-i]", "                ndp[j] = (int) (run % MOD);", "            }", "            dp = ndp;", "        }", "        return dp[k];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 629. K 个逆序对数组 —— 图解：逐行递推 DP 表，新行 = 上一行长 i 的滑动窗口和，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 4, k: 2 };
+
+function trace(input) {
+  var n = input.n, k = input.k;
+  var frames = [];
+  var MOD = 1000000007;
+  var rows = [];     // 已完成的行：rows[i-1] 是长度 i 那一行的 dp 数组
+  var currentRow = null;   // 正在递推的行，没算出的格是 null
+  var dp = [];
+  for (var z = 0; z <= k; z++) dp.push(0);
+  dp[0] = 1;
+  rows.push(dp.slice());
+
+  function gridPanel(marks, note) {
+    var out = [];
+    for (var r = 0; r < rows.length; r++) out.push(rows[r].map(String));
+    if (currentRow) out.push(currentRow.map(function (v) { return v === null ? '·' : String(v); }));
+    var mk = {};
+    var key;
+    for (key in (marks || {})) mk[key] = marks[key];
+    var colLabels = rows[0].map(function (_, j) { return String(j); });
+    return Viz.grid(out, {
+      title: 'dp 表：行 = 长度 i，列 = 逆序对数 j' + (note ? '（' + note + '）' : ''),
+      marks: mk,
+      rowLabels: out.map(function (_, r) { return 'i=' + (r + 1); }),
+      colLabels: colLabels
+    });
+  }
+  function snap(at, key, marks, note, varsItems) {
+    var panels = [gridPanel(marks, note)];
+    if (varsItems) panels.push(Viz.vars(varsItems));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  snap('dp[0] = 1;', '长度 1 只有 [1]：0 个逆序对，dp = [1, 0, 0]', null);
+
+  var sawWindow = false, sawSlide = false;
+  for (var i = 2; i <= n; i++) {
+    currentRow = [];
+    for (var z2 = 0; z2 <= k; z2++) currentRow.push(null);
+    var ndp = currentRow;
+    var run = 0;
+    var curRowIdx = rows.length;   // 正在算的行在网格里的下标
+    for (var j = 0; j <= k; j++) {
+      run = (run + dp[j]) % MOD;
+      if (!sawWindow) {
+        sawWindow = true;
+        var mk1 = {};
+        for (var u = Math.max(0, j - i + 1); u <= j; u++) mk1[(curRowIdx - 1) + ',' + u] = 'win';
+        mk1[curRowIdx + ',' + j] = 'cur';
+        snap('run += dp[j];',
+          '第 ' + i + ' 行：新数插进排列会新增 0..' + (i - 1) + ' 个逆序，ndp[j] = 上一行长 i 的窗口和',
+          mk1, '上一行的高亮就是窗口', [
+            { name: 'i / j', v: i + ' / ' + j },
+            { name: '窗口和 run', v: String(run), cls: 'chg' }
+          ]);
+      }
+      if (j >= i) {
+        run = ((run - dp[j - i]) % MOD + MOD) % MOD;
+        if (!sawSlide) {
+          sawSlide = true;
+          var mk2 = {};
+          mk2[(curRowIdx - 1) + ',' + (j - i)] = 'bad';
+          mk2[(curRowIdx - 1) + ',' + j] = 'new';
+          mk2[curRowIdx + ',' + j] = 'cur';
+          snap('if (j >= i) run -= dp[j - i];',
+            '窗口右移：加进 dp[' + j + ']、滑出 dp[' + (j - i) + ']，不必重算整段和',
+            mk2, null, [
+              { name: 'i / j', v: i + ' / ' + j },
+              { name: '加 dp[' + j + ']', v: String(dp[j]) },
+              { name: '减 dp[' + (j - i) + ']', v: String(dp[j - i]) }
+            ]);
+        }
+      }
+      ndp[j] = run % MOD;
+    }
+    dp = ndp;
+    rows.push(dp.slice());
+    currentRow = null;
+  }
+
+  var finalMarks = {};
+  finalMarks[(n - 1) + ',' + k] = 'done';
+  snap('return dp[k];', '递推到长度 n：dp[' + k + '] = ' + dp[k] + '，就是恰有 ' + k + ' 个逆序对的排列数', finalMarks, null,
+    [{ name: '答案', v: String(dp[k]), cls: 'done' }]);
+
+  return { frames: frames, result: dp[k] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

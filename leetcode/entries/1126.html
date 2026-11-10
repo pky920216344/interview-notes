@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>查询活跃业务 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 904 / 1159</span>
+  <nav class="pn"><a href="0630.html">上一篇</a><a href="1485.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1126. </span>查询活跃业务</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">SQL</li><li class="tag">数据库</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">「活跃」一行一个布尔（occurences &gt; avg_occurrences），按 business_id 把布尔加起来，加出来 &gt; 1 就是多类事件活跃。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>表里已给 <code>avg_occurrences</code>（同类事件的平均水平），<strong>不用自己算</strong>：<code>occurences &gt; avg_occurrences</code> 就是该行的活跃标记。</li><li>MySQL 里布尔表达式直接是 1/0，<code>SUM(flag)</code> 即该业务活跃的事件类数。</li><li><code>HAVING SUM(flag) &gt; 1</code> 过滤「多于一类事件活跃」的业务；GROUP BY business_id 即可。</li><li>陷阱：只活跃于一类的不算——阈值是「&gt; 1 类」不是「≥ 1 类」。</li></ul></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 SQL 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span>-- 1126（codetop 1126）查询活跃业务（MySQL，会员题）</span><span class="ln"><span class="no">2</span>-- 题意：Events(business_id, event_type, occurences, avg_occurrences)，avg_occurrences 是该 event_type 的平均水平。</span><span class="ln"><span class="no">3</span>-- 「活跃」：该业务在某类事件里 occurences &gt; avg_occurrences；报告在**多于一类**事件里活跃的 business_id。</span><span class="ln"><span class="no">4</span>-- MySQL 的布尔比较结果就是 1/0，可以直接 SUM。</span><span class="ln"><span class="no">5</span>SELECT t.business_id</span><span class="ln"><span class="no">6</span>FROM (</span><span class="ln"><span class="no">7</span>    SELECT business_id,</span><span class="ln"><span class="no">8</span>           (occurences &gt; avg_occurrences) AS flag</span><span class="ln"><span class="no">9</span>    FROM Events</span><span class="ln"><span class="no">10</span>) t</span><span class="ln"><span class="no">11</span>GROUP BY t.business_id</span><span class="ln"><span class="no">12</span>HAVING SUM(t.flag) &gt; 1;</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["-- 1126（codetop 1126）查询活跃业务（MySQL，会员题）", "-- 题意：Events(business_id, event_type, occurences, avg_occurrences)，avg_occurrences 是该 event_type 的平均水平。", "-- 「活跃」：该业务在某类事件里 occurences > avg_occurrences；报告在**多于一类**事件里活跃的 business_id。", "-- MySQL 的布尔比较结果就是 1/0，可以直接 SUM。", "SELECT t.business_id", "FROM (", "    SELECT business_id,", "           (occurences > avg_occurrences) AS flag", "    FROM Events", ") t", "GROUP BY t.business_id", "HAVING SUM(t.flag) > 1;"]}</script>
+
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

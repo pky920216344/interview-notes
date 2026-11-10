@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>合并石头的最低成本 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 581 / 1159</span>
+  <nav class="pn"><a href="0542.html">上一篇</a><a href="0721.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1000. </span>合并石头的最低成本</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">动态规划</li><li class="aux">前缀和/差分</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">前缀和</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">区间 DP 三维状态：dp[i][j][p] = 把 i..j 合成 p 堆的最低成本；p=1 时额外加整段和作为「最后一合」的成本。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先判可行性：每次合并少 <code>k-1</code> 堆，要剩 1 堆必须 <code>(n-1) % (k-1) == 0</code>，否则 <code>-1</code>。</li><li><code>dp[i][j][p] = min_t dp[i][t][p-1] + dp[t+1][j][1]</code>：右段先并成 1 堆再并进左边。</li><li><strong>关键</strong>：<code>dp[i][j][1] = dp[i][j][k] + sum(i..j)</code>——并成 1 堆的最后一下要搬整段石子，成本就是区间和（前缀和 O(1) 取）。</li><li>不可达状态存 <code>INF</code>，转移前判 <code>&lt; INF</code> 防止把垃圾值加进答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n³·k)，空间复杂度 O(n²·k)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> mergeStones(<span class="k">int</span>[] stones, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = stones.length;</span><span class="ln"><span class="no">4</span>        <span class="c">// 每次合并少 k-1 堆，最后要剩 1 堆：n-1 必须是 k-1 的倍数</span></span><span class="ln"><span class="no">5</span>        <span class="k">if</span> ((n - <span class="n">1</span>) % (k - <span class="n">1</span>) != <span class="n">0</span>) <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] pre = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];   <span class="c">// 前缀和：区间和 = pre[j+1] - pre[i]</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) pre[i + <span class="n">1</span>] = pre[i] + stones[i];</span><span class="ln"><span class="no">8</span>        <span class="k">final</span> <span class="k">int</span> INF = <span class="n">1</span> &lt;&lt; <span class="n">20</span>;</span><span class="ln"><span class="no">9</span>        <span class="c">// dp[i][j][p]：把 i..j 合成 p 堆的最低成本；不可达就是 INF</span></span><span class="ln"><span class="no">10</span>        <span class="k">int</span>[][][] dp = <span class="k">new</span> <span class="k">int</span>[n][n][k + <span class="n">1</span>];</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> j = i; j &lt; n; j++) {</span><span class="ln"><span class="no">13</span>                <span class="k">for</span> (<span class="k">int</span> p = <span class="n">1</span>; p &lt;= k; p++) dp[i][j][p] = INF;</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>            dp[i][i][<span class="n">1</span>] = <span class="n">0</span>;   <span class="c">// 单堆不用合</span></span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">for</span> (<span class="k">int</span> len = <span class="n">2</span>; len &lt;= n; len++) {</span><span class="ln"><span class="no">18</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i + len &lt;= n; i++) {</span><span class="ln"><span class="no">19</span>                <span class="k">int</span> j = i + len - <span class="n">1</span>;</span><span class="ln"><span class="no">20</span>                <span class="k">for</span> (<span class="k">int</span> p = <span class="n">2</span>; p &lt;= k; p++) {</span><span class="ln"><span class="no">21</span>                    <span class="k">int</span> best = INF;</span><span class="ln"><span class="no">22</span>                    <span class="k">for</span> (<span class="k">int</span> t = i; t &lt; j; t++) {</span><span class="ln"><span class="no">23</span>                        <span class="c">// 左边 i..t 合成 p-1 堆，右边 t+1..j 合成 1 堆</span></span><span class="ln"><span class="no">24</span>                        <span class="k">if</span> (dp[i][t][p - <span class="n">1</span>] &lt; INF &amp;&amp; dp[t + <span class="n">1</span>][j][<span class="n">1</span>] &lt; INF) {</span><span class="ln"><span class="no">25</span>                            best = <span class="t">Math</span>.min(best, dp[i][t][p - <span class="n">1</span>] + dp[t + <span class="n">1</span>][j][<span class="n">1</span>]);</span><span class="ln"><span class="no">26</span>                        }</span><span class="ln"><span class="no">27</span>                    }</span><span class="ln"><span class="no">28</span>                    dp[i][j][p] = best;</span><span class="ln"><span class="no">29</span>                }</span><span class="ln"><span class="no">30</span>                <span class="c">// k 堆并成 1 堆这一下的成本就是整段石子总数</span></span><span class="ln"><span class="no">31</span>                <span class="k">if</span> (dp[i][j][k] &lt; INF) dp[i][j][<span class="n">1</span>] = dp[i][j][k] + pre[j + <span class="n">1</span>] - pre[i];</span><span class="ln"><span class="no">32</span>            }</span><span class="ln"><span class="no">33</span>        }</span><span class="ln"><span class="no">34</span>        <span class="k">return</span> dp[<span class="n">0</span>][n - <span class="n">1</span>][<span class="n">1</span>];</span><span class="ln"><span class="no">35</span>    }</span><span class="ln"><span class="no">36</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>有 <code>n</code> 堆石头排成一排，第 <code>i</code> 堆中有&nbsp;<code>stones[i]</code>&nbsp;块石头。</p>
+
+<p>每次 <strong>移动</strong> 需要将 <strong>连续的</strong> <code>k</code> 堆石头合并为一堆，而这次移动的成本为这 <code>k</code> 堆中石头的总数。</p>
+
+<p>返回把所有石头合并成一堆的最低成本。如果无法合并成一堆，返回 <code>-1</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>stones = [3,2,4,1], K = 2
+<strong>输出：</strong>20
+<strong>解释：</strong>
+从 [3, 2, 4, 1] 开始。
+合并 [3, 2]，成本为 5，剩下 [5, 4, 1]。
+合并 [4, 1]，成本为 5，剩下 [5, 5]。
+合并 [5, 5]，成本为 10，剩下 [10]。
+总成本 20，这是可能的最小值。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>stones = [3,2,4,1], K = 3
+<strong>输出：</strong>-1
+<strong>解释：</strong>任何合并操作后，都会剩下 2 堆，我们无法再进行合并。所以这项任务是不可能完成的。.
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>stones = [3,5,1,2,6], K = 3
+<strong>输出：</strong>25
+<strong>解释：</strong>
+从 [3, 5, 1, 2, 6] 开始。
+合并 [5, 1, 2]，成本为 8，剩下 [3, 8, 6]。
+合并 [3, 8, 6]，成本为 17，剩下 [17]。
+总成本 25，这是可能的最小值。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == stones.length</code></li>
+	<li><code>1 &lt;= n &lt;= 30</code></li>
+	<li><code>1 &lt;= stones[i] &lt;= 100</code></li>
+	<li><code>2 &lt;= k &lt;= 30</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int mergeStones(int[] stones, int k) {", "        int n = stones.length;", "        // 每次合并少 k-1 堆，最后要剩 1 堆：n-1 必须是 k-1 的倍数", "        if ((n - 1) % (k - 1) != 0) return -1;", "        int[] pre = new int[n + 1];   // 前缀和：区间和 = pre[j+1] - pre[i]", "        for (int i = 0; i < n; i++) pre[i + 1] = pre[i] + stones[i];", "        final int INF = 1 << 20;", "        // dp[i][j][p]：把 i..j 合成 p 堆的最低成本；不可达就是 INF", "        int[][][] dp = new int[n][n][k + 1];", "        for (int i = 0; i < n; i++) {", "            for (int j = i; j < n; j++) {", "                for (int p = 1; p <= k; p++) dp[i][j][p] = INF;", "            }", "            dp[i][i][1] = 0;   // 单堆不用合", "        }", "        for (int len = 2; len <= n; len++) {", "            for (int i = 0; i + len <= n; i++) {", "                int j = i + len - 1;", "                for (int p = 2; p <= k; p++) {", "                    int best = INF;", "                    for (int t = i; t < j; t++) {", "                        // 左边 i..t 合成 p-1 堆，右边 t+1..j 合成 1 堆", "                        if (dp[i][t][p - 1] < INF && dp[t + 1][j][1] < INF) {", "                            best = Math.min(best, dp[i][t][p - 1] + dp[t + 1][j][1]);", "                        }", "                    }", "                    dp[i][j][p] = best;", "                }", "                // k 堆并成 1 堆这一下的成本就是整段石子总数", "                if (dp[i][j][k] < INF) dp[i][j][1] = dp[i][j][k] + pre[j + 1] - pre[i];", "            }", "        }", "        return dp[0][n - 1][1];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1000. 合并石头的最低成本 —— 图解：区间 DP，每次「k 堆并 1 堆」的成本都是整段石子数，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { stones: [3, 2, 4, 1], k: 2 };
+
+function trace(input) {
+  var stones = input.stones, k = input.k;
+  var n = stones.length;
+  var frames = [];
+  var INF = 1 << 20;
+
+  var pre = [0];
+  for (var s = 0; s < n; s++) pre.push(pre[s] + stones[s]);
+
+  var feasible = n === 0 ? true : (n - 1) % (k - 1) === 0;
+  var dp = [];
+  for (var i = 0; i < n; i++) {
+    dp.push([]);
+    for (var j = 0; j < n; j++) {
+      var cell = [];
+      for (var p = 0; p <= k; p++) cell.push(INF);
+      dp[i].push(cell);
+    }
+    dp[i][i][1] = 0;
+  }
+
+  function stonesPanel(marks) {
+    var mk = {};
+    var key;
+    for (key in (marks || {})) mk[key] = marks[key];
+    return Viz.cells(stones.map(String), { title: '石堆 stones', marks: mk });
+  }
+  function dpPanel(cur, marks) {
+    var rows = [], mk = {};
+    var key2;
+    for (key2 in (marks || {})) mk[key2] = marks[key2];
+    for (var a = 0; a < n; a++) {
+      var row = [];
+      for (var b = 0; b < n; b++) {
+        var v = a <= b ? dp[a][b][1] : null;
+        row.push(v === null ? '' : (v >= INF ? '·' : String(v)));
+      }
+      rows.push(row);
+    }
+    if (cur) mk[cur[0] + ',' + cur[1]] = 'cur';
+    return Viz.grid(rows, {
+      title: 'dp[i][j][1]：把 i..j 并成 1 堆的最低成本（· = 不可达）',
+      marks: mk,
+      rowLabels: rows.map(function (_, r) { return 'i=' + r; }),
+      colLabels: n ? rows[0].map(function (_, c) { return 'j=' + c; }) : null
+    });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+  function snap(at, key, stoneMarks, cur, gridMarks, varsItems) {
+    var panels = [stonesPanel(stoneMarks), dpPanel(cur, gridMarks)];
+    if (varsItems) panels.push(varsPanel(varsItems));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  snap('if ((n - 1) % (k - 1) != 0) return -1;',
+    '开局：每次合并少 k-1 堆，(n-1)=' + (n - 1) + ' 是 k-1=' + (k - 1) + ' 的倍数才可合并成 1 堆',
+    {}, null, null, [
+      { name: 'n / k', v: n + ' / ' + k },
+      { name: '可行', v: feasible ? '是' : '否 → -1', cls: feasible ? '' : 'bad' }
+    ]);
+
+  var sawSplit = false, sawMerge = false;
+  if (feasible) {
+    for (var len = 2; len <= n; len++) {
+      for (var a2 = 0; a2 + len <= n; a2++) {
+        var b2 = a2 + len - 1;
+        for (var pp = 2; pp <= k; pp++) {
+          var bestVal = INF;
+          for (var t = a2; t < b2; t++) {
+            if (dp[a2][t][pp - 1] < INF && dp[t + 1][b2][1] < INF) {
+              bestVal = Math.min(bestVal, dp[a2][t][pp - 1] + dp[t + 1][b2][1]);
+              if (!sawSplit) {
+                sawSplit = true;
+                var sm = {};
+                for (var x = a2; x <= t; x++) sm[x] = 'win';
+                for (var y = t + 1; y <= b2; y++) sm[y] = 'new';
+                snap('best = Math.min(best, dp[i][t][p - 1] + dp[t + 1][j][1]);',
+                  '区间 [' + a2 + ',' + b2 + '] 枚举分割点：左段合成 ' + (pp - 1) + ' 堆、右段合成 1 堆',
+                  sm, null, null, [
+                    { name: '区间', v: '[' + a2 + ', ' + b2 + ']' },
+                    { name: '分割点 t', v: String(t) },
+                    { name: '左成本 + 右成本', v: dp[a2][t][pp - 1] + ' + ' + dp[t + 1][b2][1], cls: 'chg' }
+                  ]);
+              }
+            }
+          }
+          dp[a2][b2][pp] = bestVal;
+        }
+        if (dp[a2][b2][k] < INF) {
+          var sum = pre[b2 + 1] - pre[a2];
+          dp[a2][b2][1] = dp[a2][b2][k] + sum;
+          if (!sawMerge) {
+            sawMerge = true;
+            var sm2 = {};
+            for (var z = a2; z <= b2; z++) sm2[z] = 'chg';
+            snap('if (dp[i][j][k] < INF) dp[i][j][1] = dp[i][j][k] + pre[j + 1] - pre[i];',
+              '并成 1 堆那一下的成本 = 整段石子数 ' + sum + '：dp[' + a2 + '][' + b2 + '][1] = ' + dp[a2][b2][k] + ' + ' + sum + ' = ' + dp[a2][b2][1],
+              sm2, [a2, b2], null, [
+                { name: 'k 堆的内部成本', v: String(dp[a2][b2][k]) },
+                { name: '本次合并成本（区间和）', v: String(sum), cls: 'chg' }
+              ]);
+          }
+        }
+      }
+    }
+  }
+
+  var result = feasible ? dp[0][n - 1][1] : -1;
+  var doneMarks = {};
+  for (var w = 0; w < n; w++) doneMarks[w] = 'done';
+  var finalGridMarks = n > 0 ? (function () { var m = {}; m['0,' + (n - 1)] = 'done'; return m; })() : {};
+  snap('return dp[0][n - 1][1];',
+    feasible ? '整排并成 1 堆的最低成本 = ' + result : '不可行：返回 -1',
+    doneMarks, null, finalGridMarks);
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

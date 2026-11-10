@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>文件的最长绝对路径 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 721 / 1159</span>
+  <nav class="pn"><a href="1087.html">上一篇</a><a href="1008.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">388. </span>文件的最长绝对路径</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">栈</li><li class="tag">栈</li><li class="tag">深度优先搜索</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按 \n 分行逐行扫：\t 的个数是深度，len[深度] 记累计路径长度；文件（带 .）用 len[深度]−1 更新答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>一行 = 一个结点：前导 <code>\t</code> 的个数就是它在树里的深度。</li><li><code>len[d+1] = len[d] + 名字长 + 1</code>：从父层长度接过来，<code>+1</code> 给下一层预留 <code>/</code>；同层再来一个结点直接<strong>覆盖</strong> <code>len[d+1]</code>，兄弟互不影响。</li><li>名字带 <code>.</code> 的是文件：完整路径长 = <code>len[深度] − 1</code>（多算了一个分隔符），取最大。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> lengthLongestPath(<span class="t">String</span> input) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">4</span>        <span class="c">// len[d]：第 d 层结点的累计路径长度，含各级之间补的 '/'（len[0] = 0 是根的上层）</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] len = <span class="k">new</span> <span class="k">int</span>[input.length() / <span class="n">2</span> + <span class="n">2</span>];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="t">String</span> line : input.split(<span class="s">"\n"</span>)) {</span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (line.isEmpty()) <span class="k">continue</span>;</span><span class="ln"><span class="no">8</span>            <span class="k">int</span> depth = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>            <span class="k">while</span> (line.charAt(depth) == <span class="s">'\t'</span>) depth++;   <span class="c">// 前导 \t 的个数就是深度</span></span><span class="ln"><span class="no">10</span>            <span class="t">String</span> name = line.substring(depth);</span><span class="ln"><span class="no">11</span>            <span class="c">// 目录就覆盖本层记录；+1 是给下一层预留的 '/'</span></span><span class="ln"><span class="no">12</span>            len[depth + <span class="n">1</span>] = len[depth] + name.length() + <span class="n">1</span>;</span><span class="ln"><span class="no">13</span>            <span class="c">// 文件名带 '.'：len[深度] 多算了一个 '/'，减掉就是完整路径长</span></span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (name.indexOf(<span class="s">'.'</span>) &gt;= <span class="n">0</span>) ans = <span class="t">Math</span>.max(ans, len[depth + <span class="n">1</span>] - <span class="n">1</span>);</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>假设有一个同时存储文件和目录的文件系统。下图展示了文件系统的一个示例：</p>
+
+<p><img alt="" src="../assets/img/c24e0017c105.jpg" style="height: 142px; width: 300px;" /></p>
+
+<p>这里将 <code>dir</code> 作为根目录中的唯一目录。<code>dir</code> 包含两个子目录 <code>subdir1</code> 和 <code>subdir2</code> 。<code>subdir1</code> 包含文件 <code>file1.ext</code> 和子目录 <code>subsubdir1</code>；<code>subdir2</code> 包含子目录 <code>subsubdir2</code>，该子目录下包含文件 <code>file2.ext</code> 。</p>
+
+<p>在文本格式中，如下所示(⟶表示制表符)：</p>
+
+<pre>
+dir
+⟶ subdir1
+⟶ ⟶ file1.ext
+⟶ ⟶ subsubdir1
+⟶ subdir2
+⟶ ⟶ subsubdir2
+⟶ ⟶ ⟶ file2.ext
+</pre>
+
+<p>如果是代码表示，上面的文件系统可以写为 <code>"dir\n\tsubdir1\n\t\tfile1.ext\n\t\tsubsubdir1\n\tsubdir2\n\t\tsubsubdir2\n\t\t\tfile2.ext"</code> 。<code>'\n'</code> 和 <code>'\t'</code> 分别是换行符和制表符。</p>
+
+<p>文件系统中的每个文件和文件夹都有一个唯一的 <strong>绝对路径</strong> ，即必须打开才能到达文件/目录所在位置的目录顺序，所有路径用 <code>'/'</code> 连接。上面例子中，指向 <code>file2.ext</code> 的 <strong>绝对路径</strong> 是 <code>"dir/subdir2/subsubdir2/file2.ext"</code> 。每个目录名由字母、数字和/或空格组成，每个文件名遵循 <code>name.extension</code> 的格式，其中<meta charset="UTF-8" />&nbsp;<code>name</code>&nbsp;和<meta charset="UTF-8" />&nbsp;<code>extension</code>由字母、数字和/或空格组成。</p>
+
+<p>给定一个以上述格式表示文件系统的字符串 <code>input</code> ，返回文件系统中&nbsp;<em>指向&nbsp;<strong>文件</strong>&nbsp;的 <strong>最长绝对路径</strong> 的长度</em>&nbsp;。 如果系统中没有文件，返回&nbsp;<code>0</code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/85a712528938.jpg" style="height: 101px; width: 200px;" />
+<pre>
+<strong>输入：</strong>input = "dir\n\tsubdir1\n\tsubdir2\n\t\tfile.ext"
+<strong>输出：</strong>20
+<strong>解释：</strong>只有一个文件，绝对路径为 "dir/subdir2/file.ext" ，路径长度 20
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/eab9d6b0e847.jpg" style="height: 151px; width: 300px;" />
+<pre>
+<strong>输入：</strong>input = "dir\n\tsubdir1\n\t\tfile1.ext\n\t\tsubsubdir1\n\tsubdir2\n\t\tsubsubdir2\n\t\t\tfile2.ext"
+<strong>输出：</strong>32
+<strong>解释：</strong>存在两个文件：
+"dir/subdir1/file1.ext" ，路径长度 21
+"dir/subdir2/subsubdir2/file2.ext" ，路径长度 32
+返回 32 ，因为这是最长的路径</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>input = "a"
+<strong>输出：</strong>0
+<strong>解释：</strong>不存在任何文件</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre>
+<strong>输入：</strong>input = "file1.txt\nfile2.txt\nlongfile.txt"
+<strong>输出：</strong>12
+<strong>解释：</strong>根目录下有 3 个文件。
+因为根目录中任何东西的绝对路径只是名称本身，所以答案是 "longfile.txt" ，路径长度为 12
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= input.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>input</code> 可能包含小写或大写的英文字母，一个换行符 <code>'\n'</code>，一个制表符 <code>'\t'</code>，一个点 <code>'.'</code>，一个空格 <code>' '</code>，和数字。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int lengthLongestPath(String input) {", "        int ans = 0;", "        // len[d]：第 d 层结点的累计路径长度，含各级之间补的 '/'（len[0] = 0 是根的上层）", "        int[] len = new int[input.length() / 2 + 2];", "        for (String line : input.split(\"\\n\")) {", "            if (line.isEmpty()) continue;", "            int depth = 0;", "            while (line.charAt(depth) == '\\t') depth++;   // 前导 \\t 的个数就是深度", "            String name = line.substring(depth);", "            // 目录就覆盖本层记录；+1 是给下一层预留的 '/'", "            len[depth + 1] = len[depth] + name.length() + 1;", "            // 文件名带 '.'：len[深度] 多算了一个 '/'，减掉就是完整路径长", "            if (name.indexOf('.') >= 0) ans = Math.max(ans, len[depth + 1] - 1);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 388. 文件的最长绝对路径 —— 图解：复刻 Solution.java 的「按行扫 + len[深度] 数组」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { input: 'dir\n\tsubdir1\n\t\tfile1.ext\n\t\tsubsubdir1\n\tsubdir2\n\t\tsubsubdir2\n\t\t\tfile2.ext' };
+
+function trace(input) {
+  var lines = input.input.split('\n');
+  var n = lines.length;
+  var frames = [];
+  var len = [];      // len[d]：第 d 层累计路径长度（len[0] = 0）
+  var ans = 0;
+
+  function show(line) {
+    return line.replace(/\t/g, '⇥');
+  }
+  function depthOf(line) {
+    var d = 0;
+    while (line[d] === '\t') d++;
+    return d;
+  }
+  function nameOf(line) {
+    return line.slice(depthOf(line));
+  }
+
+  // 逐行表：当前行标 cur，已处理的行标 dim
+  function linesPanel(cur) {
+    var rows = lines.map(function (line, i) {
+      var d = depthOf(line), name = nameOf(line);
+      var isFile = name.indexOf('.') >= 0;
+      return {
+        k: show(line),
+        v: isFile ? '文件' : '深度 ' + d,
+        cls: i === cur ? 'cur' : (i < cur ? 'dim' : '')
+      };
+    });
+    return Viz.table('逐行扫描（⇥ = 一个 \t，个数就是深度）', rows);
+  }
+  // len 数组：用到哪层画到哪层
+  function lenPanel(chgIdx) {
+    var rows = [];
+    for (var i = 0; i < len.length; i++) {
+      rows.push({ k: 'len[' + i + ']', v: String(len[i]), cls: i === chgIdx ? 'chg' : '' });
+    }
+    return Viz.table('len[d]：第 d 层的累计路径长度', rows, { hint: 'ans = ' + ans });
+  }
+
+  var firstFileDone = false, shallowAfterFile = false, deepFileDone = false;
+  for (var i = 0; i < n; i++) {
+    var line = lines[i], depth = depthOf(line), name = nameOf(line), isFile = name.indexOf('.') >= 0;
+    len[depth + 1] = (len[depth] || 0) + name.length + 1;
+    if (isFile) ans = Math.max(ans, len[depth + 1] - 1);
+
+    if (i === 0) {
+      frames.push(Viz.frame('len[depth + 1] = len[depth] + name.length() + 1;',
+        'dir 是根目录：len[1] = 3 + 1，多加的 1 是给下一层预留的 /',
+        [linesPanel(i), lenPanel(1)]));
+    }
+    if (isFile && !firstFileDone) {
+      firstFileDone = true;
+      frames.push(Viz.frame('if (name.indexOf(\'.\') >= 0) ans = Math.max(ans, len[depth + 1] - 1);',
+        '名字带 . 的是文件：len[深度] − 1 就是完整路径长，先记 ans',
+        [linesPanel(i), lenPanel(depth + 1)]));
+    } else if (!isFile && firstFileDone && depth <= 1 && !shallowAfterFile) {
+      shallowAfterFile = true;
+      frames.push(Viz.frame('len[depth + 1] = len[depth] + name.length() + 1;',
+        '回到浅层目录：直接覆盖 len[深度]，同层旧值作废（兄弟互不影响）',
+        [linesPanel(i), lenPanel(depth + 1)]));
+    }
+    if (isFile && firstFileDone && depth >= 2 && !deepFileDone) {
+      deepFileDone = true;
+      frames.push(Viz.frame('if (name.indexOf(\'.\') >= 0) ans = Math.max(ans, len[depth + 1] - 1);',
+        '更深的文件：len[深度] − 1 = ' + (len[depth + 1] - 1) + '，比旧答案长就更新',
+        [linesPanel(i), lenPanel(depth + 1)]));
+    }
+  }
+
+  frames.push(Viz.frame('return ans;',
+    '扫完：最长的文件路径长度是 ' + ans,
+    [linesPanel(n), lenPanel(-1)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

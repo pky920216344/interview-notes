@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>验证二叉搜索树的后序遍历序列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 260 / 1159</span>
+  <nav class="pn"><a href="0130.html">上一篇</a><a href="0863.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 33. </span>验证二叉搜索树的后序遍历序列</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 17</li><li class="algo">分治</li><li class="tag">栈</li><li class="tag">树</li><li class="tag">二叉搜索树</li><li class="tag">递归</li><li class="tag">数组</li><li class="tag">二叉树</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">后序末尾是根：从左扫出第一个 ≥ 根的位置当分界，右段必须全 &gt; 根，再递归验证左右两段。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>后序「左右根」：<strong>末尾 <code>a[j]</code> 一定是根</strong>；从左找第一个不小于根的位置 <code>mid</code>，<code>[i, mid-1]</code> 是左子树、<code>[mid, j-1]</code> 应是右子树。</li><li>右段里若混进比根小的值，直接判假；否则递归验证左右两段（空段天然合法）。</li><li>题目保证无重复值；想 O(n) 可用单调栈倒着扫并维护「左子树值的上界」，但面试先写对切分递归更稳。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)（最坏斜链），空间复杂度 O(n)（递归栈）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> verifyTreeOrder(<span class="k">int</span>[] postorder) {</span><span class="ln"><span class="no">3</span>        <span class="k">return</span> verify(postorder, <span class="n">0</span>, postorder.length - <span class="n">1</span>);</span><span class="ln"><span class="no">4</span>    }</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="c">// a[i..j] 是否是某棵 BST 的后序：末尾 a[j] 是根，前面要能切成左（&lt; 根）右（&gt; 根）两段</span></span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="k">boolean</span> verify(<span class="k">int</span>[] a, <span class="k">int</span> i, <span class="k">int</span> j) {</span><span class="ln"><span class="no">8</span>        <span class="k">if</span> (i &gt;= j) <span class="k">return</span> <span class="k">true</span>;   <span class="c">// 空段或单结点，天然合法</span></span><span class="ln"><span class="no">9</span>        <span class="k">int</span> root = a[j];</span><span class="ln"><span class="no">10</span>        <span class="k">int</span> mid = i;</span><span class="ln"><span class="no">11</span>        <span class="k">while</span> (mid &lt; j &amp;&amp; a[mid] &lt; root) mid++;   <span class="c">// 从左找第一处不小于根的：那是左右子树的分界</span></span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> k = mid; k &lt; j; k++) {</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (a[k] &lt; root) <span class="k">return</span> <span class="k">false</span>;        <span class="c">// 右段里混进比根小的：绝不是后序</span></span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> verify(a, i, mid - <span class="n">1</span>) &amp;&amp; verify(a, mid, j - <span class="n">1</span>);</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>请实现一个函数来判断整数数组 <code>postorder</code> 是否为二叉搜索树的后序遍历结果。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/abdd53e5ce6a.png" style="width: 300px; height: 279px;" /></p>
+
+<pre>
+<strong>输入: </strong>postorder = [4,9,6,5,8]
+<strong>输出: </strong>false 
+<strong>解释：</strong>从上图可以看出这不是一颗二叉搜索树
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/1d0de1a37a3e.png" /></p>
+
+<pre>
+<strong>输入: </strong>postorder = [4,6,5,9,8]
+<strong>输出: </strong>true 
+<strong>解释：</strong>可构建的二叉搜索树如上图
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>数组长度 &lt;= 1000</code></li>
+	<li><code>postorder</code> 中无重复数字</li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean verifyTreeOrder(int[] postorder) {", "        return verify(postorder, 0, postorder.length - 1);", "    }", "", "    // a[i..j] 是否是某棵 BST 的后序：末尾 a[j] 是根，前面要能切成左（< 根）右（> 根）两段", "    private boolean verify(int[] a, int i, int j) {", "        if (i >= j) return true;   // 空段或单结点，天然合法", "        int root = a[j];", "        int mid = i;", "        while (mid < j && a[mid] < root) mid++;   // 从左找第一处不小于根的：那是左右子树的分界", "        for (int k = mid; k < j; k++) {", "            if (a[k] < root) return false;        // 右段里混进比根小的：绝不是后序", "        }", "        return verify(a, i, mid - 1) && verify(a, mid, j - 1);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// offer-33（LCR 152）. 验证 BST 后序序列 —— 图解：复刻 Solution.java 的「末尾为根切分递归」，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { postorder: [4, 6, 5, 9, 8] };
+
+function trace(input) {
+  var a = input.postorder;
+  var n = a.length;
+  var frames = [];
+  var shot = { top: false, split: false, check: false, deep: false };
+
+  function cellsPanel(marks) {
+    var arr = [], m = {}, i;
+    for (i = 0; i < n; i++) arr.push(a[i]);
+    (marks.dim || []).forEach(function (rg) {
+      for (i = rg[0]; i <= rg[1]; i++) m[i] = 'dim';
+    });
+    if (marks.win) for (i = marks.win[0]; i <= marks.win[1]; i++) m[i] = 'win';
+    if (marks.cur != null) m[marks.cur] = 'cur';
+    if (marks.done) for (i = 0; i < n; i++) m[i] = 'done';
+    return Viz.cells(arr, { title: 'postorder（橙 = 根，黄 = 正在考察的段，灰 = 已定）', marks: m });
+  }
+
+  function varsPanel(i, j, root) {
+    return Viz.vars([
+      { name: '当前段', v: i == null ? '—' : '[' + i + ', ' + j + ']', cls: '' },
+      { name: 'root = a[j]', v: root, cls: 'chg' }
+    ]);
+  }
+
+  function snap(at, key, marks, i, j, root) {
+    frames.push(Viz.frame(at, key, [cellsPanel(marks), varsPanel(i, j, root)]));
+  }
+
+  function verify(i, j, depth) {
+    if (i >= j) return true;
+    var root = a[j];
+    var mid = i;
+    while (mid < j && a[mid] < root) mid++;
+    if (depth === 0 && !shot.top) {
+      shot.top = true;
+      snap('return verify(postorder, 0, postorder.length - 1);',
+        '后序最后一个是根：' + root + '，前面必须能切成左小右大两段', { win: [i, j], cur: j }, i, j, root);
+    }
+    if (depth === 0 && !shot.split && mid < j) {
+      shot.split = true;
+      snap('while (mid < j && a[mid] < root) mid++;',
+        '从左扫到第一个比 ' + root + ' 大的：前 ' + (mid - i) + ' 个是左子树，后面 ' + (j - mid) + ' 个是右子树',
+        { win: [i, mid - 1], cur: mid }, i, j, root);
+    }
+    for (var k = mid; k < j; k++) {
+      if (a[k] < root) return false;
+    }
+    if (depth === 0 && !shot.check && mid < j) {
+      shot.check = true;
+      snap('if (a[k] < root) return false;',
+        '右段 ' + (j - mid) + ' 个值全都大于根 ' + root + '：这一刀切得干净', { win: [i, j - 1], cur: j }, i, j, root);
+    }
+    if (!shot.deep && depth === 1 && j - i >= 2) {
+      shot.deep = true;
+      snap('return verify(a, i, mid - 1) && verify(a, mid, j - 1);',
+        '左段递归：根 ' + root + '，再切出左 ' + (mid - i) + ' 个、右 ' + (j - mid) + ' 个',
+        { dim: [[0, i - 1], [j + 1, n - 1]], win: [i, j], cur: j }, i, j, root);
+    }
+    return verify(i, mid - 1, depth + 1) && verify(mid, j - 1, depth + 1);
+  }
+
+  var result = verify(0, n - 1, 0);
+
+  frames.push(Viz.frame('return verify(postorder, 0, postorder.length - 1);',
+    result ? '每段都合法切分到底：确实是 BST 的后序，返回 true' : '某一段右部混进了小值：不是 BST 的后序，返回 false',
+    [cellsPanel({ done: true }), varsPanel(null, null, result ? 'true' : 'false')]));
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

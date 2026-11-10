@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>单字符重复子串的最大长度 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 553 / 1159</span>
+  <nav class="pn"><a href="mianshi-08-11.html">上一篇</a><a href="0217.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1156. </span>单字符重复子串的最大长度</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">模拟</li><li class="aux">哈希表</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">滑动窗口</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按字母收集连续段；单段可借一个同字母接到段尾，相邻两段中间只隔一个字符就能并成一段，都受「该字母总个数」封顶。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>一遍切出每个字母的连续段（起点 + 长度），<code>cnt[c]</code> 记每个字母总个数。</li><li>单段候选 <code>min(段长+1, 总个数)</code>：别处还有同字母就能借一个来（交换到段端）。</li><li>相邻两段候选 <code>min(左段+右段+1, 总个数)</code>：中间<strong>恰好隔一个字符</strong>才接得上（先判 <code>b 起点 == a 末尾+1</code>，隔两个以上直接跳过）。</li><li>借来的第 1 个来自「总个数比这两段多」；总个数刚好等于两段之和时，交换段端字符也能并出 <code>左+右</code> 长，公式同样覆盖。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> maxRepOpt1(<span class="t">String</span> text) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = text.length();</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] cnt = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) cnt[text.charAt(i) - <span class="s">'a'</span>]++;</span><span class="ln"><span class="no">8</span>        <span class="c">// 每个字母的连续段：int[]{起点, 长度}</span></span><span class="ln"><span class="no">9</span>        <span class="t">List</span>&lt;<span class="k">int</span>[]&gt;[] segs = <span class="k">new</span> <span class="t">List</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; <span class="n">26</span>; c++) segs[c] = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; ) {</span><span class="ln"><span class="no">12</span>            <span class="k">int</span> j = i;</span><span class="ln"><span class="no">13</span>            <span class="k">while</span> (j &lt; n &amp;&amp; text.charAt(j) == text.charAt(i)) j++;</span><span class="ln"><span class="no">14</span>            segs[text.charAt(i) - <span class="s">'a'</span>].add(<span class="k">new</span> <span class="k">int</span>[]{i, j - i});</span><span class="ln"><span class="no">15</span>            i = j;</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; <span class="n">26</span>; c++) {</span><span class="ln"><span class="no">19</span>            <span class="k">int</span> total = cnt[c];</span><span class="ln"><span class="no">20</span>            <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; ss = segs[c];</span><span class="ln"><span class="no">21</span>            <span class="c">// 单段：别处还有同字母时，可借一个接到段尾</span></span><span class="ln"><span class="no">22</span>            <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; ss.size(); k++)</span><span class="ln"><span class="no">23</span>                ans = <span class="t">Math</span>.max(ans, <span class="t">Math</span>.min(ss.get(k)[<span class="n">1</span>] + <span class="n">1</span>, total));</span><span class="ln"><span class="no">24</span>            <span class="c">// 相邻两段中间只隔一个字符：交换后能并成一段</span></span><span class="ln"><span class="no">25</span>            <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k + <span class="n">1</span> &lt; ss.size(); k++) {</span><span class="ln"><span class="no">26</span>                <span class="k">int</span>[] a = ss.get(k), b = ss.get(k + <span class="n">1</span>);</span><span class="ln"><span class="no">27</span>                <span class="k">if</span> (a[<span class="n">0</span>] + a[<span class="n">1</span>] + <span class="n">1</span> != b[<span class="n">0</span>]) <span class="k">continue</span>;</span><span class="ln"><span class="no">28</span>                ans = <span class="t">Math</span>.max(ans, <span class="t">Math</span>.min(a[<span class="n">1</span>] + b[<span class="n">1</span>] + <span class="n">1</span>, total));</span><span class="ln"><span class="no">29</span>            }</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>如果字符串中的所有字符都相同，那么这个字符串是单字符重复的字符串。</p>
+
+<p>给你一个字符串&nbsp;<code>text</code>，你只能交换其中两个字符一次或者什么都不做，然后得到一些单字符重复的子串。返回其中最长的子串的长度。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>text = &quot;ababa&quot;
+<strong>输出：</strong>3
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>text = &quot;aaabaaa&quot;
+<strong>输出：</strong>6
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>text = &quot;aaabbaaa&quot;
+<strong>输出：</strong>4
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre><strong>输入：</strong>text = &quot;aaaaa&quot;
+<strong>输出：</strong>5
+</pre>
+
+<p><strong>示例 5：</strong></p>
+
+<pre><strong>输入：</strong>text = &quot;abcdef&quot;
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= text.length &lt;= 20000</code></li>
+	<li><code>text</code> 仅由小写英文字母组成。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int maxRepOpt1(String text) {", "        int n = text.length();", "        int[] cnt = new int[26];", "        for (int i = 0; i < n; i++) cnt[text.charAt(i) - 'a']++;", "        // 每个字母的连续段：int[]{起点, 长度}", "        List<int[]>[] segs = new List[26];", "        for (int c = 0; c < 26; c++) segs[c] = new ArrayList<>();", "        for (int i = 0; i < n; ) {", "            int j = i;", "            while (j < n && text.charAt(j) == text.charAt(i)) j++;", "            segs[text.charAt(i) - 'a'].add(new int[]{i, j - i});", "            i = j;", "        }", "        int ans = 0;", "        for (int c = 0; c < 26; c++) {", "            int total = cnt[c];", "            List<int[]> ss = segs[c];", "            // 单段：别处还有同字母时，可借一个接到段尾", "            for (int k = 0; k < ss.size(); k++)", "                ans = Math.max(ans, Math.min(ss.get(k)[1] + 1, total));", "            // 相邻两段中间只隔一个字符：交换后能并成一段", "            for (int k = 0; k + 1 < ss.size(); k++) {", "                int[] a = ss.get(k), b = ss.get(k + 1);", "                if (a[0] + a[1] + 1 != b[0]) continue;", "                ans = Math.max(ans, Math.min(a[1] + b[1] + 1, total));", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1156 单字符重复子串的最大长度 —— 图解：复刻 Solution.java 的「按字母收集连续段再合并」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { text: 'aaabaaa' };
+
+function trace(input) {
+  var s = input.text, n = s.length;
+  var frames = [];
+  var cnt = [];
+  for (var c = 0; c < 26; c++) cnt.push(0);
+  for (var i = 0; i < n; i++) cnt[s.charCodeAt(i) - 97]++;
+  // 每个字母的连续段（起点、长度），与 Java 的 segs 一致
+  var segs = [];
+  for (c = 0; c < 26; c++) segs.push([]);
+  for (i = 0; i < n; ) {
+    var j = i;
+    while (j < n && s[j] === s[i]) j++;
+    segs[s.charCodeAt(i) - 97].push([i, j - i]);
+    i = j;
+  }
+  var fired = { segs: false, pair: false };
+
+  // 字符串面板：curLetter 的段标 win，gap 格强调
+  function strPanel(curLetter, gapIdx) {
+    var marks = {}, i2;
+    for (i2 = 0; i2 < n; i2++) marks[i2] = 'dim';
+    if (curLetter != null) {
+      segs[curLetter].forEach(function (sg) {
+        for (i2 = sg[0]; i2 < sg[0] + sg[1]; i2++) marks[i2] = 'win';
+      });
+    }
+    if (gapIdx != null) marks[gapIdx] = 'cur';
+    return Viz.cells(s.split(''), { title: 'text', marks: marks });
+  }
+
+  // 每个有出现的字母一行：段长列表和总个数
+  function segTable(curLetter) {
+    var rows = [];
+    for (var cc = 0; cc < 26; cc++) {
+      if (!segs[cc].length) continue;
+      var lens = segs[cc].map(function (sg) { return sg[1]; }).join('+');
+      rows.push({
+        k: String.fromCharCode(97 + cc),
+        v: '段 ' + lens + '，共 ' + cnt[cc] + ' 个',
+        cls: cc === curLetter ? 'hit' : ''
+      });
+    }
+    return Viz.table('各字母的连续段', rows, { hint: '一次交换只能借一个字符' });
+  }
+
+  function snap(at, key, curLetter, gapIdx) {
+    frames.push(Viz.frame(at, key, [strPanel(curLetter, gapIdx), segTable(curLetter)]));
+  }
+
+  if (!fired.segs) {
+    fired.segs = true;
+    snap('for (int i = 0; i < n; ) {',
+      '先数个数、切连续段：字母 a 有两段各 3 长，总共 6 个',
+      0, null);
+  }
+
+  var ans = 0;
+  for (c = 0; c < 26; c++) {
+    var total = cnt[c], ss = segs[c], k;
+    for (k = 0; k < ss.length; k++)
+      ans = Math.max(ans, Math.min(ss[k][1] + 1, total));
+    for (k = 0; k + 1 < ss.length; k++) {
+      var A = ss[k], B = ss[k + 1];
+      if (A[0] + A[1] + 1 !== B[0]) continue;   // 中间隔的不止一个字符
+      if (!fired.pair) {
+        fired.pair = true;
+        snap('if (a[0] + a[1] + 1 != b[0]) continue;',
+          '字母 ' + s[A[0]] + ' 的两段中间只隔 1 个字符，交换后能接上',
+          c, A[0] + A[1]);
+        ans = Math.max(ans, Math.min(A[1] + B[1] + 1, total));
+        snap('ans = Math.max(ans, Math.min(a[1] + b[1] + 1, total));',
+          '候选 ' + (A[1] + B[1]) + '+1=' + (A[1] + B[1] + 1) + '，但该字母只有 ' + total + ' 个 → 取 ' + Math.min(A[1] + B[1] + 1, total),
+          c, A[0] + A[1]);
+        continue;
+      }
+      ans = Math.max(ans, Math.min(A[1] + B[1] + 1, total));
+    }
+  }
+
+  snap('return ans;', '所有字母试完：答案 ' + ans, null, null);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

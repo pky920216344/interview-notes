@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>两数相加 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 147 / 1159</span>
+  <nav class="pn"><a href="0145.html">上一篇</a><a href="0010.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">445. </span>两数相加 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 40</li><li class="algo">栈</li><li class="aux">链表</li><li class="tag">栈</li><li class="tag">链表</li><li class="tag">数学</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">两条链各自压栈，弹出时正好从个位加起；结果用头插法建链，先算出的低位自然排在后面。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>数字高位在链头，无法直接从个位对齐：各自整条压栈，弹出顺序就是个位 → 高位。</li><li>每轮弹两个栈顶相加（缺位当 0），本位 <code>sum % 10</code>、进位 <code>sum / 10</code>；栈都空但还有进位也要再来一轮。</li><li>头插法：<code>head = new ListNode(sum % 10, head)</code>，后算出的高位自然排在链头。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m+n)，空间复杂度 O(m+n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">ListNode</span> addTwoNumbers(<span class="t">ListNode</span> l1, <span class="t">ListNode</span> l2) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 高位在链头：整条压栈，弹出来正好从个位加起</span></span><span class="ln"><span class="no">6</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; s1 = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;(), s2 = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="t">ListNode</span> p = l1; p != <span class="k">null</span>; p = p.next) s1.push(p.val);</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="t">ListNode</span> p = l2; p != <span class="k">null</span>; p = p.next) s2.push(p.val);</span><span class="ln"><span class="no">9</span>        <span class="c">// head 指向已建好的结果链；头插法让先算出的低位自然排在后面</span></span><span class="ln"><span class="no">10</span>        <span class="t">ListNode</span> head = <span class="k">null</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> carry = <span class="n">0</span>;</span><span class="ln"><span class="no">12</span>        <span class="c">// 缺位当 0；两栈都空但还有进位时也要再走一轮</span></span><span class="ln"><span class="no">13</span>        <span class="k">while</span> (!s1.isEmpty() || !s2.isEmpty() || carry != <span class="n">0</span>) {</span><span class="ln"><span class="no">14</span>            <span class="k">int</span> sum = carry;</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (!s1.isEmpty()) sum += s1.pop();</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (!s2.isEmpty()) sum += s2.pop();</span><span class="ln"><span class="no">17</span>            head = <span class="k">new</span> <span class="t">ListNode</span>(sum % <span class="n">10</span>, head);</span><span class="ln"><span class="no">18</span>            carry = sum / <span class="n">10</span>;</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> head;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你两个 <strong>非空 </strong>链表来代表两个非负整数。数字最高位位于链表开始位置。它们的每个节点只存储一位数字。将这两数相加会返回一个新的链表。</p>
+
+<p>你可以假设除了数字 0 之外，这两个数字都不会以零开头。</p>
+
+
+
+<p><strong>示例1：</strong></p>
+
+<p><img alt="" src="../assets/img/bbfe69d3ebe8.png" style="width: 302px; " /></p>
+
+<pre>
+<strong>输入：</strong>l1 = [7,2,4,3], l2 = [5,6,4]
+<strong>输出：</strong>[7,8,0,7]
+</pre>
+
+<p><strong>示例2：</strong></p>
+
+<pre>
+<strong>输入：</strong>l1 = [2,4,3], l2 = [5,6,4]
+<strong>输出：</strong>[8,0,7]
+</pre>
+
+<p><strong>示例3：</strong></p>
+
+<pre>
+<strong>输入：</strong>l1 = [0], l2 = [0]
+<strong>输出：</strong>[0]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>链表的长度范围为<code> [1, 100]</code></li>
+	<li><code>0 &lt;= node.val &lt;= 9</code></li>
+	<li>输入数据保证链表代表的数字无前导 0</li>
+</ul>
+
+
+
+<p><strong>进阶：</strong>如果输入链表不能翻转该如何解决？</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {", "        // 高位在链头：整条压栈，弹出来正好从个位加起", "        Deque<Integer> s1 = new ArrayDeque<>(), s2 = new ArrayDeque<>();", "        for (ListNode p = l1; p != null; p = p.next) s1.push(p.val);", "        for (ListNode p = l2; p != null; p = p.next) s2.push(p.val);", "        // head 指向已建好的结果链；头插法让先算出的低位自然排在后面", "        ListNode head = null;", "        int carry = 0;", "        // 缺位当 0；两栈都空但还有进位时也要再走一轮", "        while (!s1.isEmpty() || !s2.isEmpty() || carry != 0) {", "            int sum = carry;", "            if (!s1.isEmpty()) sum += s1.pop();", "            if (!s2.isEmpty()) sum += s2.pop();", "            head = new ListNode(sum % 10, head);", "            carry = sum / 10;", "        }", "        return head;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 445. 两数相加 II —— 图解：复刻 Solution.java 的「双栈 + 头插法」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { l1: [7, 2, 4, 3], l2: [5, 6, 4] };
+
+function trace(input) {
+  var a = input.l1, b = input.l2;
+  var frames = [];
+  var s1 = a.slice(), s2 = b.slice();   // 栈：右端是栈顶（整条压栈后，栈顶是个位）
+  var out = [];                          // 结果链（头在左），新结点往头上插
+  var carry = 0;
+  var step = 0;
+
+  // 栈面板画的是最初整条链：从右端数 popped 个已弹出（变暗），指针停在当前栈顶
+  function stackPanel(vals, title, popped) {
+    var marks = {}, i;
+    for (i = 0; i < vals.length; i++) if (i >= vals.length - popped) marks[i] = 'dim';
+    var top = vals.length - popped - 1;
+    var pointers = top >= 0 ? [{ at: top, label: '栈顶', cls: 'p-tail' }] : [];
+    return Viz.cells(vals, { title: title, marks: marks, pointers: pointers });
+  }
+  function outPanel(lastNew) {
+    var marks = {};
+    if (out.length) marks[0] = lastNew ? 'new' : 'done';
+    return Viz.list(out.map(String), { title: '结果链表（头插：新结点总在链头）', marks: marks });
+  }
+  function snap(at, key, p1, p2, lastNew) {
+    frames.push(Viz.frame(at, key, [
+      stackPanel(a, '栈 s1（栈顶是个位）', p1),
+      stackPanel(b, '栈 s2（栈顶是个位）', p2),
+      outPanel(lastNew),
+      Viz.vars([{ name: 'carry', v: carry, cls: carry !== 0 ? 'chg' : '' }])
+    ]));
+  }
+  var expr = function (v1, v2, cin, sum) {
+    return (v1 === null ? 0 : v1) + '+' + (v2 === null ? 0 : v2) + (cin ? '+' + cin + '(进位)' : '') + '=' + sum;
+  };
+
+  snap('for (ListNode p = l1; p != null; p = p.next) s1.push(p.val);',
+    '高位在链头：先整条压栈，弹出来的顺序就是个位到高位', 0, 0, false);
+
+  var LOOP = 'while (!s1.isEmpty() || !s2.isEmpty() || carry != 0) {';
+  var HEAD = 'head = new ListNode(sum % 10, head);';
+
+  while (s1.length > 0 || s2.length > 0 || carry !== 0) {
+    var cin = carry;
+    var sum = cin;
+    var v1 = s1.length ? s1.pop() : null;
+    var v2 = s2.length ? s2.pop() : null;
+    if (v1 !== null) sum += v1;
+    if (v2 !== null) sum += v2;
+    var digit = sum % 10;
+    carry = Math.floor(sum / 10);
+    out.unshift(digit);   // 头插法
+
+    if (step === 0) {
+      snap(HEAD, '弹个位：' + expr(v1, v2, cin, sum) + '，本位写 ' + digit + '，头插进结果链', 1, 1, true);
+    } else if (step === 1) {
+      snap(HEAD, '再弹一位：' + expr(v1, v2, cin, sum) + '，本位写 ' + digit + '，进位 ' + carry, 2, 2, true);
+    } else if (step === 2 && (v1 !== null || v2 !== null)) {
+      snap(HEAD, '进位跟着弹出的数相加：' + expr(v1, v2, cin, sum) + '，本位写 ' + digit, a.length - s1.length, b.length - s2.length, true);
+    } else if (s1.length === 0 && s2.length === 0 && carry !== 0) {
+      snap(LOOP, '两个栈都空了但 carry=' + carry + '：循环条件的第三项让流程再走一轮', a.length, b.length, true);
+    }
+    step++;
+  }
+
+  frames.push(Viz.frame('return head;', '栈空且无进位：返回结果链 [' + out.join(',') + ']',
+    [stackPanel(a, '栈 s1（栈顶是个位）', a.length), stackPanel(b, '栈 s2（栈顶是个位）', b.length), outPanel(false)]));
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

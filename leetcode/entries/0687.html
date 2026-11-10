@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最长同值路径 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 468 / 1159</span>
+  <nav class="pn"><a href="0463.html">上一篇</a><a href="0632.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">687. </span>最长同值路径</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">动态规划</li><li class="aux">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉树</li><li class="tag">dp-on-trees</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">后序遍历：每个结点向上交一条同值链（只能延一边）；经过它拐弯的路径 = 左链 + 右链，取最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>arrow(node)</code> 返回从 <code>node</code> 出发一路向下的同值链长，给父结点接续用。</li><li>孩子值和自己不同，那边的链按 0 算；相同则 <code>孩子的链 + 1</code> 接上。</li><li><strong>拐弯路径只在当前结点统计一次</strong>：<code>best = max(best, 左链 + 右链)</code>。</li><li>向父结点只能交 <code>max(左链, 右链)</code> 一条链——往上延伸不许分叉。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">int</span> best;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> longestUnivaluePath(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">5</span>        best = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        arrow(root);</span><span class="ln"><span class="no">7</span>        <span class="k">return</span> best;</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="c">// 返回从 node 出发一路向下、值全相同的链长（相当于一支向下的箭）</span></span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">int</span> arrow(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">13</span>        <span class="k">int</span> left = arrow(node.left);</span><span class="ln"><span class="no">14</span>        <span class="k">int</span> right = arrow(node.right);</span><span class="ln"><span class="no">15</span>        <span class="c">// 孩子的值和自己不同，那边的链就断掉，长度按 0 算</span></span><span class="ln"><span class="no">16</span>        <span class="k">int</span> l = node.left != <span class="k">null</span> &amp;&amp; node.left.val == node.val ? left + <span class="n">1</span> : <span class="n">0</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> r = node.right != <span class="k">null</span> &amp;&amp; node.right.val == node.val ? right + <span class="n">1</span> : <span class="n">0</span>;</span><span class="ln"><span class="no">18</span>        best = <span class="t">Math</span>.max(best, l + r);            <span class="c">// 经过 node 拐弯的路径：左链 + 右链</span></span><span class="ln"><span class="no">19</span>        <span class="k">return</span> <span class="t">Math</span>.max(l, r);                   <span class="c">// 往父结点只能延伸一边，不能分叉</span></span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个二叉树的<meta charset="UTF-8" />&nbsp;<code>root</code>&nbsp;，返回&nbsp;<em>最长的路径的长度</em> ，这个路径中的&nbsp;<em>每个节点具有相同值</em>&nbsp;。 这条路径可以经过也可以不经过根节点。</p>
+
+<p><strong>两个节点之间的路径长度</strong>&nbsp;由它们之间的边数表示。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<p><img alt="" src="../assets/img/34d72de09398.jpg" /></p>
+
+<pre>
+<strong>输入：</strong>root = [5,4,5,1,1,5]
+<strong>输出：</strong>2
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<p><img alt="" src="../assets/img/f92a81499532.jpg" /></p>
+
+<pre>
+<strong>输入：</strong>root = [1,4,5,4,4,5]
+<strong>输出：</strong>2
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li>树的节点数的范围是<meta charset="UTF-8" />&nbsp;<code>[0, 10<sup>4</sup>]</code>&nbsp;</li>
+	<li><code>-1000 &lt;= Node.val &lt;= 1000</code></li>
+	<li>树的深度将不超过 <code>1000</code>&nbsp;</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private int best;", "", "    public int longestUnivaluePath(TreeNode root) {", "        best = 0;", "        arrow(root);", "        return best;", "    }", "", "    // 返回从 node 出发一路向下、值全相同的链长（相当于一支向下的箭）", "    private int arrow(TreeNode node) {", "        if (node == null) return 0;", "        int left = arrow(node.left);", "        int right = arrow(node.right);", "        // 孩子的值和自己不同，那边的链就断掉，长度按 0 算", "        int l = node.left != null && node.left.val == node.val ? left + 1 : 0;", "        int r = node.right != null && node.right.val == node.val ? right + 1 : 0;", "        best = Math.max(best, l + r);            // 经过 node 拐弯的路径：左链 + 右链", "        return Math.max(l, r);                   // 往父结点只能延伸一边，不能分叉", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 687. 最长同值路径 —— 图解：复刻 Solution.java 的后序 arrow()，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [5, 4, 5, 1, 1, 5] };
+
+function trace(input) {
+  var frames = [];
+
+  // 力扣层序数组 -> 结点；idx 是层序下标，marks / labels 靠它定位
+  function build(arr) {
+    if (!arr.length || arr[0] === null) return null;
+    var root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var x = q.shift();
+      if (i < arr.length) { if (arr[i] !== null) { x.left = { idx: i, val: arr[i], left: null, right: null }; q.push(x.left); } i++; }
+      if (i < arr.length) { if (arr[i] !== null) { x.right = { idx: i, val: arr[i], left: null, right: null }; q.push(x.right); } i++; }
+    }
+    return root;
+  }
+
+  var root = build(input.root);
+  var best = 0;
+  var g = {};                 // 层序下标 -> arrow 返回值（往父结点交上去的链长）
+  var bestNode = null;        // 取得 best 的结点，用来画那条路径
+  var used = {};              // 层序下标 -> { l, r }：两边实际采用的链长
+  var didLeaf = false, didBend = false, didBendBack = false;
+
+  // 从 n 出发沿着同值链往下走（取链长大的那边），返回经过的结点
+  function down(n0) {
+    var out = [];
+    while (n0 !== null) {
+      out.push(n0);
+      var l = n0.left !== null && n0.left.val === n0.val ? (g[n0.left.idx] + 1) : 0;
+      var r = n0.right !== null && n0.right.val === n0.val ? (g[n0.right.idx] + 1) : 0;
+      if (l === 0 && r === 0) break;
+      n0 = l >= r ? n0.left : n0.right;
+    }
+    return out;
+  }
+
+  function marksFor(cur, nodes, cls) {
+    var m = {};
+    nodes.forEach(function (x) { m[x.idx] = cls; });
+    if (cur) m[cur.idx] = 'cur';
+    return m;
+  }
+
+  function labelsOf() {
+    var out = [];
+    for (var idx in g) out.push({ at: Number(idx), label: '↑' + g[idx], cls: g[idx] > 0 ? 'p-next' : 'p-fast' });
+    return out;
+  }
+
+  function treePanel(title, marks) {
+    return Viz.tree(input.root, { title: title, marks: marks, labels: labelsOf() });
+  }
+
+  function snap(at, key, marks) {
+    if (frames.length >= 6) return;
+    frames.push(Viz.frame(at, key, [treePanel('二叉树（↑x = 该结点交上去的同值链长，红 = 0 断链）', marks),
+      Viz.vars([{ name: 'best', v: best, cls: '' }])]));
+  }
+
+  function arrow(node) {
+    if (node === null) return 0;
+    var left = arrow(node.left);
+    var right = arrow(node.right);
+    var l = node.left !== null && node.left.val === node.val ? left + 1 : 0;
+    var r = node.right !== null && node.right.val === node.val ? right + 1 : 0;
+    used[node.idx] = { l: l, r: r };
+    var improved = l + r > best;
+    if (improved) { best = l + r; bestNode = node; }
+
+    if (!didLeaf && node.left === null && node.right === null) {
+      didLeaf = true;
+      snap('if (node == null) return 0;', '后序先算到底：叶子没有孩子，交上去的链长是 0', marksFor(node, [], ''));
+    }
+    if (!didBend && (l > 0 || r > 0)) {
+      didBend = true;
+      var path = (l > 0 ? down(node.left) : []).concat([node], r > 0 ? down(node.right) : []);
+      snap('best = Math.max(best, l + r);',
+        '在 ' + node.val + ' 拐弯：左链 ' + l + ' + 右链 ' + r + ' = ' + (l + r) + (improved ? '，刷新 best' : ''),
+        marksFor(node, path, 'win'));
+    }
+    g[node.idx] = Math.max(l, r);
+    if (!didBendBack && didBend && node.idx === 2) {
+      didBendBack = true;
+      var kept = Math.max(l, r) > 0 ? down(l >= r ? node.left : node.right) : [];
+      snap('return Math.max(l, r);',
+        '往父结点只能带一条链：交上去 ↑' + Math.max(l, r) + '（另一边留作拐弯路径）',
+        marksFor(node, kept, 'win'));
+    }
+    if (node === root) {
+      var rpath = (l > 0 ? down(node.left) : []).concat([node], r > 0 ? down(node.right) : []);
+      snap('best = Math.max(best, l + r);',
+        '根结点也拐一次弯：左链 ' + l + ' + 右链 ' + r + ' = ' + (l + r) + (improved ? '，best 定格' : ''),
+        marksFor(node, rpath, 'win'));
+    }
+    return Math.max(l, r);
+  }
+
+  if (root !== null) arrow(root);
+
+  var finalPath = bestNode !== null ? (used[bestNode.idx].l > 0 ? down(bestNode.left) : []).concat([bestNode], used[bestNode.idx].r > 0 ? down(bestNode.right) : []) : [];
+  snap('return best;', '全部算完：最长同值路径 ' + best + ' 条边（青色那条）', marksFor(null, finalPath, 'done'));
+  return { frames: frames, result: best };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

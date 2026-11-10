@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第 K 个最小的质数分数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 450 / 1159</span>
+  <nav class="pn"><a href="0915.html">上一篇</a><a href="offer-63.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">786. </span>第 K 个最小的质数分数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 6</li><li class="algo">堆</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">二分查找</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">把 n(n−1)/2 个分数看成分母从大到小的 n−1 条有序链，小根堆做多路归并，弹 k−1 次后堆顶就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>固定分子 <code>i</code> 时，分母越大分数越小：把每行看成一条降序链，行头 <code>(i, n−1)</code> 是行内最小，先把 n−1 个行头入堆。</li><li>堆按分数比较：<code>a/b &lt; c/d</code> 用交叉相乘 <code>a·d &lt; c·b</code> 判，避免浮点误差（值 ≤ 3e4，乘积不溢出）。</li><li>弹出堆顶 <code>(i, j)</code> 后，压入同一行的下一个 <code>(i, j−1)</code>（<code>j−1 &gt; i</code> 才压）；弹出 k−1 次后，堆顶就是第 k 小。</li><li>分数两两不等（1 和互异质数之比），堆顶序列唯一，答案确定。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + k log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] kthSmallestPrimeFraction(<span class="k">int</span>[] arr, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = arr.length;</span><span class="ln"><span class="no">6</span>        <span class="c">// 小根堆放分子下标对 (i, j)，i &lt; j，按分数 arr[i]/arr[j] 比较（交叉相乘防精度误差）</span></span><span class="ln"><span class="no">7</span>        <span class="t">PriorityQueue</span>&lt;<span class="k">int</span>[]&gt; pq = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;(</span><span class="ln"><span class="no">8</span>            (a, b) -&gt; <span class="t">Long</span>.compare((<span class="k">long</span>) arr[a[<span class="n">0</span>]] * arr[b[<span class="n">1</span>]], (<span class="k">long</span>) arr[a[<span class="n">1</span>]] * arr[b[<span class="n">0</span>]]));</span><span class="ln"><span class="no">9</span>        <span class="c">// 每个分子行的最小分数在分母最大处：先把每行的行头入堆</span></span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i + <span class="n">1</span> &lt; n; i++) pq.offer(<span class="k">new</span> <span class="k">int</span>[]{i, n - <span class="n">1</span>});</span><span class="ln"><span class="no">11</span>        <span class="k">while</span> (--k &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">12</span>            <span class="k">int</span>[] t = pq.poll();</span><span class="ln"><span class="no">13</span>            <span class="c">// 同一行里，分母减小分数变大：弹出 (i, j) 就压入行内的下一个 (i, j-1)</span></span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (t[<span class="n">1</span>] - <span class="n">1</span> &gt; t[<span class="n">0</span>]) pq.offer(<span class="k">new</span> <span class="k">int</span>[]{t[<span class="n">0</span>], t[<span class="n">1</span>] - <span class="n">1</span>});</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{arr[pq.peek()[<span class="n">0</span>]], arr[pq.peek()[<span class="n">1</span>]]};</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个按递增顺序排序的数组 <code>arr</code> 和一个整数 <code>k</code> 。数组 <code>arr</code> 由 <code>1</code> 和若干 <strong>质数</strong> 组成，且其中所有整数互不相同。</p>
+
+<p>对于每对满足 <code>0 &lt;= i &lt; j &lt; arr.length</code> 的 <code>i</code> 和 <code>j</code> ，可以得到分数 <code>arr[i] / arr[j]</code> 。</p>
+
+<p>那么第&nbsp;<code>k</code>&nbsp;个最小的分数是多少呢?&nbsp; 以长度为 <code>2</code> 的整数数组返回你的答案, 这里&nbsp;<code>answer[0] == arr[i]</code>&nbsp;且&nbsp;<code>answer[1] == arr[j]</code> 。</p>
+&nbsp;
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [1,2,3,5], k = 3
+<strong>输出：</strong>[2,5]
+<strong>解释：</strong>已构造好的分数,排序后如下所示: 
+1/5, 1/3, 2/5, 1/2, 3/5, 2/3
+很明显第三个最小的分数是 2/5
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [1,7], k = 1
+<strong>输出：</strong>[1,7]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= arr.length &lt;= 1000</code></li>
+	<li><code>1 &lt;= arr[i] &lt;= 3 * 10<sup>4</sup></code></li>
+	<li><code>arr[0] == 1</code></li>
+	<li><code>arr[i]</code> 是一个 <strong>质数</strong> ，<code>i &gt; 0</code></li>
+	<li><code>arr</code> 中的所有数字 <strong>互不相同</strong> ，且按 <strong>严格递增</strong> 排序</li>
+	<li><code>1 &lt;= k &lt;= arr.length * (arr.length - 1) / 2</code></li>
+</ul>
+
+
+
+<p><strong>进阶：</strong>你可以设计并实现时间复杂度小于 <code>O(n<sup>2</sup>)</code> 的算法解决此问题吗？</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] kthSmallestPrimeFraction(int[] arr, int k) {", "        int n = arr.length;", "        // 小根堆放分子下标对 (i, j)，i < j，按分数 arr[i]/arr[j] 比较（交叉相乘防精度误差）", "        PriorityQueue<int[]> pq = new PriorityQueue<>(", "            (a, b) -> Long.compare((long) arr[a[0]] * arr[b[1]], (long) arr[a[1]] * arr[b[0]]));", "        // 每个分子行的最小分数在分母最大处：先把每行的行头入堆", "        for (int i = 0; i + 1 < n; i++) pq.offer(new int[]{i, n - 1});", "        while (--k > 0) {", "            int[] t = pq.poll();", "            // 同一行里，分母减小分数变大：弹出 (i, j) 就压入行内的下一个 (i, j-1)", "            if (t[1] - 1 > t[0]) pq.offer(new int[]{t[0], t[1] - 1});", "        }", "        return new int[]{arr[pq.peek()[0]], arr[pq.peek()[1]]};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 786. 第 K 个最小的质数分数 —— 图解：复刻 Solution.java 的「小根堆多路归并」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [1, 2, 3, 5], k: 3 };
+
+function trace(input) {
+  var arr = input.arr, k = input.k;
+  var n = arr.length;
+  var frames = [];
+  var fired = { init: false, p1: false, p2: false };
+
+  // 与 Java 相同的比较：分数 a/b < c/d ⇔ a·d < c·b（值都 ≤ 3e4，乘积不会失真）
+  function cmp(a, b) {
+    var x = arr[a[0]] * arr[b[1]], y = arr[a[1]] * arr[b[0]];
+    return x < y ? -1 : x > y ? 1 : 0;
+  }
+
+  // 手写小根堆
+  var heap = [];
+  function push(t) {
+    heap.push(t);
+    var c = heap.length - 1;
+    while (c > 0) {
+      var p = (c - 1) >> 1;
+      if (cmp(heap[c], heap[p]) < 0) { var tmp = heap[c]; heap[c] = heap[p]; heap[p] = tmp; c = p; }
+      else break;
+    }
+  }
+  function poll() {
+    var top = heap[0], last = heap.pop();
+    if (heap.length) {
+      heap[0] = last;
+      var p = 0;
+      for (;;) {
+        var l = 2 * p + 1, r = l + 1, m = p;
+        if (l < heap.length && cmp(heap[l], heap[m]) < 0) m = l;
+        if (r < heap.length && cmp(heap[r], heap[m]) < 0) m = r;
+        if (m === p) break;
+        var t2 = heap[p]; heap[p] = heap[m]; heap[m] = t2;
+        p = m;
+      }
+    }
+    return top;
+  }
+
+  function inHeap(i, j) {
+    for (var x = 0; x < heap.length; x++) if (heap[x][0] === i && heap[x][1] === j) return true;
+    return false;
+  }
+
+  function gridPanel(marks) {
+    var rows = [], rl = [], cols = [];
+    for (var i = 0; i < n - 1; i++) {
+      var row = [];
+      for (var j = 1; j < n; j++) row.push(i < j ? arr[i] + '/' + arr[j] : '');
+      rows.push(row);
+      rl.push(String(arr[i]));
+    }
+    for (var c = 1; c < n; c++) cols.push(String(arr[c]));
+    return Viz.grid(rows, { title: '分数表（点 = 在堆里的行头）', marks: marks || {}, rowLabels: rl, colLabels: cols, corner: 'i\\j' });
+  }
+
+  function snap(at, key, marks) {
+    if (frames.length >= 6) return;
+    frames.push(Viz.frame(at, key, [gridPanel(marks)]));
+  }
+
+  // 当前在堆里的行头都点出来，再叠加本帧的额外标记
+  function baseMarks(extra) {
+    var m = {};
+    for (var i = 0; i < n - 1; i++) {
+      for (var j = 1; j < n; j++) {
+        if (i < j && inHeap(i, j)) m[i + ',' + (j - 1)] = 'win';
+      }
+    }
+    if (extra) for (var key in extra) m[key] = extra[key];
+    return m;
+  }
+
+  for (var i = 0; i + 1 < n; i++) push([i, n - 1]);
+  if (!fired.init) {
+    fired.init = true;
+    snap('for (int i = 0; i + 1 < n; i++) pq.offer(new int[]{i, n - 1});',
+      '开局：每行的最小分数在分母最大处，n−1 个行头先入堆', baseMarks());
+  }
+
+  var popped = 0;
+  while (--k > 0) {
+    var t = poll();
+    popped++;
+    var marks = baseMarks();                 // 此时被弹出的行头已不在堆里
+    marks[t[0] + ',' + (t[1] - 1)] = 'dim';
+    var hasNext = t[1] - 1 > t[0];
+    if (hasNext) {
+      push([t[0], t[1] - 1]);
+      marks[(t[0]) + ',' + (t[1] - 2)] = 'new';
+    }
+    var msg = '弹出最小 ' + arr[t[0]] + '/' + arr[t[1]] +
+      (hasNext ? '：同行分母减小分数变大，压入下一个 ' + arr[t[0]] + '/' + arr[t[1] - 1] : '：这行走完了');
+    if (popped === 1 && !fired.p1) {
+      fired.p1 = true;
+      snap('if (t[1] - 1 > t[0]) pq.offer(new int[]{t[0], t[1] - 1});', msg, marks);
+    } else if (popped === 2 && !fired.p2) {
+      fired.p2 = true;
+      snap('if (t[1] - 1 > t[0]) pq.offer(new int[]{t[0], t[1] - 1});',
+        msg + '；弹够 k−1 次后堆顶即答案', marks);
+    }
+  }
+
+  var top = heap[0];
+  var mf = baseMarks();
+  mf[top[0] + ',' + (top[1] - 1)] = 'done';
+  snap('return new int[]{arr[pq.peek()[0]], arr[pq.peek()[1]]};',
+    '堆顶就是第 ' + (popped + 1) + ' 小的分数：' + arr[top[0]] + '/' + arr[top[1]], mf);
+  return { frames: frames, result: [arr[top[0]], arr[top[1]]] };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

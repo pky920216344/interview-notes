@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>尽可能使字符串相等 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 781 / 1159</span>
+  <nav class="pn"><a href="0432.html">上一篇</a><a href="1505.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1208. </span>尽可能使字符串相等</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">滑动窗口</li><li class="tag">字符串</li><li class="tag">二分查找</li><li class="tag">前缀和</li><li class="tag">滑动窗口</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">滑动窗口：右端逐格扩进来并累加开销 |s[i]−t[i]|，一旦总开销超过 maxCost 就从左端退出，窗口越长越好。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>窗口 <code>[left, right]</code> 表示「当前能把这一段 s 改成 t」的子串，<code>cost</code> 是窗口内 <code>|s[i] − t[i]|</code> 的总和。</li><li><code>right</code> 每右移一格就加上该格开销；一旦 <code>cost &gt; maxCost</code>，左端一格一格退出（减去该格开销），直到付得起。</li><li>窗口每一步都合法，所以答案就是 <code>right − left + 1</code> 的最大值；付不起的单格会把窗口缩空，自然返回 0。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> equalSubstring(<span class="t">String</span> s, <span class="t">String</span> t, <span class="k">int</span> maxCost) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> left = <span class="n">0</span>, cost = <span class="n">0</span>, ans = <span class="n">0</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">for</span> (<span class="k">int</span> right = <span class="n">0</span>; right &lt; s.length(); right++) {</span><span class="ln"><span class="no">5</span>            <span class="c">// 右端进窗：收下这一格的改装开销</span></span><span class="ln"><span class="no">6</span>            cost += <span class="t">Math</span>.abs(s.charAt(right) - t.charAt(right));</span><span class="ln"><span class="no">7</span>            <span class="c">// 超预算就把左端一格一格退出去，直到付得起</span></span><span class="ln"><span class="no">8</span>            <span class="k">while</span> (cost &gt; maxCost) {</span><span class="ln"><span class="no">9</span>                cost -= <span class="t">Math</span>.abs(s.charAt(left) - t.charAt(left));</span><span class="ln"><span class="no">10</span>                left++;</span><span class="ln"><span class="no">11</span>            }</span><span class="ln"><span class="no">12</span>            ans = <span class="t">Math</span>.max(ans, right - left + <span class="n">1</span>);</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你两个长度相同的字符串，<code>s</code> 和 <code>t</code>。</p>
+
+<p>将 <code>s</code>&nbsp;中的第&nbsp;<code>i</code>&nbsp;个字符变到&nbsp;<code>t</code>&nbsp;中的第 <code>i</code> 个字符需要&nbsp;<code>|s[i] - t[i]|</code>&nbsp;的开销（开销可能为 0），也就是两个字符的 ASCII 码值的差的绝对值。</p>
+
+<p>用于变更字符串的最大预算是&nbsp;<code>maxCost</code>。在转化字符串时，总开销应当小于等于该预算，这也意味着字符串的转化可能是不完全的。</p>
+
+<p>如果你可以将 <code>s</code> 的子字符串转化为它在 <code>t</code> 中对应的子字符串，则返回可以转化的最大长度。</p>
+
+<p>如果 <code>s</code> 中没有子字符串可以转化成 <code>t</code> 中对应的子字符串，则返回 <code>0</code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "abcd", t = "bcdf", maxCost = 3
+<strong>输出：</strong>3
+<strong>解释：</strong>s中的"abc" 可以变为 "bcd"。开销为 3，所以最大长度为 3。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "abcd", t = "cdef", maxCost = 3
+<strong>输出：</strong>1
+<strong>解释：</strong>s 中的任一字符要想变成 t 中对应的字符，其开销都是 2。因此，最大长度为<code> 1。</code>
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "abcd", t = "acde", maxCost = 0
+<strong>输出：</strong>1
+<strong>解释：</strong>a -&gt; a, cost = 0，字符串未发生变化，所以最大长度为 1。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>t.length == s.length</code></li>
+	<li><code>0 &lt;= maxCost &lt;= 10<sup>6</sup></code></li>
+	<li><code>s</code> 和&nbsp;<code>t</code>&nbsp;都只含小写英文字母。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int equalSubstring(String s, String t, int maxCost) {", "        int left = 0, cost = 0, ans = 0;", "        for (int right = 0; right < s.length(); right++) {", "            // 右端进窗：收下这一格的改装开销", "            cost += Math.abs(s.charAt(right) - t.charAt(right));", "            // 超预算就把左端一格一格退出去，直到付得起", "            while (cost > maxCost) {", "                cost -= Math.abs(s.charAt(left) - t.charAt(left));", "                left++;", "            }", "            ans = Math.max(ans, right - left + 1);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1208. 尽可能使字符串相等 —— 图解：复刻 Solution.java 的滑动窗口，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'abcd', t: 'bcdf', maxCost: 3 };
+
+function trace(input) {
+  var s = input.s, t = input.t, maxCost = input.maxCost;
+  var n = s.length;
+  var frames = [];
+  var ADD = 'cost += Math.abs(s.charAt(right) - t.charAt(right));';
+  var SHRINK = 'while (cost > maxCost) {';
+  var ANS = 'ans = Math.max(ans, right - left + 1);';
+
+  // 一帧 = s、t 两个并排格子串 + 变量。窗口 [left, right] 高亮，cur 是刚读入的右端。
+  function snap(at, key, o) {
+    var marks = {};
+    for (var i = 0; i < n; i++) {
+      if (o.right >= 0 && i <= o.right && i < o.left) marks[i] = 'dim';
+      else if (i >= o.left && i <= o.right) marks[i] = (o.cur === i ? 'cur' : 'win');
+      else if (o.done && i >= o.done[0] && i <= o.done[1]) marks[i] = 'done';
+    }
+    if (o.done) for (var j = o.done[0]; j <= o.done[1]; j++) marks[j] = 'done';
+    var pointers = [];
+    if (o.left < n) pointers.push({ at: o.left, label: 'left', cls: 'p-left' });
+    if (o.right >= 0 && o.right < n) pointers.push({ at: o.right, label: 'right', cls: 'p-right' });
+    var opts = { title: 's', marks: marks, pointers: pointers };
+    if (o.right >= o.left && o.left <= o.right) {
+      opts.range = { from: o.left, to: o.right, label: '窗口开销 ' + o.cost + ' / ' + maxCost };
+    }
+    frames.push(Viz.frame(at, key, [
+      Viz.cells(s.split(''), opts),
+      Viz.cells(t.split(''), { title: 't（每格开销 = |s−t|）', marks: marks }),
+      Viz.vars([
+        { name: 'cost', v: o.cost, cls: o.over ? 'bad' : '' },
+        { name: 'maxCost', v: maxCost },
+        { name: 'ans', v: o.ans }
+      ])
+    ]));
+  }
+
+  var left = 0, cost = 0, ans = 0, bestL = 0, bestR = -1;
+  var small = n >= 2 && n <= 8;   // 随机用例不追求出图，只求 result 正确
+
+  for (var right = 0; right < n; right++) {
+    cost += Math.abs(s.charCodeAt(right) - t.charCodeAt(right));
+    if (small && right === 2 && left === 0) {
+      snap(ADD, '右端读到「' + s[2] + '」：总开销 ' + cost + ' 没超预算，窗口长 ' + (right - left + 1),
+        { left: left, right: right, cost: cost, ans: ans, cur: right });
+    }
+    while (cost > maxCost) {
+      if (small && right === 3 && left === 0) {
+        snap(SHRINK, '读入「' + s[3] + '」要 ' + Math.abs(s.charCodeAt(3) - t.charCodeAt(3)) + '，总开销 ' + cost + ' 超预算，左端退出',
+          { left: left, right: right, cost: cost, ans: ans, cur: right, over: true });
+      }
+      cost -= Math.abs(s.charCodeAt(left) - t.charCodeAt(left));
+      left++;
+    }
+    if (right - left + 1 > ans) { ans = right - left + 1; bestL = left; bestR = right; }
+    if (small && right === 3 && left === 2) {
+      snap(ANS, '缩到 [' + left + ',' + right + ']：开销 ' + cost + ' 付得起，长度 2；最长仍是前面的 ' + ans,
+        { left: left, right: right, cost: cost, ans: ans, cur: right });
+    }
+  }
+
+  snap('return ans;',
+    ans === 0 ? '扫完：一格都付不起，返回 0' : '扫完：最长是「' + s.slice(bestL, bestR + 1) + '」，长度 ' + ans,
+    { left: n, right: -1, cost: cost, ans: ans, done: ans > 0 ? [bestL, bestR] : null });
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

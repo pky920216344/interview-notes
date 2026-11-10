@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>统计全为 1 的正方形子矩阵 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 593 / 1159</span>
+  <nav class="pn"><a href="0496.html">上一篇</a><a href="offer-44.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1277. </span>统计全为 1 的正方形子矩阵</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">dp[i][j] = 以 (i,j) 为右下角的全 1 正方形最大边长 = min(上, 左, 左上) + 1；把全表 dp 加起来就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i][j]</code> 为 <code>k</code> 时，以 <code>(i,j)</code> 为右下角的全 1 正方形恰好有 <code>k</code> 个（边长 1..k 各一个），所以累加全部 <code>dp</code> 值就是总数。</li><li>转移：本格是 1 时 <code>dp = min(上, 左, 左上) + 1</code>；是 0 就是 0。第一行、第一列没有三邻居，边长只能是 1。</li><li>dp 就地写在原矩阵上：每个格只读上、左、左上（早已算好），覆盖原值不影响结果。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(1)（dp 就地写在原矩阵上）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> countSquares(<span class="k">int</span>[][] matrix) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = matrix.length, n = matrix[<span class="n">0</span>].length, ans = <span class="n">0</span>;</span><span class="ln"><span class="no">4</span>        <span class="c">// dp 就地写在 matrix 上：</span></span><span class="ln"><span class="no">5</span>        <span class="c">// dp[i][j] = 以 (i,j) 为右下角的全 1 正方形最大边长</span></span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">8</span>                <span class="k">if</span> (matrix[i][j] == <span class="n">0</span>) <span class="k">continue</span>;   <span class="c">// 0 格当不了右下角</span></span><span class="ln"><span class="no">9</span>                <span class="k">if</span> (i &gt; <span class="n">0</span> &amp;&amp; j &gt; <span class="n">0</span>) {              <span class="c">// 第一行、第一列的边长只能是 1</span></span><span class="ln"><span class="no">10</span>                    <span class="k">int</span> side = <span class="t">Math</span>.min(matrix[i - <span class="n">1</span>][j],</span><span class="ln"><span class="no">11</span>                            <span class="t">Math</span>.min(matrix[i][j - <span class="n">1</span>], matrix[i - <span class="n">1</span>][j - <span class="n">1</span>]));</span><span class="ln"><span class="no">12</span>                    matrix[i][j] = side + <span class="n">1</span>;</span><span class="ln"><span class="no">13</span>                }</span><span class="ln"><span class="no">14</span>                <span class="c">// 边长 k 的正方形在这里被数 k 次，正好不重不漏</span></span><span class="ln"><span class="no">15</span>                ans += matrix[i][j];</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个&nbsp;<code>m * n</code>&nbsp;的矩阵，矩阵中的元素不是 <code>0</code> 就是 <code>1</code>，请你统计并返回其中完全由 <code>1</code> 组成的 <strong>正方形</strong> 子矩阵的个数。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>matrix =
+[
+&nbsp; [0,1,1,1],
+&nbsp; [1,1,1,1],
+&nbsp; [0,1,1,1]
+]
+<strong>输出：</strong>15
+<strong>解释：</strong> 
+边长为 1 的正方形有 <strong>10</strong> 个。
+边长为 2 的正方形有 <strong>4</strong> 个。
+边长为 3 的正方形有 <strong>1</strong> 个。
+正方形的总数 = 10 + 4 + 1 = <strong>15</strong>.
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>matrix = 
+[
+  [1,0,1],
+  [1,1,0],
+  [1,1,0]
+]
+<strong>输出：</strong>7
+<strong>解释：</strong>
+边长为 1 的正方形有 <strong>6</strong> 个。 
+边长为 2 的正方形有 <strong>1</strong> 个。
+正方形的总数 = 6 + 1 = <strong>7</strong>.
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= arr.length&nbsp;&lt;= 300</code></li>
+	<li><code>1 &lt;= arr[0].length&nbsp;&lt;= 300</code></li>
+	<li><code>0 &lt;= arr[i][j] &lt;= 1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int countSquares(int[][] matrix) {", "        int m = matrix.length, n = matrix[0].length, ans = 0;", "        // dp 就地写在 matrix 上：", "        // dp[i][j] = 以 (i,j) 为右下角的全 1 正方形最大边长", "        for (int i = 0; i < m; i++) {", "            for (int j = 0; j < n; j++) {", "                if (matrix[i][j] == 0) continue;   // 0 格当不了右下角", "                if (i > 0 && j > 0) {              // 第一行、第一列的边长只能是 1", "                    int side = Math.min(matrix[i - 1][j],", "                            Math.min(matrix[i][j - 1], matrix[i - 1][j - 1]));", "                    matrix[i][j] = side + 1;", "                }", "                // 边长 k 的正方形在这里被数 k 次，正好不重不漏", "                ans += matrix[i][j];", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1277. 统计全为 1 的正方形子矩阵 —— 图解：复刻 Solution.java 的就地 DP，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { matrix: [[0, 1, 1, 1], [1, 1, 1, 1], [0, 1, 1, 1]] };
+
+function trace(input) {
+  var a = input.matrix.map(function (r) { return r.slice(); });
+  var m = a.length, n = a[0].length;
+  var ans = 0;
+  var frames = [];
+  var innerDone = false;   // 已拍过「第一次三邻格取 min」
+  var bigDone = false;     // 已拍过「第一次算出边长 ≥ 3」
+
+  function gridPanel(marks, title) {
+    return Viz.grid(a, { title: title || 'dp 就写在矩阵上：值 = 以该格为右下角的最大边长', marks: marks || {} });
+  }
+
+  for (var i = 0; i < m; i++) {
+    for (var j = 0; j < n; j++) {
+      if (a[i][j] === 0) continue;
+      if (i > 0 && j > 0) {
+        var minNb = Math.min(a[i - 1][j], Math.min(a[i][j - 1], a[i - 1][j - 1]));
+        a[i][j] = minNb + 1;
+        var mk = {};
+        mk[(i - 1) + ',' + j] = 'win';
+        mk[i + ',' + (j - 1)] = 'win';
+        mk[(i - 1) + ',' + (j - 1)] = 'win';
+        mk[i + ',' + j] = 'new';
+        if (!innerDone) {
+          innerDone = true;
+          frames.push(Viz.frame('matrix[i][j] = side + 1;',
+            '(' + i + ',' + j + ')：取上、左、左上最小的 ' + minNb + '，加 1 得边长 ' + a[i][j], [gridPanel(mk)]));
+        } else if (a[i][j] >= 3 && !bigDone) {
+          bigDone = true;
+          frames.push(Viz.frame('matrix[i][j] = side + 1;',
+            '(' + i + ',' + j + ')：三个邻居都是 ' + minNb + '，边长 ' + a[i][j] + ' —— 能拼出大正方形', [gridPanel(mk)]));
+        }
+      }
+      ans += a[i][j];
+    }
+    if (i === 0) {
+      frames.push(Viz.frame('if (matrix[i][j] == 0) continue;', '第一行扫完：0 格跳过，1 格边长就是 1', [gridPanel({})]));
+    }
+  }
+  frames.push(Viz.frame('return ans;', '全部累加：dp 值之和 = 正方形总数 ' + ans,
+    [gridPanel({}), Viz.vars([{ name: 'ans', v: ans, cls: 'done' }])]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

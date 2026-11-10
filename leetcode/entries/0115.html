@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>不同的子序列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 222 / 1159</span>
+  <nav class="pn"><a href="0080.html">上一篇</a><a href="offer-03.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">115. </span>不同的子序列</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 21</li><li class="algo">动态规划</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">DP：dp[j] 是 s 前 i 个字符匹配 t 前 j 个的方案数；字符相等时 dp[j] += dp[j-1]，一维数组倒序滚动。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>二维递推：<code>dp[i][j] = dp[i-1][j]</code>（不用 <code>s[i]</code>）<code>+ (s[i]==t[j] ? dp[i-1][j-1] : 0)</code>（用 <code>s[i]</code> 匹配）；边界 <code>dp[i][0] = 1</code>。</li><li>压成一行后<strong>必须倒序扫 j</strong>：这样 <code>dp[j-1]</code> 还是上一行的旧值；正序会先把 <code>dp[j-1]</code> 更新成本轮的，污染加法。</li><li>内部用 <code>long</code> 累加防溢出，返回时转 <code>int</code>——题面保证答案在 32 位范围内。</li><li><code>t</code> 比 <code>s</code> 长时答案自然是 0：<code>dp[j]</code> 只会从更小的 <code>j-1</code> 传上来，凑不够。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> numDistinct(<span class="t">String</span> s, <span class="t">String</span> t) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = s.length(), n = t.length();</span><span class="ln"><span class="no">4</span>        <span class="c">// dp[j]：s 前 i 个字符里匹配 t 前 j 个的方案数，逐行覆盖滚动</span></span><span class="ln"><span class="no">5</span>        <span class="k">long</span>[] dp = <span class="k">new</span> <span class="k">long</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">6</span>        dp[<span class="n">0</span>] = <span class="n">1</span>;                                   <span class="c">// 匹配空 t：什么都不选，1 种</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= m; i++) {</span><span class="ln"><span class="no">8</span>            <span class="k">char</span> c = s.charAt(i - <span class="n">1</span>);</span><span class="ln"><span class="no">9</span>            <span class="c">// 倒序扫：dp[j-1] 还是上一行的旧值，正序会被本轮污染</span></span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> j = n; j &gt;= <span class="n">1</span>; j--) {</span><span class="ln"><span class="no">11</span>                <span class="k">if</span> (c == t.charAt(j - <span class="n">1</span>)) dp[j] += dp[j - <span class="n">1</span>];</span><span class="ln"><span class="no">12</span>            }</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> (<span class="k">int</span>) dp[n];                          <span class="c">// 题面保证结果在 int 范围内</span></span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你两个字符串 <code>s</code>和 <code>t</code> ，统计并返回在 <code>s</code> 的 <strong>子序列</strong> 中 <code>t</code> 出现的个数。</p>
+
+<p>测试用例保证结果在 32 位有符号整数范围内。</p>
+
+
+
+<p><strong>示例&nbsp;1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "rabbbit", t = "rabbit"<code>
+<strong>输出</strong></code><strong>：</strong><code>3
+</code><strong>解释：</strong>
+如下所示, 有 3 种可以从 s 中得到 <code>"rabbit" 的方案</code>。
+<code><strong><u>rabb</u></strong>b<strong><u>it</u></strong></code>
+<code><strong><u>ra</u></strong>b<strong><u>bbit</u></strong></code>
+<code><strong><u>rab</u></strong>b<strong><u>bit</u></strong></code></pre>
+
+<p><strong>示例&nbsp;2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "babgbag", t = "bag"
+<code><strong>输出</strong></code><strong>：</strong><code>5
+</code><strong>解释：</strong>
+如下所示, 有 5 种可以从 s 中得到 <code>"bag" 的方案</code>。 
+<code><strong><u>ba</u></strong>b<u><strong>g</strong></u>bag</code>
+<code><strong><u>ba</u></strong>bgba<strong><u>g</u></strong></code>
+<code><u><strong>b</strong></u>abgb<strong><u>ag</u></strong></code>
+<code>ba<u><strong>b</strong></u>gb<u><strong>ag</strong></u></code>
+<code>babg<strong><u>bag</u></strong></code>
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length, t.length &lt;= 1000</code></li>
+	<li><code>s</code> 和 <code>t</code> 由英文字母组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int numDistinct(String s, String t) {", "        int m = s.length(), n = t.length();", "        // dp[j]：s 前 i 个字符里匹配 t 前 j 个的方案数，逐行覆盖滚动", "        long[] dp = new long[n + 1];", "        dp[0] = 1;                                   // 匹配空 t：什么都不选，1 种", "        for (int i = 1; i <= m; i++) {", "            char c = s.charAt(i - 1);", "            // 倒序扫：dp[j-1] 还是上一行的旧值，正序会被本轮污染", "            for (int j = n; j >= 1; j--) {", "                if (c == t.charAt(j - 1)) dp[j] += dp[j - 1];", "            }", "        }", "        return (int) dp[n];                          // 题面保证结果在 int 范围内", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 115. 不同的子序列 —— 图解：复刻 Solution.java 的一维滚动 DP，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 代码只留一行 dp（倒序滚动）；图画画完整二维表，好看清「上 + 左上」两个来源。
+
+var STORY_INPUT = { s: 'babgbag', t: 'bag' };
+
+function trace(input) {
+  var s = input.s, t = input.t;
+  var m = s.length, n = t.length;
+  var frames = [];
+  var INIT = 'dp[0] = 1;';
+  var FORJ = 'for (int j = n; j >= 1; j--) {';
+  var ADD = 'if (c == t.charAt(j - 1)) dp[j] += dp[j - 1];';
+  var RET = 'return (int) dp[n];';
+
+  // dp1 是和 Java 一致的一维滚动数组；shown 是画图用的完整二维表，逐行补齐
+  var dp1 = [];
+  for (var j0 = 0; j0 <= n; j0++) dp1.push(j0 === 0 ? 1 : 0);
+  var shown = [];
+  for (var r0 = 0; r0 <= m; r0++) {
+    shown.push([]);
+    for (var c0 = 0; c0 <= n; c0++) shown[r0].push('');
+  }
+  shown[0] = dp1.slice();
+
+  function gridPanel(marks) {
+    return Viz.grid(shown.map(function (row) { return row.slice(); }), {
+      title: 'dp 表：行 = s 前 i 个字符，列 = t 前 j 个字符',
+      rowLabels: ['∅'].concat(s.split('')),
+      colLabels: ['∅'].concat(t.split('')),
+      corner: 's＼t',
+      marks: marks || {}
+    });
+  }
+
+  // 第 0 行：空 s 匹配非空 t 是 0 种，匹配空 t 是 1 种
+  var m0 = {};
+  for (var q = 0; q <= n; q++) m0['0,' + q] = 'win';
+  m0['0,0'] = 'new';
+  frames.push(Viz.frame(INIT, 'dp[i][j]：s 前 i 个字符匹配 t 前 j 个的方案数；第 0 行只有 dp[0]=1',
+    [gridPanel(m0)]));
+
+  var firstAdd = null, lastAdd = null, reverseFrame = null;
+  for (var i = 1; i <= m; i++) {
+    var c = s[i - 1];
+    if (i === 2) {
+      // 进入第 2 行：上一行已填好，展示「倒序扫、读上一行旧值」
+      var mRow = {};
+      for (var q2 = 0; q2 <= n; q2++) mRow[(i - 1) + ',' + q2] = 'win';
+      reverseFrame = Viz.frame(FORJ, '倒序扫 j：dp[j-1] 读到的还是上一行旧值，正序会被本轮覆盖',
+        [gridPanel(mRow)]);
+    }
+    for (var j = n; j >= 1; j--) {
+      if (c === t[j - 1]) {
+        var old = dp1[j - 1];
+        dp1[j] += old;
+        if (!firstAdd) firstAdd = { i: i, j: j, old: old };
+        if (j === n) lastAdd = { i: i, j: j, old: old, val: dp1[j] };
+      }
+    }
+    shown[i] = dp1.slice();
+  }
+
+  function addFrame(e, key) {
+    var mk = {};
+    mk[(e.i - 1) + ',' + e.j] = 'win';
+    mk[(e.i - 1) + ',' + (e.j - 1)] = 'win';
+    mk[e.i + ',' + e.j] = 'new';
+    return Viz.frame(ADD, key, [gridPanel(mk)]);
+  }
+  if (firstAdd) {
+    frames.push(addFrame(firstAdd, 'c=' + s[firstAdd.i - 1] + ' 命中 t：dp[j] += 左上旧值 ' + firstAdd.old + '（用这个字符去匹配）'));
+  }
+  if (reverseFrame) frames.push(reverseFrame);
+  if (lastAdd && !(firstAdd.i === lastAdd.i && firstAdd.j === lastAdd.j)) {
+    frames.push(addFrame(lastAdd, 't 的最后一个字符又命中：dp[' + lastAdd.j + '] += ' + lastAdd.old + '，累到 ' + lastAdd.val));
+  }
+
+  // 收尾：右下角就是答案
+  var mEnd = {};
+  mEnd[m + ',' + n] = 'done';
+  frames.push(Viz.frame(RET, '填完表：右下角 dp[' + m + '][' + n + '] = ' + dp1[n] + '，就是答案',
+    [gridPanel(mEnd), Viz.vars([{ name: 'dp[n]', v: dp1[n], cls: 'chg' }])]));
+
+  return { frames: frames, result: dp1[n] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

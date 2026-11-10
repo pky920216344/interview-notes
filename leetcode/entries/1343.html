@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大小为 K 且平均值大于等于阈值的子数组数目 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 694 / 1159</span>
+  <nav class="pn"><a href="0255.html">上一篇</a><a href="0095.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1343. </span>大小为 K 且平均值大于等于阈值的子数组数目</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">滑动窗口</li><li class="tag">数组</li><li class="tag">滑动窗口</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">定长滑窗：「平均值 ≥ threshold」换成「窗口和 ≥ threshold×k」的整数判断；每步滑入右边一个、滑出左边一个。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>平均值判断换成 <code>sum ≥ (long)threshold×k</code>，避免除法；乘积用 <code>long</code> 防溢出。</li><li>先把前 <code>k</code> 个加进 <code>sum</code>；窗口凑满后每步判一次，判完立刻减掉最左元素，为下一个窗口做准备。</li><li>定长窗口不用左右指针来回动，只有「进一个、出一个」，一遍扫完。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> numOfSubarrays(<span class="k">int</span>[] arr, <span class="k">int</span> k, <span class="k">int</span> threshold) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 平均值 ≥ threshold ⟺ 窗口和 ≥ threshold×k，全部用 long 防止相乘溢出</span></span><span class="ln"><span class="no">4</span>        <span class="k">long</span> limit = (<span class="k">long</span>) threshold * k;</span><span class="ln"><span class="no">5</span>        <span class="k">long</span> sum = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; arr.length; i++) {</span><span class="ln"><span class="no">8</span>            sum += arr[i];</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (i &lt; k - <span class="n">1</span>) <span class="k">continue</span>;   <span class="c">// 窗口还没凑满 k 个</span></span><span class="ln"><span class="no">10</span>            <span class="c">// [i-k+1, i] 是一个完整窗口：判定完就把最左边的元素移出窗口</span></span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (sum &gt;= limit) ans++;</span><span class="ln"><span class="no">12</span>            sum -= arr[i - k + <span class="n">1</span>];</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组&nbsp;<code>arr</code>&nbsp;和两个整数 <code>k</code>&nbsp;和 <code>threshold</code>&nbsp;。</p>
+
+<p>请你返回长度为 <code>k</code>&nbsp;且平均值大于等于&nbsp;<code>threshold</code>&nbsp;的子数组数目。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [2,2,2,2,5,5,5,8], k = 3, threshold = 4
+<strong>输出：</strong>3
+<strong>解释：</strong>子数组 [2,5,5],[5,5,5] 和 [5,5,8] 的平均值分别为 4，5 和 6 。其他长度为 3 的子数组的平均值都小于 4 （threshold 的值)。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [11,13,17,23,29,31,7,5,2,3], k = 3, threshold = 5
+<strong>输出：</strong>6
+<strong>解释：</strong>前 6 个长度为 3 的子数组平均值都大于 5 。注意平均值不是整数。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= arr.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>1 &lt;= arr[i] &lt;= 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= k &lt;= arr.length</code></li>
+	<li><code>0 &lt;= threshold &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int numOfSubarrays(int[] arr, int k, int threshold) {", "        // 平均值 ≥ threshold ⟺ 窗口和 ≥ threshold×k，全部用 long 防止相乘溢出", "        long limit = (long) threshold * k;", "        long sum = 0;", "        int ans = 0;", "        for (int i = 0; i < arr.length; i++) {", "            sum += arr[i];", "            if (i < k - 1) continue;   // 窗口还没凑满 k 个", "            // [i-k+1, i] 是一个完整窗口：判定完就把最左边的元素移出窗口", "            if (sum >= limit) ans++;", "            sum -= arr[i - k + 1];", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1343. 大小为 K 且平均值大于等于阈值的子数组数目 —— 图解：复刻 Solution.java 的定长滑窗，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [2, 2, 2, 2, 5, 5, 5, 8], k: 3, threshold: 4 };
+
+function trace(input) {
+  var arr = input.arr, k = input.k, limit = input.threshold * k;
+  var frames = [];
+  var sum = 0, ans = 0, hitSnapped = false;
+
+  function cellsPanel(i, final) {
+    var marks = {};
+    if (final) { for (var j = arr.length - k; j < arr.length; j++) marks[j] = 'done'; }
+    else marks[i] = 'cur';
+    var range = final
+      ? { from: arr.length - k, to: arr.length - 1, label: '最后一个窗口' }
+      : { from: i - k + 1, to: i, label: '窗口和 ' + sum, cls: sum >= limit ? 'win' : '' };
+    return Viz.cells(arr.map(String), { title: 'arr', marks: marks, range: range });
+  }
+  function varsPanel(chg) {
+    return Viz.vars([
+      { name: 'sum 窗口和', v: String(sum), cls: chg === 'sum' ? 'chg' : '' },
+      { name: 'limit = threshold×k', v: String(limit), cls: '' },
+      { name: 'ans 达标数', v: String(ans), cls: chg === 'ans' ? 'chg' : '' }
+    ]);
+  }
+
+  for (var i = 0; i < arr.length; i++) {
+    sum += arr[i];
+    if (i < k - 1) continue;
+    if (i === k - 1) {
+      frames.push(Viz.frame('if (sum >= limit) ans++;',
+        '第一个窗口凑满：和 ' + sum + (sum >= limit ? ' ≥ ' : ' < ') + limit + (sum >= limit ? '，计入' : '，不计入'),
+        [cellsPanel(i, false), varsPanel('sum')]));
+    }
+    if (i === k && arr.length > k) {
+      frames.push(Viz.frame('sum -= arr[i - k + 1];',
+        '滑窗：移出最左的 ' + arr[i - k + 1] + '，和 ' + sum + ' → ' + (sum - arr[i - k + 1]) + '，下一轮再滑入新元素',
+        [cellsPanel(i, false), varsPanel('sum')]));
+    }
+    if (sum >= limit) {
+      ans++;
+      if (!hitSnapped) {
+        hitSnapped = true;
+        frames.push(Viz.frame('if (sum >= limit) ans++;',
+          '窗口 [' + (i - k + 1) + ',' + i + '] 和 ' + sum + ' ≥ ' + limit + '：ans +1',
+          [cellsPanel(i, false), varsPanel('ans')]));
+      }
+    }
+    sum -= arr[i - k + 1];
+  }
+
+  frames.push(Viz.frame('return ans;',
+    '扫完：共 ' + ans + ' 个长度为 ' + k + ' 的窗口达标',
+    [cellsPanel(arr.length - 1, true), varsPanel('ans')]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

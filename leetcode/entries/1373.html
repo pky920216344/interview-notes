@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉搜索子树的最大键值和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 735 / 1159</span>
+  <nav class="pn"><a href="0589.html">上一篇</a><a href="0184.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1373. </span>二叉搜索子树的最大键值和</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">动态规划</li><li class="aux">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉搜索树</li><li class="tag">动态规划</li><li class="tag">二叉树</li><li class="tag">dp-on-trees</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">后序一趟：每棵子树上报「是否 BST、min、max、和」，合法就顺手刷新答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>自底向上：叶子天然是 BST；父结点要求两边都合法，且 <code>左子树 max &lt; 我 &lt; 右子树 min</code>（严格）。</li><li>非法子树向上传 <code>[0,0,0,0]</code>：某段一旦破功，它所有祖先整支作废，不必再算和。</li><li>合法子树和 = <code>val + 左和 + 右和</code>，算出就刷新全局 <code>best</code>；空子树贡献 0，所以答案下限是 0（全负树输出 0）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)（递归栈）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">long</span> best = <span class="n">0</span>;   <span class="c">// 空树也是合法 BST（和为 0），答案下限是 0</span></span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> maxSumBST(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">5</span>        best = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        dfs(root);</span><span class="ln"><span class="no">7</span>        <span class="k">return</span> (<span class="k">int</span>) best;</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="c">// 返回 long[4]：{是否 BST(1/0)，子树最小值，子树最大值，子树键值和}</span></span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">long</span>[] dfs(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="k">new</span> <span class="k">long</span>[]{<span class="n">1</span>, <span class="t">Long</span>.MAX_VALUE, <span class="t">Long</span>.MIN_VALUE, <span class="n">0</span>};</span><span class="ln"><span class="no">13</span>        <span class="k">long</span>[] l = dfs(node.left), r = dfs(node.right);</span><span class="ln"><span class="no">14</span>        <span class="c">// 两边都是 BST，且当前值严格大于左子树最大、小于右子树最小，合并后才是 BST</span></span><span class="ln"><span class="no">15</span>        <span class="k">if</span> (l[<span class="n">0</span>] == <span class="n">0</span> || r[<span class="n">0</span>] == <span class="n">0</span> || node.val &lt;= l[<span class="n">2</span>] || node.val &gt;= r[<span class="n">1</span>]) {</span><span class="ln"><span class="no">16</span>            <span class="k">return</span> <span class="k">new</span> <span class="k">long</span>[]{<span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>};   <span class="c">// 非法子树：其他字段没有意义</span></span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">long</span> sum = node.val + l[<span class="n">3</span>] + r[<span class="n">3</span>];</span><span class="ln"><span class="no">19</span>        <span class="k">if</span> (sum &gt; best) best = sum;          <span class="c">// 合法就顺手更新全局答案</span></span><span class="ln"><span class="no">20</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">long</span>[]{<span class="n">1</span>, <span class="t">Math</span>.min(l[<span class="n">1</span>], node.val), <span class="t">Math</span>.max(r[<span class="n">2</span>], node.val), sum};</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一棵以 <code>root</code> 为根的 <strong>二叉树</strong> ，请你返回 <strong>任意</strong> 二叉搜索子树的最大键值和。</p>
+
+<p>二叉搜索树的定义如下：</p>
+
+<ul>
+	<li>任意节点的左子树中的键值都 <strong>小于</strong> 此节点的键值。</li>
+	<li>任意节点的右子树中的键值都 <strong>大于</strong> 此节点的键值。</li>
+	<li>任意节点的左子树和右子树都是二叉搜索树。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/21f64e882631.png" style="height: 250px; width: 320px;" /></p>
+
+<pre>
+<strong>输入：</strong>root = [1,4,3,2,4,2,5,null,null,null,null,null,null,4,6]
+<strong>输出：</strong>20
+<strong>解释：</strong>键值为 3 的子树是和最大的二叉搜索树。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/290d2f8e62a9.png" style="height: 180px; width: 134px;" /></p>
+
+<pre>
+<strong>输入：</strong>root = [4,3,null,1,2]
+<strong>输出：</strong>2
+<strong>解释：</strong>键值为 2 的单节点子树是和最大的二叉搜索树。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [-4,-2,-5]
+<strong>输出：</strong>0
+<strong>解释：</strong>所有节点键值都为负数，和最大的二叉搜索树为空。
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [2,1,3]
+<strong>输出：</strong>6
+</pre>
+
+<p><strong>示例 5：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [5,4,8,3,null,6,3]
+<strong>输出：</strong>7
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>每棵树有 <code>1</code> 到 <code>40000</code> 个节点。</li>
+	<li>每个节点的键值在 <code>[-4 * 10^4 , 4 * 10^4]</code> 之间。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private long best = 0;   // 空树也是合法 BST（和为 0），答案下限是 0", "", "    public int maxSumBST(TreeNode root) {", "        best = 0;", "        dfs(root);", "        return (int) best;", "    }", "", "    // 返回 long[4]：{是否 BST(1/0)，子树最小值，子树最大值，子树键值和}", "    private long[] dfs(TreeNode node) {", "        if (node == null) return new long[]{1, Long.MAX_VALUE, Long.MIN_VALUE, 0};", "        long[] l = dfs(node.left), r = dfs(node.right);", "        // 两边都是 BST，且当前值严格大于左子树最大、小于右子树最小，合并后才是 BST", "        if (l[0] == 0 || r[0] == 0 || node.val <= l[2] || node.val >= r[1]) {", "            return new long[]{0, 0, 0, 0};   // 非法子树：其他字段没有意义", "        }", "        long sum = node.val + l[3] + r[3];", "        if (sum > best) best = sum;          // 合法就顺手更新全局答案", "        return new long[]{1, Math.min(l[1], node.val), Math.max(r[2], node.val), sum};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1373. 二叉搜索子树的最大键值和 —— 图解：后序上报 (是否BST, min, max, 和)，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { tree: [5, 4, 8, 3, null, 6, 3] };
+
+function trace(input) {
+  var level = input.tree;
+
+  function build(arr) {
+    if (!arr.length || arr[0] === null) return null;
+    var root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var n = q.shift();
+      if (i < arr.length) { if (arr[i] !== null) { n.left = { idx: i, val: arr[i], left: null, right: null }; q.push(n.left); } i++; }
+      if (i < arr.length) { if (arr[i] !== null) { n.right = { idx: i, val: arr[i], left: null, right: null }; q.push(n.right); } i++; }
+    }
+    return root;
+  }
+
+  var root = build(level);
+  var frames = [];
+  var best = 0;
+  var INF = 1e18;
+  var shotLeaf = false, shotMerge = false, shotInvalid = false, shotRootInvalid = false;
+  var marks = {};   // 层序下标 -> cls：cur 当前判定、win 已判合法、bad 报废子树
+
+  function treePanel() {
+    return Viz.tree(level, { title: '二叉树（黄 = 已判合法，红 = 报废子树）', marks: marks });
+  }
+  function varsPanel(node, ok, sum) {
+    var items = [];
+    if (node != null) {
+      items.push({ name: '当前结点', v: String(node.val), cls: 'cur' });
+      items.push({ name: '是否 BST', v: ok ? '是' : '否', cls: ok ? 'done' : 'bad' });
+      if (ok) items.push({ name: '子树和', v: String(sum) });
+    }
+    items.push({ name: 'best', v: String(best) });
+    return Viz.vars(items);
+  }
+  function snap(at, key, node, ok, sum) {
+    frames.push(Viz.frame(at, key, [treePanel(), varsPanel(node, ok, sum)]));
+  }
+  function demoteCur(to) {
+    for (var k in marks) if (marks[k] === 'cur') marks[k] = to;
+  }
+
+  function dfs(node) {
+    if (node === null) return { ok: 1, min: INF, max: -INF, sum: 0 };
+    var l = dfs(node.left), r = dfs(node.right);
+    var ok = l.ok === 1 && r.ok === 1 && node.val > l.max && node.val < r.min;
+    if (!ok) {
+      marks[node.idx] = 'bad';
+      if (!shotInvalid) {
+        shotInvalid = true;
+        snap('return new long[]{0, 0, 0, 0};',
+          '结点 ' + node.val + ' 破功：' + why(node, l, r) + '，整支子树报废', node, false, null);
+      } else if (node === root && !shotRootInvalid) {
+        shotRootInvalid = true;
+        snap('return new long[]{0, 0, 0, 0};',
+          '根 ' + node.val + ' 也被连累：一侧子树不是 BST，整树作废', node, false, null);
+      }
+      return { ok: 0, min: 0, max: 0, sum: 0 };
+    }
+    var sum = node.val + l.sum + r.sum;
+    if (sum > best) {
+      best = sum;
+      demoteCur('win');
+      marks[node.idx] = 'cur';
+      var isLeaf = node.left === null && node.right === null;
+      if (isLeaf && !shotLeaf) {
+        shotLeaf = true;
+        snap('if (sum > best) best = sum;',
+          '叶子 ' + node.val + '：单结点就是 BST，和 ' + sum + ' 先记进 best', node, true, sum);
+      } else if (!isLeaf && !shotMerge) {
+        shotMerge = true;
+        snap('if (sum > best) best = sum;',
+          '结点 ' + node.val + ' 合并子树：仍是 BST，和 ' + sum + ' 刷新 best', node, true, sum);
+      }
+    }
+    return { ok: 1, min: Math.min(l.min, node.val), max: Math.max(r.max, node.val), sum: sum };
+  }
+
+  function why(node, l, r) {
+    if (l.ok === 0) return '左子树已不是 BST';
+    if (r.ok === 0) return '右子树已不是 BST';
+    if (node.val <= l.max) return node.val + ' ≤ 左子树最大 ' + l.max;
+    return node.val + ' ≥ 右子树最小 ' + r.min;
+  }
+
+  dfs(root);
+
+  demoteCur('done');
+  frames.push(Viz.frame('return (int) best;', '扫完全树：最大的合法 BST 子树和为 ' + best,
+    [treePanel(), varsPanel(null, true, null)]));
+
+  return { frames: frames, result: best };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

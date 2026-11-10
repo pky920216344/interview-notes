@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>拼车 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 601 / 1159</span>
+  <nav class="pn"><a href="offer-49.html">上一篇</a><a href="0653.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1094. </span>拼车</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">前缀和/差分</li><li class="tag">数组</li><li class="tag">前缀和</li><li class="tag">排序</li><li class="tag">模拟</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">差分数组：每条行程在上车点 +人数、下车点 −人数，前缀和扫一遍，任何一刻超过容量就失败。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>diff[from] += n</code>、<code>diff[to] -= n</code>：把「区间加人数」压成两个端点，<code>L</code> 是位置最大值 1000。</li><li>前缀和扫一遍得到每站车上人数；同一站的加减都生效后再检查，正好对应「先下后上」。</li><li>任何一刻 <code>on &gt; capacity</code> 返回 <code>false</code>；扫完没超就是 <code>true</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + L)，空间复杂度 O(L)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> carPooling(<span class="k">int</span>[][] trips, <span class="k">int</span> capacity) {</span><span class="ln"><span class="no">3</span>        <span class="c">// diff[pos]：pos 站车上人数的净变化，位置最大 1000</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] diff = <span class="k">new</span> <span class="k">int</span>[<span class="n">1001</span>];</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span>[] t : trips) {</span><span class="ln"><span class="no">6</span>            diff[t[<span class="n">1</span>]] += t[<span class="n">0</span>];</span><span class="ln"><span class="no">7</span>            diff[t[<span class="n">2</span>]] -= t[<span class="n">0</span>];</span><span class="ln"><span class="no">8</span>        }</span><span class="ln"><span class="no">9</span>        <span class="k">int</span> on = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> pos = <span class="n">0</span>; pos &lt;= <span class="n">1000</span>; pos++) {</span><span class="ln"><span class="no">11</span>            on += diff[pos];</span><span class="ln"><span class="no">12</span>            <span class="c">// 同一站先下后上：加减都生效后再检查</span></span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (on &gt; capacity) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>车上最初有&nbsp;<code>capacity</code>&nbsp;个空座位。车&nbsp;<strong>只能&nbsp;</strong>向一个方向行驶（也就是说，<strong>不允许掉头或改变方向</strong>）</p>
+
+<p>给定整数&nbsp;<code>capacity</code>&nbsp;和一个数组 <code>trips</code> , &nbsp;<code>trips[i] = [numPassengers<sub>i</sub>, from<sub>i</sub>, to<sub>i</sub>]</code>&nbsp;表示第 <code>i</code> 次旅行有&nbsp;<code>numPassengers<sub>i</sub></code>&nbsp;乘客，接他们和放他们的位置分别是&nbsp;<code>from<sub>i</sub></code>&nbsp;和&nbsp;<code>to<sub>i</sub></code>&nbsp;。这些位置是从汽车的初始位置向东的公里数。</p>
+
+<p>乘客在接上新乘客之前会被放下。在路线的每个点，车内乘客总数不得超过 <code>capacity</code>。</p>
+
+<p>当且仅当你可以在所有给定的行程中接送所有乘客时，返回&nbsp;<code>true</code>，否则请返回 <code>false</code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>trips = [[2,1,5],[3,3,7]], capacity = 4
+<strong>输出：</strong>false
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>trips = [[2,1,5],[3,3,7]], capacity = 5
+<strong>输出：</strong>true
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= trips.length &lt;= 1000</code></li>
+	<li><code>trips[i].length == 3</code></li>
+	<li><code>1 &lt;= numPassengers<sub>i</sub>&nbsp;&lt;= 100</code></li>
+	<li><code>0 &lt;= from<sub>i</sub>&nbsp;&lt; to<sub>i</sub>&nbsp;&lt;= 1000</code></li>
+	<li><code>1 &lt;= capacity &lt;= 10<sup>5</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean carPooling(int[][] trips, int capacity) {", "        // diff[pos]：pos 站车上人数的净变化，位置最大 1000", "        int[] diff = new int[1001];", "        for (int[] t : trips) {", "            diff[t[1]] += t[0];", "            diff[t[2]] -= t[0];", "        }", "        int on = 0;", "        for (int pos = 0; pos <= 1000; pos++) {", "            on += diff[pos];", "            // 同一站先下后上：加减都生效后再检查", "            if (on > capacity) return false;", "        }", "        return true;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1094. 拼车 —— 图解：差分数组 + 前缀和，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { trips: [[3, 2, 5], [4, 5, 7]], capacity: 4 };
+
+function trace(input) {
+  var cap = input.capacity;
+  var diff = {};          // 位置 -> 净变化，对应 Java 的 diff 数组
+  var maxTo = 0;
+  var frames = [];
+
+  // 差分面板：0..maxTo 每个位置的净变化；mark 是刚写入的位置
+  function diffPanel(mark) {
+    var items = [], marks = {};
+    for (var pos = 0; pos <= maxTo; pos++) items.push(diff[pos] === undefined ? 0 : diff[pos]);
+    if (mark !== undefined) marks[mark] = 'new';
+    return Viz.cells(items, { title: '差分数组 diff：上车 +人数，下车 −人数', marks: marks });
+  }
+
+  // 前缀和扫描面板：p 为当前位置，on 为车上人数；p<0 表示扫完
+  function scanPanel(p, on) {
+    var items = [], marks = {};
+    for (var pos = 0; pos <= maxTo; pos++) {
+      items.push(diff[pos] === undefined ? 0 : diff[pos]);
+      if (p >= 0 && pos < p) marks[pos] = 'win';
+    }
+    if (p >= 0) marks[p] = 'cur';
+    var pointers = p >= 0 ? [{ at: p, label: 'pos', cls: 'p-right' }] : [];
+    return Viz.cells(items, { title: '前缀和扫过每一站', marks: marks, pointers: pointers });
+  }
+
+  input.trips.forEach(function (t, i) {
+    diff[t[1]] = (diff[t[1]] || 0) + t[0];
+    maxTo = Math.max(maxTo, t[2]);
+    if (i < 2) {
+      frames.push(Viz.frame('diff[t[1]] += t[0];',
+        '第 ' + (i + 1) + ' 条 [' + t.join(',') + ']：' + t[1] + ' 站 +' + t[0] + '，' + t[2] + ' 站稍后 −' + t[0],
+        [diffPanel(t[1])]));
+    }
+    diff[t[2]] = (diff[t[2]] || 0) - t[0];
+    maxTo = Math.max(maxTo, t[2]);
+  });
+
+  var on = 0;
+  for (var pos = 0; pos <= maxTo; pos++) {
+    on += diff[pos] || 0;
+    // 故事帧：扫到「先下后上」的临界站（示例里固定是第 5 站）
+    if (pos === 5) {
+      frames.push(Viz.frame('on += diff[pos];',
+        '扫到 5 站：这站的下、上客都已生效，车上 ' + on + ' 人' + (on === cap ? '，正好等于容量' : ''),
+        [scanPanel(pos, on), Viz.vars([{ name: 'on', v: on }, { name: 'capacity', v: cap }])]));
+    }
+    if (on > cap) {
+      frames.push(Viz.frame('if (on > capacity) return false;',
+        '扫到 ' + pos + ' 站：车上 ' + on + ' 人超过容量 ' + cap + '，返回 false',
+        [scanPanel(pos, on), Viz.vars([{ name: 'on', v: on }, { name: 'capacity', v: cap }])]));
+      return { frames: frames, result: false };
+    }
+  }
+
+  frames.push(Viz.frame('return true;', '扫完全程没有一刻超载，返回 true',
+    [scanPanel(-1, on), Viz.vars([{ name: 'on', v: on }, { name: 'capacity', v: cap }])]));
+  return { frames: frames, result: true };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

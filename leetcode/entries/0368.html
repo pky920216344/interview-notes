@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最大整除子集 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 935 / 1159</span>
+  <nav class="pn"><a href="0655.html">上一篇</a><a href="0370.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">368. </span>最大整除子集</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">动态规划</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">排序后整除关系构成链（a|b 且 b|c 则 a|c），DP 求「以 i 结尾的最长整除链」，用 prev 回溯出子集。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先排序：链里元素从小到大，新元素只需能被<strong>链尾</strong>整除，就能被链上所有元素整除。</li><li><code>dp[i]</code> = 以 <code>nums[i]</code> 结尾的最大子集大小；转移 <code>dp[i] = max(dp[j] + 1)</code>，条件 <code>nums[i] % nums[j] == 0</code>。</li><li><code>prev[i]</code> 记从哪个 <code>j</code> 转来；从全局最大的 <code>dp[best]</code> 沿 <code>prev</code> 回溯再反转，就是答案。</li><li>排序后链式传递：新元素只需能被链尾整除，不用和链上每个元素两两检查。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">ArrayList</span>;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.<span class="t">Arrays</span>;</span><span class="ln"><span class="no">3</span><span class="k">import</span> java.util.<span class="t">Collections</span>;</span><span class="ln"><span class="no">4</span><span class="k">import</span> java.util.<span class="t">List</span>;</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; largestDivisibleSubset(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">8</span>        <span class="c">// 排序后整除关系成链：只要新元素能被链尾整除，就能被链上所有元素整除</span></span><span class="ln"><span class="no">9</span>        <span class="t">Arrays</span>.sort(nums);</span><span class="ln"><span class="no">10</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">11</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[n], prev = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">12</span>        <span class="t">Arrays</span>.fill(dp, <span class="n">1</span>);</span><span class="ln"><span class="no">13</span>        <span class="t">Arrays</span>.fill(prev, -<span class="n">1</span>);</span><span class="ln"><span class="no">14</span>        <span class="k">int</span> best = <span class="n">0</span>;   <span class="c">// 最长子集的结尾下标</span></span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">16</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; i; j++) {</span><span class="ln"><span class="no">17</span>                <span class="k">if</span> (nums[i] % nums[j] == <span class="n">0</span> &amp;&amp; dp[j] + <span class="n">1</span> &gt; dp[i]) {</span><span class="ln"><span class="no">18</span>                    dp[i] = dp[j] + <span class="n">1</span>;</span><span class="ln"><span class="no">19</span>                    prev[i] = j;</span><span class="ln"><span class="no">20</span>                }</span><span class="ln"><span class="no">21</span>            }</span><span class="ln"><span class="no">22</span>            <span class="k">if</span> (dp[i] &gt; dp[best]) best = i;</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="c">// 从链尾沿 prev 回溯，再反转成从小到大</span></span><span class="ln"><span class="no">25</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">26</span>        <span class="k">for</span> (<span class="k">int</span> i = best; i &gt;= <span class="n">0</span>; i = prev[i]) ans.add(nums[i]);</span><span class="ln"><span class="no">27</span>        <span class="t">Collections</span>.reverse(ans);</span><span class="ln"><span class="no">28</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">给你一个由 <strong>无重复</strong> 正整数组成的集合 <code>nums</code> ，请你找出并返回其中最大的整除子集 <code>answer</code> ，子集中每一元素对 <code>(answer[i], answer[j])</code> 都应当满足：
+<ul>
+	<li><code>answer[i] % answer[j] == 0</code> ，或</li>
+	<li><code>answer[j] % answer[i] == 0</code></li>
+</ul>
+
+<p>如果存在多个有效解子集，返回其中任何一个均可。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,3]
+<strong>输出：</strong>[1,2]
+<strong>解释：</strong>[1,3] 也会被视为正确答案。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,4,8]
+<strong>输出：</strong>[1,2,4,8]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= nums.length <= 1000</code></li>
+	<li><code>1 <= nums[i] <= 2 * 10<sup>9</sup></code></li>
+	<li><code>nums</code> 中的所有整数 <strong>互不相同</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.ArrayList;", "import java.util.Arrays;", "import java.util.Collections;", "import java.util.List;", "", "class Solution {", "    public List<Integer> largestDivisibleSubset(int[] nums) {", "        // 排序后整除关系成链：只要新元素能被链尾整除，就能被链上所有元素整除", "        Arrays.sort(nums);", "        int n = nums.length;", "        int[] dp = new int[n], prev = new int[n];", "        Arrays.fill(dp, 1);", "        Arrays.fill(prev, -1);", "        int best = 0;   // 最长子集的结尾下标", "        for (int i = 1; i < n; i++) {", "            for (int j = 0; j < i; j++) {", "                if (nums[i] % nums[j] == 0 && dp[j] + 1 > dp[i]) {", "                    dp[i] = dp[j] + 1;", "                    prev[i] = j;", "                }", "            }", "            if (dp[i] > dp[best]) best = i;", "        }", "        // 从链尾沿 prev 回溯，再反转成从小到大", "        List<Integer> ans = new ArrayList<>();", "        for (int i = best; i >= 0; i = prev[i]) ans.add(nums[i]);", "        Collections.reverse(ans);", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 368. 最大整除子集 —— 图解：复刻 Solution.java 的「排序 + DP 接链」，在关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 2, 4, 8, 3, 9] };
+
+function trace(input) {
+  var nums = input.nums.slice().sort(function (a, b) { return a - b; });
+  var n = nums.length;
+  var dp = [], prev = [];
+  for (var i = 0; i < n; i++) { dp.push(1); prev.push(-1); }
+  var best = 0, maxDp = 1;
+  var frames = [];
+  var sawChain3 = false, sawBest4 = false;
+
+  function arrPanel(title, arr, marks) {
+    return Viz.cells(arr, { title: title, marks: marks || {} });
+  }
+  function varsPanel(extra) {
+    var items = [
+      { name: '链尾 best', v: nums[best] + '（dp=' + maxDp + '）' }
+    ];
+    (extra || []).forEach(function (x) { items.push(x); });
+    return Viz.vars(items);
+  }
+  function snap(at, key, numMarks, dpMarks, extra) {
+    frames.push(Viz.frame(at, key, [
+      arrPanel('排序后的 nums', nums, numMarks),
+      arrPanel('dp[i]：以 nums[i] 结尾的最大子集大小', dp, dpMarks),
+      varsPanel(extra)
+    ]));
+  }
+
+  snap('Arrays.fill(dp, 1);', '先排序：整除链只能从小到大接；每个数自己就是长度 1 的子集',
+    {}, {});
+
+  for (i = 1; i < n; i++) {
+    for (var j = 0; j < i; j++) {
+      if (nums[i] % nums[j] === 0 && dp[j] + 1 > dp[i]) {
+        dp[i] = dp[j] + 1;
+        prev[i] = j;
+        var numMarks = {}, dpMarks = {};
+        numMarks[i] = 'cur';
+        numMarks[j] = 'hit';
+        dpMarks[i] = 'new';
+        dpMarks[j] = 'win';
+        var extra = [{ name: '转移', v: 'nums[' + i + '] % nums[' + j + '] == 0' }];
+        if (!sawChain3 && dp[i] === 3) {
+          sawChain3 = true;
+          snap('dp[i] = dp[j] + 1;', nums[i] + ' 能被 ' + nums[j] + ' 整除：接在以它结尾的子集后面，长度 ' + dp[i], numMarks, dpMarks, extra);
+        }
+        if (!sawBest4 && dp[i] >= 4 && dp[i] > maxDp) {
+          sawBest4 = true;
+          snap('dp[i] = dp[j] + 1;', nums[i] + ' 接出长度 ' + dp[i] + ' 的链，刷新全局最长', numMarks, dpMarks, extra);
+        }
+      }
+    }
+    if (dp[i] > maxDp) { maxDp = dp[i]; best = i; }
+  }
+
+  // 从链尾沿 prev 回溯
+  var ans = [];
+  var idxMarks = {};
+  for (i = best; i >= 0; i = prev[i]) { ans.push(nums[i]); idxMarks[i] = 'done'; }
+  ans.reverse();
+
+  snap('Collections.reverse(ans);',
+    '从链尾 ' + nums[best] + ' 沿 prev 回溯再反转：答案是 [' + ans.join(', ') + ']',
+    idxMarks, {}, [{ name: '答案', v: '[' + ans.join(', ') + ']', cls: 'chg' }]);
+
+  return { frames: frames, result: ans.slice().sort(function (a, b) { return a - b; }) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

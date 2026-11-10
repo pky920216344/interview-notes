@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>至少有5名直接下属的经理 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1119 / 1159</span>
+  <nav class="pn"><a href="0950.html">上一篇</a><a href="0355.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">570. </span>至少有5名直接下属的经理</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">SQL</li><li class="tag">数据库</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">关联子查询按 managerId = e.id 数直接下属，COUNT ≥ 5 的员工本人就是经理。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>「直接下属」= <code>managerId</code> 指向自己的人；对每个候选 e 用关联子查询计数。</li><li><strong>输出的是经理的 name</strong>（不是下属的名字，也不是 id）。</li><li>另一种写法：<code>GROUP BY managerId HAVING COUNT(*) &gt;= 5</code> 再 JOIN 回取名字——两步但同义。</li><li>NULL 的 managerId 不会误算（NULL 不等任何 id，顶层老板没有下属时不会被选中）。</li></ul></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)（managerId 建索引后近似 O(n)），空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 SQL 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span>-- 570（codetop 0570）至少有5名直接下属的经理（MySQL）</span><span class="ln"><span class="no">2</span>-- 题意：Employee(id, name, department, managerId)。找出至少有 5 个直接下属的经理，输出经理的 name。</span><span class="ln"><span class="no">3</span>-- 关联子查询数「直接向我汇报的人数」≥ 5。</span><span class="ln"><span class="no">4</span>SELECT e.name</span><span class="ln"><span class="no">5</span>FROM Employee e</span><span class="ln"><span class="no">6</span>WHERE (</span><span class="ln"><span class="no">7</span>    SELECT COUNT(*)</span><span class="ln"><span class="no">8</span>    FROM Employee r</span><span class="ln"><span class="no">9</span>    WHERE r.managerId = e.id</span><span class="ln"><span class="no">10</span>) &gt;= 5;</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>表:&nbsp;<code>Employee</code></p>
+
+<pre>
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| id          | int     |
+| name        | varchar |
+| department  | varchar |
+| managerId   | int     |
++-------------+---------+
+id 是此表的主键（具有唯一值的列）。
+该表的每一行表示雇员的名字、他们的部门和他们的经理的id。
+如果managerId为空，则该员工没有经理。
+没有员工会成为自己的管理者。
+</pre>
+
+
+
+<p>编写一个解决方案，找出至少有<strong>五个直接下属</strong>的经理。</p>
+
+<p>以 <strong>任意顺序 </strong>返回结果表。</p>
+
+<p>查询结果格式如下所示。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> 
+Employee 表:
++-----+-------+------------+-----------+
+| id  | name  | department | managerId |
++-----+-------+------------+-----------+
+| 101 | John  | A          | Null      |
+| 102 | Dan   | A          | 101       |
+| 103 | James | A          | 101       |
+| 104 | Amy   | A          | 101       |
+| 105 | Anne  | A          | 101       |
+| 106 | Ron   | B          | 101       |
++-----+-------+------------+-----------+
+<strong>输出:</strong> 
++------+
+| name |
++------+
+| John |
++------+</pre>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["-- 570（codetop 0570）至少有5名直接下属的经理（MySQL）", "-- 题意：Employee(id, name, department, managerId)。找出至少有 5 个直接下属的经理，输出经理的 name。", "-- 关联子查询数「直接向我汇报的人数」≥ 5。", "SELECT e.name", "FROM Employee e", "WHERE (", "    SELECT COUNT(*)", "    FROM Employee r", "    WHERE r.managerId = e.id", ") >= 5;"]}</script>
+
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

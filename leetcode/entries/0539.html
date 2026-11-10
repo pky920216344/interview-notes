@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最小时间差 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 480 / 1159</span>
+  <nav class="pn"><a href="0387.html">上一篇</a><a href="0311.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">539. </span>最小时间差</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">哈希表</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">字符串</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">钟表是环：时间换成 0~1439 分钟做布尔表；最小差只会出现在「相邻出现时间」之间，再补一个跨零点的首尾差。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每个时刻换算成分钟数 <code>m</code>；<code>seen[m]</code> 已为真说明同一分钟出现两次，差就是 0。</li><li>排序解法的替代：把出现过的分钟在 <code>first..last</code> 里扫一遍，只算<strong>相邻</strong>出现时间的间隔。</li><li>别忘了<strong>首尾环绕差</strong> <code>1440 + first - last</code>：<code>23:59</code> 和 <code>00:05</code> 只差 6 分钟，跨零点的这一对最容易漏。</li><li>三个候选取最小：所有相邻间隔、首尾环绕差。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + 1440)，空间复杂度 O(1440)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> findMinDifference(<span class="t">List</span>&lt;<span class="t">String</span>&gt; timePoints) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 钟表是个环：把时间换成 0~1439 分钟，答案只可能出现在「相邻出现时间」之间</span></span><span class="ln"><span class="no">6</span>        <span class="k">boolean</span>[] seen = <span class="k">new</span> <span class="k">boolean</span>[<span class="n">24</span> * <span class="n">60</span>];</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> first = <span class="n">24</span> * <span class="n">60</span>, last = -<span class="n">1</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="t">String</span> t : timePoints) {</span><span class="ln"><span class="no">9</span>            <span class="k">int</span> m = toMin(t);</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (seen[m]) <span class="k">return</span> <span class="n">0</span>;   <span class="c">// 同一分钟出现两次，差为 0</span></span><span class="ln"><span class="no">11</span>            seen[m] = <span class="k">true</span>;</span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (m &lt; first) first = m;</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (m &gt; last) last = m;</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="c">// 首尾环绕差：最晚的 23:xx 跨过零点到最早的 00:xx</span></span><span class="ln"><span class="no">16</span>        <span class="k">int</span> ans = <span class="n">24</span> * <span class="n">60</span> + first - last;</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> prev = first;</span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="k">int</span> m = first + <span class="n">1</span>; m &lt;= last; m++)</span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (seen[m]) {</span><span class="ln"><span class="no">20</span>                ans = <span class="t">Math</span>.min(ans, m - prev);   <span class="c">// 只看相邻出现时间的间隔</span></span><span class="ln"><span class="no">21</span>                prev = m;</span><span class="ln"><span class="no">22</span>            }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span> </span><span class="ln"><span class="no">26</span>    <span class="c">// "HH:MM" → 从 0 点起的分钟数</span></span><span class="ln"><span class="no">27</span>    <span class="k">private</span> <span class="k">int</span> toMin(<span class="t">String</span> t) {</span><span class="ln"><span class="no">28</span>        <span class="k">return</span> ((t.charAt(<span class="n">0</span>) - <span class="s">'0'</span>) * <span class="n">10</span> + (t.charAt(<span class="n">1</span>) - <span class="s">'0'</span>)) * <span class="n">60</span> + (t.charAt(<span class="n">3</span>) - <span class="s">'0'</span>) * <span class="n">10</span> + (t.charAt(<span class="n">4</span>) - <span class="s">'0'</span>);</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个 24 小时制（小时:分钟 <strong>"HH:MM"</strong>）的时间列表，找出列表中任意两个时间的最小时间差并以分钟数表示。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>timePoints = ["23:59","00:00"]
+<strong>输出：</strong>1
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>timePoints = ["00:00","23:59","00:00"]
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= timePoints.length &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>timePoints[i]</code> 格式为 <strong>"HH:MM"</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int findMinDifference(List<String> timePoints) {", "        // 钟表是个环：把时间换成 0~1439 分钟，答案只可能出现在「相邻出现时间」之间", "        boolean[] seen = new boolean[24 * 60];", "        int first = 24 * 60, last = -1;", "        for (String t : timePoints) {", "            int m = toMin(t);", "            if (seen[m]) return 0;   // 同一分钟出现两次，差为 0", "            seen[m] = true;", "            if (m < first) first = m;", "            if (m > last) last = m;", "        }", "        // 首尾环绕差：最晚的 23:xx 跨过零点到最早的 00:xx", "        int ans = 24 * 60 + first - last;", "        int prev = first;", "        for (int m = first + 1; m <= last; m++)", "            if (seen[m]) {", "                ans = Math.min(ans, m - prev);   // 只看相邻出现时间的间隔", "                prev = m;", "            }", "        return ans;", "    }", "", "    // \"HH:MM\" → 从 0 点起的分钟数", "    private int toMin(String t) {", "        return ((t.charAt(0) - '0') * 10 + (t.charAt(1) - '0')) * 60 + (t.charAt(3) - '0') * 10 + (t.charAt(4) - '0');", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 539. 最小时间差 —— 图解：复刻 Solution.java 的「分钟布尔表 + 相邻差 + 环绕差」，在关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { times: ['23:59', '00:05', '12:30', '12:40'] };
+
+function trace(input) {
+  var times = input.times;
+  var frames = [];
+  var seen = {};      // 分钟 -> true，对应 Java 的 seen 布尔数组
+  var marked = [];    // 出现过的分钟，按加入顺序（面板上排序展示）
+  var DUP_AT = 'if (seen[m]) return 0;';
+  var WRAP_AT = 'int ans = 24 * 60 + first - last;';
+  var SCAN_AT = 'ans = Math.min(ans, m - prev);   // 只看相邻出现时间的间隔';
+  var RET_AT = 'return ans;';
+  var markShots = 1, dupShots = 1, scanShots = 1;
+
+  function fmt(m) {
+    var h = Math.floor(m / 60), mm = m % 60;
+    return (h < 10 ? '0' : '') + h + ':' + (mm < 10 ? '0' : '') + mm;
+  }
+  function sortedPanel(marks, ptrs, title) {
+    var items = marked.slice().sort(function (x, y) { return x - y; }).map(fmt);
+    return Viz.cells(items, { title: title || '出现过的分钟（排序展示，seen[] 太长不画）', marks: marks || {}, pointers: ptrs || [] });
+  }
+
+  var first = 24 * 60, last = -1;
+  for (var i = 0; i < times.length; i++) {
+    var t = times[i];
+    var m = ((t.charCodeAt(0) - 48) * 10 + (t.charCodeAt(1) - 48)) * 60 + (t.charCodeAt(3) - 48) * 10 + (t.charCodeAt(4) - 48);
+    if (seen[m]) {
+      if (dupShots-- > 0) frames.push(Viz.frame(DUP_AT,
+        fmt(m) + ' 第二次出现：差为 0，直接返回',
+        [sortedPanel({}, [{ at: idxOf(m), label: '重复', cls: 'p-cur' }]), Viz.vars([{ name: 'findMinDifference', v: 0, cls: 'done' }])]));
+      return { frames: frames, result: 0 };
+    }
+    seen[m] = true;
+    marked.push(m);
+    if (m < first) first = m;
+    if (m > last) last = m;
+    if (markShots-- > 0) {
+      var mk = {}, arr = marked.slice().sort(function (x, y) { return x - y; });
+      mk[idxOf(m)] = 'new';
+      frames.push(Viz.frame('seen[m] = true;',
+        fmt(m) + ' 换算成第 ' + m + ' 分钟记进表里（已记 ' + marked.length + ' 个）',
+        [sortedPanel(mk, []), Viz.vars([{ name: 'first（最早）', v: fmt(first) }, { name: 'last（最晚）', v: fmt(last) }])]));
+    }
+  }
+
+  // 首尾环绕差：最晚的跨过零点到最早的
+  var wrap = 24 * 60 + first - last;
+  var ans = wrap;
+  frames.push(Viz.frame(WRAP_AT,
+    '首尾环绕差：1440 + ' + first + ' − ' + last + ' = ' + wrap + '（' + fmt(last) + ' 跨零点到 ' + fmt(first) + '）',
+    [sortedPanel({ 0: 'cur', [idxOf(first)]: 'cur' }, [{ at: idxOf(first), label: 'first', cls: 'p-left' }, { at: idxOf(last), label: 'last', cls: 'p-right' }]),
+     Viz.vars([{ name: '环绕差', v: wrap, cls: 'chg' }])]));
+
+  // 只扫出现过的分钟：相邻出现时间的间隔
+  var prev = first, sorted = marked.slice().sort(function (x, y) { return x - y; });
+  for (var m = first + 1; m <= last; m++) {
+    if (!seen[m]) continue;
+    var gap = m - prev;
+    if (gap < ans) ans = gap;
+    if (scanShots-- > 0) frames.push(Viz.frame(SCAN_AT,
+      '相邻出现时间 ' + fmt(prev) + ' → ' + fmt(m) + '：间隔 ' + gap + '，当前最小 ' + ans,
+      [sortedPanel({}, [{ at: idxOf(prev), label: 'prev', cls: 'p-prev' }, { at: idxOf(m), label: 'm', cls: 'p-cur' }]),
+       Viz.vars([{ name: '间隔', v: gap }, { name: 'ans（含环绕差）', v: ans, cls: 'chg' }])]));
+    prev = m;
+  }
+
+  var done = {};
+  for (var k = 0; k < sorted.length; k++) done[k] = 'done';
+  frames.push(Viz.frame(RET_AT,
+    '答案 ' + ans + ' 分钟：相邻间隔和环绕差里的最小值',
+    [sortedPanel(done, []), Viz.vars([{ name: 'findMinDifference', v: ans, cls: 'done' }])]));
+  return { frames: frames, result: ans };
+
+  // 分钟在排序后列表里的下标（面板专用）
+  function idxOf(min) {
+    var arr = marked.slice().sort(function (x, y) { return x - y; });
+    for (var j = 0; j < arr.length; j++) if (arr[j] === min) return j;
+    return 0;
+  }
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

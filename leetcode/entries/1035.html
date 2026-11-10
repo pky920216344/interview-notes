@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>不相交的线 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 518 / 1159</span>
+  <nav class="pn"><a href="0740.html">上一篇</a><a href="0455.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1035. </span>不相交的线</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">longest-common-subsequence</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">不相交的连线恰好对应两数组的公共子序列，答案就是 LCS 长度，套最长公共子序列 DP。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>连线不相交 ⇔ 选出的数字在两个数组里都保持相对顺序 ⇔ 公共子序列，所以求 LCS 长度即可。</li><li><code>dp[i][j]</code>：<code>nums1</code> 前 <code>i</code> 个与 <code>nums2</code> 前 <code>j</code> 个的 LCS 长度；相等时 <code>dp = 左上 + 1</code>，否则继承上、左中较大者。</li><li>用滚动数组压到一维：<code>prev</code> 暂存左上角 <code>dp[i-1][j-1]</code>，进列前先记下将被覆盖的 <code>dp[i-1][j]</code>。</li><li>只需返回长度（题目不要连线方案），<code>dp[m]</code> 即答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·m)，空间复杂度 O(m)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maxUncrossedLines(<span class="k">int</span>[] nums1, <span class="k">int</span>[] nums2) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 不相交连线 ⇔ 公共子序列：答案是 LCS 长度</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span> n = nums1.length, m = nums2.length;</span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[m + <span class="n">1</span>];   <span class="c">// 滚动数组：dp[j] = dp[i][j]</span></span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= n; i++) {</span><span class="ln"><span class="no">7</span>            <span class="k">int</span> prev = <span class="n">0</span>;            <span class="c">// 左上角 dp[i-1][j-1]</span></span><span class="ln"><span class="no">8</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt;= m; j++) {</span><span class="ln"><span class="no">9</span>                <span class="k">int</span> tmp = dp[j];     <span class="c">// 记下 dp[i-1][j]，它是下一列的左上角</span></span><span class="ln"><span class="no">10</span>                <span class="k">if</span> (nums1[i - <span class="n">1</span>] == nums2[j - <span class="n">1</span>]) dp[j] = prev + <span class="n">1</span>;</span><span class="ln"><span class="no">11</span>                <span class="k">else</span> dp[j] = <span class="t">Math</span>.max(dp[j], dp[j - <span class="n">1</span>]);</span><span class="ln"><span class="no">12</span>                prev = tmp;</span><span class="ln"><span class="no">13</span>            }</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> dp[m];</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>在两条独立的水平线上按给定的顺序写下 <code>nums1</code> 和 <code>nums2</code> 中的整数。</p>
+
+<p>现在，可以绘制一些连接两个数字 <code>nums1[i]</code>&nbsp;和 <code>nums2[j]</code>&nbsp;的直线，这些直线需要同时满足：</p>
+
+<ul>
+	<li>&nbsp;<code>nums1[i] == nums2[j]</code></li>
+	<li>且绘制的直线不与任何其他连线（非水平线）相交。</li>
+</ul>
+
+<p>请注意，连线即使在端点也不能相交：每个数字只能属于一条连线。</p>
+
+<p>以这种方法绘制线条，并返回可以绘制的最大连线数。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/b5fbea21a737.png" style="width: 400px; height: 286px;" />
+<pre>
+<strong>输入：</strong>nums1 = <span id="example-input-1-1">[1,4,2]</span>, nums2 = <span id="example-input-1-2">[1,2,4]</span>
+<strong>输出：</strong><span id="example-output-1">2</span>
+<strong>解释：</strong>可以画出两条不交叉的线，如上图所示。 
+但无法画出第三条不相交的直线，因为从 nums1[1]=4 到 nums2[2]=4 的直线将与从 nums1[2]=2 到 nums2[1]=2 的直线相交。
+</pre>
+
+<div>
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums1 = <span id="example-input-2-1">[2,5,1,2,5]</span>, nums2 = <span id="example-input-2-2">[10,5,2,1,5,2]</span>
+<strong>输出：</strong><span id="example-output-2">3</span>
+</pre>
+
+<div>
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums1 = <span id="example-input-3-1">[1,3,7,1,7,5]</span>, nums2 = <span id="example-input-3-2">[1,9,2,5,1]</span>
+<strong>输出：</strong><span id="example-output-3">2</span></pre>
+
+
+</div>
+</div>
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums1.length, nums2.length &lt;= 500</code></li>
+	<li><code>1 &lt;= nums1[i], nums2[j] &lt;= 2000</code></li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maxUncrossedLines(int[] nums1, int[] nums2) {", "        // 不相交连线 ⇔ 公共子序列：答案是 LCS 长度", "        int n = nums1.length, m = nums2.length;", "        int[] dp = new int[m + 1];   // 滚动数组：dp[j] = dp[i][j]", "        for (int i = 1; i <= n; i++) {", "            int prev = 0;            // 左上角 dp[i-1][j-1]", "            for (int j = 1; j <= m; j++) {", "                int tmp = dp[j];     // 记下 dp[i-1][j]，它是下一列的左上角", "                if (nums1[i - 1] == nums2[j - 1]) dp[j] = prev + 1;", "                else dp[j] = Math.max(dp[j], dp[j - 1]);", "                prev = tmp;", "            }", "        }", "        return dp[m];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1035. 不相交的线 —— 图解：按 LCS 填二维表（Java 用滚动数组，图解画完整表），在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums1: [1, 4, 2], nums2: [1, 2, 4] };
+
+function trace(input) {
+  var a = input.nums1, b = input.nums2;
+  var n = a.length, m = b.length;
+  var frames = [];
+  var INIT = 'int[] dp = new int[m + 1];';
+  var MATCH = 'if (nums1[i - 1] == nums2[j - 1]) dp[j] = prev + 1;';
+  var MISMATCH = 'else dp[j] = Math.max(dp[j], dp[j - 1]);';
+  var RET = 'return dp[m];';
+
+  // 完整二维 DP 表（Java 里是滚动数组，这里画全表更易懂）
+  var dp = [];
+  for (var i = 0; i <= n; i++) dp.push(new Array(m + 1).fill(0));
+  var matched = [];   // 发生过匹配的 (i, j)
+  var firstMatch = null, firstMismatch = null, lastMatch = null;
+  for (i = 1; i <= n; i++) {
+    for (var j = 1; j <= m; j++) {
+      if (a[i - 1] === b[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+        matched.push(i + ',' + j);
+        var ev = { i: i, j: j, v: dp[i][j] };
+        if (!firstMatch) firstMatch = ev;
+        lastMatch = ev;
+      } else {
+        dp[i][j] = Math.max(dp[i][j - 1], dp[i - 1][j]);
+        if (!firstMismatch) firstMismatch = { i: i, j: j, v: dp[i][j] };
+      }
+    }
+  }
+
+  function gridPanel(cur, done) {
+    var marks = {};
+    matched.forEach(function (key) { marks[key] = 'win'; });
+    if (cur) marks[cur.i + ',' + cur.j] = 'chg';
+    if (done) marks[n + ',' + m] = 'done';
+    return Viz.grid(dp.map(function (row) { return row.map(String); }), {
+      title: 'dp[i][j]：前 i 个 与 前 j 个 的最长公共子序列',
+      rowLabels: ['∅'].concat(a.map(String)),
+      colLabels: ['∅'].concat(b.map(String)),
+      corner: 'nums2 →',
+      marks: marks
+    });
+  }
+  function varsPanel(cur) {
+    return Viz.vars([
+      { name: 'nums1[i-1]', v: cur ? String(a[cur.i - 1]) : '—' },
+      { name: 'nums2[j-1]', v: cur ? String(b[cur.j - 1]) : '—' },
+      { name: '答案（dp[n][m]）', v: String(dp[n][m]) }
+    ]);
+  }
+
+  frames.push(Viz.frame(INIT, '建表：第 0 行 / 第 0 列是空串，公共子序列长 0', [gridPanel(null, false), varsPanel(null)]));
+  if (firstMatch) {
+    frames.push(Viz.frame(MATCH, 'nums1 第 ' + firstMatch.i + ' 个与 nums2 第 ' + firstMatch.j + ' 个相等：dp = 左上 + 1 = ' + firstMatch.v,
+      [gridPanel(firstMatch, false), varsPanel(firstMatch)]));
+  }
+  if (firstMismatch) {
+    frames.push(Viz.frame(MISMATCH, '不相等：继承上边、左边中较大者 = ' + firstMismatch.v,
+      [gridPanel(firstMismatch, false), varsPanel(firstMismatch)]));
+  }
+  if (lastMatch && lastMatch !== firstMatch) {
+    frames.push(Viz.frame(MATCH, '又一次匹配：dp = 左上 + 1 = ' + lastMatch.v + '，连线再多一条',
+      [gridPanel(lastMatch, false), varsPanel(lastMatch)]));
+  }
+  frames.push(Viz.frame(RET, '扫完：dp[n][m] = ' + dp[n][m] + '，就是能画出的最大连线数',
+    [gridPanel(null, true), varsPanel(null)]));
+
+  return { frames: frames, result: dp[n][m] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

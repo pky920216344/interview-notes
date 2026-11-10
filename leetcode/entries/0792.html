@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>匹配子序列的单词数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 608 / 1159</span>
+  <nav class="pn"><a href="0583.html">上一篇</a><a href="0705.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">792. </span>匹配子序列的单词数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">哈希表</li><li class="tag">字典树</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">二分查找</li><li class="tag">动态规划</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">26 个桶按「下一个要匹配的字符」给词排队；s 从左到右扫，每读一个字符就推进对应桶里所有词的指针。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>初始把每个词按首字母入桶；桶里存「词下标 + 已匹配长度」。</li><li>s 每读一个字符 <code>c</code>：取出桶 <code>c</code> 里全部词，各推进一格；没匹配完的按新字符重新入桶。</li><li>推进到词尾的计数 +1；每个词只被 s 的每个字符摸一次，不逐词扫 s。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(s + Σ|words|)，空间复杂度 O(Σ|words|)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> numMatchingSubseq(<span class="t">String</span> s, <span class="t">String</span>[] words) {</span><span class="ln"><span class="no">5</span>        <span class="c">// waiting[c]：下一个要匹配的字符是 c 的词，排成一队</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="k">int</span>[]&gt;[] waiting = <span class="k">new</span> <span class="t">List</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; <span class="n">26</span>; i++) waiting[i] = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; words.length; i++) waiting[words[i].charAt(<span class="n">0</span>) - <span class="s">'a'</span>].add(<span class="k">new</span> <span class="k">int</span>[]{i, <span class="n">0</span>});</span><span class="ln"><span class="no">9</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> p = <span class="n">0</span>; p &lt; s.length(); p++) {</span><span class="ln"><span class="no">11</span>            <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; cur = waiting[s.charAt(p) - <span class="s">'a'</span>];</span><span class="ln"><span class="no">12</span>            waiting[s.charAt(p) - <span class="s">'a'</span>] = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">13</span>            <span class="k">for</span> (<span class="k">int</span>[] w : cur) {</span><span class="ln"><span class="no">14</span>                <span class="k">int</span> next = w[<span class="n">1</span>] + <span class="n">1</span>;</span><span class="ln"><span class="no">15</span>                <span class="k">if</span> (next == words[w[<span class="n">0</span>]].length()) ans++;  <span class="c">// 整个词都匹配上了</span></span><span class="ln"><span class="no">16</span>                <span class="k">else</span> waiting[words[w[<span class="n">0</span>]].charAt(next) - <span class="s">'a'</span>].add(<span class="k">new</span> <span class="k">int</span>[]{w[<span class="n">0</span>], next});</span><span class="ln"><span class="no">17</span>            }</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定字符串 <code>s</code>&nbsp;和字符串数组&nbsp;<code>words</code>, 返回&nbsp;&nbsp;<em><code>words[i]</code>&nbsp;中是<code>s</code>的子序列的单词个数</em>&nbsp;。</p>
+
+<p>字符串的 <strong>子序列</strong> 是从原始字符串中生成的新字符串，可以从中删去一些字符(可以是none)，而不改变其余字符的相对顺序。</p>
+
+<ul>
+	<li>例如， <code>“ace”</code> 是 <code>“abcde”</code> 的子序列。</li>
+</ul>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> s = "abcde", words = ["a","bb","acd","ace"]
+<strong>输出:</strong> 3
+<strong>解释:</strong> 有三个是&nbsp;s 的子序列的单词: "a", "acd", "ace"。
+</pre>
+
+<p><strong>Example 2:</strong></p>
+
+<pre>
+<strong>输入: </strong>s = "dsahjpjauf", words = ["ahjpjau","ja","ahbwzgqnuk","tnmlanowax"]
+<strong>输出:</strong> 2
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 5 * 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= words.length &lt;= 5000</code></li>
+	<li><code>1 &lt;= words[i].length &lt;= 50</code></li>
+	<li><code>words[i]</code>和 <font color="#c7254e" face="Menlo, Monaco, Consolas, Courier New, monospace"><span style="font-size: 12.6px; background-color: rgb(249, 242, 244);">s</span></font>&nbsp;都只由小写字母组成。</li>
+</ul>
+<span style="display:block"><span style="height:0px"><span style="position:absolute">​​​​</span></span></span></div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int numMatchingSubseq(String s, String[] words) {", "        // waiting[c]：下一个要匹配的字符是 c 的词，排成一队", "        List<int[]>[] waiting = new List[26];", "        for (int i = 0; i < 26; i++) waiting[i] = new ArrayList<>();", "        for (int i = 0; i < words.length; i++) waiting[words[i].charAt(0) - 'a'].add(new int[]{i, 0});", "        int ans = 0;", "        for (int p = 0; p < s.length(); p++) {", "            List<int[]> cur = waiting[s.charAt(p) - 'a'];", "            waiting[s.charAt(p) - 'a'] = new ArrayList<>();", "            for (int[] w : cur) {", "                int next = w[1] + 1;", "                if (next == words[w[0]].length()) ans++;  // 整个词都匹配上了", "                else waiting[words[w[0]].charAt(next) - 'a'].add(new int[]{w[0], next});", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 792. 匹配子序列的单词数 —— 图解：26 个桶排队等字符，s 扫一遍推进，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'abcde', words: ['a', 'bb', 'acd', 'ace'] };
+
+function trace(input) {
+  var s = input.s, words = input.words;
+  var waiting = [];   // waiting[c] = [[词下标, 已匹配长度], ...]，对应 Java 的桶
+  for (var c = 0; c < 26; c++) waiting.push([]);
+  words.forEach(function (w, i) { waiting[w.charCodeAt(0) - 97].push([i, 0]); });
+  var frames = [], ans = 0, hitSnapped = false;
+
+  // s 面板：o.p 当前扫到的位置
+  function sPanel(p) {
+    var marks = {};
+    for (var i = 0; i < s.length; i++) if (i < p) marks[i] = 'win';
+    if (p >= 0 && p < s.length) marks[p] = 'cur';
+    var pointers = p >= 0 && p < s.length ? [{ at: p, label: 'p', cls: 'p-right' }] : [];
+    return Viz.cells(s.split(''), { title: 's（从左往右扫一遍）', marks: marks, pointers: pointers });
+  }
+
+  // 桶面板：只画非空桶，每行「词:已匹配/总长」；focus 桶高亮
+  function bucketPanel(focus) {
+    var rows = [];
+    for (var c = 0; c < 26; c++) {
+      if (!waiting[c].length) continue;
+      var v = waiting[c].map(function (e) {
+        return words[e[0]] + ':' + e[1] + '/' + words[e[0]].length;
+      }).join(' ');
+      rows.push({ k: String.fromCharCode(97 + c), v: v, cls: c === focus ? 'hit' : '' });
+    }
+    return Viz.table('waiting[c]：正在等字符 c 的词（已匹配/总长）', rows, { hint: '（只画非空桶）' });
+  }
+
+  frames.push(Viz.frame('waiting[words[i].charAt(0) - \'a\'].add(new int[]{i, 0});',
+    '预处理：每个词按首字母进桶排队', [bucketPanel(-1)]));
+
+  for (var p = 0; p < s.length; p++) {
+    var cc = s.charCodeAt(p) - 97;
+    var cur = waiting[cc];
+    waiting[cc] = [];
+    // 第 1 个字符拍一张：这一桶的词全体推进
+    if (p === 0 && cur.length) {
+      frames.push(Viz.frame('List<int[]> cur = waiting[s.charAt(p) - \'a\'];',
+        '扫到 ' + s[0] + '：桶 ' + s[0] + ' 里的词全体推进一格', [sPanel(p), bucketPanel(cc)]));
+    }
+    for (var ei = 0; ei < cur.length; ei++) {
+      var w = cur[ei], word = words[w[0]], next = w[1] + 1;
+      if (next === word.length) {
+        ans++;
+        if (!hitSnapped) {
+          hitSnapped = true;
+          frames.push(Viz.frame('if (next == words[w[0]].length()) ans++;',
+            '「' + word + '」匹配完：计数 +1，不再回桶', [sPanel(p), bucketPanel(cc)]));
+        }
+      } else {
+        waiting[word.charCodeAt(next) - 97].push([w[0], next]);
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return ans;', '扫完 s：' + ans + ' 个词是子序列', [sPanel(s.length)]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>串联字符串的最大长度 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 924 / 1159</span>
+  <nav class="pn"><a href="1170.html">上一篇</a><a href="1006.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1239. </span>串联字符串的最大长度</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">回溯</li><li class="aux">位运算</li><li class="tag">位运算</li><li class="tag">数组</li><li class="tag">字符串</li><li class="tag">回溯</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">回溯：每串先压成 26 位字符集掩码（串内有重复记 -1 永不选），逐串选/不选，掩码与已选 mask 无交集才能拼，取总长最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>预处理：每串算出 26 位掩码；串内出现重复字符就记 <code>-1</code>，它永远不可能入选，直接跳过。</li><li><code>dfs(i, mask)</code>：<code>mask</code> 是已选字符集。每个串两条分支——不选；掩码与 <code>mask</code> 无交集时选（<code>mask | masks[i]</code>）。</li><li>长度由 <code>lens[i]</code> 在「选」分支里累加；n ≤ 16，最多 2^16 条路径，不用记忆化也很快。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(2^n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span>[] masks;    <span class="c">// 每个串的 26 位字符集掩码；含重复字符的串记 -1（永远不能选）</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">int</span>[] lens;</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">int</span> n;</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="k">int</span> maxLength(<span class="t">List</span>&lt;<span class="t">String</span>&gt; arr) {</span><span class="ln"><span class="no">9</span>        n = arr.size();</span><span class="ln"><span class="no">10</span>        masks = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">11</span>        lens = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">13</span>            <span class="t">String</span> s = arr.get(i);</span><span class="ln"><span class="no">14</span>            <span class="k">int</span> m = <span class="n">0</span>;</span><span class="ln"><span class="no">15</span>            <span class="k">boolean</span> dup = <span class="k">false</span>;</span><span class="ln"><span class="no">16</span>            <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; s.length(); k++) {</span><span class="ln"><span class="no">17</span>                <span class="k">int</span> b = <span class="n">1</span> &lt;&lt; (s.charAt(k) - <span class="s">'a'</span>);</span><span class="ln"><span class="no">18</span>                <span class="k">if</span> ((m &amp; b) != <span class="n">0</span>) { dup = <span class="k">true</span>; <span class="k">break</span>; }</span><span class="ln"><span class="no">19</span>                m |= b;</span><span class="ln"><span class="no">20</span>            }</span><span class="ln"><span class="no">21</span>            masks[i] = dup ? -<span class="n">1</span> : m;</span><span class="ln"><span class="no">22</span>            lens[i] = s.length();</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> dfs(<span class="n">0</span>, <span class="n">0</span>);</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span> </span><span class="ln"><span class="no">27</span>    <span class="c">// 已选字符集为 mask，从前 i 个串里继续挑；返回还能再凑出的最大长度</span></span><span class="ln"><span class="no">28</span>    <span class="k">private</span> <span class="k">int</span> dfs(<span class="k">int</span> i, <span class="k">int</span> mask) {</span><span class="ln"><span class="no">29</span>        <span class="k">if</span> (i == n) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">30</span>        <span class="k">int</span> best = dfs(i + <span class="n">1</span>, mask);                        <span class="c">// 不选第 i 个</span></span><span class="ln"><span class="no">31</span>        <span class="k">if</span> (masks[i] &gt;= <span class="n">0</span> &amp;&amp; (masks[i] &amp; mask) == <span class="n">0</span>) {      <span class="c">// 字符集不相交才能选</span></span><span class="ln"><span class="no">32</span>            <span class="k">int</span> take = lens[i] + dfs(i + <span class="n">1</span>, mask | masks[i]);</span><span class="ln"><span class="no">33</span>            <span class="k">if</span> (take &gt; best) best = take;</span><span class="ln"><span class="no">34</span>        }</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> best;</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个字符串数组 <code>arr</code>，字符串 <code>s</code> 是将 <code>arr</code>&nbsp;的含有 <strong>不同字母</strong> 的&nbsp;<strong>子序列</strong> 字符串 <strong>连接</strong> 所得的字符串。</p>
+
+<p>请返回所有可行解 <code>s</code> 中最长长度。</p>
+
+<p><strong>子序列</strong> 是一种可以从另一个数组派生而来的数组，通过删除某些元素或不删除元素而不改变其余元素的顺序。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = ["un","iq","ue"]
+<strong>输出：</strong>4
+<strong>解释：</strong>所有可能的串联组合是：
+- ""
+- "un"
+- "iq"
+- "ue"
+- "uniq" ("un" + "iq")
+- "ique" ("iq" + "ue")
+最大长度为 4。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = ["cha","r","act","ers"]
+<strong>输出：</strong>6
+<strong>解释：</strong>可能的解答有 "chaers" 和 "acters"。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = ["abcdefghijklmnopqrstuvwxyz"]
+<strong>输出：</strong>26
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= arr.length &lt;= 16</code></li>
+	<li><code>1 &lt;= arr[i].length &lt;= 26</code></li>
+	<li><code>arr[i]</code>&nbsp;中只含有小写英文字母</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private int[] masks;    // 每个串的 26 位字符集掩码；含重复字符的串记 -1（永远不能选）", "    private int[] lens;", "    private int n;", "", "    public int maxLength(List<String> arr) {", "        n = arr.size();", "        masks = new int[n];", "        lens = new int[n];", "        for (int i = 0; i < n; i++) {", "            String s = arr.get(i);", "            int m = 0;", "            boolean dup = false;", "            for (int k = 0; k < s.length(); k++) {", "                int b = 1 << (s.charAt(k) - 'a');", "                if ((m & b) != 0) { dup = true; break; }", "                m |= b;", "            }", "            masks[i] = dup ? -1 : m;", "            lens[i] = s.length();", "        }", "        return dfs(0, 0);", "    }", "", "    // 已选字符集为 mask，从前 i 个串里继续挑；返回还能再凑出的最大长度", "    private int dfs(int i, int mask) {", "        if (i == n) return 0;", "        int best = dfs(i + 1, mask);                        // 不选第 i 个", "        if (masks[i] >= 0 && (masks[i] & mask) == 0) {      // 字符集不相交才能选", "            int take = lens[i] + dfs(i + 1, mask | masks[i]);", "            if (take > best) best = take;", "        }", "        return best;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1239. 串联字符串的最大长度 —— 图解：复刻 Solution.java 的「掩码 + 回溯」，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: ['ab', 'cd', 'cdc', 'c'] };
+
+function trace(input) {
+  var arr = input.arr;
+  var n = arr.length;
+  var masks = [], lens = [];
+  for (var i = 0; i < n; i++) {
+    var m = 0, dup = false;
+    for (var k = 0; k < arr[i].length; k++) {
+      var b = 1 << (arr[i].charCodeAt(k) - 97);
+      if (m & b) { dup = true; break; }
+      m |= b;
+    }
+    masks[i] = dup ? -1 : m;
+    lens[i] = arr[i].length;
+  }
+  var frames = [];
+  var chosen = [];            // 当前路径里已选的串下标
+  var seen = { take: false, dup: false, conflict: false };
+  curI = n;
+  snap('masks[i] = dup ? -1 : m;', '预处理：每串压成 26 位掩码，cdc 含重复记 -1', null, null, 0);
+
+  function arrPanel(curIdx, curCls) {
+    var marks = {};
+    for (var j = 0; j < chosen.length; j++) marks[chosen[j]] = 'win';
+    for (var j = 0; j < n; j++) if (masks[j] < 0 && marks[j] == null) marks[j] = 'dim';
+    if (curIdx != null) marks[curIdx] = curCls || 'cur';
+    return Viz.cells(arr.slice(), { title: 'arr：子序列里按原顺序挑串', marks: marks });
+  }
+  function maskPanel() {
+    var rows = arr.map(function (s, i) {
+      var v = masks[i] < 0 ? '-1（串内有重复）' : String(masks[i]);
+      return { k: s, v: v, cls: masks[i] < 0 ? 'bad' : '' };
+    });
+    return Viz.table('每串的 26 位字符集掩码', rows);
+  }
+  function varsPanel(mask) {
+    return Viz.vars([
+      { name: 'i', v: String(curI) },
+      { name: 'mask 已选字符数', v: String(popcount(mask)) },
+      { name: '当前路径长度', v: String(pathLen()) }
+    ]);
+  }
+  function popcount(x) { var c = 0; while (x) { x &= x - 1; c++; } return c; }
+  function pathLen() { var s = 0; for (var j = 0; j < chosen.length; j++) s += lens[chosen[j]]; return s; }
+  var curI = 0;
+  function snap(at, key, curIdx, curCls, mask) {
+    frames.push(Viz.frame(at, key, [arrPanel(curIdx, curCls), maskPanel(), varsPanel(mask)]));
+  }
+
+  function dfs(i, mask) {
+    if (i === n) return 0;
+    curI = i;
+    var best = dfs(i + 1, mask);
+    if (masks[i] >= 0 && (masks[i] & mask) === 0) {
+      if (!seen.take && i === 0) {
+        seen.take = true;
+        snap('int take = lens[i] + dfs(i + 1, mask | masks[i]);', 'dfs(0) 选 ab：mask 并入它的字符集', i, 'cur', mask);
+      }
+      chosen.push(i);
+      var take = lens[i] + dfs(i + 1, mask | masks[i]);
+      chosen.pop();
+      if (take > best) best = take;
+    } else if (masks[i] < 0 && !seen.dup) {
+      seen.dup = true;
+      snap('if (masks[i] >= 0 && (masks[i] & mask) == 0) {', 'cdc 串内有重复字符（掩码 -1）：永远跳过', i, 'bad', mask);
+    } else if (masks[i] >= 0 && (masks[i] & mask) !== 0 && !seen.conflict) {
+      seen.conflict = true;
+      snap('if (masks[i] >= 0 && (masks[i] & mask) == 0) {', '串的字符与已选 mask 相交：不能选，走「不选」分支', i, 'bad', mask);
+    }
+    return best;
+  }
+
+  var ans = dfs(0, 0);
+  curI = n;
+  snap('return dfs(0, 0);', '回溯结束：最长串联长度 ' + ans, null, null, 0);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

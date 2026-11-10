@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>基本计算器 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 112 / 1159</span>
+  <nav class="pn"><a href="0055.html">上一篇</a><a href="0123.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">224. </span>基本计算器</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 57</li><li class="algo">栈</li><li class="tag">栈</li><li class="tag">递归</li><li class="tag">数学</li><li class="tag">字符串</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">只剩加减：扫一遍，数字按当前符号累加；遇 ( 把当前和与符号压栈从零算，遇 ) 弹出合回去。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>维护当前层的累计和 <code>ans</code> 与「下一个数字的符号」<code>sign</code>：<code>+</code> 置 1、<code>-</code> 置 -1，数字读完按 <code>sign</code> 累加。</li><li>遇 <code>(</code>：把 <code>ans</code>、<code>sign</code> 依次压栈，<code>ans</code> 清零——括号内是独立的一层。</li><li>遇 <code>)</code>：弹出符号 <code>prev</code> 和外层的和，合回 <code>ans = 外层 + prev × 括号内的和</code>。</li><li>开头的 <code>-2</code>、<code>-(...)</code> 这类一元负号天然被 <code>sign=-1</code> 覆盖。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">ArrayDeque</span>;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.<span class="t">Deque</span>;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="k">int</span> calculate(<span class="t">String</span> s) {</span><span class="ln"><span class="no">6</span>        <span class="c">// 栈里存每个未闭合「(」之前累计的结果和生效符号</span></span><span class="ln"><span class="no">7</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> ans = <span class="n">0</span>;    <span class="c">// 当前括号层内已累计的和</span></span><span class="ln"><span class="no">9</span>        <span class="k">int</span> sign = <span class="n">1</span>;   <span class="c">// 下一个数字前的正负号</span></span><span class="ln"><span class="no">10</span>        <span class="k">int</span> i = <span class="n">0</span>, n = s.length();</span><span class="ln"><span class="no">11</span>        <span class="k">while</span> (i &lt; n) {</span><span class="ln"><span class="no">12</span>            <span class="k">char</span> c = s.charAt(i);</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (c == <span class="s">' '</span>) { i++; <span class="k">continue</span>; }</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (c == <span class="s">'+'</span>) { sign = <span class="n">1</span>; i++; }</span><span class="ln"><span class="no">15</span>            <span class="k">else</span> <span class="k">if</span> (c == <span class="s">'-'</span>) { sign = -<span class="n">1</span>; i++; }</span><span class="ln"><span class="no">16</span>            <span class="k">else</span> <span class="k">if</span> (c == <span class="s">'('</span>) {</span><span class="ln"><span class="no">17</span>                <span class="c">// 进入括号：把当前层的和与符号存起来，括号内重新从 0 算</span></span><span class="ln"><span class="no">18</span>                stack.push(ans);</span><span class="ln"><span class="no">19</span>                stack.push(sign);</span><span class="ln"><span class="no">20</span>                ans = <span class="n">0</span>;</span><span class="ln"><span class="no">21</span>                sign = <span class="n">1</span>;</span><span class="ln"><span class="no">22</span>                i++;</span><span class="ln"><span class="no">23</span>            } <span class="k">else</span> <span class="k">if</span> (c == <span class="s">')'</span>) {</span><span class="ln"><span class="no">24</span>                <span class="c">// 括号算完：弹出符号和上一层结果，合回去</span></span><span class="ln"><span class="no">25</span>                <span class="k">int</span> prev = stack.pop();</span><span class="ln"><span class="no">26</span>                ans = stack.pop() + prev * ans;</span><span class="ln"><span class="no">27</span>                i++;</span><span class="ln"><span class="no">28</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">29</span>                <span class="c">// 读一个完整的数字，按当前符号累加</span></span><span class="ln"><span class="no">30</span>                <span class="k">long</span> num = <span class="n">0</span>;</span><span class="ln"><span class="no">31</span>                <span class="k">while</span> (i &lt; n &amp;&amp; s.charAt(i) &gt;= <span class="s">'0'</span> &amp;&amp; s.charAt(i) &lt;= <span class="s">'9'</span>) {</span><span class="ln"><span class="no">32</span>                    num = num * <span class="n">10</span> + (s.charAt(i) - <span class="s">'0'</span>);</span><span class="ln"><span class="no">33</span>                    i++;</span><span class="ln"><span class="no">34</span>                }</span><span class="ln"><span class="no">35</span>                ans += sign * (<span class="k">int</span>) num;</span><span class="ln"><span class="no">36</span>            }</span><span class="ln"><span class="no">37</span>        }</span><span class="ln"><span class="no">38</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">39</span>    }</span><span class="ln"><span class="no">40</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串表达式 <code>s</code> ，请你实现一个基本计算器来计算并返回它的值。</p>
+
+<p>注意:不允许使用任何将字符串作为数学表达式计算的内置函数，比如 <code>eval()</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "1 + 1"
+<strong>输出：</strong>2
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = " 2-1 + 2 "
+<strong>输出：</strong>3
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "(1+(4+5+2)-3)+(6+8)"
+<strong>输出：</strong>23
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 3&nbsp;* 10<sup>5</sup></code></li>
+	<li><code>s</code> 由数字、<code>'+'</code>、<code>'-'</code>、<code>'('</code>、<code>')'</code>、和 <code>' '</code> 组成</li>
+	<li><code>s</code> 表示一个有效的表达式</li>
+	<li><code>'+'</code>&nbsp;不能用作一元运算(例如， <code>"+1"</code>&nbsp;和 <code>"+(2 + 3)"</code>&nbsp;无效)</li>
+	<li><code>'-'</code>&nbsp;可以用作一元运算(即 <code>"-1"</code>&nbsp;和 <code>"-(2 + 3)"</code>&nbsp;是有效的)</li>
+	<li>输入中不存在两个连续的操作符</li>
+	<li>每个数字和运行的计算将适合于一个有符号的 32位 整数</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.ArrayDeque;", "import java.util.Deque;", "", "class Solution {", "    public int calculate(String s) {", "        // 栈里存每个未闭合「(」之前累计的结果和生效符号", "        Deque<Integer> stack = new ArrayDeque<>();", "        int ans = 0;    // 当前括号层内已累计的和", "        int sign = 1;   // 下一个数字前的正负号", "        int i = 0, n = s.length();", "        while (i < n) {", "            char c = s.charAt(i);", "            if (c == ' ') { i++; continue; }", "            if (c == '+') { sign = 1; i++; }", "            else if (c == '-') { sign = -1; i++; }", "            else if (c == '(') {", "                // 进入括号：把当前层的和与符号存起来，括号内重新从 0 算", "                stack.push(ans);", "                stack.push(sign);", "                ans = 0;", "                sign = 1;", "                i++;", "            } else if (c == ')') {", "                // 括号算完：弹出符号和上一层结果，合回去", "                int prev = stack.pop();", "                ans = stack.pop() + prev * ans;", "                i++;", "            } else {", "                // 读一个完整的数字，按当前符号累加", "                long num = 0;", "                while (i < n && s.charAt(i) >= '0' && s.charAt(i) <= '9') {", "                    num = num * 10 + (s.charAt(i) - '0');", "                    i++;", "                }", "                ans += sign * (int) num;", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 224. 基本计算器 —— 图解：复刻 Solution.java 的「符号进栈」解法，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: '1-(2+3)' };
+
+function trace(input) {
+  var s = input.s;
+  var frames = [];
+  var stack = [];   // 每进一层括号压两个值：上一层的和、括号前生效的符号
+  var ans = 0, sign = 1;
+
+  var PUSH = 'stack.push(ans);';
+  var POP = 'ans = stack.pop() + prev * ans;';
+  var NUM = 'ans += sign * (int) num;';
+
+  function snap(at, key, ci) {
+    var marks = {}, pointers = [];
+    if (ci != null && ci < s.length) {
+      marks[ci] = 'cur';
+      pointers.push({ at: ci, label: '读到这里', cls: 'p-cur' });
+    }
+    var panels = [
+      Viz.cells(s.split('').map(function (ch) { return ch === ' ' ? '␣' : ch; }),
+        { title: '表达式 s', marks: marks, pointers: pointers, hideIndex: true }),
+      Viz.vars([
+        { name: 'ans 当前层已加', v: ans, cls: 'chg' },
+        { name: 'sign 下个数字的符号', v: sign > 0 ? '+1' : '-1' }
+      ])
+    ];
+    if (stack.length) {
+      panels.push(Viz.cells(stack.map(String), { title: '栈（左底右顶）：上一层的和, 符号' }));
+    }
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  var snappedNum = false, snappedPush = false, snappedPop = false;
+  var i = 0;
+  while (i < s.length) {
+    var c = s[i];
+    if (c === ' ') { i++; continue; }
+    if (c === '+') { sign = 1; i++; }
+    else if (c === '-') { sign = -1; i++; }
+    else if (c === '(') {
+      stack.push(ans); stack.push(sign);
+      ans = 0; sign = 1;
+      i++;
+      if (!snappedPush) { snappedPush = true; snap(PUSH, '遇 ( ：把外层的和与符号压栈，括号内从 0 重算', i - 1); }
+    } else if (c === ')') {
+      var prev = stack.pop();
+      ans = stack.pop() + prev * ans;
+      i++;
+      if (!snappedPop) { snappedPop = true; snap(POP, '遇 ) ：弹出符号 ' + prev + ' 和外层的和，合回 ans', i - 1); }
+    } else {
+      var num = 0;
+      while (i < s.length && s[i] >= '0' && s[i] <= '9') { num = num * 10 + (+s[i]); i++; }
+      ans += sign * num;
+      if (!snappedNum) { snappedNum = true; snap(NUM, '读完数字 ' + num + '：按当前符号 ' + (sign > 0 ? '+' : '-') + ' 累进 ans', i - 1); }
+    }
+  }
+
+  snap('return ans;', '扫描结束：结果是 ' + ans, null);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

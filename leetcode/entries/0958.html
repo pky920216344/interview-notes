@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉树的完全性检验 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 134 / 1159</span>
+  <nav class="pn"><a href="offer-36.html">上一篇</a><a href="supp-01.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">958. </span>二叉树的完全性检验</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 47</li><li class="algo">广度优先搜索</li><li class="tag">树</li><li class="tag">广度优先搜索</li><li class="tag">二叉树</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">BFS 按堆编号（根 1，孩子 2i/2i+1）：第 count 个出队的结点编号必须恰好是 count，跳号即非完全。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>完全二叉树的层序编号恰好是 <code>1..n</code> 连续；BFS 依次出队，第 <code>count</code> 个出队的结点编号必须正好是 <code>count</code>。</li><li>编号规则：根 <code>1</code>，左孩子 <code>2i</code>、右孩子 <code>2i+1</code>；一旦跳号（如出队编号 7 时才出队到 6），说明中间有空位。</li><li>编号随深度翻倍增长，用 <code>long</code> 存更稳。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> isCompleteTree(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 完全二叉树按层序编号：根 1，孩子 2i / 2i+1</span></span><span class="ln"><span class="no">6</span>        <span class="c">// 编完号结点恰好占满 1..n，中间不留空号</span></span><span class="ln"><span class="no">7</span>        <span class="t">Queue</span>&lt;<span class="t">TreeNode</span>&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="t">Queue</span>&lt;<span class="t">Long</span>&gt; ids = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        q.add(root);</span><span class="ln"><span class="no">10</span>        ids.add(<span class="n">1L</span>);</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> count = <span class="n">0</span>;</span><span class="ln"><span class="no">12</span>        <span class="k">while</span> (!q.isEmpty()) {</span><span class="ln"><span class="no">13</span>            <span class="t">TreeNode</span> cur = q.poll();</span><span class="ln"><span class="no">14</span>            <span class="k">long</span> id = ids.poll();</span><span class="ln"><span class="no">15</span>            <span class="c">// 第 count 个出队的结点，编号必须正好是 count，跳号说明有空位</span></span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (++count != id) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (cur.left != <span class="k">null</span>) { q.add(cur.left); ids.add(<span class="n">2</span> * id); }</span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (cur.right != <span class="k">null</span>) { q.add(cur.right); ids.add(<span class="n">2</span> * id + <span class="n">1</span>); }</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一棵二叉树的根节点<meta charset="UTF-8" />&nbsp;<code>root</code> ，请你判断这棵树是否是一棵 <strong>完全二叉树</strong>&nbsp;。</p>
+
+<p>在一棵 <strong><a href="https://baike.baidu.com/item/完全二叉树/7773232?fr=aladdin" target="_blank">完全二叉树</a></strong> 中，除了最后一层外，所有层都被完全填满，并且最后一层中的所有节点都尽可能靠左。最后一层（第 <code>h</code> 层）中可以包含<meta charset="UTF-8" />&nbsp;<code>1</code>&nbsp;到<meta charset="UTF-8" />&nbsp;<code>2<sup>h</sup></code> 个节点。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/46df547ad577.png" /></p>
+
+<pre>
+<strong>输入：</strong>root = [1,2,3,4,5,6]
+<strong>输出：</strong>true
+<strong>解释：</strong>最后一层前的每一层都是满的（即，节点值为 {1} 和 {2,3} 的两层），且最后一层中的所有节点（{4,5,6}）尽可能靠左。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/38008adfbbb9.png" /></strong></p>
+
+<pre>
+<strong>输入：</strong>root = [1,2,3,4,5,null,7]
+<strong>输出：</strong>false
+<strong>解释：</strong>值为 7 的节点不满足条件「节点尽可能靠左」。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中节点数目在范围 <code>[1, 100]</code> 内</li>
+	<li><code>1 &lt;= Node.val &lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean isCompleteTree(TreeNode root) {", "        // 完全二叉树按层序编号：根 1，孩子 2i / 2i+1", "        // 编完号结点恰好占满 1..n，中间不留空号", "        Queue<TreeNode> q = new ArrayDeque<>();", "        Queue<Long> ids = new ArrayDeque<>();", "        q.add(root);", "        ids.add(1L);", "        int count = 0;", "        while (!q.isEmpty()) {", "            TreeNode cur = q.poll();", "            long id = ids.poll();", "            // 第 count 个出队的结点，编号必须正好是 count，跳号说明有空位", "            if (++count != id) return false;", "            if (cur.left != null) { q.add(cur.left); ids.add(2 * id); }", "            if (cur.right != null) { q.add(cur.right); ids.add(2 * id + 1); }", "        }", "        return true;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 958. 二叉树的完全性检验 —— 图解：复刻 Solution.java 的 BFS 编号法，看「出队序号 vs 结点编号」是否连续，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, 2, 3, 4, 5, null, 7] };
+
+function trace(input) {
+  var arr = input.root;
+  var frames = [];
+
+  // 建树：结点带 val、堆编号 id（根 1，孩子 2i/2i+1）、在层序数组里的下标 arrIdx
+  function build(a) {
+    if (!a.length || a[0] === null || a[0] === undefined) return null;
+    var root = { val: a[0], id: 1, arrIdx: 0, left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < a.length) {
+      var nd = q.shift();
+      if (i < a.length) { if (a[i] !== null && a[i] !== undefined) { nd.left = { val: a[i], id: nd.id * 2, arrIdx: i, left: null, right: null }; q.push(nd.left); } i++; }
+      if (i < a.length) { if (a[i] !== null && a[i] !== undefined) { nd.right = { val: a[i], id: nd.id * 2 + 1, arrIdx: i, left: null, right: null }; q.push(nd.right); } i++; }
+    }
+    return root;
+  }
+
+  var root = build(arr);
+  if (root === null) {
+    frames.push(Viz.frame('return true;', '空树：视为完全二叉树', [Viz.tree([], { title: '二叉树' })]));
+    return { frames: frames, result: true };
+  }
+
+  // 收集所有结点（BFS 序）
+  var all = [];
+  (function walk(nd) { if (!nd) return; all.push(nd); walk(nd.left); walk(nd.right); })(root);
+
+  function treePanel(title, curNd, polled, badNd) {
+    var marks = {}, labels = [], i;
+    for (i = 0; i < all.length; i++) {
+      var nd = all[i];
+      labels.push({ at: nd.arrIdx, label: '编号 ' + nd.id, cls: nd === curNd ? 'p-cur' : (badNd === nd ? 'p-cur' : '') });
+      if (badNd === nd) marks[nd.arrIdx] = 'bad';
+      else if (nd === curNd) marks[nd.arrIdx] = 'cur';
+      else if (polled.indexOf(nd) >= 0) marks[nd.arrIdx] = 'dim';
+    }
+    return Viz.tree(arr, { title: title, marks: marks, labels: labels });
+  }
+
+  function varsPanel(count, id, bad) {
+    return Viz.vars([
+      { name: '已出队 count', v: String(count), cls: '' },
+      { name: '当前编号 id', v: String(id), cls: bad ? 'bad' : '' },
+    ]);
+  }
+
+  // 开局帧
+  frames.push(Viz.frame('ids.add(1L);',
+    '根编号 1；每个结点的左孩子编号 2i、右孩子 2i+1',
+    [treePanel('二叉树（结点下标注堆编号）', null, [], null), varsPanel(0, null, false)]));
+
+  // BFS：出队 (结点, 编号)，第 count 个出队的编号必须是 count
+  var q = [{ nd: root, id: 1 }];
+  var count = 0, polled = [], fired = { p1: false, p2: false, p3: false }, result = true, badNd = null;
+  while (q.length) {
+    var it = q.shift();
+    count++;
+    var mismatch = count !== it.id;
+    if (mismatch) { result = false; badNd = it.nd; }
+    var kids = [];
+    if (it.nd.left) kids.push(it.nd.left.id);
+    if (it.nd.right) kids.push(it.nd.right.id);
+    var key;
+    if (mismatch) {
+      key = '出队 (值 ' + it.nd.val + ', 编号 ' + it.id + ')：count=' + count + ' ≠ ' + it.id + '，中间有空位 → false';
+    } else {
+      key = '出队 (值 ' + it.nd.val + ', 编号 ' + it.id + ')：count=' + count + ' 相等 ✓';
+      if (kids.length) key += '；孩子编号 ' + kids.join('、');
+      if (count === 3 && !it.nd.left && it.nd.right) key = '出队 (值 ' + it.nd.val + ', 编号 ' + it.id + ')：没有左孩子，编号 ' + (2 * it.id) + ' 空着（隐患）';
+    }
+
+    var fire = false;
+    if (mismatch) fire = true;
+    else if (count === 1 && !fired.p1) { fire = true; fired.p1 = true; }
+    else if (count === 2 && !fired.p2) { fire = true; fired.p2 = true; }
+    else if (count === 3 && !it.nd.left && it.nd.right && !fired.p3) { fire = true; fired.p3 = true; }
+
+    if (fire) {
+      frames.push(Viz.frame('if (++count != id) return false;', key,
+        [treePanel('二叉树（灰 = 已出队，黄 = 当前）', it.nd, polled, badNd), varsPanel(count, it.id, mismatch)]));
+    }
+    polled.push(it.nd);
+    if (mismatch) break;
+    if (it.nd.left) q.push({ nd: it.nd.left, id: it.nd.left.id });
+    if (it.nd.right) q.push({ nd: it.nd.right, id: it.nd.right.id });
+  }
+
+  if (result) {
+    frames.push(Viz.frame('return true;', '编号恰好 1..' + count + ' 连续：完全二叉树，true',
+      [treePanel('二叉树（全部出队）', null, polled, null), varsPanel(count, null, false)]));
+  }
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

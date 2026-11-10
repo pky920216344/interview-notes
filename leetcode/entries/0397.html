@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>整数替换 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 704 / 1159</span>
+  <nav class="pn"><a href="0313.html">上一篇</a><a href="1290.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">397. </span>整数替换</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">位运算</li><li class="tag">记忆化</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">贪心：偶数必减半；奇数看末两位——01 减 1、11 加 1（3 是唯一例外走减 1），O(log n) 直达。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>中间值用 <code>long</code>：<code>n = 2^31 - 1</code> 时 <code>n+1</code> 溢出 <code>int</code>。</li><li>偶数只有「除以 2」一条路；奇数的抉择看 <code>n % 4</code>：末两位 <code>01</code> 时减 1 变 <code>…00</code>，末两位 <code>11</code> 时加 1 能把整串连续的 1 一次收掉。</li><li>末尾 <code>11</code> 里 <code>3</code> 是例外（<code>3→2→1</code> 两步，加 1 反而三步），代码里单独判 <code>x == 3</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> integerReplacement(<span class="k">int</span> n) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 用 long 装中间值：n = 2^31 - 1 时 n+1 会溢出 int</span></span><span class="ln"><span class="no">4</span>        <span class="k">long</span> x = n;</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> steps = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">while</span> (x != <span class="n">1</span>) {</span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (x % <span class="n">2</span> == <span class="n">0</span>) {</span><span class="ln"><span class="no">8</span>                x /= <span class="n">2</span>;</span><span class="ln"><span class="no">9</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">10</span>                <span class="c">// 看末两位：……01 减 1 变 ……00；末尾 11 加 1 才能收掉整串 1</span></span><span class="ln"><span class="no">11</span>                <span class="k">if</span> (x % <span class="n">4</span> == <span class="n">1</span> || x == <span class="n">3</span>) {</span><span class="ln"><span class="no">12</span>                    x--;</span><span class="ln"><span class="no">13</span>                } <span class="k">else</span> {</span><span class="ln"><span class="no">14</span>                    x++;</span><span class="ln"><span class="no">15</span>                }</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>            steps++;</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> steps;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个正整数&nbsp;<code>n</code> ，你可以做如下操作：</p>
+
+<ol>
+	<li>如果&nbsp;<code>n</code><em>&nbsp;</em>是偶数，则用&nbsp;<code>n / 2</code>替换&nbsp;<code>n</code><em> </em>。</li>
+	<li>如果&nbsp;<code>n</code><em>&nbsp;</em>是奇数，则可以用&nbsp;<code>n + 1</code>或<code>n - 1</code>替换&nbsp;<code>n</code> 。</li>
+</ol>
+
+<p>返回 <code>n</code><em>&nbsp;</em>变为 <code>1</code> 所需的 <em>最小替换次数</em> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 8
+<strong>输出：</strong>3
+<strong>解释：</strong>8 -&gt; 4 -&gt; 2 -&gt; 1
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 7
+<strong>输出：</strong>4
+<strong>解释：</strong>7 -&gt; 8 -&gt; 4 -&gt; 2 -&gt; 1
+或 7 -&gt; 6 -&gt; 3 -&gt; 2 -&gt; 1
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 4
+<strong>输出：</strong>2
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 2<sup>31</sup> - 1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int integerReplacement(int n) {", "        // 用 long 装中间值：n = 2^31 - 1 时 n+1 会溢出 int", "        long x = n;", "        int steps = 0;", "        while (x != 1) {", "            if (x % 2 == 0) {", "                x /= 2;", "            } else {", "                // 看末两位：……01 减 1 变 ……00；末尾 11 加 1 才能收掉整串 1", "                if (x % 4 == 1 || x == 3) {", "                    x--;", "                } else {", "                    x++;", "                }", "            }", "            steps++;", "        }", "        return steps;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 397. 整数替换 —— 图解：偶数减半，奇数看末两位决定 ±1，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 11 };
+
+function trace(input) {
+  var x = input.n;
+  var steps = 0;
+  var frames = [];
+  var didHalf = false, didInc = false, didDec = false;
+
+  var HALF = 'x /= 2;';
+  var INC = 'x++;';
+  var DEC = 'x--;';
+
+  function bits() { return x.toString(2).split(''); }
+
+  function panel(done) {
+    var b = bits();
+    var marks = {};
+    var i;
+    if (done) { for (i = 0; i < b.length; i++) marks[i] = 'done'; }
+    else if (x % 2 === 1) { marks[b.length - 1] = 'win'; marks[b.length - 2] = 'win'; }
+    var pointers = done ? [] : [{ at: b.length - 1, label: '末位', cls: 'p-cur' }];
+    return Viz.cells(b, { title: 'x 的二进制', marks: marks, pointers: pointers });
+  }
+
+  function snap(at, key) {
+    frames.push(Viz.frame(at, key, [panel(false), Viz.vars([{ name: 'x', v: x, cls: '' }, { name: 'steps', v: steps, cls: 'chg' }])]));
+  }
+
+  snap('long x = n;', '开局：' + input.n + ' = ' + input.n.toString(2) + '₂，目标减到 1');
+
+  while (x !== 1) {
+    if (x % 2 === 0) {
+      var prev = x;
+      x /= 2;
+      steps++;
+      if (!didHalf) {
+        didHalf = true;
+        snap(HALF, '偶数只有一条路：除以 2（' + prev + ' → ' + x + '）');
+      }
+    } else if (x % 4 === 1 || x === 3) {
+      var prevD = x;
+      x--;
+      steps++;
+      if (!didDec) {
+        didDec = true;
+        snap(DEC, prevD + ' 末两位 01（或就是 3）：减 1 变 …00 更快 → ' + x);
+      }
+    } else {
+      var prevI = x;
+      x++;
+      steps++;
+      if (!didInc) {
+        didInc = true;
+        snap(INC, prevI + ' 末两位 11：加 1 收掉整串 1 → ' + x);
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return steps;',
+    '到 1 了：一共 ' + steps + ' 步',
+    [panel(true), Viz.vars([{ name: 'x', v: x, cls: '' }, { name: 'steps', v: steps, cls: 'chg' }])]));
+
+  return { frames: frames, result: steps };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

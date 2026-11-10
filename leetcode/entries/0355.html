@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>设计推特 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1120 / 1159</span>
+  <nav class="pn"><a href="0570.html">上一篇</a><a href="1475.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">355. </span>设计推特</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">设计</li><li class="aux">哈希表</li><li class="aux">链表</li><li class="tag">设计</li><li class="tag">哈希表</li><li class="tag">链表</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">每个用户一条按时间从新到旧的推文链表加关注集合；getNewsFeed 把各链表头多路归并，取最新的 10 条。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>推文链表新插表头：全局时钟 <code>time++</code> 让不同用户的推文也可比。</li><li><code>getNewsFeed</code>：来源 = 关注的人 + 自己（推送永远含自己的推文）；收齐各链表头，每轮线性挑时间最新的头，取满 10 条为止。</li><li>挑中的头沿 <code>next</code> 走，链表空了从候选里去掉；来源少、只取 10 条，线性挑头就够。</li><li><code>follow</code>/<code>unfollow</code> 只动 <code>HashSet</code>，与推文无关。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 post O(1)；feed O(来源数 × 10)，空间复杂度 O(推文总数 + 关注关系数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Twitter</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span> time;   <span class="c">// 全局时钟：每次发推 +1，越大越新</span></span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="c">// 推文结点：next 指向同一用户的上一条（更旧的）推文</span></span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">class</span> <span class="t">Node</span> {</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> id, time;</span><span class="ln"><span class="no">9</span>        <span class="t">Node</span> next;</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>        <span class="t">Node</span>(<span class="k">int</span> id, <span class="k">int</span> time) { <span class="k">this</span>.id = id; <span class="k">this</span>.time = time; }</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="c">// 用户 -&gt; 自己的推文链表（表头最新）</span></span><span class="ln"><span class="no">15</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Node</span>&gt; tweets = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">16</span>    <span class="c">// 用户 -&gt; 关注的人</span></span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt;&gt; follows = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    <span class="k">public</span> <span class="t">Twitter</span>() { }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>    <span class="k">public</span> <span class="k">void</span> postTweet(<span class="k">int</span> userId, <span class="k">int</span> tweetId) {</span><span class="ln"><span class="no">22</span>        <span class="t">Node</span> node = <span class="k">new</span> <span class="t">Node</span>(tweetId, time++);</span><span class="ln"><span class="no">23</span>        <span class="c">// 新推文插到表头</span></span><span class="ln"><span class="no">24</span>        node.next = tweets.get(userId);</span><span class="ln"><span class="no">25</span>        tweets.put(userId, node);</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span> </span><span class="ln"><span class="no">28</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; getNewsFeed(<span class="k">int</span> userId) {</span><span class="ln"><span class="no">29</span>        <span class="c">// 来源 = 关注的人 + 自己；收齐每人的链表头</span></span><span class="ln"><span class="no">30</span>        <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; src = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;(follows.getOrDefault(userId, <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;()));</span><span class="ln"><span class="no">31</span>        src.add(userId);</span><span class="ln"><span class="no">32</span>        <span class="t">List</span>&lt;<span class="t">Node</span>&gt; heads = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">33</span>        <span class="k">for</span> (<span class="k">int</span> u : src) {</span><span class="ln"><span class="no">34</span>            <span class="t">Node</span> h = tweets.get(u);</span><span class="ln"><span class="no">35</span>            <span class="k">if</span> (h != <span class="k">null</span>) heads.add(h);</span><span class="ln"><span class="no">36</span>        }</span><span class="ln"><span class="no">37</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; out = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">38</span>        <span class="c">// 多路归并取前 10：每轮线性挑时间最新的链表头</span></span><span class="ln"><span class="no">39</span>        <span class="k">while</span> (out.size() &lt; <span class="n">10</span> &amp;&amp; !heads.isEmpty()) {</span><span class="ln"><span class="no">40</span>            <span class="k">int</span> k = <span class="n">0</span>;</span><span class="ln"><span class="no">41</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; heads.size(); i++) <span class="k">if</span> (heads.get(i).time &gt; heads.get(k).time) k = i;</span><span class="ln"><span class="no">42</span>            <span class="t">Node</span> best = heads.get(k);</span><span class="ln"><span class="no">43</span>            out.add(best.id);</span><span class="ln"><span class="no">44</span>            <span class="k">if</span> (best.next != <span class="k">null</span>) heads.set(k, best.next);</span><span class="ln"><span class="no">45</span>            <span class="k">else</span> heads.remove(k);</span><span class="ln"><span class="no">46</span>        }</span><span class="ln"><span class="no">47</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">48</span>    }</span><span class="ln"><span class="no">49</span> </span><span class="ln"><span class="no">50</span>    <span class="k">public</span> <span class="k">void</span> follow(<span class="k">int</span> followerId, <span class="k">int</span> followeeId) {</span><span class="ln"><span class="no">51</span>        follows.computeIfAbsent(followerId, x -&gt; <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;()).add(followeeId);</span><span class="ln"><span class="no">52</span>    }</span><span class="ln"><span class="no">53</span> </span><span class="ln"><span class="no">54</span>    <span class="k">public</span> <span class="k">void</span> unfollow(<span class="k">int</span> followerId, <span class="k">int</span> followeeId) {</span><span class="ln"><span class="no">55</span>        <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; s = follows.get(followerId);</span><span class="ln"><span class="no">56</span>        <span class="k">if</span> (s != <span class="k">null</span>) s.remove(followeeId);</span><span class="ln"><span class="no">57</span>    }</span><span class="ln"><span class="no">58</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>设计一个简化版的推特(Twitter)，可以让用户实现发送推文，关注/取消关注其他用户，能够看见关注人（包括自己）的最近 <code>10</code> 条推文。</p>
+
+<p>实现 <code>Twitter</code> 类：</p>
+
+<ul>
+	<li><code>Twitter()</code> 初始化简易版推特对象</li>
+	<li><code>void postTweet(int userId, int tweetId)</code> 根据给定的 <code>tweetId</code> 和 <code>userId</code> 创建一条新推文。每次调用此函数都会使用一个不同的 <code>tweetId</code> 。</li>
+	<li><code>List&lt;Integer&gt; getNewsFeed(int userId)</code> 检索当前用户新闻推送中最近&nbsp; <code>10</code> 条推文的 ID 。新闻推送中的每一项都必须是由用户关注的人或者是用户自己发布的推文。推文必须 <strong>按照时间顺序由最近到最远排序</strong> 。</li>
+	<li><code>void follow(int followerId, int followeeId)</code> ID 为 <code>followerId</code> 的用户开始关注 ID 为 <code>followeeId</code> 的用户。</li>
+	<li><code>void unfollow(int followerId, int followeeId)</code> ID 为 <code>followerId</code> 的用户不再关注 ID 为 <code>followeeId</code> 的用户。</li>
+</ul>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入</strong>
+["Twitter", "postTweet", "getNewsFeed", "follow", "postTweet", "getNewsFeed", "unfollow", "getNewsFeed"]
+[[], [1, 5], [1], [1, 2], [2, 6], [1], [1, 2], [1]]
+<strong>输出</strong>
+[null, null, [5], null, null, [6, 5], null, [5]]
+
+<strong>解释</strong>
+Twitter twitter = new Twitter();
+twitter.postTweet(1, 5); // 用户 1 发送了一条新推文 (用户 id = 1, 推文 id = 5)
+twitter.getNewsFeed(1);  // 用户 1 的获取推文应当返回一个列表，其中包含一个 id 为 5 的推文
+twitter.follow(1, 2);    // 用户 1 关注了用户 2
+twitter.postTweet(2, 6); // 用户 2 发送了一个新推文 (推文 id = 6)
+twitter.getNewsFeed(1);  // 用户 1 的获取推文应当返回一个列表，其中包含两个推文，id 分别为 -&gt; [6, 5] 。推文 id 6 应当在推文 id 5 之前，因为它是在 5 之后发送的
+twitter.unfollow(1, 2);  // 用户 1 取消关注了用户 2
+twitter.getNewsFeed(1);  // 用户 1 获取推文应当返回一个列表，其中包含一个 id 为 5 的推文。因为用户 1 已经不再关注用户 2</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= userId, followerId, followeeId &lt;= 500</code></li>
+	<li><code>0 &lt;= tweetId &lt;= 10<sup>4</sup></code></li>
+	<li>所有推特的 ID 都互不相同</li>
+	<li><code>postTweet</code>、<code>getNewsFeed</code>、<code>follow</code> 和 <code>unfollow</code> 方法最多调用 <code>3 * 10<sup>4</sup></code> 次</li>
+	<li>用户不能关注自己</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Twitter {", "    private int time;   // 全局时钟：每次发推 +1，越大越新", "", "    // 推文结点：next 指向同一用户的上一条（更旧的）推文", "    private static class Node {", "        int id, time;", "        Node next;", "", "        Node(int id, int time) { this.id = id; this.time = time; }", "    }", "", "    // 用户 -> 自己的推文链表（表头最新）", "    private final Map<Integer, Node> tweets = new HashMap<>();", "    // 用户 -> 关注的人", "    private final Map<Integer, Set<Integer>> follows = new HashMap<>();", "", "    public Twitter() { }", "", "    public void postTweet(int userId, int tweetId) {", "        Node node = new Node(tweetId, time++);", "        // 新推文插到表头", "        node.next = tweets.get(userId);", "        tweets.put(userId, node);", "    }", "", "    public List<Integer> getNewsFeed(int userId) {", "        // 来源 = 关注的人 + 自己；收齐每人的链表头", "        Set<Integer> src = new HashSet<>(follows.getOrDefault(userId, new HashSet<>()));", "        src.add(userId);", "        List<Node> heads = new ArrayList<>();", "        for (int u : src) {", "            Node h = tweets.get(u);", "            if (h != null) heads.add(h);", "        }", "        List<Integer> out = new ArrayList<>();", "        // 多路归并取前 10：每轮线性挑时间最新的链表头", "        while (out.size() < 10 && !heads.isEmpty()) {", "            int k = 0;", "            for (int i = 1; i < heads.size(); i++) if (heads.get(i).time > heads.get(k).time) k = i;", "            Node best = heads.get(k);", "            out.add(best.id);", "            if (best.next != null) heads.set(k, best.next);", "            else heads.remove(k);", "        }", "        return out;", "    }", "", "    public void follow(int followerId, int followeeId) {", "        follows.computeIfAbsent(followerId, x -> new HashSet<>()).add(followeeId);", "    }", "", "    public void unfollow(int followerId, int followeeId) {", "        Set<Integer> s = follows.get(followerId);", "        if (s != null) s.remove(followeeId);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 355. 设计推特 —— 图解：复刻 Solution.java 的「每用户推文链表 + 多路归并取前 10」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  ops: [['post', 1, 5], ['feed', 1], ['follow', 1, 2], ['post', 2, 6], ['feed', 1], ['unfollow', 1, 2], ['feed', 1]]
+};
+
+function trace(input) {
+  var frames = [];
+  var tweets = {};    // user -> [{id, time}]，表头在前（最新）
+  var follows = {};   // user -> [关注的人]
+  var time = 0;
+  var feeds = [];     // 每次 getNewsFeed 的结果
+
+  function tweetsPanel(newUser) {
+    var users = Object.keys(tweets).map(Number).sort(function (a, b) { return a - b; });
+    return Viz.table('推文链表（左边最新）', users.map(function (u) {
+      return { k: '用户 ' + u, v: tweets[u].map(function (t) { return t.id; }).join(' → '), cls: u === newUser ? 'new' : '' };
+    }));
+  }
+  function followsPanel() {
+    var users = Object.keys(follows).map(Number).sort(function (a, b) { return a - b; });
+    return Viz.table('关注关系', users.map(function (u) {
+      return { k: '用户 ' + u, v: follows[u].length ? '关注 ' + follows[u].slice().sort(function (a, b) { return a - b; }).join('、') : '（空）', cls: '' };
+    }));
+  }
+  function feedPanel(latest) {
+    return Viz.table('getNewsFeed 的返回', feeds.map(function (f, i) {
+      return { k: '第 ' + (i + 1) + ' 次调用', v: '[' + f.join(', ') + ']', cls: i === feeds.length - 1 && latest ? 'new' : '' };
+    }));
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  function feed(u) {
+    var src = {};
+    (follows[u] || []).forEach(function (x) { src[x] = true; });
+    src[u] = true;   // 推送永远包含自己的推文
+    var heads = [];
+    Object.keys(src).map(Number).sort(function (a, b) { return a - b; }).forEach(function (x) {
+      if (tweets[x] && tweets[x].length) heads.push(tweets[x].slice());   // 复制，别动用户的链表
+    });
+    var out = [];
+    while (out.length < 10 && heads.length) {
+      var k = 0;
+      for (var i = 1; i < heads.length; i++) if (heads[i][0].time > heads[k][0].time) k = i;
+      out.push(heads[k][0].id);
+      heads[k].shift();
+      if (!heads[k].length) heads.splice(k, 1);
+    }
+    return out;
+  }
+
+  input.ops.forEach(function (op) {
+    if (op[0] === 'post') {
+      var u = op[1];
+      var node = { id: op[2], time: time++ };
+      tweets[u] = tweets[u] || [];
+      tweets[u].unshift(node);
+      if (op[2] === 5) snap('node.next = tweets.get(userId);', 'postTweet(1,5)：新推文插到用户 1 的链表头',
+        [tweetsPanel(1), followsPanel()]);
+      if (op[2] === 6) snap('tweets.put(userId, node);', 'postTweet(2,6)：用户 2 的链表也有了第一条',
+        [tweetsPanel(2), followsPanel()]);
+    } else if (op[0] === 'feed') {
+      var f = feed(op[1]);
+      feeds.push(f);
+      if (feeds.length === 1) snap('out.add(best.id);', 'getNewsFeed(1)：来源只有自己，链表头 5 直接进推送',
+        [tweetsPanel(), followsPanel(), feedPanel(true)]);
+      else if (feeds.length === 2) snap('heads.set(k, best.next);',
+        '两条链表归并：6 比 5 新，先取 6 再取 5，共取前 10 条',
+        [tweetsPanel(), followsPanel(), feedPanel(true)]);
+      else if (feeds.length === 3) snap('return out;', 'unfollow(1,2) 后：来源只剩自己，推送回到 [5]',
+        [tweetsPanel(), followsPanel(), feedPanel(true)]);
+    } else if (op[0] === 'follow') {
+      follows[op[1]] = follows[op[1]] || [];
+      if (follows[op[1]].indexOf(op[2]) < 0) follows[op[1]].push(op[2]);
+    } else {
+      if (follows[op[1]]) follows[op[1]] = follows[op[1]].filter(function (x) { return x !== op[2]; });
+    }
+  });
+
+  return { frames: frames, result: feeds };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

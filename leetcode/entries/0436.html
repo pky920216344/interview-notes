@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>寻找右区间 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1023 / 1159</span>
+  <nav class="pn"><a href="1145.html">上一篇</a><a href="0656.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">436. </span>寻找右区间</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">二分查找</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">把每个 start 连同原下标排序；对每个区间的 end 二分找「第一个 ≥ end 的 start」，取它的原下标。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>右区间只由 <code>start</code> 决定：把 <code>{start, 原下标}</code> 按 <code>start</code> 升序排好，问题变成「在有序数组里找第一个 ≥ end 的位置」。</li><li>二分 <code>[lo, hi)</code> 半开区间：<code>sorted[mid][0] &lt; end</code> 说明太小，<code>lo = mid + 1</code>；否则 <code>hi = mid</code> 收左边界。</li><li><code>lo == n</code> 说明所有 start 都 <code>&lt; end</code>，没有右区间记 <code>-1</code>；否则答案就是 <code>sorted[lo][1]</code> 里的原下标。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] findRightInterval(<span class="k">int</span>[][] intervals) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = intervals.length;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[][] sorted = <span class="k">new</span> <span class="k">int</span>[n][];   <span class="c">// 元素是 {start, 原下标}，按 start 升序</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) sorted[i] = <span class="k">new</span> <span class="k">int</span>[]{intervals[i][<span class="n">0</span>], i};</span><span class="ln"><span class="no">8</span>        <span class="t">Arrays</span>.sort(sorted, (a, b) -&gt; a[<span class="n">0</span>] - b[<span class="n">0</span>]);</span><span class="ln"><span class="no">9</span>        <span class="k">int</span>[] ans = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">11</span>            <span class="c">// 二分找第一个 &gt;= end 的 start（start 互不相同，结果唯一）</span></span><span class="ln"><span class="no">12</span>            <span class="k">int</span> lo = <span class="n">0</span>, hi = n;</span><span class="ln"><span class="no">13</span>            <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">14</span>                <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">15</span>                <span class="k">if</span> (sorted[mid][<span class="n">0</span>] &lt; intervals[i][<span class="n">1</span>]) lo = mid + <span class="n">1</span>;   <span class="c">// start 太小，往右找</span></span><span class="ln"><span class="no">16</span>                <span class="k">else</span> hi = mid;                                        <span class="c">// 够大了，试着再往左收</span></span><span class="ln"><span class="no">17</span>            }</span><span class="ln"><span class="no">18</span>            ans[i] = lo == n ? -<span class="n">1</span> : sorted[lo][<span class="n">1</span>];   <span class="c">// 落到 n 说明没有右区间</span></span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个区间数组 <code>intervals</code> ，其中&nbsp;<code>intervals[i] = [start<sub>i</sub>, end<sub>i</sub>]</code> ，且每个&nbsp;<code>start<sub>i</sub></code> 都 <strong>不同</strong> 。</p>
+
+<p>区间 <code>i</code> 的 <strong>右侧区间</strong>&nbsp;是满足 <code>start<sub>j</sub>&nbsp;&gt;= end<sub>i</sub></code>，且 <code>start<sub>j</sub></code> <strong>最小&nbsp;</strong>的区间 <code>j</code>。注意 <code>i</code> 可能等于 <code>j</code> 。</p>
+
+<p>返回一个由每个区间 <code>i</code>&nbsp;对应的 <strong>右侧区间</strong> 下标组成的数组。如果某个区间 <code>i</code> 不存在对应的 <strong>右侧区间</strong> ，则下标 <code>i</code> 处的值设为 <code>-1</code> 。</p>
+&nbsp;
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>intervals = [[1,2]]
+<strong>输出：</strong>[-1]
+<strong>解释：</strong>集合中只有一个区间，所以输出-1。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>intervals = [[3,4],[2,3],[1,2]]
+<strong>输出：</strong>[-1,0,1]
+<strong>解释：</strong>对于 [3,4] ，没有满足条件的“右侧”区间。
+对于 [2,3] ，区间[3,4]具有最小的“右”起点;
+对于 [1,2] ，区间[2,3]具有最小的“右”起点。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>intervals = [[1,4],[2,3],[3,4]]
+<strong>输出：</strong>[-1,2,-1]
+<strong>解释：</strong>对于区间 [1,4] 和 [3,4] ，没有满足条件的“右侧”区间。
+对于 [2,3] ，区间 [3,4] 有最小的“右”起点。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;=&nbsp;intervals.length &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>intervals[i].length == 2</code></li>
+	<li><code>-10<sup>6</sup> &lt;= start<sub>i</sub> &lt;= end<sub>i</sub> &lt;= 10<sup>6</sup></code></li>
+	<li>每个间隔的起点都 <strong>不相同</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] findRightInterval(int[][] intervals) {", "        int n = intervals.length;", "        int[][] sorted = new int[n][];   // 元素是 {start, 原下标}，按 start 升序", "        for (int i = 0; i < n; i++) sorted[i] = new int[]{intervals[i][0], i};", "        Arrays.sort(sorted, (a, b) -> a[0] - b[0]);", "        int[] ans = new int[n];", "        for (int i = 0; i < n; i++) {", "            // 二分找第一个 >= end 的 start（start 互不相同，结果唯一）", "            int lo = 0, hi = n;", "            while (lo < hi) {", "                int mid = (lo + hi) >>> 1;", "                if (sorted[mid][0] < intervals[i][1]) lo = mid + 1;   // start 太小，往右找", "                else hi = mid;                                        // 够大了，试着再往左收", "            }", "            ans[i] = lo == n ? -1 : sorted[lo][1];   // 落到 n 说明没有右区间", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 436. 寻找右区间 —— 图解：复刻 Solution.java 的「start 连下标排序 + 对 end 二分」，拍 5 张快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { intervals: [[3, 4], [2, 3], [1, 2]] };
+
+function trace(input) {
+  var intervals = input.intervals, n = intervals.length;
+  var frames = [];
+
+  // 排序后的 start 数轴（cells）：marks 高亮 lo..hi 候选 / mid / 命中
+  function startPanel(marks, pointers) {
+    var m = {}, items = [];
+    for (var i = 0; i < n; i++) {
+      m[i] = marks[i] || 'win';
+      items.push(String(sorted[i][0]));
+    }
+    return Viz.cells(items, { title: '排序后的 start（下标见下表）', marks: m, pointers: pointers || [] });
+  }
+
+  // 哈希表面板：start → 原下标
+  function tablePanel(hitIdx) {
+    return Viz.table('sorted：start → 原下标', sorted.map(function (e, i) {
+      return { k: String(e[0]), v: '原区间 ' + e[1], cls: i === hitIdx ? 'hit' : '' };
+    }));
+  }
+
+  var vars = function (items) { return Viz.vars(items); };
+
+  // 与 Java 相同：{start, 原下标} 按 start 升序
+  var sorted = intervals.map(function (iv, i) { return [iv[0], i]; });
+  sorted.sort(function (a, b) { return a[0] - b[0]; });
+
+  if (n <= 12) {
+    var shown = sorted.slice(0, 5).map(function (e) { return e[0] + '(#' + e[1] + ')'; }).join(', ') + (n > 5 ? ', …' : '');
+    frames.push(Viz.frame('Arrays.sort(sorted, (a, b) -> a[0] - b[0]);',
+      '把 start 连同原下标升序排序（共 ' + n + ' 个，见下表）',
+      [startPanel({}, []), tablePanel(-1)]));
+  }
+
+  var ans = [];
+  for (var i = 0; i < n; i++) {
+    var end = intervals[i][1];
+    var lo = 0, hi = n;
+    var snapMid = n <= 12 && (i === 1 || (i === 0 && n === 1));
+    while (lo < hi) {
+      var mid = (lo + hi) >> 1;
+      if (snapMid) frames.push(Viz.frame('if (sorted[mid][0] < intervals[i][1]) lo = mid + 1;',
+        '查 #' + i + ' 的 end=' + end + '：mid 看到 start=' + sorted[mid][0] + (sorted[mid][0] < end ? '，太小，lo 右移' : '，够大，hi 左收'),
+        [startPanel({ mid: 'cur' }, [{ at: mid, label: 'mid', cls: 'p-mid' }, { at: lo, label: 'lo', cls: 'p-left' }, { at: Math.min(hi, n - 1), label: 'hi', cls: 'p-right' }]),
+         vars([{ name: 'end', v: String(end) }, { name: '候选 [lo,hi)', v: lo + '..' + hi, cls: 'win' }])]));
+      if (sorted[mid][0] < end) lo = mid + 1;
+      else hi = mid;
+    }
+    ans[i] = lo === n ? -1 : sorted[lo][1];
+    if (n <= 12 && (i <= 1 || n === 1)) {
+      var hit = lo < n ? lo : -1;
+      var hitMarks = {};
+      if (hit >= 0) hitMarks[hit] = 'done';
+      frames.push(Viz.frame('ans[i] = lo == n ? -1 : sorted[lo][1];',
+        lo === n ? '#' + i + ' 的 end=' + end + ' 比所有 start 都大：无右区间，记 -1'
+                 : '#' + i + ' 的 end=' + end + '：第一个 ≥ 它的 start=' + sorted[lo][0] + '，答案 #' + sorted[lo][1],
+        [startPanel(hitMarks, hit >= 0 ? [{ at: hit, label: '命中', cls: 'p-mid' }] : []),
+         tablePanel(hit), vars([{ name: 'ans[' + i + ']', v: String(ans[i]), cls: 'done' }])]));
+    }
+  }
+
+  if (n <= 12) {
+    var done = {};
+    for (i = 0; i < n; i++) done[i] = 'done';
+    frames.push(Viz.frame('return ans;', '全部算完：ans = [' + ans.join(',') + ']', [Viz.cells(ans.map(String), { title: 'ans（按下标顺序）', marks: done })]));
+  }
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

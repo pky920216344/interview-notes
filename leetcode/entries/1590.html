@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>使数组和能被 P 整除 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 913 / 1159</span>
+  <nav class="pn"><a href="0286.html">上一篇</a><a href="1200.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1590. </span>使数组和能被 P 整除</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">前缀和/差分</li><li class="aux">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">前缀和</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">要移除的子数组和 ≡ total (mod p)；前缀和取模存哈希，每个右端点找 (pre−need) mod p 最近出现的位置，取最短。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>设移除的子数组和为 S：要 <code>(total − S) ≡ 0 (mod p)</code>，即 <code>S ≡ total (mod p)</code>，记 <code>need = total mod p</code>。</li><li>以 <code>i</code> 为移除段右端点时，找 <code>j</code> 使 <code>pre[j] ≡ pre[i] − need (mod p)</code>，移除 <code>(j, i]</code>，长度 <code>i − j</code>。</li><li>哈希表 <code>last[r]</code> 存余数 r <strong>最近</strong>出现的下标（先查再存，j 才尽量贴近 i）；<code>last[0] = −1</code> 对应空前缀。</li><li>总和用 <code>long</code> 累加（1e5 × 1e9 会溢出）；移除整段不合法，答案仍为 <code>n</code> 时输出 <code>−1</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(min(n, p))</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> minSubarray(<span class="k">int</span>[] nums, <span class="k">int</span> p) {</span><span class="ln"><span class="no">5</span>        <span class="k">long</span> total = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) total += x;</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> need = (<span class="k">int</span>) (total % p);   <span class="c">// 要移除的子数组和必须 ≡ total (mod p)</span></span><span class="ln"><span class="no">8</span>        <span class="k">if</span> (need == <span class="n">0</span>) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="c">// last[r]：前缀和 mod p 为 r 的最近下标；j 离 i 越近，移除段越短</span></span><span class="ln"><span class="no">10</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; last = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        last.put(<span class="n">0</span>, -<span class="n">1</span>);</span><span class="ln"><span class="no">12</span>        <span class="k">long</span> pre = <span class="n">0</span>;</span><span class="ln"><span class="no">13</span>        <span class="k">int</span> ans = nums.length;</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; nums.length; i++) {</span><span class="ln"><span class="no">15</span>            pre = (pre + nums[i]) % p;</span><span class="ln"><span class="no">16</span>            <span class="c">// 移除 (j, i]：需要 pre[j] ≡ pre[i] − need (mod p)，查最近的 j</span></span><span class="ln"><span class="no">17</span>            <span class="k">int</span> want = (<span class="k">int</span>) ((pre - need + p) % p);</span><span class="ln"><span class="no">18</span>            <span class="t">Integer</span> j = last.get(want);</span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (j != <span class="k">null</span>) ans = <span class="t">Math</span>.min(ans, i - j);</span><span class="ln"><span class="no">20</span>            last.put((<span class="k">int</span>) pre, i);</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> ans &lt; nums.length ? ans : -<span class="n">1</span>;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个正整数数组&nbsp;<code>nums</code>，请你移除 <strong>最短</strong>&nbsp;子数组（可以为 <strong>空</strong>），使得剩余元素的 <strong>和</strong>&nbsp;能被 <code>p</code>&nbsp;整除。 <strong>不允许</strong>&nbsp;将整个数组都移除。</p>
+
+<p>请你返回你需要移除的最短子数组的长度，如果无法满足题目要求，返回 <code>-1</code>&nbsp;。</p>
+
+<p><strong>子数组</strong>&nbsp;定义为原数组中连续的一组元素。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>nums = [3,1,4,2], p = 6
+<strong>输出：</strong>1
+<strong>解释：</strong>nums 中元素和为 10，不能被 p 整除。我们可以移除子数组 [4] ，剩余元素的和为 6 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>nums = [6,3,5,2], p = 9
+<strong>输出：</strong>2
+<strong>解释：</strong>我们无法移除任何一个元素使得和被 9 整除，最优方案是移除子数组 [5,2] ，剩余元素为 [6,3]，和为 9 。
+</pre>
+
+<p><strong>示例&nbsp;3：</strong></p>
+
+<pre><strong>输入：</strong>nums = [1,2,3], p = 3
+<strong>输出：</strong>0
+<strong>解释：</strong>和恰好为 6 ，已经能被 3 整除了。所以我们不需要移除任何元素。
+</pre>
+
+<p><strong>示例&nbsp; 4：</strong></p>
+
+<pre><strong>输入：</strong>nums = [1,2,3], p = 7
+<strong>输出：</strong>-1
+<strong>解释：</strong>没有任何方案使得移除子数组后剩余元素的和被 7 整除。
+</pre>
+
+<p><strong>示例 5：</strong></p>
+
+<pre><strong>输入：</strong>nums = [1000000000,1000000000,1000000000], p = 3
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>1 &lt;= nums[i] &lt;= 10<sup>9</sup></code></li>
+	<li><code>1 &lt;= p &lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int minSubarray(int[] nums, int p) {", "        long total = 0;", "        for (int x : nums) total += x;", "        int need = (int) (total % p);   // 要移除的子数组和必须 ≡ total (mod p)", "        if (need == 0) return 0;", "        // last[r]：前缀和 mod p 为 r 的最近下标；j 离 i 越近，移除段越短", "        Map<Integer, Integer> last = new HashMap<>();", "        last.put(0, -1);", "        long pre = 0;", "        int ans = nums.length;", "        for (int i = 0; i < nums.length; i++) {", "            pre = (pre + nums[i]) % p;", "            // 移除 (j, i]：需要 pre[j] ≡ pre[i] − need (mod p)，查最近的 j", "            int want = (int) ((pre - need + p) % p);", "            Integer j = last.get(want);", "            if (j != null) ans = Math.min(ans, i - j);", "            last.put((int) pre, i);", "        }", "        return ans < nums.length ? ans : -1;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1590. 使数组和能被 P 整除 —— 图解：复刻 Solution.java 的「前缀和取模 + 哈希找最近 j」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [3, 1, 4, 2], p: 6 };
+
+function trace(input) {
+  var nums = input.nums, p = input.p;
+  var n = nums.length;
+  var frames = [];
+
+  var total = 0;
+  for (var i = 0; i < n; i++) total += nums[i];
+  var need = total % p;
+  var last = { 0: -1 };   // 余数 → 最近下标
+  var pre = 0, ans = n;
+
+  function cellsPanel(marks, ptrs, range) {
+    return Viz.cells(nums, { title: '数组 nums', marks: marks || {}, pointers: ptrs || [], range: range || null });
+  }
+  function lastPanel(hit) {
+    var keys = Object.keys(last).map(Number).sort(function (a, b) { return a - b; });
+    var rows = keys.map(function (r) {
+      return { k: String(r), v: String(last[r]), cls: hit != null && r === hit ? 'hit' : '' };
+    });
+    return Viz.table('last[r]：前缀和 mod p = r 的最近下标', rows, { hint: '0 号余数对应空前缀，下标 −1' });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: 'pre（mod p）', v: String(pre) },
+      { name: 'need', v: String(need) },
+      { name: 'ans', v: String(ans), cls: ans < n ? 'chg' : '' }
+    ]);
+  }
+
+  frames.push(Viz.frame('int need = (int) (total % p);',
+    need === 0
+      ? '总和 ' + total + ' 已能被 ' + p + ' 整除：不用移除，返回 0'
+      : '总和 ' + total + '，need = ' + need + '：要移走一段和 mod p = ' + need + ' 的子数组',
+    [cellsPanel(null, [{ at: 0, label: 'i', cls: 'p-right' }]), lastPanel(null), varsPanel()]));
+  if (need === 0) return { frames: frames, result: 0 };
+
+  for (var i2 = 0; i2 < n; i2++) {
+    pre = (pre + nums[i2]) % p;
+    var want = ((pre - need) % p + p) % p;
+    var has = want in last;
+    var j = has ? last[want] : null;
+    if (j != null) ans = Math.min(ans, i2 - j);
+    if (i2 === 1) {
+      var ptrs = [{ at: i2, label: 'i', cls: 'p-right' }];
+      if (j != null && j >= 0) ptrs.push({ at: j, label: 'j', cls: 'p-left' });
+      var range = j != null ? { from: j + 1, to: i2, label: '移除 (j, i]：长 ' + (i2 - j) } : null;
+      frames.push(Viz.frame('if (j != null) ans = Math.min(ans, i - j);',
+        'i=1 时 pre=4：查 want=0 命中空前缀 j=−1，移除长 2，ans=2',
+        [cellsPanel({ 0: 'bad', 1: 'bad' }, ptrs, range), lastPanel(has ? want : null), varsPanel()]));
+    }
+    if (i2 === 2) {
+      var ptrs2 = [{ at: i2, label: 'i', cls: 'p-right' }];
+      if (j != null && j >= 0) ptrs2.push({ at: j, label: 'j', cls: 'p-left' });
+      var range2 = j != null ? { from: j + 1, to: i2, label: '移除 (j, i]：长 ' + (i2 - j) } : null;
+      frames.push(Viz.frame('if (j != null) ans = Math.min(ans, i - j);',
+        'i=2 时 pre=2：want=4 命中 j=1，只移除 [4] 一个数，ans=1',
+        [cellsPanel({ 2: 'bad' }, ptrs2, range2), lastPanel(has ? want : null), varsPanel()]));
+    }
+    last[pre] = i2;
+  }
+
+  frames.push(Viz.frame('return ans < nums.length ? ans : -1;',
+    ans < n ? '扫完：最短移除 ' + ans + ' 个数，剩余和就能被 ' + p + ' 整除' : '找不到可行的移除段（整段移除不合法）→ −1',
+    [cellsPanel({ 2: 'done' }), lastPanel(null), varsPanel()]));
+
+  return { frames: frames, result: ans < n ? ans : -1 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

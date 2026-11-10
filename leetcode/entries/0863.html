@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉树中所有距离为 K 的结点 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 261 / 1159</span>
+  <nav class="pn"><a href="offer-33.html">上一篇</a><a href="0674.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">863. </span>二叉树中所有距离为 K 的结点</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 17</li><li class="algo">广度优先搜索</li><li class="aux">深度优先搜索/递归</li><li class="aux">哈希表</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">哈希表</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">DFS 给每个结点记父指针，把树补成无向图；再从 target 出发 BFS，三个方向（左、右、父）走 K 层，队列里剩下的就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>树里只有「向下」的边，先 DFS 一遍建 <code>parent</code> 哈希表，孩子就能向上走了。</li><li>从 <code>target</code> 出发 BFS：扩展每个结点时看三个邻居——左孩子、右孩子、<strong>父结点</strong>；用 <code>visited</code> 防止走回头路。</li><li>每弹完一层 <code>k--</code>，走满 K 层时队列里恰好是距离为 K 的全部结点；K 比树还大就返回空。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; distanceK(<span class="t">TreeNode</span> root, <span class="t">TreeNode</span> target, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="c">// DFS 一遍给每个结点记下父结点，树就补成了无向图</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">TreeNode</span>, <span class="t">TreeNode</span>&gt; parent = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        dfs(root, <span class="k">null</span>, parent);</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>        <span class="c">// 从 target 出发 BFS，三个方向：左孩子、右孩子、父结点</span></span><span class="ln"><span class="no">10</span>        <span class="t">Queue</span>&lt;<span class="t">TreeNode</span>&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        <span class="t">Set</span>&lt;<span class="t">TreeNode</span>&gt; visited = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">12</span>        queue.add(target);</span><span class="ln"><span class="no">13</span>        visited.add(target);</span><span class="ln"><span class="no">14</span>        <span class="k">while</span> (!queue.isEmpty() &amp;&amp; k &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">15</span>            k--;</span><span class="ln"><span class="no">16</span>            <span class="k">int</span> size = queue.size();</span><span class="ln"><span class="no">17</span>            <span class="k">while</span> (size-- &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">18</span>                <span class="t">TreeNode</span> cur = queue.poll();</span><span class="ln"><span class="no">19</span>                <span class="k">if</span> (cur.left != <span class="k">null</span> &amp;&amp; visited.add(cur.left)) queue.add(cur.left);</span><span class="ln"><span class="no">20</span>                <span class="k">if</span> (cur.right != <span class="k">null</span> &amp;&amp; visited.add(cur.right)) queue.add(cur.right);</span><span class="ln"><span class="no">21</span>                <span class="c">// 向上走全靠这一步：沿父指针也能扩展</span></span><span class="ln"><span class="no">22</span>                <span class="t">TreeNode</span> p = parent.get(cur);</span><span class="ln"><span class="no">23</span>                <span class="k">if</span> (p != <span class="k">null</span> &amp;&amp; visited.add(p)) queue.add(p);</span><span class="ln"><span class="no">24</span>            }</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="c">// k 层走完，队列里剩下的就是距离恰好为 k 的结点</span></span><span class="ln"><span class="no">27</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">28</span>        <span class="k">for</span> (<span class="t">TreeNode</span> node : queue) ans.add(node.val);</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span> </span><span class="ln"><span class="no">32</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="t">TreeNode</span> node, <span class="t">TreeNode</span> fa, <span class="t">Map</span>&lt;<span class="t">TreeNode</span>, <span class="t">TreeNode</span>&gt; parent) {</span><span class="ln"><span class="no">33</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span>;</span><span class="ln"><span class="no">34</span>        parent.put(node, fa);</span><span class="ln"><span class="no">35</span>        dfs(node.left, node, parent);</span><span class="ln"><span class="no">36</span>        dfs(node.right, node, parent);</span><span class="ln"><span class="no">37</span>    }</span><span class="ln"><span class="no">38</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个二叉树（具有根结点&nbsp;<code>root</code>），&nbsp;一个目标结点&nbsp;<code>target</code>&nbsp;，和一个整数值 <code>k</code>&nbsp;，返回到目标结点 <code>target</code> 距离为 <code>k</code> 的所有结点的值的数组。</p>
+
+<p>答案可以以 <strong>任何顺序</strong> 返回。</p>
+
+
+
+<ol>
+</ol>
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/719ef2cc56b8.png" style="height: 429px; width: 500px;" /></p>
+
+<pre>
+<strong>输入：</strong>root = [3,5,1,6,2,0,8,null,null,7,4], target = 5, k = 2
+<strong>输出：</strong>[7,4,1]
+<strong>解释：</strong>所求结点为与目标结点（值为 5）距离为 2 的结点，值分别为 7，4，以及 1
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> root = [1], target = 1, k = 3
+<strong>输出:</strong> []
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li>节点数在&nbsp;<code>[1, 500]</code>&nbsp;范围内</li>
+	<li><code>0 &lt;= Node.val &lt;= 500</code></li>
+	<li><code>Node.val</code>&nbsp;中所有值 <strong>不同</strong></li>
+	<li>目标结点&nbsp;<code>target</code>&nbsp;是树上的结点。</li>
+	<li><code>0 &lt;= k &lt;= 1000</code></li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> distanceK(TreeNode root, TreeNode target, int k) {", "        // DFS 一遍给每个结点记下父结点，树就补成了无向图", "        Map<TreeNode, TreeNode> parent = new HashMap<>();", "        dfs(root, null, parent);", "", "        // 从 target 出发 BFS，三个方向：左孩子、右孩子、父结点", "        Queue<TreeNode> queue = new ArrayDeque<>();", "        Set<TreeNode> visited = new HashSet<>();", "        queue.add(target);", "        visited.add(target);", "        while (!queue.isEmpty() && k > 0) {", "            k--;", "            int size = queue.size();", "            while (size-- > 0) {", "                TreeNode cur = queue.poll();", "                if (cur.left != null && visited.add(cur.left)) queue.add(cur.left);", "                if (cur.right != null && visited.add(cur.right)) queue.add(cur.right);", "                // 向上走全靠这一步：沿父指针也能扩展", "                TreeNode p = parent.get(cur);", "                if (p != null && visited.add(p)) queue.add(p);", "            }", "        }", "        // k 层走完，队列里剩下的就是距离恰好为 k 的结点", "        List<Integer> ans = new ArrayList<>();", "        for (TreeNode node : queue) ans.add(node.val);", "        return ans;", "    }", "", "    private void dfs(TreeNode node, TreeNode fa, Map<TreeNode, TreeNode> parent) {", "        if (node == null) return;", "        parent.put(node, fa);", "        dfs(node.left, node, parent);", "        dfs(node.right, node, parent);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 863. 二叉树中所有距离为 K 的结点 —— 图解：复刻 Solution.java 的「父指针 + 三向 BFS」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [3, 5, 1, 6, 2, null, null, null, null, 7, 4], target: 5, k: 2 };
+
+function trace(input) {
+  var frames = [];
+
+  // 力扣层序数组 -> 结点；idx 是结点在数组里的下标，图解里的 marks / labels 靠它定位
+  function build(arr) {
+    if (!arr.length || arr[0] === null) return null;
+    var root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var p = q.shift();
+      if (i < arr.length) { if (arr[i] !== null) { p.left = { idx: i, val: arr[i], left: null, right: null }; q.push(p.left); } i++; }
+      if (i < arr.length) { if (arr[i] !== null) { p.right = { idx: i, val: arr[i], left: null, right: null }; q.push(p.right); } i++; }
+    }
+    return root;
+  }
+  var root = build(input.root);
+
+  // DFS 建父指针：parent[idx] = 父结点（根的父是 null）
+  var parent = {};
+  (function dfs(node, fa) {
+    if (node === null) return;
+    parent[node.idx] = fa;
+    dfs(node.left, node);
+    dfs(node.right, node);
+  })(root, null);
+
+  // 找 target 结点（题面保证值互不相同，按值找即可）
+  var target = null;
+  (function find(node) {
+    if (!node || target) return;
+    if (node.val === input.target) target = node;
+    find(node.left);
+    find(node.right);
+  })(root);
+
+  var visited = {};
+  visited[target.idx] = true;
+  var queue = [target];
+  var how = {};        // 每个结点是怎么进队的：target / 左 / 右 / 父
+  how[target.idx] = '起点';
+  var k = input.k;
+  var fired = { parent1: false, parent2: false };
+
+  function labelsOf() {
+    var out = [];
+    queue.forEach(function (n) {
+      if (how[n.idx] === '左' || how[n.idx] === '右' || how[n.idx] === '父') {
+        out.push({ at: n.idx, label: how[n.idx], cls: 'p-next' });
+      }
+    });
+    return out;
+  }
+  function treePanel() {
+    var marks = {};
+    Object.keys(visited).forEach(function (idx) { marks[idx] = 'done'; });
+    queue.forEach(function (n) { if (marks[n.idx] !== 'done') marks[n.idx] = 'cur'; });
+    return Viz.tree(input.root, { title: '二叉树（绿 = 访问过，黄 = 在队列里）', marks: marks, labels: labelsOf() });
+  }
+  function queuePanel() {
+    var marks = {};
+    queue.forEach(function (n, i) { marks[i] = 'cur'; });
+    return Viz.cells(queue.map(function (n) { return n.val; }),
+      { title: '队列 queue（左边是队首）', marks: marks, pointers: queue.length ? [{ at: 0, label: '队首', cls: 'p-head' }] : [] });
+  }
+  function varsPanel() { return Viz.vars([{ name: 'k', v: k, cls: 'chg' }]); }
+  function snap(at, key) { frames.push(Viz.frame(at, key, [treePanel(), queuePanel(), varsPanel()])); }
+
+  snap('queue.add(target);', '从 target=' + input.target + ' 出发，BFS 三个方向：左孩子、右孩子、父结点');
+
+  var level = 0;
+  while (queue.length > 0 && k > 0) {
+    k--;
+    var size = queue.length;
+    while (size-- > 0) {
+      var cur = queue.shift();
+      if (cur.left && !visited[cur.left.idx]) { visited[cur.left.idx] = true; how[cur.left.idx] = '左'; queue.push(cur.left); }
+      if (cur.right && !visited[cur.right.idx]) { visited[cur.right.idx] = true; how[cur.right.idx] = '右'; queue.push(cur.right); }
+      var p = parent[cur.idx];
+      if (p && !visited[p.idx]) {
+        visited[p.idx] = true;
+        how[p.idx] = '父';
+        queue.push(p);
+        if (level === 0 && !fired.parent1) {
+          fired.parent1 = true;
+          snap('if (p != null && visited.add(p)) queue.add(p);',
+            '扩展 ' + cur.val + '：左右孩子照常入队，父结点 ' + p.val + ' 也从父指针入队（向上走全靠它）');
+        }
+      }
+      if (level === 1 && !fired.parent2 && (cur.left || cur.right)) {
+        fired.parent2 = true;
+        snap('TreeNode p = parent.get(cur);',
+          '第二层：向下走到 ' + cur.val + ' 的孩子们；再往上的父结点访问过，跳过');
+      }
+    }
+    level++;
+  }
+
+  var ans = queue.map(function (n) { return n.val; }).sort(function (a, b) { return a - b; });
+  snap('for (TreeNode node : queue) ans.add(node.val);',
+    k > 0 ? '队列空了还没走满 k 层：距离 k 的结点不存在' : '走满 k 层：队列里就是距离 ' + input.k + ' 的全部结点，答案 [ ' + ans.join(', ') + ' ]');
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

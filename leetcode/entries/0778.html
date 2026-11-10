@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>水位上升的泳池中游泳 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 944 / 1159</span>
+  <nav class="pn"><a href="1319.html">上一篇</a><a href="0995.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">778. </span>水位上升的泳池中游泳</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">并查集</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">极小化极大</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">矩阵</li><li class="tag">dijkstra</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按高度从低到高逐格「入水」并用并查集合并邻居，起点终点首次连通时的水位就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>答案 = 连通 (0,0) 和 (n−1,n−1) 的一条路径上的最大格高，要最小化这个最大值。</li><li>想象水位 t 从 0 涨到 n²−1：高度 ≤ t 的格子逐个「入水」，入水就和已入水的四邻合并（并查集）。</li><li>值互异 ⇒ 按 <code>pos[v]</code> 顺序加格子即可；每次合并后查起点终点是否同根，首次连通时的 <code>v</code> 即答案。</li><li>正确性：路径上任一格高 ≤ 当前水位，且连通恰好由本次新增的格子和它的并集促成，最大格高就是 <code>v</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²·α)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">int</span>[] pa;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> swimInWater(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = grid.length, N = n * n;</span><span class="ln"><span class="no">6</span>        pa = <span class="k">new</span> <span class="k">int</span>[N];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; N; i++) pa[i] = i;</span><span class="ln"><span class="no">8</span>        <span class="k">int</span>[] pos = <span class="k">new</span> <span class="k">int</span>[N];   <span class="c">// pos[v]：高度为 v 的格子的下标（值互不相同）</span></span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; N; i++) pos[grid[i / n][i % n]] = i;</span><span class="ln"><span class="no">10</span>        <span class="c">// 高度从低到高逐格入水：每入水一格就和已入水的邻居合并</span></span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> v = <span class="n">0</span>; v &lt; N; v++) {</span><span class="ln"><span class="no">12</span>            <span class="k">int</span> c = pos[v], r = c / n, col = c % n;</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (r &gt; <span class="n">0</span> &amp;&amp; grid[r - <span class="n">1</span>][col] &lt; v) union(c, c - n);</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (col &gt; <span class="n">0</span> &amp;&amp; grid[r][col - <span class="n">1</span>] &lt; v) union(c, c - <span class="n">1</span>);</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (r &lt; n - <span class="n">1</span> &amp;&amp; grid[r + <span class="n">1</span>][col] &lt; v) union(c, c + n);</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (col &lt; n - <span class="n">1</span> &amp;&amp; grid[r][col + <span class="n">1</span>] &lt; v) union(c, c + <span class="n">1</span>);</span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (find(<span class="n">0</span>) == find(N - <span class="n">1</span>)) <span class="k">return</span> v;   <span class="c">// 首次连通时的水位就是答案</span></span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> N - <span class="n">1</span>;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>    <span class="k">private</span> <span class="k">void</span> union(<span class="k">int</span> a, <span class="k">int</span> b) {</span><span class="ln"><span class="no">23</span>        pa[find(a)] = find(b);</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span> </span><span class="ln"><span class="no">26</span>    <span class="k">private</span> <span class="k">int</span> find(<span class="k">int</span> x) {</span><span class="ln"><span class="no">27</span>        <span class="k">while</span> (pa[x] != x) {</span><span class="ln"><span class="no">28</span>            pa[x] = pa[pa[x]];   <span class="c">// 路径减半</span></span><span class="ln"><span class="no">29</span>            x = pa[x];</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>        <span class="k">return</span> x;</span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>在一个 <code>n x n</code>&nbsp;的整数矩阵&nbsp;<code>grid</code> 中，每一个方格的值 <code>grid[i][j]</code> 表示位置 <code>(i, j)</code> 的平台高度。</p>
+
+<p>当开始下雨时，在时间为&nbsp;<code>t</code>&nbsp;时，水池中的水位为&nbsp;<code>t</code>&nbsp;。你可以从一个平台游向四周相邻的任意一个平台，但是前提是此时水位必须同时淹没这两个平台。假定你可以瞬间移动无限距离，也就是默认在方格内部游动是不耗时的。当然，在你游泳的时候你必须待在坐标方格里面。</p>
+
+<p>你从坐标方格的左上平台&nbsp;<code>(0，0)</code> 出发。返回 <em>你到达坐标方格的右下平台&nbsp;<code>(n-1, n-1)</code>&nbsp;所需的最少时间 。</em></p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<p><img src="../assets/img/8bb42e04d20e.jpg" /></p>
+
+<pre>
+<strong>输入:</strong> grid = [[0,2],[1,3]]
+<strong>输出:</strong> 3
+<strong>解释:</strong>
+时间为0时，你位于坐标方格的位置为 <code>(0, 0)。</code>
+此时你不能游向任意方向，因为四个相邻方向平台的高度都大于当前时间为 0 时的水位。
+等时间到达 3 时，你才可以游向平台 (1, 1). 因为此时的水位是 3，坐标方格中的平台没有比水位 3 更高的，所以你可以游向坐标方格中的任意位置
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<p><img src="../assets/img/0e3ab8452589.jpg" /></p>
+
+<pre>
+<strong>输入:</strong> grid = [[0,1,2,3,4],[24,23,22,21,5],[12,13,14,15,16],[11,17,18,19,20],[10,9,8,7,6]]
+<strong>输出:</strong> 16
+<strong>解释: </strong>最终的路线用加粗进行了标记。
+我们必须等到时间为 16，此时才能保证平台 (0, 0) 和 (4, 4) 是连通的
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>n == grid.length</code></li>
+	<li><code>n == grid[i].length</code></li>
+	<li><code>1 &lt;= n &lt;= 50</code></li>
+	<li><code>0 &lt;= grid[i][j] &lt;&nbsp;n<sup>2</sup></code></li>
+	<li><code>grid[i][j]</code>&nbsp;中每个值&nbsp;<strong>均无重复</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private int[] pa;", "", "    public int swimInWater(int[][] grid) {", "        int n = grid.length, N = n * n;", "        pa = new int[N];", "        for (int i = 0; i < N; i++) pa[i] = i;", "        int[] pos = new int[N];   // pos[v]：高度为 v 的格子的下标（值互不相同）", "        for (int i = 0; i < N; i++) pos[grid[i / n][i % n]] = i;", "        // 高度从低到高逐格入水：每入水一格就和已入水的邻居合并", "        for (int v = 0; v < N; v++) {", "            int c = pos[v], r = c / n, col = c % n;", "            if (r > 0 && grid[r - 1][col] < v) union(c, c - n);", "            if (col > 0 && grid[r][col - 1] < v) union(c, c - 1);", "            if (r < n - 1 && grid[r + 1][col] < v) union(c, c + n);", "            if (col < n - 1 && grid[r][col + 1] < v) union(c, c + 1);", "            if (find(0) == find(N - 1)) return v;   // 首次连通时的水位就是答案", "        }", "        return N - 1;", "    }", "", "    private void union(int a, int b) {", "        pa[find(a)] = find(b);", "    }", "", "    private int find(int x) {", "        while (pa[x] != x) {", "            pa[x] = pa[pa[x]];   // 路径减半", "            x = pa[x];", "        }", "        return x;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 778. 水位上升的泳池中游泳 —— 图解：复刻 Solution.java 的「按高度入水 + 并查集」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[0, 2], [1, 3]] };
+
+function trace(input) {
+  var g = input.grid, n = g.length, N = n * n;
+  var pa = [];
+  for (var i = 0; i < N; i++) pa[i] = i;
+  var pos = [];   // pos[v]：高度 v 的格子下标
+  for (var i = 0; i < N; i++) pos[g[(i / n) | 0][i % n]] = i;
+  var frames = [];
+  var varV = 0, varConnected = false;
+
+  function find(x) { while (pa[x] !== x) { pa[x] = pa[pa[x]]; x = pa[x]; } return x; }
+
+  function gridPanel(marks) {
+    var rowsLbl = [], colsLbl = [];
+    for (var i = 0; i < n; i++) { rowsLbl.push(String(i)); colsLbl.push(String(i)); }
+    return Viz.grid(g, { title: 'grid：格子高度', marks: marks || {}, rowLabels: rowsLbl, colLabels: colsLbl, corner: 'i＼j' });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: '水位 v', v: varV, cls: 'cur' },
+      { name: '起终点连通', v: varConnected ? '是' : '否', cls: varConnected ? 'done' : '' }
+    ]);
+  }
+  // 已入水的格子标 win，当前入水的格子标 new
+  function marksFor(active, cur) {
+    var mm = {};
+    active.forEach(function (c) { var r = (c / n) | 0, col = c % n; mm[r + ',' + col] = 'win'; });
+    if (cur != null) { var r2 = (cur / n) | 0, c2 = cur % n; mm[r2 + ',' + c2] = 'new'; }
+    return mm;
+  }
+
+  var active = [];   // 已入水的格子下标
+  for (var v = 0; v < N; v++) {
+    var c = pos[v], r = (c / n) | 0, col = c % n;
+    active.push(c);
+    var merges = [];
+    if (r > 0 && g[r - 1][col] < v) { pa[find(c)] = find(c - n); merges.push('(' + (r - 1) + ',' + col + ')'); }
+    if (col > 0 && g[r][col - 1] < v) { pa[find(c)] = find(c - 1); merges.push('(' + r + ',' + (col - 1) + ')'); }
+    if (r < n - 1 && g[r + 1][col] < v) { pa[find(c)] = find(c + n); merges.push('(' + (r + 1) + ',' + col + ')'); }
+    if (col < n - 1 && g[r][col + 1] < v) { pa[find(c)] = find(c + 1); merges.push('(' + r + ',' + (col + 1) + ')'); }
+    varConnected = find(0) === find(N - 1);
+    varV = v;
+    if (v === 0) {
+      frames.push(Viz.frame('int c = pos[v], r = c / n, col = c % n;',
+        '水位 ' + v + '：高度 ' + v + ' 的格子 (' + r + ',' + col + ') 入水',
+        [gridPanel(marksFor(active, c)), varsPanel()]));
+    }
+    if (v === 1 && merges.length > 0) {
+      frames.push(Viz.frame('if (r > 0 && grid[r - 1][col] < v) union(c, c - n);',
+        '格子 (' + r + ',' + col + ') 入水，和已入水的 ' + merges.join('、') + ' 连通',
+        [gridPanel(marksFor(active, c)), varsPanel()]));
+    }
+    if (v === 2 && !varConnected) {
+      frames.push(Viz.frame('if (col > 0 && grid[r][col - 1] < v) union(c, c - 1);',
+        '水位 ' + v + '：又入水一格' + (merges.length ? '，并进 ' + merges.join('、') : '，没有已入水的邻居可并') + '；两端仍未连通，继续涨水',
+        [gridPanel(marksFor(active, c)), varsPanel()]));
+    }
+    if (varConnected && v >= 2) {
+      frames.push(Viz.frame('if (find(0) == find(N - 1)) return v;',
+        '水位 ' + v + '：(' + r + ',' + col + ') 入水后起点终点首次连通，答案就是 ' + v,
+        [gridPanel(marksFor(active, c)), varsPanel()]));
+      return { frames: frames, result: v };
+    }
+  }
+
+  frames.push(Viz.frame('return N - 1;',
+    '全部入水后连通，答案 ' + (N - 1),
+    [gridPanel(marksFor(active, null)), varsPanel()]));
+  return { frames: frames, result: N - 1 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

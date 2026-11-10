@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>手撕归并排序 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 121 / 1159</span>
+  <nav class="pn"><a href="0061.html">上一篇</a><a href="0075.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">补充题5. </span>手撕归并排序</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 50</li><li class="algo">分治</li><li class="tag">数组</li><li class="tag">分治</li><li class="tag">桶排序</li><li class="tag">计数排序</li><li class="tag">基数排序</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="tag">归并排序</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">归并排序：递归把数组对半分到只剩一个元素，再两两归并——两边各看队首比大小，小的写回原数组。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>mergeSort(lo, hi)</code>：从中点切半，递归排好 <code>[lo..mid]</code> 和 <code>[mid+1..hi]</code>，再 <code>merge</code> 归并；<code>lo &gt;= hi</code>（单元素）天然有序，直接返回。</li><li><code>merge</code> 前先把两段一起拷进辅助数组 <code>tmp</code>，然后 <code>i</code>、<code>j</code> 分别指向两段队首，轮番比较，把较小者写回 <code>a</code>。</li><li>相等时取<strong>左段</strong>（<code>&lt;=</code>），排序才稳定；一段用完后，另一段剩下的直接整体搬回去。</li><li>最坏也是 O(n log n)，代价是要一个 O(n) 辅助数组；手撕时先写 <code>merge</code> 再写递归最不容易错。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] sortArray(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        mergeSort(nums, <span class="n">0</span>, nums.length - <span class="n">1</span>, <span class="k">new</span> <span class="k">int</span>[nums.length]);</span><span class="ln"><span class="no">6</span>        <span class="k">return</span> nums;</span><span class="ln"><span class="no">7</span>    }</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="c">// 分：从中点切半，递归排好左右两段再归并</span></span><span class="ln"><span class="no">10</span>    <span class="k">private</span> <span class="k">void</span> mergeSort(<span class="k">int</span>[] a, <span class="k">int</span> lo, <span class="k">int</span> hi, <span class="k">int</span>[] tmp) {</span><span class="ln"><span class="no">11</span>        <span class="k">if</span> (lo &gt;= hi) <span class="k">return</span>;</span><span class="ln"><span class="no">12</span>        <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">13</span>        mergeSort(a, lo, mid, tmp);</span><span class="ln"><span class="no">14</span>        mergeSort(a, mid + <span class="n">1</span>, hi, tmp);</span><span class="ln"><span class="no">15</span>        merge(a, lo, mid, hi, tmp);</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="c">// 合：[lo..mid] 与 [mid+1..hi] 已各自有序</span></span><span class="ln"><span class="no">19</span>    <span class="k">private</span> <span class="k">void</span> merge(<span class="k">int</span>[] a, <span class="k">int</span> lo, <span class="k">int</span> mid, <span class="k">int</span> hi, <span class="k">int</span>[] tmp) {</span><span class="ln"><span class="no">20</span>        <span class="k">for</span> (<span class="k">int</span> k = lo; k &lt;= hi; k++) tmp[k] = a[k];   <span class="c">// 两段一起拷进辅助数组</span></span><span class="ln"><span class="no">21</span>        <span class="k">int</span> i = lo, j = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">22</span>        <span class="k">for</span> (<span class="k">int</span> k = lo; k &lt;= hi; k++) {</span><span class="ln"><span class="no">23</span>            <span class="k">if</span> (i &gt; mid) a[k] = tmp[j++];                <span class="c">// 左段用完，右段整体搬回</span></span><span class="ln"><span class="no">24</span>            <span class="k">else</span> <span class="k">if</span> (j &gt; hi) a[k] = tmp[i++];            <span class="c">// 右段用完，左段整体搬回</span></span><span class="ln"><span class="no">25</span>            <span class="k">else</span> <span class="k">if</span> (tmp[i] &lt;= tmp[j]) a[k] = tmp[i++];  <span class="c">// 取小的；相等取左，保证稳定</span></span><span class="ln"><span class="no">26</span>            <span class="k">else</span> a[k] = tmp[j++];</span><span class="ln"><span class="no">27</span>        }</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组&nbsp;<code>nums</code>，请你将该数组升序排列。</p>
+
+<p>你必须在 <strong>不使用任何内置函数</strong> 的情况下解决问题，时间复杂度为 <code>O(nlog(n))</code>，并且空间复杂度尽可能小。</p>
+
+
+
+<ol>
+</ol>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [5,2,3,1]
+<strong>输出：</strong>[1,2,3,5]
+<strong>解释：</strong>数组排序后，某些数字的位置没有改变（例如，2 和 3），而其他数字的位置发生了改变（例如，1 和 5）。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [5,1,1,2,0,0]
+<strong>输出：</strong>[0,0,1,1,2,5]
+<strong>解释：</strong>请注意，nums 的值不一定唯一。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 5 * 10<sup>4</sup></code></li>
+	<li><code>-5 * 10<sup>4</sup> &lt;= nums[i] &lt;= 5 * 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] sortArray(int[] nums) {", "        mergeSort(nums, 0, nums.length - 1, new int[nums.length]);", "        return nums;", "    }", "", "    // 分：从中点切半，递归排好左右两段再归并", "    private void mergeSort(int[] a, int lo, int hi, int[] tmp) {", "        if (lo >= hi) return;", "        int mid = (lo + hi) >>> 1;", "        mergeSort(a, lo, mid, tmp);", "        mergeSort(a, mid + 1, hi, tmp);", "        merge(a, lo, mid, hi, tmp);", "    }", "", "    // 合：[lo..mid] 与 [mid+1..hi] 已各自有序", "    private void merge(int[] a, int lo, int mid, int hi, int[] tmp) {", "        for (int k = lo; k <= hi; k++) tmp[k] = a[k];   // 两段一起拷进辅助数组", "        int i = lo, j = mid + 1;", "        for (int k = lo; k <= hi; k++) {", "            if (i > mid) a[k] = tmp[j++];                // 左段用完，右段整体搬回", "            else if (j > hi) a[k] = tmp[i++];            // 右段用完，左段整体搬回", "            else if (tmp[i] <= tmp[j]) a[k] = tmp[i++];  // 取小的；相等取左，保证稳定", "            else a[k] = tmp[j++];", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 补充题5 手撕归并排序 —— 图解：复刻 Solution.java 的「递归分半 + 辅助数组归并」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [5, 2, 3, 1] };
+
+function trace(input) {
+  var a = input.nums.slice();
+  var n = a.length;
+  var tmp = [];
+  for (var t = 0; t < n; t++) tmp.push(0);
+  var frames = [];
+  var snapped = {};
+
+  function panel(arr, title, o) {
+    o = o || {};
+    return Viz.cells(arr, { title: title, marks: o.marks || {}, pointers: o.pointers || [], range: o.range || null });
+  }
+
+  function mergeSort(lo, hi) {
+    if (lo >= hi) return;
+    var mid = (lo + hi) >> 1;
+    if (!snapped.split) {
+      snapped.split = true;
+      var m = {};
+      m[mid] = 'cur';
+      frames.push(Viz.frame('int mid = (lo + hi) >>> 1;',
+        '分：从 mid=' + mid + ' 切成两半，先递归排左右两段',
+        [panel(a, '数组 a', { range: { from: lo, to: hi, label: '本段 [' + lo + '..' + hi + ']' }, marks: m })]));
+    }
+    mergeSort(lo, mid);
+    mergeSort(mid + 1, hi);
+    merge(lo, mid, hi);
+  }
+
+  function merge(lo, mid, hi) {
+    for (var k = lo; k <= hi; k++) tmp[k] = a[k];
+    if (!snapped.copy) {
+      snapped.copy = true;
+      var mT = {}, mA = {};
+      for (var q = lo; q <= hi; q++) { mT[q] = 'win'; mA[q] = 'win'; }
+      frames.push(Viz.frame('for (int k = lo; k <= hi; k++) tmp[k] = a[k];',
+        '合：两段已各自有序，先整段拷进 tmp，再从队首往回挑',
+        [panel(a, '数组 a', { range: { from: lo, to: hi, label: '归并 [' + lo + '..' + hi + ']' }, marks: mA }),
+         panel(tmp, '辅助数组 tmp', { marks: mT, range: { from: lo, to: hi, label: '刚拷入' } })]));
+    }
+    var i = lo, j = mid + 1;
+    for (var k2 = lo; k2 <= hi; k2++) {
+      if (i > mid) {
+        a[k2] = tmp[j++];        // 左段用完，右段整体搬回
+      } else if (j > hi) {
+        a[k2] = tmp[i++];        // 右段用完，左段整体搬回
+      } else {
+        var takeLeft = tmp[i] <= tmp[j];
+        if (!snapped.cmp) {
+          snapped.cmp = true;
+          var mC = {};
+          mC[i] = 'hit';
+          mC[j] = 'cur';
+          frames.push(Viz.frame('else if (tmp[i] <= tmp[j]) a[k] = tmp[i++];',
+            '两边各看队首：' + tmp[i] + ' 和 ' + tmp[j] + ' 比大小，小的写回 a',
+            [panel(tmp, '辅助数组 tmp', { marks: mC, pointers: [{ at: i, label: 'i', cls: 'p-left' }, { at: j, label: 'j', cls: 'p-right' }] }),
+             panel(a, '数组 a', { range: { from: lo, to: hi, label: '归并 [' + lo + '..' + hi + ']' } })]));
+        }
+        if (takeLeft) a[k2] = tmp[i++]; else a[k2] = tmp[j++];
+      }
+    }
+  }
+
+  mergeSort(0, n - 1);
+
+  var done = {};
+  for (var q = 0; q < n; q++) done[q] = 'done';
+  frames.push(Viz.frame('return nums;', '递归到底再逐层归并回来：全数组有序',
+    [panel(a, '数组 a', { marks: done })]));
+
+  return { frames: frames, result: a };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

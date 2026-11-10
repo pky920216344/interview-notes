@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>设计跳表 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 342 / 1159</span>
+  <nav class="pn"><a href="0117.html">上一篇</a><a href="0133.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1206. </span>设计跳表</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 11</li><li class="algo">设计</li><li class="aux">链表</li><li class="aux">二分查找</li><li class="tag">设计</li><li class="tag">链表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">多层链表：底层放全量、上层是稀疏快车道；查找从顶层往下走，每层走到最后一个小于目标的结点再下一层；层高掷硬币决定。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每个结点带一个 <code>next[]</code> 数组：<code>next[i]</code> 是它在第 <code>i</code> 层的下一个结点；层高由「50% 概率再上一层」随机出来。</li><li>查找：从当前最高层出发，每层沿 <code>next[i]</code> 走到<strong>最后一个 <code>&lt; target</code></strong> 的结点，再下降一层；底层看 <code>next[0]</code> 是否等于目标。</li><li><code>add</code>：先像查找一样沿途把每层的前驱记进 <code>update[]</code>，新结点随机层高 <code>h</code>，在 <code>0..h-1</code> 每层做普通链表插入；<code>h</code> 超过当前最高层时前驱都是 <code>head</code>。</li><li><code>erase</code>：同样先记 <code>update[]</code>；<code>update[0].next[0]</code> 不等于目标就是不存在，返回 <code>false</code>；否则在它出现的每一层摘掉（条件 <code>update[i].next[i] == t</code>），再把空了的顶层收缩掉。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log n) 平均（search / add / erase），空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Skiplist</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">int</span> MAX_LEVEL = <span class="n">32</span>;   <span class="c">// 层数上限，足够覆盖 5e4 次操作</span></span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">class</span> <span class="t">Node</span> {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> val;</span><span class="ln"><span class="no">6</span>        <span class="t">Node</span>[] next = <span class="k">new</span> <span class="t">Node</span>[MAX_LEVEL];   <span class="c">// next[i]：本结点在第 i 层的下一个结点</span></span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>        <span class="t">Node</span>(<span class="k">int</span> val) { <span class="k">this</span>.val = val; }</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Node</span> head = <span class="k">new</span> <span class="t">Node</span>(-<span class="n">1</span>);   <span class="c">// 哨兵头，第 0~31 层的起点</span></span><span class="ln"><span class="no">12</span>    <span class="k">private</span> <span class="k">int</span> level = <span class="n">1</span>;                    <span class="c">// 当前实际用到的最高层数</span></span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="k">public</span> <span class="t">Skiplist</span>() {</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="c">// 从顶层往下找：每层走到最后一个 &lt; num 的结点，沿途记进 update</span></span><span class="ln"><span class="no">19</span>    <span class="k">private</span> <span class="t">Node</span>[] find(<span class="k">int</span> num) {</span><span class="ln"><span class="no">20</span>        <span class="t">Node</span>[] update = <span class="k">new</span> <span class="t">Node</span>[MAX_LEVEL];</span><span class="ln"><span class="no">21</span>        <span class="t">Node</span> p = head;</span><span class="ln"><span class="no">22</span>        <span class="k">for</span> (<span class="k">int</span> i = level - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">23</span>            <span class="k">while</span> (p.next[i] != <span class="k">null</span> &amp;&amp; p.next[i].val &lt; num) p = p.next[i];</span><span class="ln"><span class="no">24</span>            update[i] = p;</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> update;</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span> </span><span class="ln"><span class="no">29</span>    <span class="k">public</span> <span class="k">boolean</span> search(<span class="k">int</span> target) {</span><span class="ln"><span class="no">30</span>        <span class="t">Node</span> p = head;</span><span class="ln"><span class="no">31</span>        <span class="k">for</span> (<span class="k">int</span> i = level - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">32</span>            <span class="k">while</span> (p.next[i] != <span class="k">null</span> &amp;&amp; p.next[i].val &lt; target) p = p.next[i];</span><span class="ln"><span class="no">33</span>        }</span><span class="ln"><span class="no">34</span>        <span class="t">Node</span> t = p.next[<span class="n">0</span>];</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> t != <span class="k">null</span> &amp;&amp; t.val == target;</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span> </span><span class="ln"><span class="no">38</span>    <span class="k">public</span> <span class="k">void</span> add(<span class="k">int</span> num) {</span><span class="ln"><span class="no">39</span>        <span class="t">Node</span>[] update = find(num);</span><span class="ln"><span class="no">40</span>        <span class="t">Node</span> node = <span class="k">new</span> <span class="t">Node</span>(num);</span><span class="ln"><span class="no">41</span>        <span class="k">int</span> h = randomLevel();</span><span class="ln"><span class="no">42</span>        <span class="c">// 新层没有前驱，前驱都是 head</span></span><span class="ln"><span class="no">43</span>        <span class="k">for</span> (<span class="k">int</span> i = level; i &lt; h; i++) update[i] = head;</span><span class="ln"><span class="no">44</span>        <span class="k">if</span> (h &gt; level) level = h;</span><span class="ln"><span class="no">45</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; h; i++) {</span><span class="ln"><span class="no">46</span>            node.next[i] = update[i].next[i];</span><span class="ln"><span class="no">47</span>            update[i].next[i] = node;</span><span class="ln"><span class="no">48</span>        }</span><span class="ln"><span class="no">49</span>    }</span><span class="ln"><span class="no">50</span> </span><span class="ln"><span class="no">51</span>    <span class="k">private</span> <span class="k">int</span> randomLevel() {</span><span class="ln"><span class="no">52</span>        <span class="k">int</span> h = <span class="n">1</span>;</span><span class="ln"><span class="no">53</span>        <span class="k">while</span> (h &lt; MAX_LEVEL &amp;&amp; <span class="t">Math</span>.random() &lt; <span class="n">0.5</span>) h++;   <span class="c">// 每层 50% 概率再长一层</span></span><span class="ln"><span class="no">54</span>        <span class="k">return</span> h;</span><span class="ln"><span class="no">55</span>    }</span><span class="ln"><span class="no">56</span> </span><span class="ln"><span class="no">57</span>    <span class="k">public</span> <span class="k">boolean</span> erase(<span class="k">int</span> num) {</span><span class="ln"><span class="no">58</span>        <span class="t">Node</span>[] update = find(num);</span><span class="ln"><span class="no">59</span>        <span class="t">Node</span> t = update[<span class="n">0</span>].next[<span class="n">0</span>];</span><span class="ln"><span class="no">60</span>        <span class="k">if</span> (t == <span class="k">null</span> || t.val != num) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">61</span>        <span class="c">// 在 t 出现的每一层把它摘掉（update[i].next[i] == t 说明该层连着它）</span></span><span class="ln"><span class="no">62</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; level &amp;&amp; update[i].next[i] == t; i++) update[i].next[i] = t.next[i];</span><span class="ln"><span class="no">63</span>        <span class="k">while</span> (level &gt; <span class="n">1</span> &amp;&amp; head.next[level - <span class="n">1</span>] == <span class="k">null</span>) level--;   <span class="c">// 顶层空了就收缩</span></span><span class="ln"><span class="no">64</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">65</span>    }</span><span class="ln"><span class="no">66</span>}</span><span class="ln"><span class="no">67</span> </span><span class="ln"><span class="no">68</span><span class="c">/**</span></span><span class="ln"><span class="no">69</span><span class="c"> * Your Skiplist object will be instantiated and called as such:</span></span><span class="ln"><span class="no">70</span><span class="c"> * Skiplist obj = new Skiplist();</span></span><span class="ln"><span class="no">71</span><span class="c"> * boolean param_1 = obj.search(target);</span></span><span class="ln"><span class="no">72</span><span class="c"> * obj.add(num);</span></span><span class="ln"><span class="no">73</span><span class="c"> * boolean param_3 = obj.erase(num);</span></span><span class="ln"><span class="no">74</span><span class="c"> */</span></span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>不使用任何库函数，设计一个 <strong>跳表</strong> 。</p>
+
+<p><strong>跳表</strong> 是在 <code>O(log(n))</code> 时间内完成增加、删除、搜索操作的数据结构。跳表相比于树堆与红黑树，其功能与性能相当，并且跳表的代码长度相较下更短，其设计思想与链表相似。</p>
+
+<p>例如，一个跳表包含 <code>[30, 40, 50, 60, 70, 90]</code> ，然后增加 <code>80</code>、<code>45</code> 到跳表中，以下图的方式操作：</p>
+
+<p><img alt="" src="../assets/img/a079f963e19f.gif" style="width: 500px; height: 173px;" /></p>
+
+<p>跳表中有很多层，每一层是一个短的链表。在第一层的作用下，增加、删除和搜索操作的时间复杂度不超过 <code>O(n)</code>。跳表的每一个操作的平均时间复杂度是 <code>O(log(n))</code>，空间复杂度是 <code>O(n)</code>。</p>
+
+<p>了解更多 :&nbsp;<a href="https://oi-wiki.org/ds/skiplist/" target="_blank">https://oi-wiki.org/ds/skiplist/</a></p>
+
+<p>在本题中，你的设计应该要包含这些函数：</p>
+
+<ul>
+	<li><code>bool search(int target)</code> : 返回target是否存在于跳表中。</li>
+	<li><code>void add(int num)</code>:&nbsp;插入一个元素到跳表。</li>
+	<li><code>bool erase(int num)</code>: 在跳表中删除一个值，如果&nbsp;<code>num</code>&nbsp;不存在，直接返回false. 如果存在多个&nbsp;<code>num</code>&nbsp;，删除其中任意一个即可。</li>
+</ul>
+
+<p>注意，跳表中可能存在多个相同的值，你的代码需要处理这种情况。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<b>输入</b>
+["Skiplist", "add", "add", "add", "search", "add", "search", "erase", "erase", "search"]
+[[], [1], [2], [3], [0], [4], [1], [0], [1], [1]]
+<strong>输出</strong>
+[null, null, null, null, false, null, true, false, true, false]
+
+<strong>解释</strong>
+Skiplist skiplist = new Skiplist();
+skiplist.add(1);
+skiplist.add(2);
+skiplist.add(3);
+skiplist.search(0);   // 返回 false
+skiplist.add(4);
+skiplist.search(1);   // 返回 true
+skiplist.erase(0);    // 返回 false，0 不在跳表中
+skiplist.erase(1);    // 返回 true
+skiplist.search(1);   // 返回 false，1 已被擦除
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>0 &lt;= num, target &lt;= 2 * 10<sup>4</sup></code></li>
+	<li>调用<code>search</code>, <code>add</code>, &nbsp;<code>erase</code>操作次数不大于&nbsp;<code>5 * 10<sup>4</sup></code>&nbsp;</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Skiplist {", "    private static final int MAX_LEVEL = 32;   // 层数上限，足够覆盖 5e4 次操作", "", "    private static class Node {", "        int val;", "        Node[] next = new Node[MAX_LEVEL];   // next[i]：本结点在第 i 层的下一个结点", "", "        Node(int val) { this.val = val; }", "    }", "", "    private final Node head = new Node(-1);   // 哨兵头，第 0~31 层的起点", "    private int level = 1;                    // 当前实际用到的最高层数", "", "    public Skiplist() {", "", "    }", "", "    // 从顶层往下找：每层走到最后一个 < num 的结点，沿途记进 update", "    private Node[] find(int num) {", "        Node[] update = new Node[MAX_LEVEL];", "        Node p = head;", "        for (int i = level - 1; i >= 0; i--) {", "            while (p.next[i] != null && p.next[i].val < num) p = p.next[i];", "            update[i] = p;", "        }", "        return update;", "    }", "", "    public boolean search(int target) {", "        Node p = head;", "        for (int i = level - 1; i >= 0; i--) {", "            while (p.next[i] != null && p.next[i].val < target) p = p.next[i];", "        }", "        Node t = p.next[0];", "        return t != null && t.val == target;", "    }", "", "    public void add(int num) {", "        Node[] update = find(num);", "        Node node = new Node(num);", "        int h = randomLevel();", "        // 新层没有前驱，前驱都是 head", "        for (int i = level; i < h; i++) update[i] = head;", "        if (h > level) level = h;", "        for (int i = 0; i < h; i++) {", "            node.next[i] = update[i].next[i];", "            update[i].next[i] = node;", "        }", "    }", "", "    private int randomLevel() {", "        int h = 1;", "        while (h < MAX_LEVEL && Math.random() < 0.5) h++;   // 每层 50% 概率再长一层", "        return h;", "    }", "", "    public boolean erase(int num) {", "        Node[] update = find(num);", "        Node t = update[0].next[0];", "        if (t == null || t.val != num) return false;", "        // 在 t 出现的每一层把它摘掉（update[i].next[i] == t 说明该层连着它）", "        for (int i = 0; i < level && update[i].next[i] == t; i++) update[i].next[i] = t.next[i];", "        while (level > 1 && head.next[level - 1] == null) level--;   // 顶层空了就收缩", "        return true;", "    }", "}", "", "/**", " * Your Skiplist object will be instantiated and called as such:", " * Skiplist obj = new Skiplist();", " * boolean param_1 = obj.search(target);", " * obj.add(num);", " * boolean param_3 = obj.erase(num);", " */"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1206. 设计跳表 —— 图解：多层链表的查找（从顶层逐层下降）、插入与删除，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  ops: [['add', 1], ['add', 2], ['add', 3], ['search', 0], ['add', 4], ['search', 1], ['erase', 0], ['erase', 1], ['search', 1]]
+};
+
+function trace(input) {
+  var ops = input.ops;
+  var frames = [];
+
+  // 固定种子的伪随机，保证图解稳定；层高只影响形状，不影响 search/erase 的结果
+  var seed = 20261104;
+  function rnd() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+
+  var MAXL = 16;
+  var head = { id: 0, val: -1, next: [] };   // 哨兵头
+  var seq = 0;
+  var level = 1;
+  function randLevel() { var h = 1; while (h < MAXL && rnd() < 0.5) h++; return h; }
+
+  // 每层走到最后一个 < num 的结点，update[i] 记下每层的前驱
+  function find(num) {
+    var update = [], p = head;
+    for (var i = level - 1; i >= 0; i--) {
+      while (p.next[i] && p.next[i].val < num) p = p.next[i];
+      update[i] = p;
+    }
+    return update;
+  }
+  function searchPath(target) {
+    var path = {}, p = head;
+    for (var i = level - 1; i >= 0; i--) {
+      while (p.next[i] && p.next[i].val < target) p = p.next[i];
+      path[i] = p;
+    }
+    return { path: path, hit: p.next[0] && p.next[0].val === target ? p.next[0] : null };
+  }
+
+  // 把第 li 层画成一条链：'H' 是头哨兵；marks 以结点 id 为键，ptrAt[li] 是该层的 cur 结点
+  function levelPanel(li, marks, ptrAt) {
+    var items = ['H'], idx = [head];
+    var p = head.next[li];
+    while (p) { items.push(p.val); idx.push(p); p = p.next[li]; }
+    var edges = [];
+    for (var k = 0; k + 1 < items.length; k++) edges.push([k, k + 1]);
+    var m = {};
+    if (marks) for (k = 0; k < items.length; k++) { var c = marks[idx[k].id]; if (c) m[k] = c; }
+    var pointers = [];
+    if (ptrAt && ptrAt[li]) {
+      var at = -1;
+      for (k = 0; k < idx.length; k++) if (idx[k] === ptrAt[li]) at = k;
+      if (at >= 0) pointers.push({ at: at, label: 'cur', cls: 'p-cur' });
+    }
+    var tag = li === level - 1 ? '（顶）' : (li === 0 ? '（底）' : '');
+    return Viz.list(items, {
+      title: '第 ' + (li + 1) + ' 层' + tag,
+      edges: edges, nulls: items.length ? [items.length - 1] : [],
+      marks: m, pointers: pointers
+    });
+  }
+  function allPanels(marks, ptrAt) {
+    var ps = [];
+    for (var i = level - 1; i >= 0; i--) ps.push(levelPanel(i, marks, ptrAt));
+    return ps;
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  var out = [];
+  for (var i = 0; i < ops.length; i++) {
+    var op = ops[i], v = op[1], j;
+
+    if (op[0] === 'add') {
+      var update = find(v);
+      var node = { id: ++seq, val: v, next: [] };
+      var h = randLevel();
+      for (j = level; j < h; j++) update[j] = head;
+      if (h > level) level = h;
+      for (j = 0; j < h; j++) { node.next[j] = update[j].next[j]; update[j].next[j] = node; }
+      if (i === 2) {
+        var mk = {};
+        for (j = 1; j <= 3; j++) mk[j] = 'new';
+        snap('update[i].next[i] = node;',
+          'add 1、2、3 后：底层全量有序，上面是稀疏的「快车道」，共 ' + level + ' 层',
+          allPanels(mk, null));
+      }
+    } else if (op[0] === 'search') {
+      var sp = searchPath(v);
+      var found = !!sp.hit;
+      out.push(found);
+      var mk = {};
+      if (sp.hit) mk[sp.hit.id] = 'hit';
+      if (i === 3) snap('Node t = p.next[0];',
+        'search(' + v + ')：从顶层往下，每层走到最后一个 <' + v + ' 的结点 → ' + (found ? '命中 true' : '没找到 false'),
+        allPanels(mk, sp.path));
+      if (i === 5) snap('Node t = p.next[0];',
+        'search(' + v + ')：降到第 0 层' + (found ? '命中 ' + v + ' → true' : '没找到 → false'),
+        allPanels(mk, sp.path));
+    } else {
+      var ud = find(v);
+      var t = ud[0].next[0];
+      if (!t || t.val !== v) {
+        out.push(false);
+        if (i === 6) snap('if (t == null || t.val != num) return false;',
+          'erase(' + v + ')：第 0 层前驱的下一个不是 ' + v + ' → 不存在，false',
+          allPanels({}, ud));
+      } else {
+        var tm = {};
+        tm[t.id] = 'bad';
+        if (i === 7) snap('for (int i = 0; i < level && update[i].next[i] == t; i++) update[i].next[i] = t.next[i];',
+          'erase(' + v + ')：找到 ' + v + '，从它出现的每层摘掉（cur 是前驱）→ true',
+          allPanels(tm, ud));
+        for (j = 0; j < level && ud[j].next[j] === t; j++) ud[j].next[j] = t.next[j];
+        while (level > 1 && !head.next[level - 1]) level--;
+        out.push(true);
+      }
+    }
+  }
+
+  var desc = out.slice(0, 5).map(function (b) { return b ? 'true' : 'false'; }).join('、');
+  if (out.length > 5) desc += '…';
+  snap('return t != null && t.val == target;',
+    '操作全部结束' + (out.length ? '：search/erase 依次返回 ' + desc : ''),
+    allPanels({}, null));
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

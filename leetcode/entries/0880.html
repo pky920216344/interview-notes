@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>索引处的解码字符串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 809 / 1159</span>
+  <nav class="pn"><a href="offer-06.html">上一篇</a><a href="0727.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">880. </span>索引处的解码字符串</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">数学</li><li class="tag">栈</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">解码串太长没法真拼出来：先正向算总长度 size，再从尾往前回退——遇数字 size 除回去、k 对 size 取模，k%size==0 时遇到的字母就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>正向一遍累计解码长度 <code>size</code>（数字 ×d、字母 +1）；题目保证 <code>size &lt; 2^63</code>，用 <code>long</code>。</li><li>从<strong>尾往前</strong>走：<code>k %= size</code> 把落点映射到「这次翻倍之前」的同一段；<code>k == 0</code>（即取本段末位）且当前字符是字母，返回它。</li><li>数字字符：<code>size /= d</code> 撤销这次翻倍；字母字符：<code>size--</code> 撤销这一位。</li><li>关键在 <code>k % size == 0</code>：<code>k</code> 是 1 起始，取模后为 0 恰好对应「这一段的最后一个字符」。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">String</span> decodeAtIndex(<span class="t">String</span> s, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 先正向累计解码总长度（题目保证 &lt; 2^63，long 够用）</span></span><span class="ln"><span class="no">4</span>        <span class="k">long</span> size = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">7</span>            <span class="k">char</span> c = s.charAt(i);</span><span class="ln"><span class="no">8</span>            size = <span class="t">Character</span>.isDigit(c) ? size * (c - <span class="s">'0'</span>) : size + <span class="n">1</span>;</span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="c">// 从尾往前回退：数字段把 size 除回去，k 对前段长度取模；落点是字母且 k%size==0 即答案</span></span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = n - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">12</span>            <span class="k">char</span> c = s.charAt(i);</span><span class="ln"><span class="no">13</span>            k %= size;</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (k == <span class="n">0</span> &amp;&amp; <span class="t">Character</span>.isLetter(c)) <span class="k">return</span> <span class="t">String</span>.valueOf(c);</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (<span class="t">Character</span>.isDigit(c)) size /= c - <span class="s">'0'</span>;</span><span class="ln"><span class="no">16</span>            <span class="k">else</span> size--;</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> <span class="s">""</span>;   <span class="c">// 题目保证 k 合法，走不到这里</span></span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个编码字符串 <code>s</code> 。请你找出<em> </em><strong>解码字符串</strong> 并将其写入磁带。解码时，从编码字符串中<strong> 每次读取一个字符 </strong>，并采取以下步骤：</p>
+
+<ul>
+	<li>如果所读的字符是字母，则将该字母写在磁带上。</li>
+	<li>如果所读的字符是数字（例如 <code>d</code>），则整个当前磁带总共会被重复写&nbsp;<code>d-1</code> 次。</li>
+</ul>
+
+<p>现在，对于给定的编码字符串 <code>s</code> 和索引 <code>k</code>，查找并返回解码字符串中的第 <code>k</code> 个字母。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "leet2code3", k = 10
+<strong>输出：</strong>"o"
+<strong>解释：</strong>
+解码后的字符串为 "leetleetcodeleetleetcodeleetleetcode"。
+字符串中的第 10 个字母是 "o"。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "ha22", k = 5
+<strong>输出：</strong>"h"
+<strong>解释：</strong>
+解码后的字符串为 "hahahaha"。第 5 个字母是 "h"。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "a2345678999999999999999", k = 1
+<strong>输出：</strong>"a"
+<strong>解释：</strong>
+解码后的字符串为 "a" 重复 8301530446056247680 次。第 1 个字母是 "a"。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= s.length &lt;= 100</code></li>
+	<li><code>s</code> 只包含小写字母与数字 <code>2</code> 到 <code>9</code> 。</li>
+	<li><code>s</code> 以字母开头。</li>
+	<li><code>1 &lt;= k &lt;= 10<sup>9</sup></code></li>
+	<li>题目保证 <code>k</code> 小于或等于解码字符串的长度。</li>
+	<li>解码后的字符串保证少于&nbsp;<code>2<sup>63</sup></code>&nbsp;个字母。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public String decodeAtIndex(String s, int k) {", "        // 先正向累计解码总长度（题目保证 < 2^63，long 够用）", "        long size = 0;", "        int n = s.length();", "        for (int i = 0; i < n; i++) {", "            char c = s.charAt(i);", "            size = Character.isDigit(c) ? size * (c - '0') : size + 1;", "        }", "        // 从尾往前回退：数字段把 size 除回去，k 对前段长度取模；落点是字母且 k%size==0 即答案", "        for (int i = n - 1; i >= 0; i--) {", "            char c = s.charAt(i);", "            k %= size;", "            if (k == 0 && Character.isLetter(c)) return String.valueOf(c);", "            if (Character.isDigit(c)) size /= c - '0';", "            else size--;", "        }", "        return \"\";   // 题目保证 k 合法，走不到这里", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 880. 索引处的解码字符串 —— 图解：复刻 Solution.java 的「算总长 + 从尾回退取模」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'leet2code3', k: 10 };
+
+function trace(input) {
+  var s = input.s, k = input.k;
+  var frames = [];
+
+  function cellsPanel(marks) {
+    return Viz.cells(s.split(''), { title: '编码串 s（从尾往回看）', marks: marks || {} });
+  }
+  function varsPanel(i) {
+    var items = [
+      { name: 'size（当前前缀解码长）', v: size },
+      { name: 'k（1 起始的落点）', v: k }
+    ];
+    if (i != null) items.push({ name: '正在看的字符', v: s[i] + '（下标 ' + i + '）' });
+    return Viz.vars(items);
+  }
+  function snap(at, key, marks, i) {
+    frames.push(Viz.frame(at, key, [cellsPanel(marks), varsPanel(i)]));
+  }
+
+  // 正向累计解码总长
+  var size = 0;
+  var n = s.length;
+  for (var i = 0; i < n; i++) {
+    var c = s[i];
+    size = (c >= '0' && c <= '9') ? size * (c.charCodeAt(0) - 48) : size + 1;
+  }
+  var marks = {};
+  for (i = 0; i < n; i++) marks[i] = 'dim';
+  snap('size = Character.isDigit(c) ? size * (c - \'0\') : size + 1;',
+    '先正向算出解码总长 size = ' + size + '（真实串太长，绝不真的拼出来）', marks, null);
+
+  // 从尾往前回退
+  var answered = false, shrunk = false;
+  for (i = n - 1; i >= 0; i--) {
+    c = s[i];
+    k %= size;
+    if (k === 0 && !(c >= '0' && c <= '9')) {
+      answered = true;
+      var hit = {}; hit[i] = 'done';
+      snap('if (k == 0 && Character.isLetter(c)) return String.valueOf(c);',
+        'k % size == 0：要的就是本段末位，' + c + ' 是字母 → 答案就是它', hit, i);
+      break;
+    }
+    if (c >= '0' && c <= '9') {
+      var dd = c.charCodeAt(0) - 48;
+      if (!shrunk) {
+        shrunk = true;
+        var dm = {}; dm[i] = 'cur';
+        snap('if (Character.isDigit(c)) size /= c - \'0\';',
+          '从尾往回走，遇到数字 ' + c + '：size ÷ ' + dd + ' 撤销这次翻倍（' + size + ' → ' + (size / dd) + '）', dm, i);
+      }
+      size /= dd;
+    } else {
+      size--;
+    }
+  }
+
+  if (!answered) {
+    snap('if (k == 0 && Character.isLetter(c)) return String.valueOf(c);',
+      '回退结束：落点是 ' + (k > 0 ? 's 中第 ' + k + ' 个字母' : '段末位字母'), {}, null);
+  }
+
+  var ans = '';
+  if (answered) ans = s[i] === undefined ? ans : s[i];
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>找出字符串中第一个匹配项的下标 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 316 / 1159</span>
+  <nav class="pn"><a href="0547.html">上一篇</a><a href="offer-31.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">28. </span>找出字符串中第一个匹配项的下标</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 13</li><li class="algo">双指针</li><li class="tag">双指针</li><li class="tag">字符串</li><li class="tag">字符串匹配</li><li class="tag">knuth-morris-pratt-algorithm</li><li class="tag">boyer-moore-string-search-algorithm</li><li class="tag">z-algorithm</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">KMP：先给 needle 建 next 表（最长相等前后缀），失配时 j 退到 next[j-1]，主串指针从不回头。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>next[i]</code> = <code>needle[0..i]</code> 的最长相等前后缀长度；建表就是 needle 自己匹配自己。</li><li>匹配时 <code>j</code> 表示已匹配长度：对上就 <code>j++</code>；失配就 <code>j = next[j-1]</code>，可能连退几次。</li><li><code>j == m</code> 时匹配完成，起点 = <code>i - m + 1</code>。</li><li>建表和匹配用的是同一套「失配回退」写法，记一套就够。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n+m)，空间复杂度 O(m)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> strStr(<span class="t">String</span> haystack, <span class="t">String</span> needle) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = haystack.length(), m = needle.length();</span><span class="ln"><span class="no">4</span>        <span class="k">if</span> (m == <span class="n">0</span>) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="c">// next[i]：needle[0..i] 的最长相等前后缀长度</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] next = <span class="k">new</span> <span class="k">int</span>[m];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>, len = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">8</span>            <span class="k">while</span> (len &gt; <span class="n">0</span> &amp;&amp; needle.charAt(i) != needle.charAt(len)) len = next[len - <span class="n">1</span>];</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (needle.charAt(i) == needle.charAt(len)) len++;</span><span class="ln"><span class="no">10</span>            next[i] = len;</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="c">// j 是 needle 已匹配的长度；失配就退到 next[j-1]，主串指针不回头</span></span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>, j = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">14</span>            <span class="k">while</span> (j &gt; <span class="n">0</span> &amp;&amp; haystack.charAt(i) != needle.charAt(j)) j = next[j - <span class="n">1</span>];</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (haystack.charAt(i) == needle.charAt(j)) j++;</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (j == m) <span class="k">return</span> i - m + <span class="n">1</span>;</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你两个字符串&nbsp;<code>haystack</code> 和 <code>needle</code> ，请你在 <code>haystack</code> 字符串中找出 <code>needle</code> 字符串的第一个匹配项的下标（下标从 0 开始）。如果&nbsp;<code>needle</code> 不是 <code>haystack</code> 的一部分，则返回&nbsp; <code>-1</code>。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>haystack = "sadbutsad", needle = "sad"
+<strong>输出：</strong>0
+<strong>解释：</strong>"sad" 在下标 0 和 6 处匹配。
+第一个匹配项的下标是 0 ，所以返回 0 。
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>haystack = "leetcode", needle = "leeto"
+<strong>输出：</strong>-1
+<strong>解释：</strong>"leeto" 没有在 "leetcode" 中出现，所以返回 -1 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= haystack.length, needle.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>haystack</code> 和 <code>needle</code> 仅由小写英文字符组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int strStr(String haystack, String needle) {", "        int n = haystack.length(), m = needle.length();", "        if (m == 0) return 0;", "        // next[i]：needle[0..i] 的最长相等前后缀长度", "        int[] next = new int[m];", "        for (int i = 1, len = 0; i < m; i++) {", "            while (len > 0 && needle.charAt(i) != needle.charAt(len)) len = next[len - 1];", "            if (needle.charAt(i) == needle.charAt(len)) len++;", "            next[i] = len;", "        }", "        // j 是 needle 已匹配的长度；失配就退到 next[j-1]，主串指针不回头", "        for (int i = 0, j = 0; i < n; i++) {", "            while (j > 0 && haystack.charAt(i) != needle.charAt(j)) j = next[j - 1];", "            if (haystack.charAt(i) == needle.charAt(j)) j++;", "            if (j == m) return i - m + 1;", "        }", "        return -1;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 28. 找出字符串中第一个匹配项的下标 —— 图解：复刻 Solution.java 的 KMP，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { haystack: 'abaxabab', needle: 'abab' };
+
+function trace(input) {
+  var h = input.haystack, nn = input.needle;
+  var m = nn.length;
+  var frames = [];
+
+  var BUILT = 'next[i] = len;';
+  var BACK = 'while (j > 0 && haystack.charAt(i) != needle.charAt(j)) j = next[j - 1];';
+  var GROW = 'if (haystack.charAt(i) == needle.charAt(j)) j++;';
+  var FOUND = 'if (j == m) return i - m + 1;';
+
+  // 建表：next[i] = needle[0..i] 的最长相等前后缀长度
+  var next = [0];
+  for (var i = 1; i < m; i++) {
+    var len = next[i - 1];
+    while (len > 0 && nn[i] !== nn[len]) len = next[len - 1];
+    if (nn[i] === nn[len]) len++;
+    next[i] = len;
+  }
+
+  function nextPanel(hit) {
+    return Viz.table('next[i]：needle[0..i] 的最长相等前后缀长度', next.map(function (v, k) {
+      return { k: String(k), v: String(v), cls: k === hit ? 'hit' : '' };
+    }), { hint: '（失配时 j 退到这里）' });
+  }
+
+  // win = [from, to]：haystack 里已对上的窗口；i 是当前指针位置
+  function hPanel(i, win) {
+    var marks = {};
+    if (win && win[0] >= 0) {
+      for (var k = win[0]; k <= win[1]; k++) marks[k] = 'win';
+    }
+    if (i < h.length) marks[i] = 'cur';
+    return Viz.cells(h.split(''), { title: 'haystack（蓝 = 已对上的部分）', marks: marks,
+      pointers: i < h.length ? [{ at: i, label: 'i', cls: 'p-cur' }] : [] });
+  }
+
+  function nPanel(j) {
+    var marks = {};
+    for (var k = 0; k < m; k++) marks[k] = k < j ? 'win' : 'dim';
+    if (j < m) marks[j] = 'cur';
+    return Viz.cells(nn.split(''), { title: 'needle（j = 已匹配长度）', marks: marks,
+      pointers: j < m ? [{ at: j, label: 'j', cls: 'p-mid' }] : [] });
+  }
+
+  frames.push(Viz.frame(BUILT, 'next 表建好：失配时就知道 j 该退到哪',
+    [nPanel(0), nextPanel(-1)]));
+
+  var j = 0;
+  var shot = { back: false, grow: false };
+  for (var i2 = 0; i2 < h.length; i2++) {
+    var c = h[i2];
+    var fell = false, from = j;
+    while (j > 0 && c !== nn[j]) {
+      j = next[j - 1];
+      fell = true;
+    }
+    if (fell && !shot.back) {
+      shot.back = true;
+      frames.push(Viz.frame(BACK, 'i=' + i2 + ' 的 ' + c + ' 对不上：j 沿 next 从 ' + from + ' 退到 ' + j + '，主串不回头',
+        [hPanel(i2, j > 0 ? [i2 - j, i2 - 1] : null), nPanel(j), nextPanel(j > 0 ? j - 1 : 0)]));
+    }
+    if (c === nn[j]) {
+      var fresh = j === 0 && shot.back && !shot.grow;
+      j++;
+      if (fresh) {
+        shot.grow = true;
+        frames.push(Viz.frame(GROW, '退干净后从头再比：i=' + i2 + ' 对上 needle[0]，j 重新往上爬',
+          [hPanel(i2, [i2, i2]), nPanel(j)]));
+      }
+    }
+    if (j === m) {
+      var start = i2 - m + 1;
+      frames.push(Viz.frame(FOUND, 'i=' + i2 + ' 时 j=' + m + '：整个 needle 对上，起点 = ' + i2 + '-' + m + '+1 = ' + start,
+        [hPanel(i2, [start, i2]), nPanel(j)]));
+      return { frames: frames, result: start };
+    }
+  }
+
+  frames.push(Viz.frame('return -1;', '扫完 haystack 也没凑齐整个 needle：返回 -1',
+    [hPanel(h.length - 1, null), nPanel(j)]));
+  return { frames: frames, result: -1 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

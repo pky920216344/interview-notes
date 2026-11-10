@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>戳气球 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 310 / 1159</span>
+  <nav class="pn"><a href="0060.html">上一篇</a><a href="0334.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">312. </span>戳气球</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 13</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">区间 DP + 倒着想：设 k 是区间里最后戳的气球，戳它时邻居是固定的 a[l]、a[r]，两半互不影响可拆开算。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><strong>先补两端 1</strong>：把边界当值为 1 的气球，<code>dp[l][r]</code> 表示戳空开区间 <code>(l, r)</code> 的最大收益。</li><li><strong>关键转换</strong>：正着戳邻居会变，没法分治；倒着想——设 <code>k</code> 是 <code>(l,r)</code> 里<strong>最后</strong>戳的，戳它时左右邻居恰是 <code>a[l]</code> 和 <code>a[r]</code>，且左右两半此前已各自戳空、互不相干。</li><li>转移：<code>dp[l][r] = max(dp[l][k] + a[l]*a[k]*a[r] + dp[k][r])</code>，区间按长度从短到长算。</li><li>答案是 <code>dp[0][n+1]</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n^3)，空间复杂度 O(n^2)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maxCoins(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">4</span>        <span class="c">// 两端补 1：边界气球戳破时按 1 算，区间 DP 就不用判边界了</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] a = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">2</span>];</span><span class="ln"><span class="no">6</span>        a[<span class="n">0</span>] = a[n + <span class="n">1</span>] = <span class="n">1</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) a[i + <span class="n">1</span>] = nums[i];</span><span class="ln"><span class="no">8</span>        <span class="c">// dp[l][r]：把开区间 (l, r) 里的气球全戳空的最大收益（l、r 一直活着）</span></span><span class="ln"><span class="no">9</span>        <span class="k">int</span>[][] dp = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">2</span>][n + <span class="n">2</span>];</span><span class="ln"><span class="no">10</span>        <span class="c">// 区间从短到长算；倒着想：设 k 是 (l,r) 里最后戳的，</span></span><span class="ln"><span class="no">11</span>        <span class="c">// 戳它时邻居恰是 a[l] 和 a[r]，且两半此前已各自戳空</span></span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> len = <span class="n">2</span>; len &lt;= n + <span class="n">1</span>; len++) {</span><span class="ln"><span class="no">13</span>            <span class="k">for</span> (<span class="k">int</span> l = <span class="n">0</span>; l + len &lt;= n + <span class="n">1</span>; l++) {</span><span class="ln"><span class="no">14</span>                <span class="k">int</span> r = l + len;</span><span class="ln"><span class="no">15</span>                <span class="k">for</span> (<span class="k">int</span> k = l + <span class="n">1</span>; k &lt; r; k++) {</span><span class="ln"><span class="no">16</span>                    <span class="k">int</span> gain = a[l] * a[k] * a[r] + dp[l][k] + dp[k][r];</span><span class="ln"><span class="no">17</span>                    dp[l][r] = <span class="t">Math</span>.max(dp[l][r], gain);</span><span class="ln"><span class="no">18</span>                }</span><span class="ln"><span class="no">19</span>            }</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> dp[<span class="n">0</span>][n + <span class="n">1</span>];</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>有 <code>n</code> 个气球，编号为<code>0</code> 到 <code>n - 1</code>，每个气球上都标有一个数字，这些数字存在数组&nbsp;<code>nums</code>&nbsp;中。</p>
+
+<p>现在要求你戳破所有的气球。戳破第 <code>i</code> 个气球，你可以获得&nbsp;<code>nums[i - 1] * nums[i] * nums[i + 1]</code> 枚硬币。&nbsp;这里的 <code>i - 1</code> 和 <code>i + 1</code> 代表和&nbsp;<code>i</code>&nbsp;相邻的两个气球的序号。如果 <code>i - 1</code>或 <code>i + 1</code> 超出了数组的边界，那么就当它是一个数字为 <code>1</code> 的气球。</p>
+
+<p>求所能获得硬币的最大数量。</p>
+
+
+<strong>示例 1：</strong>
+
+<pre>
+<strong>输入：</strong>nums = [3,1,5,8]
+<strong>输出：</strong>167
+<strong>解释：</strong>
+nums = [3,1,5,8] --&gt; [3,5,8] --&gt; [3,8] --&gt; [8] --&gt; []
+coins =  3*1*5    +   3*5*8   +  1*3*8  + 1*8*1 = 167</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,5]
+<strong>输出：</strong>10
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == nums.length</code></li>
+	<li><code>1 &lt;= n &lt;= 300</code></li>
+	<li><code>0 &lt;= nums[i] &lt;= 100</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maxCoins(int[] nums) {", "        int n = nums.length;", "        // 两端补 1：边界气球戳破时按 1 算，区间 DP 就不用判边界了", "        int[] a = new int[n + 2];", "        a[0] = a[n + 1] = 1;", "        for (int i = 0; i < n; i++) a[i + 1] = nums[i];", "        // dp[l][r]：把开区间 (l, r) 里的气球全戳空的最大收益（l、r 一直活着）", "        int[][] dp = new int[n + 2][n + 2];", "        // 区间从短到长算；倒着想：设 k 是 (l,r) 里最后戳的，", "        // 戳它时邻居恰是 a[l] 和 a[r]，且两半此前已各自戳空", "        for (int len = 2; len <= n + 1; len++) {", "            for (int l = 0; l + len <= n + 1; l++) {", "                int r = l + len;", "                for (int k = l + 1; k < r; k++) {", "                    int gain = a[l] * a[k] * a[r] + dp[l][k] + dp[k][r];", "                    dp[l][r] = Math.max(dp[l][r], gain);", "                }", "            }", "        }", "        return dp[0][n + 1];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 312. 戳气球 —— 图解：复刻 Solution.java 的区间 DP，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [3, 1, 5, 8] };
+
+function trace(input) {
+  var nums = input.nums;
+  var n = nums.length;
+  var frames = [];
+  var PAD = 'a[0] = a[n + 1] = 1;';
+  var GAIN = 'int gain = a[l] * a[k] * a[r] + dp[l][k] + dp[k][r];';
+  var ASSIGN = 'dp[l][r] = Math.max(dp[l][r], gain);';
+  var RET = 'return dp[0][n + 1];';
+
+  // 补两端 1
+  var a = [1];
+  for (var i = 0; i < n; i++) a.push(nums[i]);
+  a.push(1);
+
+  var m = n + 2;
+  var dp = [], filled = {};
+  for (i = 0; i < m; i++) { dp.push([]); for (var j = 0; j < m; j++) dp[i].push(0); }
+
+  function aPanel(marks) {
+    return Viz.cells(a, { title: '补了两端 1 的数组 a', marks: marks || {}, pointers: [] });
+  }
+  function dpPanel(marks) {
+    var rows = [], lbl = [];
+    for (var r = 0; r < m; r++) {
+      var row = [];
+      for (var c = 0; c < m; c++) row.push(filled[r + ',' + c] ? String(dp[r][c]) : '');
+      rows.push(row);
+      lbl.push(String(r));
+    }
+    return Viz.grid(rows, { title: 'dp[l][r]：戳空开区间 (l,r) 的最大收益（下三角没意义）', marks: marks || {},
+      rowLabels: lbl, colLabels: lbl, corner: 'l＼r' });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+
+  frames.push(Viz.frame(PAD, '两端补 1：边界气球按 1 算，之后戳任何气球都不用判越界',
+    [aPanel((function () { var mk = {}; mk[0] = 'new'; mk[m - 1] = 'new'; return mk; })()), dpPanel({})]));
+
+  var firedFirst = false, firedKey = false, firedBand = false, firedLast = false;
+
+  for (var len = 2; len <= n + 1; len++) {
+    for (var l = 0; l + len <= n + 1; l++) {
+      var r = l + len;
+      for (var k = l + 1; k < r; k++) {
+        var gain = a[l] * a[k] * a[r] + dp[l][k] + dp[k][r];
+        // 帧：最短区间（len=2）的第一格
+        if (!firedFirst) {
+          firedFirst = true;
+          var mk1 = {};
+          mk1[l + ',' + r] = 'new';
+          frames.push(Viz.frame(GAIN, '最短区间 (' + l + ',' + r + ')：只有气球 ' + a[l + 1] + '，邻居是两端的 1，gain=' + gain,
+            [aPanel((function () { var mk = {}; mk[1] = 'cur'; return mk; })()), dpPanel(mk1),
+             varsPanel([{ name: 'l, r, k', v: l + ', ' + r + ', ' + k }, { name: 'gain', v: gain, cls: 'chg' }])]));
+        }
+        // 帧：关键一步——k 是 (l,r) 里最后戳的，戳它时邻居是 a[l] 和 a[r]，两半已算好
+        if (!firedKey && l === 1 && r === 4 && k === 3) {
+          firedKey = true;
+          var mk2 = {};
+          mk2[l + ',' + r] = 'new';
+          mk2[l + ',' + k] = 'hit';
+          frames.push(Viz.frame(GAIN, '倒着想：设 k=' + k + ' 是 (' + l + ',' + r + ') 里最后戳的，戳它时邻居是 a[l]、a[r]',
+            [aPanel((function () { var mk = {}; mk[k] = 'cur'; return mk; })()), dpPanel(mk2),
+             varsPanel([{ name: 'a[l]·a[k]·a[r]', v: a[l] * a[k] * a[r] }, { name: 'dp[l][k]+dp[k][r]', v: dp[l][k] + dp[k][r] },
+               { name: 'gain', v: gain, cls: 'chg' }])]));
+        }
+        if (gain > dp[l][r]) dp[l][r] = gain;
+        filled[l + ',' + r] = true;
+        // 帧：len=3 的对角带算完，看得出「短的先算、长的用短的拼」
+        if (!firedBand && len === 3 && r === n + 1) {
+          firedBand = true;
+          var mk3 = {};
+          for (var t = 0; t + 3 <= n + 1; t++) mk3[t + ',' + (t + 3)] = 'new';
+          frames.push(Viz.frame(ASSIGN, '区间按长度从短到长算：len=3 的结果正好用上 len=2 的格子',
+            [aPanel({}), dpPanel(mk3)]));
+        }
+      }
+    }
+  }
+
+  // 帧：最终区间的取胜 k（(0,n+1) 里最后一个 k）
+  var bestK = 0, bestGain = -1;
+  for (k = 1; k <= n; k++) {
+    var g2 = a[0] * a[k] * a[n + 1] + dp[0][k] + dp[k][n + 1];
+    if (g2 > bestGain) { bestGain = g2; bestK = k; }
+  }
+  var mk4 = {};
+  mk4['0,' + (n + 1)] = 'new';
+  mk4['0,' + bestK] = 'hit';
+  mk4[bestK + ',' + (n + 1)] = 'hit';
+  frames.push(Viz.frame(GAIN, '最大区间 (0,' + (n + 1) + ')：最后戳的 k=' + bestK + '（气球 ' + a[bestK] + '）凑出最大收益 ' + bestGain,
+    [aPanel((function () { var mk = {}; mk[bestK] = 'cur'; return mk; })()), dpPanel(mk4),
+     varsPanel([{ name: 'dp[0][' + (n + 1) + ']', v: dp[0][n + 1], cls: 'chg' }])]));
+
+  var mk5 = {};
+  mk5['0,' + (n + 1)] = 'done';
+  frames.push(Viz.frame(RET, '整趟戳完的最大收益就是 dp[0][' + (n + 1) + '] = ' + dp[0][n + 1],
+    [aPanel({}), dpPanel(mk5), varsPanel([{ name: '答案', v: dp[0][n + 1], cls: 'done' }])]));
+
+  return { frames: frames, result: dp[0][n + 1] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

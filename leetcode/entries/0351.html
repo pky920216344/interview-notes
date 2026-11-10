@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>安卓系统手势解锁 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 779 / 1159</span>
+  <nav class="pn"><a href="0696.html">上一篇</a><a href="0432.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">351. </span>安卓系统手势解锁</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">回溯</li><li class="tag">位运算</li><li class="tag">动态规划</li><li class="tag">回溯</li><li class="tag">位掩码</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">DFS + 位掩码：从每个点出发延伸到长度 n，两点一线时必须跨过已连过的中点；长度落在 [m, n] 的每条序列各计 1。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>只有 8 组点对要「跨中点」：同行/同列隔一格的 6 组加两条对角线（1-9、3-7 跨 5），用 <code>skip</code> 表查。</li><li>DFS 从每个起点延伸：下一个点没连过、且（若要跨中点）中点已连过，才能走。</li><li>每连一个点 <code>len+1</code>；<code>len ≥ m</code> 时当前序列本身就是一个答案，<code>len == n</code> 就收手。</li><li>按起点分头数不会重复：合法序列的首点唯一。回溯用 <code>used[]</code> 数组就行，本题不需要记忆化。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n!)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="c">// 需要「跨过中间点」的点对：skip[a][b] = 中间点（对称填表）</span></span><span class="ln"><span class="no">3</span>    <span class="k">private</span> <span class="k">int</span>[][] skip = <span class="k">new</span> <span class="k">int</span>[<span class="n">10</span>][<span class="n">10</span>];</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">boolean</span>[] used = <span class="k">new</span> <span class="k">boolean</span>[<span class="n">10</span>];</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="k">int</span> numberOfPatterns(<span class="k">int</span> m, <span class="k">int</span> n) {</span><span class="ln"><span class="no">7</span>        skip[<span class="n">1</span>][<span class="n">3</span>] = skip[<span class="n">3</span>][<span class="n">1</span>] = <span class="n">2</span>;</span><span class="ln"><span class="no">8</span>        skip[<span class="n">4</span>][<span class="n">6</span>] = skip[<span class="n">6</span>][<span class="n">4</span>] = <span class="n">5</span>;</span><span class="ln"><span class="no">9</span>        skip[<span class="n">7</span>][<span class="n">9</span>] = skip[<span class="n">9</span>][<span class="n">7</span>] = <span class="n">8</span>;</span><span class="ln"><span class="no">10</span>        skip[<span class="n">1</span>][<span class="n">7</span>] = skip[<span class="n">7</span>][<span class="n">1</span>] = <span class="n">4</span>;</span><span class="ln"><span class="no">11</span>        skip[<span class="n">2</span>][<span class="n">8</span>] = skip[<span class="n">8</span>][<span class="n">2</span>] = <span class="n">5</span>;</span><span class="ln"><span class="no">12</span>        skip[<span class="n">3</span>][<span class="n">9</span>] = skip[<span class="n">9</span>][<span class="n">3</span>] = <span class="n">6</span>;</span><span class="ln"><span class="no">13</span>        skip[<span class="n">1</span>][<span class="n">9</span>] = skip[<span class="n">9</span>][<span class="n">1</span>] = <span class="n">5</span>;</span><span class="ln"><span class="no">14</span>        skip[<span class="n">3</span>][<span class="n">7</span>] = skip[<span class="n">7</span>][<span class="n">3</span>] = <span class="n">5</span>;</span><span class="ln"><span class="no">15</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> start = <span class="n">1</span>; start &lt;= <span class="n">9</span>; start++) {   <span class="c">// 每个合法序列都有唯一的首点，按起点分头数</span></span><span class="ln"><span class="no">17</span>            used[start] = <span class="k">true</span>;</span><span class="ln"><span class="no">18</span>            ans += dfs(start, <span class="n">1</span>, m, n);</span><span class="ln"><span class="no">19</span>            used[start] = <span class="k">false</span>;</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span> </span><span class="ln"><span class="no">24</span>    <span class="c">// cur：当前停在哪个点；len：已用点数。返回从当前状态能延伸出的合法手势总数</span></span><span class="ln"><span class="no">25</span>    <span class="k">private</span> <span class="k">int</span> dfs(<span class="k">int</span> cur, <span class="k">int</span> len, <span class="k">int</span> m, <span class="k">int</span> n) {</span><span class="ln"><span class="no">26</span>        <span class="k">int</span> cnt = len &gt;= m ? <span class="n">1</span> : <span class="n">0</span>;                  <span class="c">// 当前序列本身就是一个答案</span></span><span class="ln"><span class="no">27</span>        <span class="k">if</span> (len == n) <span class="k">return</span> cnt;</span><span class="ln"><span class="no">28</span>        <span class="k">for</span> (<span class="k">int</span> next = <span class="n">1</span>; next &lt;= <span class="n">9</span>; next++) {</span><span class="ln"><span class="no">29</span>            <span class="k">if</span> (used[next]) <span class="k">continue</span>;</span><span class="ln"><span class="no">30</span>            <span class="k">int</span> mid = skip[cur][next];</span><span class="ln"><span class="no">31</span>            <span class="c">// 两点一线时要跨过的中间点必须已经连过</span></span><span class="ln"><span class="no">32</span>            <span class="k">if</span> (mid != <span class="n">0</span> &amp;&amp; !used[mid]) <span class="k">continue</span>;</span><span class="ln"><span class="no">33</span>            used[next] = <span class="k">true</span>;</span><span class="ln"><span class="no">34</span>            cnt += dfs(next, len + <span class="n">1</span>, m, n);</span><span class="ln"><span class="no">35</span>            used[next] = <span class="k">false</span>;</span><span class="ln"><span class="no">36</span>        }</span><span class="ln"><span class="no">37</span>        <span class="k">return</span> cnt;</span><span class="ln"><span class="no">38</span>    }</span><span class="ln"><span class="no">39</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    // 需要「跨过中间点」的点对：skip[a][b] = 中间点（对称填表）", "    private int[][] skip = new int[10][10];", "    private boolean[] used = new boolean[10];", "", "    public int numberOfPatterns(int m, int n) {", "        skip[1][3] = skip[3][1] = 2;", "        skip[4][6] = skip[6][4] = 5;", "        skip[7][9] = skip[9][7] = 8;", "        skip[1][7] = skip[7][1] = 4;", "        skip[2][8] = skip[8][2] = 5;", "        skip[3][9] = skip[9][3] = 6;", "        skip[1][9] = skip[9][1] = 5;", "        skip[3][7] = skip[7][3] = 5;", "        int ans = 0;", "        for (int start = 1; start <= 9; start++) {   // 每个合法序列都有唯一的首点，按起点分头数", "            used[start] = true;", "            ans += dfs(start, 1, m, n);", "            used[start] = false;", "        }", "        return ans;", "    }", "", "    // cur：当前停在哪个点；len：已用点数。返回从当前状态能延伸出的合法手势总数", "    private int dfs(int cur, int len, int m, int n) {", "        int cnt = len >= m ? 1 : 0;                  // 当前序列本身就是一个答案", "        if (len == n) return cnt;", "        for (int next = 1; next <= 9; next++) {", "            if (used[next]) continue;", "            int mid = skip[cur][next];", "            // 两点一线时要跨过的中间点必须已经连过", "            if (mid != 0 && !used[mid]) continue;", "            used[next] = true;", "            cnt += dfs(next, len + 1, m, n);", "            used[next] = false;", "        }", "        return cnt;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 351. 安卓系统手势解锁 —— 图解：复刻 Solution.java 的「位掩码 DFS + 中点规则」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { m: 1, n: 2 };
+
+function trace(input) {
+  var m = input.m, n = input.n;
+  var frames = [];
+
+  // 与 Solution.java 相同的 skip 表
+  var skip = {};
+  function setSkip(a, b, mid) {
+    skip[a + '-' + b] = mid;
+    skip[b + '-' + a] = mid;
+  }
+  setSkip(1, 3, 2); setSkip(4, 6, 5); setSkip(7, 9, 8);
+  setSkip(1, 7, 4); setSkip(2, 8, 5); setSkip(3, 9, 6);
+  setSkip(1, 9, 5); setSkip(3, 7, 5);
+
+  var used = {};
+  var ans = 0;
+
+  // 3×3 点阵：visited 已连过，cand 正要试的点，bad 被中点挡住，hit 是被跨的中点
+  function gridPanel(markMap) {
+    var rows = [['1', '2', '3'], ['4', '5', '6'], ['7', '8', '9']];
+    var marks = {};
+    Object.keys(markMap || {}).forEach(function (p) {
+      var idx = Number(p) - 1;
+      marks[Math.floor(idx / 3) + ',' + (idx % 3)] = markMap[p];
+    });
+    return Viz.grid(rows, { title: '九宫点阵', marks: marks, corner: '' });
+  }
+  function varsPanel(len, note) {
+    var items = [
+      { name: 'm ~ n（长度范围）', v: m + ' ~ ' + n, cls: '' },
+      { name: 'len（已连点数）', v: String(len), cls: 'hit' },
+      { name: 'ans（累计手势数）', v: String(ans), cls: ans > 0 ? 'chg' : '' }
+    ];
+    if (note) items.push(note);
+    return Viz.vars(items);
+  }
+  function snap(at, key, marks, len, note) {
+    frames.push(Viz.frame(at, key, [gridPanel(marks), varsPanel(len, note)]));
+  }
+
+  var fired = {};
+  var CUR1 = 'for (int start = 1; start <= 9; start++) {';
+  var MID = 'int mid = skip[cur][next];';
+  var BLOCK = 'if (mid != 0 && !used[mid]) continue;';
+  var EXT = 'cnt += dfs(next, len + 1, m, n);';
+  var RET = 'ans += dfs(start, 1, m, n);';
+
+  function dfs(cur, len) {
+    var cnt = len >= m ? 1 : 0;
+    if (len === n) return cnt;
+    for (var next = 1; next <= 9; next++) {
+      if (used[next]) continue;
+      var mid = skip[cur + '-' + next] || 0;
+      if (mid !== 0 && !used[mid]) {
+        if (!fired.block && cur === 1 && next === 3) {
+          fired.block = true;
+          var bm = { 1: 'done', 3: 'bad', 2: 'hit' };
+          snap(BLOCK, '1\u21923 要跨过 2，可 2 还没连过：这条暂时走不通', bm, len, { name: '被挡的跳转', v: '1 \u2192 3', cls: 'bad' });
+        }
+        continue;
+      }
+      if (!fired.cand && cur === 1 && next === 2) {
+        fired.cand = true;
+        var cm = { 1: 'done', 2: 'cur' };
+        snap(MID, '从 1 出发：相邻的 2、4、5 直接能连（先试 2）', cm, len, { name: '正在试', v: '1 \u2192 2', cls: 'hit' });
+      }
+      used[next] = true;
+      var sub = dfs(next, len + 1);
+      used[next] = false;
+      if (!fired.ext && cur === 1 && next === 2 && len === 1) {
+        fired.ext = true;
+        var em = { 1: 'done', 2: 'done' };
+        snap(EXT, '连上 2 后 len=2 \u2265 m=1：1\u21922 这条手势本身就算 1 个，还能继续延伸', em, len + 1,
+          { name: '1 \u2192 2 贡献', v: String(sub), cls: 'chg' });
+      }
+      cnt += sub;
+    }
+    return cnt;
+  }
+
+  snap(CUR1, '按起点分头数：每个合法序列首点唯一，不会重复计数', { 1: 'cur' }, 0, null);
+
+  for (var start = 1; start <= 9; start++) {
+    used[start] = true;
+    ans += dfs(start, 1);
+    used[start] = false;
+  }
+
+  var all = {};
+  for (var p = 1; p <= 9; p++) all[p] = 'done';
+  snap(RET, '九个起点都数完：长度 ' + m + '~' + n + ' 的手势共 ' + ans + ' 个', all, n,
+    { name: 'ans（答案）', v: String(ans), cls: 'done' });
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

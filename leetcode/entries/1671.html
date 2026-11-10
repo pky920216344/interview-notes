@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>得到山形数组的最少删除次数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 894 / 1159</span>
+  <nav class="pn"><a href="1118.html">上一篇</a><a href="1408.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1671. </span>得到山形数组的最少删除次数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">动态规划</li><li class="aux">贪心</li><li class="aux">二分查找</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">山形 = 一个峰：从左扫最长严格递增 up、从右扫最长严格递减 down，答案 = n − max(up[i]+down[i]−1)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>保留的山形数组由「峰」决定：以 <code>i</code> 为峰时最多保留 <code>up[i] + down[i] − 1</code> 个（峰被两侧各算一次，减 1）。</li><li><code>up[i]</code>：以 <code>i</code> <strong>结尾</strong>的最长严格递增；<code>down[i]</code>：以 <code>i</code> <strong>开头</strong>的最长严格递减——把数组反转后就是同一遍 LIS。</li><li>LIS 用贪心 tails + 二分做到 O(n log n)；两侧各扫一遍。</li><li>峰两侧都必须非空（<code>up[i] ≥ 2</code> 且 <code>down[i] ≥ 2</code>），否则不是山形；答案 = <code>n − 最长山形</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> minimumMountainRemovals(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] up = lis(nums);</span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] rev = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) rev[i] = nums[n - <span class="n">1</span> - i];</span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] down = lis(rev);</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> best = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">10</span>            <span class="k">int</span> l = up[i], r = down[n - <span class="n">1</span> - i];</span><span class="ln"><span class="no">11</span>            <span class="c">// 峰两侧都至少要有一个元素，才称得上山形</span></span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (l &gt;= <span class="n">2</span> &amp;&amp; r &gt;= <span class="n">2</span>) best = <span class="t">Math</span>.max(best, l + r - <span class="n">1</span>);</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> n - best;</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span> </span><span class="ln"><span class="no">17</span>    <span class="c">// ends[i]：以 a[i] 结尾的最长严格递增子序列长度（贪心 tails + 二分）</span></span><span class="ln"><span class="no">18</span>    <span class="k">private</span> <span class="k">int</span>[] lis(<span class="k">int</span>[] a) {</span><span class="ln"><span class="no">19</span>        <span class="k">int</span>[] tails = <span class="k">new</span> <span class="k">int</span>[a.length];</span><span class="ln"><span class="no">20</span>        <span class="k">int</span>[] ends = <span class="k">new</span> <span class="k">int</span>[a.length];</span><span class="ln"><span class="no">21</span>        <span class="k">int</span> len = <span class="n">0</span>;</span><span class="ln"><span class="no">22</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; a.length; i++) {</span><span class="ln"><span class="no">23</span>            <span class="k">int</span> lo = <span class="n">0</span>, hi = len;</span><span class="ln"><span class="no">24</span>            <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">25</span>                <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">26</span>                <span class="k">if</span> (tails[mid] &lt; a[i]) lo = mid + <span class="n">1</span>; <span class="k">else</span> hi = mid;</span><span class="ln"><span class="no">27</span>            }</span><span class="ln"><span class="no">28</span>            ends[i] = lo + <span class="n">1</span>;</span><span class="ln"><span class="no">29</span>            tails[lo] = a[i];</span><span class="ln"><span class="no">30</span>            <span class="k">if</span> (lo == len) len++;</span><span class="ln"><span class="no">31</span>        }</span><span class="ln"><span class="no">32</span>        <span class="k">return</span> ends;</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>我们定义&nbsp;<code>arr</code>&nbsp;是 <b>山形数组</b>&nbsp;当且仅当它满足：</p>
+
+<ul>
+	<li><code>arr.length &gt;= 3</code></li>
+	<li>存在某个下标&nbsp;<code>i</code>&nbsp;（<strong>从 0 开始</strong>）&nbsp;满足&nbsp;<code>0 &lt; i &lt; arr.length - 1</code>&nbsp;且：
+	<ul>
+		<li><code>arr[0] &lt; arr[1] &lt; ... &lt; arr[i - 1] &lt; arr[i]</code></li>
+		<li><code>arr[i] &gt; arr[i + 1] &gt; ... &gt; arr[arr.length - 1]</code></li>
+	</ul>
+	</li>
+</ul>
+
+<p>给你整数数组&nbsp;<code>nums</code>​ ，请你返回将 <code>nums</code>&nbsp;变成 <strong>山形状数组</strong>&nbsp;的​ <strong>最少</strong>&nbsp;删除次数。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<b>输入：</b>nums = [1,3,1]
+<b>输出：</b>0
+<b>解释：</b>数组本身就是山形数组，所以我们不需要删除任何元素。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<b>输入：</b>nums = [2,1,1,5,6,2,3,1]
+<b>输出：</b>3
+<b>解释：</b>一种方法是将下标为 0，1 和 5 的元素删除，剩余元素为 [1,5,6,3,1] ，是山形数组。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>3 &lt;= nums.length &lt;= 1000</code></li>
+	<li><code>1 &lt;= nums[i] &lt;= 10<sup>9</sup></code></li>
+	<li>题目保证&nbsp;<code>nums</code> 删除一些元素后一定能得到山形数组。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int minimumMountainRemovals(int[] nums) {", "        int n = nums.length;", "        int[] up = lis(nums);", "        int[] rev = new int[n];", "        for (int i = 0; i < n; i++) rev[i] = nums[n - 1 - i];", "        int[] down = lis(rev);", "        int best = 0;", "        for (int i = 0; i < n; i++) {", "            int l = up[i], r = down[n - 1 - i];", "            // 峰两侧都至少要有一个元素，才称得上山形", "            if (l >= 2 && r >= 2) best = Math.max(best, l + r - 1);", "        }", "        return n - best;", "    }", "", "    // ends[i]：以 a[i] 结尾的最长严格递增子序列长度（贪心 tails + 二分）", "    private int[] lis(int[] a) {", "        int[] tails = new int[a.length];", "        int[] ends = new int[a.length];", "        int len = 0;", "        for (int i = 0; i < a.length; i++) {", "            int lo = 0, hi = len;", "            while (lo < hi) {", "                int mid = (lo + hi) >>> 1;", "                if (tails[mid] < a[i]) lo = mid + 1; else hi = mid;", "            }", "            ends[i] = lo + 1;", "            tails[lo] = a[i];", "            if (lo == len) len++;", "        }", "        return ends;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1671. 得到山形数组的最少删除次数 —— 图解：左扫一遍最长递增、右扫一遍最长递减，选峰拼山。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [2, 1, 1, 5, 6, 2, 3, 1] };
+
+function trace(input) {
+  var nums = input.nums;
+  var n = nums.length;
+  var frames = [];
+  var up = [], down = [];
+
+  var numsPanel = function (marks) {
+    return Viz.cells(nums, { title: 'nums', marks: marks || {} });
+  };
+  // ends 面板：filled 之前的格子已算出，后面是「·」
+  var endsPanel = function (title, ends, filled, markLast) {
+    var items = [];
+    for (var i = 0; i < n; i++) items.push(i < filled ? String(ends[i]) : '·');
+    var marks = {};
+    if (markLast && filled > 0) marks[filled - 1] = 'new';
+    return Viz.cells(items, { title: title, marks: marks });
+  };
+  var varsPanel = function (items) { return Viz.vars(items); };
+
+  // 与 Solution.java 相同的 tails + 二分：返回每个下标结尾的最长严格递增长度
+  function lisEnds(a, tag) {
+    var tails = [], ends = [];
+    for (var i = 0; i < a.length; i++) {
+      var lo = 0, hi = tails.length;
+      while (lo < hi) {
+        var mid = (lo + hi) >> 1;
+        if (tails[mid] < a[i]) lo = mid + 1; else hi = mid;
+      }
+      ends[i] = lo + 1;
+      tails[lo] = a[i];
+      if (tag === 'up' && i === 4 && n > 4) {
+        frames.push(Viz.frame('ends[i] = lo + 1;',
+          '从左扫到 i=4（值 ' + a[4] + '）：以它结尾的严格递增最长 ' + ends[4] + ' 个',
+          [numsPanel((function () { var m = {}; m[4] = 'cur'; return m; })()), endsPanel('up[i]：以 i 结尾的最长严格递增', ends, i + 1, true)]));
+      }
+    }
+    return ends;
+  }
+
+  up = lisEnds(nums, 'up');
+  frames.push(Viz.frame('int[] down = lis(rev);',
+    '从左扫完：up[i] 是以 i 结尾的最长严格递增长度',
+    [numsPanel(null), endsPanel('up[i]：以 i 结尾的最长严格递增', up, n, false)]));
+
+  var rev = nums.slice().reverse();
+  var downRev = lisEnds(rev, 'down');
+  for (var i = 0; i < n; i++) down[i] = downRev[n - 1 - i];
+  frames.push(Viz.frame('for (int i = 0; i < n; i++) {',
+    '把数组倒过来再扫一遍：down[i] 是以 i 开头的最长严格递减',
+    [numsPanel(null), endsPanel('down[i]：以 i 开头的最长严格递减', down, n, false)]));
+
+  var best = 0, peak = -1;
+  for (var k = 0; k < n; k++) {
+    var l = up[k], r = down[k];
+    if (l >= 2 && r >= 2 && l + r - 1 > best) { best = l + r - 1; peak = k; }
+  }
+  var pm = {};
+  if (peak >= 0) pm[peak] = 'cur';
+  frames.push(Viz.frame('best = Math.max(best, l + r - 1);',
+    peak >= 0 ? '峰选 i=' + peak + '（值 ' + nums[peak] + '）：左 ' + up[peak] + ' + 右 ' + down[peak] + ' − 1 = ' + best
+              : '没有合法的峰（题面保证不会发生）',
+    [numsPanel(pm), varsPanel([{ name: '保留最长', v: best }, { name: '答案 n−best', v: n - best, cls: 'done' }])]));
+
+  frames.push(Viz.frame('return n - best;',
+    '留下山形删掉其余：共删 ' + (n - best) + ' 个',
+    [numsPanel(pm), varsPanel([{ name: '答案', v: n - best, cls: 'done' }])]));
+
+  return { frames: frames, result: n - best };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

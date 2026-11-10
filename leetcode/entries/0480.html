@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑动窗口中位数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 393 / 1159</span>
+  <nav class="pn"><a href="1013.html">上一篇</a><a href="1146.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">480. </span>滑动窗口中位数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 8</li><li class="algo">堆</li><li class="aux">滑动窗口</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">treap</li><li class="tag">滑动窗口</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">对顶双堆 + 延迟删除：小堆存小的一半（大顶堆）、大堆存大的一半（小顶堆）；滑出的元素只记账，堆顶撞见待删值才真弹。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>两堆把窗口分成两半：<code>small</code>（大顶堆）顶 = 小一半的最大值，<code>large</code>（小顶堆）顶 = 大一半的最小值；奇数 k 中位数 = small 顶，偶数 k = 两顶平均。</li><li>新元素 <code>≤ small 顶</code> 进小堆，否则进大堆；平衡看「扣掉待删后的真实个数」：小堆多 2 个挪顶给大堆，大堆多 1 个挪给小堆。</li><li>滑出的元素不真删，<code>delayed</code> 表记 <code>值 → 次数</code>；哪堆<strong>顶</strong>撞见待删值就一直弹（prune）并清账，埋在堆中间的等它浮上来再清。</li><li>偶数 k 取平均必须先转 <code>double</code> 再相加：两个 int 直接相加会溢出（如两个 <code>Integer.MAX_VALUE</code>）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">double</span>[] medianSlidingWindow(<span class="k">int</span>[] nums, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="t">DualHeap</span> dh = <span class="k">new</span> <span class="t">DualHeap</span>(k);</span><span class="ln"><span class="no">6</span>        <span class="k">double</span>[] ans = <span class="k">new</span> <span class="k">double</span>[nums.length - k + <span class="n">1</span>];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; k; i++) dh.insert(nums[i]);</span><span class="ln"><span class="no">8</span>        ans[<span class="n">0</span>] = dh.median();</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = k; i &lt; nums.length; i++) {</span><span class="ln"><span class="no">10</span>            dh.insert(nums[i]);</span><span class="ln"><span class="no">11</span>            dh.erase(nums[i - k]);</span><span class="ln"><span class="no">12</span>            ans[i - k + <span class="n">1</span>] = dh.median();</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span> </span><span class="ln"><span class="no">17</span>    <span class="c">// 对顶堆 + 延迟删除：small 存小的一半（大顶堆），large 存大的一半（小顶堆）</span></span><span class="ln"><span class="no">18</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">class</span> <span class="t">DualHeap</span> {</span><span class="ln"><span class="no">19</span>        <span class="k">final</span> <span class="t">PriorityQueue</span>&lt;<span class="t">Integer</span>&gt; small = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;(<span class="t">Comparator</span>.reverseOrder());</span><span class="ln"><span class="no">20</span>        <span class="k">final</span> <span class="t">PriorityQueue</span>&lt;<span class="t">Integer</span>&gt; large = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;();</span><span class="ln"><span class="no">21</span>        <span class="c">// 延迟删除表：值 -&gt; 还挂在堆里没弹掉的个数</span></span><span class="ln"><span class="no">22</span>        <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; delayed = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">23</span>        <span class="k">final</span> <span class="k">int</span> k;</span><span class="ln"><span class="no">24</span>        <span class="c">// 两堆的真实个数（扣掉待删的），平衡只看它们</span></span><span class="ln"><span class="no">25</span>        <span class="k">int</span> smallSize = <span class="n">0</span>, largeSize = <span class="n">0</span>;</span><span class="ln"><span class="no">26</span> </span><span class="ln"><span class="no">27</span>        <span class="t">DualHeap</span>(<span class="k">int</span> k) { <span class="k">this</span>.k = k; }</span><span class="ln"><span class="no">28</span> </span><span class="ln"><span class="no">29</span>        <span class="k">double</span> median() {</span><span class="ln"><span class="no">30</span>            <span class="k">if</span> ((k &amp; <span class="n">1</span>) == <span class="n">1</span>) <span class="k">return</span> small.peek();</span><span class="ln"><span class="no">31</span>            <span class="c">// 先转 double 再相加，防 int 溢出</span></span><span class="ln"><span class="no">32</span>            <span class="k">return</span> ((<span class="k">double</span>) small.peek() + large.peek()) / <span class="n">2</span>;</span><span class="ln"><span class="no">33</span>        }</span><span class="ln"><span class="no">34</span> </span><span class="ln"><span class="no">35</span>        <span class="k">void</span> insert(<span class="k">int</span> num) {</span><span class="ln"><span class="no">36</span>            <span class="c">// 不超过小堆顶就进小堆，否则进大堆</span></span><span class="ln"><span class="no">37</span>            <span class="k">if</span> (small.isEmpty() || num &lt;= small.peek()) { small.offer(num); smallSize++; }</span><span class="ln"><span class="no">38</span>            <span class="k">else</span> { large.offer(num); largeSize++; }</span><span class="ln"><span class="no">39</span>            balance();</span><span class="ln"><span class="no">40</span>        }</span><span class="ln"><span class="no">41</span> </span><span class="ln"><span class="no">42</span>        <span class="k">void</span> erase(<span class="k">int</span> num) {</span><span class="ln"><span class="no">43</span>            delayed.merge(num, <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">44</span>            <span class="c">// 不超过小堆顶的值逻辑上属于小堆</span></span><span class="ln"><span class="no">45</span>            <span class="k">if</span> (num &lt;= small.peek()) { smallSize--; prune(small); }</span><span class="ln"><span class="no">46</span>            <span class="k">else</span> { largeSize--; prune(large); }</span><span class="ln"><span class="no">47</span>            balance();</span><span class="ln"><span class="no">48</span>        }</span><span class="ln"><span class="no">49</span> </span><span class="ln"><span class="no">50</span>        <span class="c">// 堆顶是待删值就一直弹，顺手清延迟表的账</span></span><span class="ln"><span class="no">51</span>        <span class="k">void</span> prune(<span class="t">PriorityQueue</span>&lt;<span class="t">Integer</span>&gt; heap) {</span><span class="ln"><span class="no">52</span>            <span class="k">while</span> (!heap.isEmpty() &amp;&amp; delayed.getOrDefault(heap.peek(), <span class="n">0</span>) &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">53</span>                <span class="k">int</span> v = heap.poll();</span><span class="ln"><span class="no">54</span>                <span class="k">if</span> (delayed.merge(v, -<span class="n">1</span>, <span class="t">Integer</span>::sum) == <span class="n">0</span>) delayed.remove(v);</span><span class="ln"><span class="no">55</span>            }</span><span class="ln"><span class="no">56</span>        }</span><span class="ln"><span class="no">57</span> </span><span class="ln"><span class="no">58</span>        <span class="c">// 按真实个数平衡：小堆多两个以上挪顶给大堆，大堆多一个挪顶给小堆</span></span><span class="ln"><span class="no">59</span>        <span class="k">void</span> balance() {</span><span class="ln"><span class="no">60</span>            <span class="k">if</span> (smallSize &gt; largeSize + <span class="n">1</span>) {</span><span class="ln"><span class="no">61</span>                large.offer(small.poll());</span><span class="ln"><span class="no">62</span>                smallSize--; largeSize++;</span><span class="ln"><span class="no">63</span>                prune(small);</span><span class="ln"><span class="no">64</span>            } <span class="k">else</span> <span class="k">if</span> (smallSize &lt; largeSize) {</span><span class="ln"><span class="no">65</span>                small.offer(large.poll());</span><span class="ln"><span class="no">66</span>                smallSize++; largeSize--;</span><span class="ln"><span class="no">67</span>                prune(large);</span><span class="ln"><span class="no">68</span>            }</span><span class="ln"><span class="no">69</span>        }</span><span class="ln"><span class="no">70</span>    }</span><span class="ln"><span class="no">71</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>中位数是有序序列最中间的那个数。如果序列的长度是偶数，则没有最中间的数；此时中位数是最中间的两个数的平均数。</p>
+
+<p>例如：</p>
+
+<ul>
+	<li><code>[2,3,4]</code>，中位数是 <code>3</code></li>
+	<li><code>[2,3]</code>，中位数是 <code>(2 + 3) / 2 = 2.5</code></li>
+</ul>
+
+<p>给你一个数组 <em>nums</em>，有一个长度为 <em>k</em> 的窗口从最左端滑动到最右端。窗口中有 <em>k</em> 个数，每次窗口向右移动 <em>1</em> 位。你的任务是找出每次窗口移动后得到的新窗口中元素的中位数，并输出由它们组成的数组。</p>
+
+
+
+<p><strong>示例：</strong></p>
+
+<p>给出 <em>nums</em> = <code>[1,3,-1,-3,5,3,6,7]</code>，以及 <em>k</em> = 3。</p>
+
+<pre>
+窗口位置                      中位数
+---------------               -----
+[1  3  -1] -3  5  3  6  7       1
+ 1 [3  -1  -3] 5  3  6  7      -1
+ 1  3 [-1  -3  5] 3  6  7      -1
+ 1  3  -1 [-3  5  3] 6  7       3
+ 1  3  -1  -3 [5  3  6] 7       5
+ 1  3  -1  -3  5 [3  6  7]      6
+</pre>
+
+<p> 因此，返回该滑动窗口的中位数数组 <code>[1,-1,-1,3,5,6]</code>。</p>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>你可以假设 <code>k</code> 始终有效，即：<code>k</code> 始终小于等于输入的非空数组的元素个数。</li>
+	<li>与真实值误差在 <code>10 ^ -5</code> 以内的答案将被视作正确答案。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public double[] medianSlidingWindow(int[] nums, int k) {", "        DualHeap dh = new DualHeap(k);", "        double[] ans = new double[nums.length - k + 1];", "        for (int i = 0; i < k; i++) dh.insert(nums[i]);", "        ans[0] = dh.median();", "        for (int i = k; i < nums.length; i++) {", "            dh.insert(nums[i]);", "            dh.erase(nums[i - k]);", "            ans[i - k + 1] = dh.median();", "        }", "        return ans;", "    }", "", "    // 对顶堆 + 延迟删除：small 存小的一半（大顶堆），large 存大的一半（小顶堆）", "    private static class DualHeap {", "        final PriorityQueue<Integer> small = new PriorityQueue<>(Comparator.reverseOrder());", "        final PriorityQueue<Integer> large = new PriorityQueue<>();", "        // 延迟删除表：值 -> 还挂在堆里没弹掉的个数", "        final Map<Integer, Integer> delayed = new HashMap<>();", "        final int k;", "        // 两堆的真实个数（扣掉待删的），平衡只看它们", "        int smallSize = 0, largeSize = 0;", "", "        DualHeap(int k) { this.k = k; }", "", "        double median() {", "            if ((k & 1) == 1) return small.peek();", "            // 先转 double 再相加，防 int 溢出", "            return ((double) small.peek() + large.peek()) / 2;", "        }", "", "        void insert(int num) {", "            // 不超过小堆顶就进小堆，否则进大堆", "            if (small.isEmpty() || num <= small.peek()) { small.offer(num); smallSize++; }", "            else { large.offer(num); largeSize++; }", "            balance();", "        }", "", "        void erase(int num) {", "            delayed.merge(num, 1, Integer::sum);", "            // 不超过小堆顶的值逻辑上属于小堆", "            if (num <= small.peek()) { smallSize--; prune(small); }", "            else { largeSize--; prune(large); }", "            balance();", "        }", "", "        // 堆顶是待删值就一直弹，顺手清延迟表的账", "        void prune(PriorityQueue<Integer> heap) {", "            while (!heap.isEmpty() && delayed.getOrDefault(heap.peek(), 0) > 0) {", "                int v = heap.poll();", "                if (delayed.merge(v, -1, Integer::sum) == 0) delayed.remove(v);", "            }", "        }", "", "        // 按真实个数平衡：小堆多两个以上挪顶给大堆，大堆多一个挪顶给小堆", "        void balance() {", "            if (smallSize > largeSize + 1) {", "                large.offer(small.poll());", "                smallSize--; largeSize++;", "                prune(small);", "            } else if (smallSize < largeSize) {", "                small.offer(large.poll());", "                smallSize++; largeSize--;", "                prune(large);", "            }", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 480. 滑动窗口中位数 —— 图解：复刻 Solution.java 的「对顶双堆 + 延迟删除」，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 面板把堆画成有序一行（小堆降序、大堆升序，堆顶都在最左），待删值标 bad；延迟表单独一张。
+
+var STORY_INPUT = { nums: [1, 3, -1, -3, 5, 3, 6, 7], k: 3 };
+
+function trace(input) {
+  var nums = input.nums, k = input.k, n = nums.length;
+  var frames = [];
+  var isStory = input === STORY_INPUT;
+
+  // —— 数组二叉堆：less(a,b) 为 true 表示 a 更靠近堆顶
+  function push(h, v, less) {
+    h.push(v);
+    var i = h.length - 1;
+    while (i > 0) {
+      var p = (i - 1) >> 1;
+      if (less(h[i], h[p])) { var t = h[i]; h[i] = h[p]; h[p] = t; i = p; } else break;
+    }
+  }
+  function pop(h, less) {
+    var top = h[0], last = h.pop();
+    if (h.length) {
+      h[0] = last;
+      var i = 0;
+      for (;;) {
+        var l = 2 * i + 1, r = l + 1, b = i;
+        if (l < h.length && less(h[l], h[b])) b = l;
+        if (r < h.length && less(h[r], h[b])) b = r;
+        if (b === i) break;
+        var t = h[i]; h[i] = h[b]; h[b] = t; i = b;
+      }
+    }
+    return top;
+  }
+
+  var lessSmall = function (a, b) { return a > b; };   // 大顶堆
+  var lessLarge = function (a, b) { return a < b; };   // 小顶堆
+  var small = [], large = [], delayed = {};
+  var smallSize = 0, largeSize = 0;
+
+  function prune(h, less) {
+    while (h.length && (delayed[h[0]] || 0) > 0) {
+      var v = pop(h, less);
+      delayed[v]--;
+      if (!delayed[v]) delete delayed[v];
+    }
+  }
+  function balance() {
+    if (smallSize > largeSize + 1) {
+      push(large, pop(small, lessSmall), lessLarge);
+      smallSize--; largeSize++;
+      prune(small, lessSmall);
+    } else if (smallSize < largeSize) {
+      push(small, pop(large, lessLarge), lessSmall);
+      smallSize++; largeSize--;
+      prune(large, lessLarge);
+    }
+  }
+  function insert(num) {
+    if (!small.length || num <= small[0]) { push(small, num, lessSmall); smallSize++; }
+    else { push(large, num, lessLarge); largeSize++; }
+    balance();
+  }
+  function median() { return (k & 1) === 1 ? small[0] : (small[0] + large[0]) / 2; }
+
+  // —— 面板
+  function heapPanel(title, h, desc) {
+    var arr = h.slice().sort(desc ? function (a, b) { return b - a; } : function (a, b) { return a - b; });
+    var marks = {}, has = false;
+    arr.forEach(function (v, i) { if ((delayed[v] || 0) > 0) { marks[i] = 'bad'; has = true; } });
+    if (arr.length) { if (!marks[0]) marks[0] = 'cur'; has = true; }
+    return Viz.cells(arr.length ? arr : ['（空）'], {
+      title: title,
+      marks: has ? marks : {},
+      pointers: arr.length ? [{ at: 0, label: '堆顶', cls: desc ? 'p-left' : 'p-right' }] : [],
+      hideIndex: true
+    });
+  }
+  function delayedPanel() {
+    var keys = Object.keys(delayed).map(Number).sort(function (a, b) { return a - b; });
+    return Viz.table('延迟删除表 delayed', keys.map(function (v) {
+      return { k: '值 ' + v, v: '待删 ×' + delayed[v], cls: 'bad' };
+    }), { hint: keys.length ? '哪堆顶撞见这些值就弹出清账' : '（空）' });
+  }
+  function snap(at, key, vars) {
+    if (!isStory) return;
+    var panels = [
+      heapPanel('小堆 small（小的一半，顶=最大）', small, true),
+      heapPanel('大堆 large（大的一半，顶=最小）', large, false),
+      delayedPanel()
+    ];
+    if (vars) panels.push(Viz.vars(vars));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  var A0 = 'ans[0] = dh.median();';
+  var MOVE = 'large.offer(small.poll());';
+  var MARK = 'delayed.merge(num, 1, Integer::sum);';
+  var POPTOP = 'int v = heap.poll();';
+  var BORROW = 'small.offer(large.poll());';
+  var RET = 'return ans;';
+
+  // 建堆：前 k 个依次插入
+  for (var i = 0; i < k; i++) insert(nums[i]);
+  var ans = [median()];
+  snap(A0, '初始窗口 [1,3,-1] 建堆完成：小堆顶 1、大堆顶 3，中位数 = 1',
+    [{ name: '窗口', v: '[1, 3, -1]' }, { name: '中位数', v: '1', cls: 'new' }]);
+
+  for (var r = k; r < n; r++) {
+    insert(nums[r]);
+    var out = nums[r - k];
+
+    if (isStory && r === 3) {
+      snap(MOVE, '滑入 -3：小堆 3 个比大堆多 2 → 把堆顶 1 挪给大堆',
+        [{ name: '滑入', v: '-3', cls: 'new' }, { name: 'smallSize', v: '2' }, { name: 'largeSize', v: '2' }]);
+    }
+    delayed[out] = (delayed[out] || 0) + 1;
+    if (isStory && r === 3) {
+      snap(MARK, '滑出 1：延迟表记「1 待删」先不真弹——它可能埋在堆中间',
+        [{ name: '滑出', v: '1', cls: 'bad' }]);
+    }
+    if (out <= small[0]) { smallSize--; prune(small, lessSmall); }
+    else { largeSize--; prune(large, lessLarge); }
+    if (isStory && r === 3) {
+      snap(POPTOP, '大堆顶正是待删的 1 → 物理弹出，延迟表清账',
+        [{ name: '滑出', v: '1' }, { name: '延迟表', v: '空' }]);
+    }
+    balance();
+    if (isStory && r === 5) {
+      snap(BORROW, '滑出 -1（延迟清理）后大堆多 1 个：借堆顶 3 给小堆 → 中位数 3',
+        [{ name: '窗口', v: '[-3, 5, 3]' }, { name: '中位数', v: '3', cls: 'new' }]);
+    }
+    ans.push(median());
+  }
+
+  snap(RET, '扫完全部窗口：中位数序列 [1,-1,-1,3,5,6]',
+    [{ name: '输出', v: '[1, -1, -1, 3, 5, 6]', cls: 'done' }]);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

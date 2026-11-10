@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>切披萨的方案数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 225 / 1159</span>
+  <nav class="pn"><a href="0380.html">上一篇</a><a href="0509.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1444. </span>切披萨的方案数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 21</li><li class="algo">动态规划</li><li class="aux">前缀和/差分</li><li class="tag">记忆化</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="tag">前缀和</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">记忆化 DFS + 二维前缀和：每次切送走上/左块，剩余块永远贴右下角，状态 (k, 左上角)，两块都须有苹果。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>二维前缀和 <code>pre</code> 让「任意子矩阵的苹果数」O(1) 查询：<code>apple(r1,r2,c1,c2)</code> 容斥四角。</li><li>关键观察：每一刀送走的是上块或左块，<strong>剩下的块永远贴着右下角</strong>——状态从 (k,r1,c1,r2,c2) 压到 <code>(k, r, c)</code>。</li><li><code>dfs(k,r,c)</code>：当前块没苹果 → 0；<code>k=1</code> 且有苹果 → 1；否则枚举横切位置 <code>i</code>（上块 <code>[r,i)</code> 须有苹果）与竖切位置 <code>j</code>，累加 <code>dfs(k-1, …)</code>，对 <code>10^9+7</code> 取模。</li><li>送出的块和剩下的块<strong>都要有苹果</strong>：送出前判一次，剩下的进递归时自会判。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(k·rows·cols·(rows+cols))，空间复杂度 O(k·rows·cols)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">int</span> MOD = <span class="n">1_000_000_007</span>;</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">int</span>[][] pre;      <span class="c">// 二维前缀和：pre[i][j] = 左上 (0,0)~(i-1,j-1) 的苹果数</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">int</span>[][][] memo;   <span class="c">// memo[k][r][c]：把 (r,c)~右下角 切成 k 块的方案数</span></span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="k">int</span> rows, cols;</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="k">public</span> <span class="k">int</span> ways(<span class="t">String</span>[] pizza, <span class="k">int</span> k) {</span><span class="ln"><span class="no">10</span>        rows = pizza.length;</span><span class="ln"><span class="no">11</span>        cols = pizza[<span class="n">0</span>].length();</span><span class="ln"><span class="no">12</span>        pre = <span class="k">new</span> <span class="k">int</span>[rows + <span class="n">1</span>][cols + <span class="n">1</span>];</span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; rows; r++) {</span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; cols; c++) {</span><span class="ln"><span class="no">15</span>                pre[r + <span class="n">1</span>][c + <span class="n">1</span>] = pre[r][c + <span class="n">1</span>] + pre[r + <span class="n">1</span>][c] - pre[r][c]</span><span class="ln"><span class="no">16</span>                        + (pizza[r].charAt(c) == <span class="s">'A'</span> ? <span class="n">1</span> : <span class="n">0</span>);</span><span class="ln"><span class="no">17</span>            }</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        memo = <span class="k">new</span> <span class="k">int</span>[k + <span class="n">1</span>][rows][cols];</span><span class="ln"><span class="no">20</span>        <span class="k">for</span> (<span class="k">int</span>[][] layer : memo) {</span><span class="ln"><span class="no">21</span>            <span class="k">for</span> (<span class="k">int</span>[] row : layer) <span class="t">Arrays</span>.fill(row, -<span class="n">1</span>);</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> dfs(k, <span class="n">0</span>, <span class="n">0</span>);</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span> </span><span class="ln"><span class="no">26</span>    <span class="c">// 剩下的块永远贴着右下角，状态只要 (k, 左上角)</span></span><span class="ln"><span class="no">27</span>    <span class="k">private</span> <span class="k">int</span> dfs(<span class="k">int</span> k, <span class="k">int</span> r, <span class="k">int</span> c) {</span><span class="ln"><span class="no">28</span>        <span class="k">if</span> (apple(r, rows, c, cols) == <span class="n">0</span>) <span class="k">return</span> <span class="n">0</span>;   <span class="c">// 这块没苹果：此路不通</span></span><span class="ln"><span class="no">29</span>        <span class="k">if</span> (k == <span class="n">1</span>) <span class="k">return</span> <span class="n">1</span>;                          <span class="c">// 最后一块且含苹果</span></span><span class="ln"><span class="no">30</span>        <span class="k">if</span> (memo[k][r][c] &gt;= <span class="n">0</span>) <span class="k">return</span> memo[k][r][c];</span><span class="ln"><span class="no">31</span>        <span class="k">long</span> ways = <span class="n">0</span>;</span><span class="ln"><span class="no">32</span>        <span class="c">// 横切：上面 [r, i) 送人，剩下的从 (i, c) 继续</span></span><span class="ln"><span class="no">33</span>        <span class="k">for</span> (<span class="k">int</span> i = r + <span class="n">1</span>; i &lt; rows; i++) {</span><span class="ln"><span class="no">34</span>            <span class="k">if</span> (apple(r, i, c, cols) &gt; <span class="n">0</span>) ways += dfs(k - <span class="n">1</span>, i, c);</span><span class="ln"><span class="no">35</span>        }</span><span class="ln"><span class="no">36</span>        <span class="c">// 竖切：左边 [c, j) 送人，剩下的从 (r, j) 继续</span></span><span class="ln"><span class="no">37</span>        <span class="k">for</span> (<span class="k">int</span> j = c + <span class="n">1</span>; j &lt; cols; j++) {</span><span class="ln"><span class="no">38</span>            <span class="k">if</span> (apple(r, rows, c, j) &gt; <span class="n">0</span>) ways += dfs(k - <span class="n">1</span>, r, j);</span><span class="ln"><span class="no">39</span>        }</span><span class="ln"><span class="no">40</span>        <span class="k">return</span> memo[k][r][c] = (<span class="k">int</span>) (ways % MOD);</span><span class="ln"><span class="no">41</span>    }</span><span class="ln"><span class="no">42</span> </span><span class="ln"><span class="no">43</span>    <span class="c">// 子矩阵 [r1, r2) × [c1, c2) 里的苹果数</span></span><span class="ln"><span class="no">44</span>    <span class="k">private</span> <span class="k">int</span> apple(<span class="k">int</span> r1, <span class="k">int</span> r2, <span class="k">int</span> c1, <span class="k">int</span> c2) {</span><span class="ln"><span class="no">45</span>        <span class="k">return</span> pre[r2][c2] - pre[r1][c2] - pre[r2][c1] + pre[r1][c1];</span><span class="ln"><span class="no">46</span>    }</span><span class="ln"><span class="no">47</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个&nbsp;<code>rows x cols</code>&nbsp;大小的矩形披萨和一个整数 <code>k</code>&nbsp;，矩形包含两种字符：&nbsp;<code>&#39;A&#39;</code> （表示苹果）和&nbsp;<code>&#39;.&#39;</code>&nbsp;（表示空白格子）。你需要切披萨 <code>k-1</code> 次，得到&nbsp;<code>k</code>&nbsp;块披萨并送给别人。</p>
+
+<p>切披萨的每一刀，先要选择是向垂直还是水平方向切，再在矩形的边界上选一个切的位置，将披萨一分为二。如果垂直地切披萨，那么需要把左边的部分送给一个人，如果水平地切，那么需要把上面的部分送给一个人。在切完最后一刀后，需要把剩下来的一块送给最后一个人。</p>
+
+<p>请你返回确保每一块披萨包含&nbsp;<strong>至少</strong>&nbsp;一个苹果的切披萨方案数。由于答案可能是个很大的数字，请你返回它对 10^9 + 7 取余的结果。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/fde30996ef15.png" style="height: 378px; width: 500px;"></strong></p>
+
+<pre><strong>输入：</strong>pizza = [&quot;A..&quot;,&quot;AAA&quot;,&quot;...&quot;], k = 3
+<strong>输出：</strong>3 
+<strong>解释：</strong>上图展示了三种切披萨的方案。注意每一块披萨都至少包含一个苹果。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>pizza = [&quot;A..&quot;,&quot;AA.&quot;,&quot;...&quot;], k = 3
+<strong>输出：</strong>1
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>pizza = [&quot;A..&quot;,&quot;A..&quot;,&quot;...&quot;], k = 1
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= rows, cols &lt;= 50</code></li>
+	<li><code>rows ==&nbsp;pizza.length</code></li>
+	<li><code>cols ==&nbsp;pizza[i].length</code></li>
+	<li><code>1 &lt;= k &lt;= 10</code></li>
+	<li><code>pizza</code>&nbsp;只包含字符&nbsp;<code>&#39;A&#39;</code>&nbsp;和&nbsp;<code>&#39;.&#39;</code>&nbsp;。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private static final int MOD = 1_000_000_007;", "    private int[][] pre;      // 二维前缀和：pre[i][j] = 左上 (0,0)~(i-1,j-1) 的苹果数", "    private int[][][] memo;   // memo[k][r][c]：把 (r,c)~右下角 切成 k 块的方案数", "    private int rows, cols;", "", "    public int ways(String[] pizza, int k) {", "        rows = pizza.length;", "        cols = pizza[0].length();", "        pre = new int[rows + 1][cols + 1];", "        for (int r = 0; r < rows; r++) {", "            for (int c = 0; c < cols; c++) {", "                pre[r + 1][c + 1] = pre[r][c + 1] + pre[r + 1][c] - pre[r][c]", "                        + (pizza[r].charAt(c) == 'A' ? 1 : 0);", "            }", "        }", "        memo = new int[k + 1][rows][cols];", "        for (int[][] layer : memo) {", "            for (int[] row : layer) Arrays.fill(row, -1);", "        }", "        return dfs(k, 0, 0);", "    }", "", "    // 剩下的块永远贴着右下角，状态只要 (k, 左上角)", "    private int dfs(int k, int r, int c) {", "        if (apple(r, rows, c, cols) == 0) return 0;   // 这块没苹果：此路不通", "        if (k == 1) return 1;                          // 最后一块且含苹果", "        if (memo[k][r][c] >= 0) return memo[k][r][c];", "        long ways = 0;", "        // 横切：上面 [r, i) 送人，剩下的从 (i, c) 继续", "        for (int i = r + 1; i < rows; i++) {", "            if (apple(r, i, c, cols) > 0) ways += dfs(k - 1, i, c);", "        }", "        // 竖切：左边 [c, j) 送人，剩下的从 (r, j) 继续", "        for (int j = c + 1; j < cols; j++) {", "            if (apple(r, rows, c, j) > 0) ways += dfs(k - 1, r, j);", "        }", "        return memo[k][r][c] = (int) (ways % MOD);", "    }", "", "    // 子矩阵 [r1, r2) × [c1, c2) 里的苹果数", "    private int apple(int r1, int r2, int c1, int c2) {", "        return pre[r2][c2] - pre[r1][c2] - pre[r2][c1] + pre[r1][c1];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1444. 切披萨的方案数 —— 图解：复刻 Solution.java 的记忆化 DP + 二维前缀和，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 关键观察：每次切都把上/左块送人，剩下的块永远贴着右下角，状态只要 (k, 左上角)。
+
+var STORY_INPUT = { pizza: ['A..', 'AAA', '...'], k: 3 };
+
+function trace(input) {
+  var pizza = input.pizza, K = input.k;
+  var rows = pizza.length, cols = pizza[0].length;
+  var MOD = 1000000007;
+  var frames = [];
+
+  var START = 'return dfs(k, 0, 0);';
+  var NOAPPLE = 'if (apple(r, rows, c, cols) == 0) return 0;';
+  var BASE = 'if (k == 1) return 1;';
+  var H = 'if (apple(r, i, c, cols) > 0) ways += dfs(k - 1, i, c);';
+  var V = 'if (apple(r, rows, c, j) > 0) ways += dfs(k - 1, r, j);';
+  var DONE = 'return memo[k][r][c] = (int) (ways % MOD);';
+
+  // 二维前缀和：pre[i][j] = 左上 (0,0)~(i-1,j-1) 的苹果数
+  var pre = [];
+  for (var i0 = 0; i0 <= rows; i0++) {
+    pre.push([]);
+    for (var j0 = 0; j0 <= cols; j0++) pre[i0].push(0);
+  }
+  for (var rr = 0; rr < rows; rr++) {
+    for (var cc = 0; cc < cols; cc++) {
+      pre[rr + 1][cc + 1] = pre[rr][cc + 1] + pre[rr + 1][cc] - pre[rr][cc] + (pizza[rr][cc] === 'A' ? 1 : 0);
+    }
+  }
+  function apple(r1, r2, c1, c2) {
+    return pre[r2][c2] - pre[r1][c2] - pre[r2][c1] + pre[r1][c1];
+  }
+
+  function pieceMarks(r1, r2, c1, c2, cls) {
+    var m = {};
+    for (var r = r1; r < r2; r++) for (var c = c1; c < c2; c++) m[r + ',' + c] = cls;
+    return m;
+  }
+  function merge() {
+    var m = {};
+    for (var a = 0; a < arguments.length; a++) for (var k in arguments[a]) m[k] = arguments[a][k];
+    return m;
+  }
+  function gridPanel(marks) {
+    var labels = [];
+    for (var i = 0; i < Math.max(rows, cols); i++) labels.push(String(i));
+    return Viz.grid(pizza.map(function (row) { return row.split(''); }), {
+      title: '披萨（A = 苹果）',
+      rowLabels: labels.slice(0, rows),
+      colLabels: labels.slice(0, cols),
+      marks: marks || {}
+    });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+
+  var sawEmpty = false, sawBase = false, sawH = false, sawBad = null;
+  var memo = {};
+
+  function dfs(k, r, c) {
+    if (apple(r, rows, c, cols) === 0) {
+      if (!sawEmpty) {
+        sawEmpty = true;
+        frames.push(Viz.frame(NOAPPLE, '递归到这块 (' + r + ',' + c + ')：一个苹果都没有，此路 0 种，回溯',
+          [gridPanel(pieceMarks(r, rows, c, cols, 'bad')), varsPanel([{ name: 'k', v: k }, { name: '这块左上', v: '(' + r + ',' + c + ')' }])]));
+      }
+      return 0;
+    }
+    if (k === 1) {
+      if (!sawBase) {
+        sawBase = true;
+        frames.push(Viz.frame(BASE, '只剩最后一块且含苹果：收下，方案 +1',
+          [gridPanel(pieceMarks(r, rows, c, cols, 'done')), varsPanel([{ name: 'k', v: 1 }, { name: '这块左上', v: '(' + r + ',' + c + ')' }])]));
+      }
+      return 1;
+    }
+    var key = k + ',' + r + ',' + c;
+    if (key in memo) return memo[key];
+    var ways = 0;
+    for (var i = r + 1; i < rows; i++) {
+      if (apple(r, i, c, cols) > 0) {
+        if (!sawH) {
+          sawH = true;
+          var mkH = merge(pieceMarks(i, rows, c, cols, 'win'), pieceMarks(r, i, c, cols, 'new'));
+          frames.push(Viz.frame(H, '横切在第 ' + i + ' 行：上块有苹果，送出去，剩 ' + (k - 1) + ' 块从 (' + i + ',' + c + ') 继续切',
+            [gridPanel(mkH), varsPanel([{ name: 'k', v: k }, { name: '这一刀', v: '横切@行' + i }])]));
+        }
+        ways += dfs(k - 1, i, c);
+      } else if (sawBad === null) {
+        sawBad = 'h';
+        var mkBadH = merge(pieceMarks(i, rows, c, cols, 'win'), pieceMarks(r, i, c, cols, 'bad'));
+        frames.push(Viz.frame(H, '横切@行' + i + '：切出的上块没苹果，两块都须有苹果，整刀作废',
+          [gridPanel(mkBadH), varsPanel([{ name: 'k', v: k }, { name: '这一刀', v: '横切@行' + i }])]));
+      }
+    }
+    for (var j = c + 1; j < cols; j++) {
+      if (apple(r, rows, c, j) > 0) {
+        if (!sawH) {
+          sawH = true;
+          var mkV = merge(pieceMarks(r, rows, j, cols, 'win'), pieceMarks(r, rows, c, j, 'new'));
+          frames.push(Viz.frame(V, '竖切在第 ' + j + ' 列：左块有苹果，送出去，剩 ' + (k - 1) + ' 块从 (' + r + ',' + j + ') 继续切',
+            [gridPanel(mkV), varsPanel([{ name: 'k', v: k }, { name: '这一刀', v: '竖切@列' + j }])]));
+        }
+        ways += dfs(k - 1, r, j);
+      } else if (sawBad === null) {
+        sawBad = 'v';
+        var mkBadV = merge(pieceMarks(r, rows, j, cols, 'win'), pieceMarks(r, rows, c, j, 'bad'));
+        frames.push(Viz.frame(V, '竖切@列' + j + '：切出的左块没苹果，两块都须有苹果，整刀作废',
+          [gridPanel(mkBadV), varsPanel([{ name: 'k', v: k }, { name: '这一刀', v: '竖切@列' + j }])]));
+      }
+    }
+    memo[key] = ways % MOD;
+    return memo[key];
+  }
+
+  frames.push(Viz.frame(START, '每次切都送走上/左块：剩下的块永远贴着右下角，状态记 (k, 左上角)',
+    [gridPanel(pieceMarks(0, rows, 0, cols, 'win')), varsPanel([{ name: 'k', v: K }, { name: '剩余块左上', v: '(0,0)' }])]));
+  var ans = dfs(K, 0, 0);
+
+  frames.push(Viz.frame(DONE, '所有状态算完：dfs(k,0,0) = ' + ans + '（对 10^9+7 取模）',
+    [gridPanel(pieceMarks(0, rows, 0, cols, 'done')), varsPanel([{ name: '方案数', v: ans, cls: 'chg' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

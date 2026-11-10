@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第K个语法符号 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 789 / 1159</span>
+  <nav class="pn"><a href="0259.html">上一篇</a><a href="0413.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">779. </span>第K个语法符号</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">位运算</li><li class="tag">位运算</li><li class="tag">递归</li><li class="tag">数学</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">从 (n, k) 一路回推到根：k 是偶数位就把翻转次数加一并走到上位 k=⌈k/2⌉，到根后答案 = 翻转次数的奇偶。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>生成规则 0→01、1→10：一对里左位继承父位、右位是父位取反，所以第 <code>k</code> 位（1 起始）是偶数位时相对父位翻转一次。</li><li>父位下标：<code>k = ⌈k/2⌉</code>，一路回推到 <code>k = 1</code>（第 1 行的 0）。</li><li>答案 = 回推路上翻转次数的奇偶；等价写法是 <code>bitCount(k−1) &amp; 1</code>。</li><li>行数 <code>n</code> 不影响答案：只要 <code>k ≤ 2^(n−1)</code>，每一行都是同一棵二叉树的不同深度切片。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log k)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> kthGrammar(<span class="k">int</span> n, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 从 (n, k) 一路回推到根：k 落在偶数位说明这一位是父位取反</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span> flips = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">while</span> (k &gt; <span class="n">1</span>) {</span><span class="ln"><span class="no">6</span>            <span class="k">if</span> ((k &amp; <span class="n">1</span>) == <span class="n">0</span>) flips++;</span><span class="ln"><span class="no">7</span>            k = (k + <span class="n">1</span>) / <span class="n">2</span>;</span><span class="ln"><span class="no">8</span>        }</span><span class="ln"><span class="no">9</span>        <span class="c">// 根是 0；翻转次数的奇偶决定最终值（等价于 bitCount(k-1) 的奇偶）</span></span><span class="ln"><span class="no">10</span>        <span class="k">return</span> flips &amp; <span class="n">1</span>;</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>我们构建了一个包含 <code>n</code> 行(&nbsp;<strong>索引从 1&nbsp; 开始&nbsp;</strong>)的表。首先在第一行我们写上一个 <code>0</code>。接下来的每一行，将前一行中的<code>0</code>替换为<code>01</code>，<code>1</code>替换为<code>10</code>。</p>
+
+<ul>
+	<li>例如，对于 <code>n = 3</code> ，第 <code>1</code> 行是 <code>0</code> ，第 <code>2</code> 行是 <code>01</code> ，第3行是 <code>0110</code> 。</li>
+</ul>
+
+<p>给定行数&nbsp;<code>n</code>&nbsp;和序数 <code>k</code>，返回第 <code>n</code> 行中第 <code>k</code>&nbsp;个字符。（&nbsp;<code>k</code>&nbsp;<strong>从索引 1 开始</strong>）</p>
+
+<p><br />
+<strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> n = 1, k = 1
+<strong>输出:</strong> 0
+<strong>解释: </strong>第一行：<u>0</u>
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> n = 2, k = 1
+<strong>输出:</strong> 0
+<strong>解释:</strong> 
+第一行: 0 
+第二行: <u>0</u>1
+</pre>
+
+<p><strong>示例 3:</strong></p>
+
+<pre>
+<strong>输入:</strong> n = 2, k = 2
+<strong>输出:</strong> 1
+<strong>解释:</strong>
+第一行: 0
+第二行: 0<u>1</u>
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 30</code></li>
+	<li><code>1 &lt;= k &lt;= 2<sup>n - 1</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int kthGrammar(int n, int k) {", "        // 从 (n, k) 一路回推到根：k 落在偶数位说明这一位是父位取反", "        int flips = 0;", "        while (k > 1) {", "            if ((k & 1) == 0) flips++;", "            k = (k + 1) / 2;", "        }", "        // 根是 0；翻转次数的奇偶决定最终值（等价于 bitCount(k-1) 的奇偶）", "        return flips & 1;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 779. 第K个语法符号 —— 图解：复刻 Solution.java 的「回推到根」，在 3 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 3, k: 3 };
+
+function trace(input) {
+  var n = input.n, k0 = input.k;
+  var frames = [];
+  var FLIP = 'if ((k & 1) == 0) flips++;';
+  var RET = 'return flips & 1;';
+
+  function popcount(x) {
+    var c = 0;
+    while (x > 0) { c += x & 1; x >>= 1; }
+    return c;
+  }
+
+  // 第 level 行（1 起始）的值：第 j 位（0 起始）= popcount(j) 的奇偶，和生成规则算出来的一致
+  function rowValues(level) {
+    var row = [];
+    for (var j = 0; j < (1 << (level - 1)); j++) row.push(popcount(j) & 1);
+    return row;
+  }
+
+  // 画前 n 行（n ≤ 5 才画得下），把回推路径上的位置标出来；upto 是当前走到的路径下标
+  function snap(at, key, path, upto, done) {
+    var rows = [], marks = {};
+    var width = 1 << (n - 1);   // grid 要求每行等长：短行右侧补空格子，左对齐正好是树形
+    for (var level = 1; level <= n; level++) {
+      var row = rowValues(level);
+      while (row.length < width) row.push('');
+      rows.push(row);
+    }
+    for (var i = 0; i <= upto && i < path.length; i++) {
+      var p = path[i];
+      marks[(p.level - 1) + ',' + (p.k - 1)] = i === upto ? (done ? 'done' : 'cur') : 'win';
+    }
+    frames.push(Viz.frame(at, key, [
+      Viz.grid(rows, { title: '各行（0→01、1→10：一对里左位继承、右位取反）', marks: marks,
+        rowLabels: rows.map(function (r, i) { return '第' + (i + 1) + '行'; }) }),
+      Viz.vars([
+        { name: '当前位置', v: '第' + path[upto].level + '行第' + path[upto].k + '位' },
+        { name: 'flips（翻转次数）', v: path[upto].flips }
+      ])
+    ]));
+  }
+
+  // 回推：记录走过的每一层 (level, k, flips)
+  var path = [{ level: n, k: k0, flips: 0 }];
+  var k = k0, flips = 0, level = n, iters = 0;
+  while (k > 1) {
+    var wasEven = (k & 1) === 0;
+    if (wasEven) flips++;
+    k = (k + 1) >> 1;   // 整数上取整：Java 是整数除法，JS 必须同样取整
+    level--;
+    path.push({ level: level, k: k, flips: flips });
+    iters++;
+    if (n <= 5 && iters <= 2) {
+      snap(FLIP, 'k=' + path[iters - 1].k + (wasEven ? ' 是偶数位：取反一次，' : ' 是奇数位：和父位相同，') + '走到第' + level + '行 k=' + k,
+        path, iters, false);
+    }
+  }
+
+  if (n <= 5) {
+    snap(RET, '回推到根（第1行第1位 = 0）：翻转 ' + flips + ' 次，答案是 ' + (flips & 1), path, path.length - 1, true);
+  }
+  return { frames: frames, result: flips & 1 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

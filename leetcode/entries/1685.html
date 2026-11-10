@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>有序数组中差绝对值之和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1038 / 1159</span>
+  <nav class="pn"><a href="1487.html">上一篇</a><a href="0775.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1685. </span>有序数组中差绝对值之和</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">前缀和/差分</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">前缀和</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">数组非递减，|差| 拆成两段带符号的和：左侧 = i×nums[i] − 左段和，右侧 = 右段和 − (n−1−i)×nums[i]。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先求 <code>total</code>；扫到 <code>i</code> 时维护 <code>leftSum</code>（左边元素之和），右边之和 = <code>total − leftSum − nums[i]</code>。</li><li><strong>非递减</strong>保证左边全部 <code>≤ nums[i]</code>、右边全部 <code>≥ nums[i]</code>，绝对值可直接去符号：</li></ul>
+<p>左侧贡献 <code>i×nums[i] − leftSum</code>，右侧贡献 <code>rightSum − (n−1−i)×nums[i]</code>。</p>
+<ul><li>两段相加即 <code>ans[i]</code>，一遍扫完；中间乘积用 <code>long</code>（<code>10⁵ × 10⁴</code> 会逼近 int 上限）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)（不算输出数组）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span>[] getSumAbsoluteDifferences(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">4</span>        <span class="k">long</span> total = <span class="n">0</span>;                    <span class="c">// 全部元素之和</span></span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> v : nums) total += v;</span><span class="ln"><span class="no">6</span>        <span class="k">long</span> leftSum = <span class="n">0</span>;                  <span class="c">// i 左边（不含 i）的元素之和</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] ans = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">9</span>            <span class="k">long</span> rightSum = total - leftSum - nums[i];</span><span class="ln"><span class="no">10</span>            <span class="c">// 数组非递减：左边全 ≤ nums[i]、右边全 ≥ nums[i]，绝对值差可以拆成两段带符号的和</span></span><span class="ln"><span class="no">11</span>            ans[i] = (<span class="k">int</span>) ((<span class="k">long</span>) i * nums[i] - leftSum + rightSum - (<span class="k">long</span>) (n - <span class="n">1</span> - i) * nums[i]);</span><span class="ln"><span class="no">12</span>            leftSum += nums[i];</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个 <strong>非递减 </strong>有序整数数组 <code>nums</code> 。</p>
+
+<p>请你建立并返回一个整数数组<em> </em><code>result</code>，它跟<em> </em><code>nums</code> 长度相同，且<code>result[i]</code> 等于<em> </em><code>nums[i]</code> 与数组中所有其他元素差的绝对值之和。</p>
+
+<p>换句话说， <code>result[i]</code> 等于 <code>sum(|nums[i]-nums[j]|)</code> ，其中 <code>0 <= j < nums.length</code> 且 <code>j != i</code> （下标从 0 开始）。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<b>输入：</b>nums = [2,3,5]
+<b>输出：</b>[4,3,5]
+<b>解释：</b>假设数组下标从 0 开始，那么
+result[0] = |2-2| + |2-3| + |2-5| = 0 + 1 + 3 = 4，
+result[1] = |3-2| + |3-3| + |3-5| = 1 + 0 + 2 = 3，
+result[2] = |5-2| + |5-3| + |5-5| = 3 + 2 + 0 = 5。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<b>输入：</b>nums = [1,4,6,8,10]
+<b>输出：</b>[24,15,13,15,21]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 <= nums.length <= 10<sup>5</sup></code></li>
+	<li><code>1 <= nums[i] <= nums[i + 1] <= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int[] getSumAbsoluteDifferences(int[] nums) {", "        int n = nums.length;", "        long total = 0;                    // 全部元素之和", "        for (int v : nums) total += v;", "        long leftSum = 0;                  // i 左边（不含 i）的元素之和", "        int[] ans = new int[n];", "        for (int i = 0; i < n; i++) {", "            long rightSum = total - leftSum - nums[i];", "            // 数组非递减：左边全 ≤ nums[i]、右边全 ≥ nums[i]，绝对值差可以拆成两段带符号的和", "            ans[i] = (int) ((long) i * nums[i] - leftSum + rightSum - (long) (n - 1 - i) * nums[i]);", "            leftSum += nums[i];", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1685. 有序数组中差绝对值之和 —— 图解：复刻 Solution.java 的「总和 + 前缀拆段」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [2, 3, 5] };
+
+function trace(input) {
+  var nums = input.nums;
+  var n = nums.length;
+  var frames = [];
+  var total = 0;
+  for (var i = 0; i < n; i++) total += nums[i];
+
+  var TOTAL = 'for (int v : nums) total += v;';
+  var RSUM = 'long rightSum = total - leftSum - nums[i];';
+  var FILL = 'ans[i] = (int) ((long) i * nums[i] - leftSum + rightSum - (long) (n - 1 - i) * nums[i]);';
+  var DONE = 'return ans;';
+
+  var ans = [];
+  var leftSum = 0;
+
+  function numsPanel(i) {
+    var marks = {};
+    if (i != null) {
+      for (var k = 0; k < n; k++) {
+        if (k < i) marks[k] = 'win';     // 已算完的左段
+        else if (k === i) marks[k] = 'cur';
+        else marks[k] = 'dim';           // 待用的右段
+      }
+    }
+    return Viz.cells(nums, { title: '非递减数组 nums（黄=左段，灰=右段）', marks: marks,
+      pointers: i != null && i >= 0 && i < n ? [{ at: i, label: 'i', cls: 'p-cur' }] : [] });
+  }
+
+  function ansPanel() {
+    var shown = ans.slice();
+    while (shown.length < n) shown.push('?');
+    var marks = {};
+    for (var k = 0; k < n; k++) marks[k] = k < ans.length ? 'done' : '';
+    return Viz.cells(shown, { title: '结果 ans（? = 还没算）', marks: marks });
+  }
+
+  function varsPanel(items) { return Viz.vars(items); }
+
+  frames.push(Viz.frame(TOTAL, '数组非递减：i 左边的都 ≤ nums[i]，右边的都 ≥ nums[i]——绝对值可拆成两段带符号的差',
+    [numsPanel(null), varsPanel([{ name: 'total', v: total, cls: 'new' }])]));
+
+  var fired = { split: false, fill: false };
+  for (i = 0; i < n; i++) {
+    var rightSum = total - leftSum - nums[i];
+    if (i === 0 && !fired.split) {
+      fired.split = true;
+      frames.push(Viz.frame(RSUM, 'i=0：右和 ' + rightSum + '、右边 ' + (n - 1) + ' 个 → 右侧贡献 ' + rightSum + ' − ' + (n - 1) + '×' + nums[0],
+        [numsPanel(i), varsPanel([
+          { name: 'leftSum', v: leftSum },
+          { name: 'rightSum', v: rightSum, cls: 'chg' },
+          { name: '右侧贡献', v: rightSum - (n - 1 - i) * nums[i] }
+        ])]));
+    }
+    var leftPart = i * nums[i] - leftSum;
+    var rightPart = rightSum - (n - 1 - i) * nums[i];
+    ans.push(leftPart + rightPart);
+    if (i === 1 && !fired.fill) {
+      fired.fill = true;
+      frames.push(Viz.frame(FILL, 'i=1：左侧 ' + i + '×' + nums[i] + '−' + leftSum + '=' + leftPart + '，右侧 ' + rightSum + '−' + (n - 1 - i) + '×' + nums[i] + '=' + rightPart,
+        [numsPanel(i), varsPanel([
+          { name: '左侧贡献', v: leftPart },
+          { name: '右侧贡献', v: rightPart },
+          { name: 'ans[i] = 和', v: leftPart + rightPart, cls: 'chg' }
+        ])]));
+    }
+    leftSum += nums[i];
+  }
+
+  frames.push(Viz.frame(DONE, '扫一遍完成：每个位置的差绝对值之和都出来了',
+    [numsPanel(n), ansPanel()]));
+  return { frames: frames, result: ans };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

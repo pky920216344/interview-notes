@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最小路径和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 66 / 1159</span>
+  <nav class="pn"><a href="0470.html">上一篇</a><a href="0101.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">64. </span>最小路径和</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 97</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">网格 DP 滚动一维：dp[j] = min(上一行同列, 本行左邻) + grid[i][j]，首行首列只能单向累加。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[j]</code> 滚动一行用：进到第 <code>i</code> 行之前，它正好是上一行第 <code>j</code> 列的答案。</li><li>递推 <code>dp[j] = min(dp[j], dp[j-1]) + grid[i][j]</code>：更新前 <code>dp[j]</code> 是「上」，<code>dp[j-1]</code> 已是本行的「左」。</li><li>首行只能从左来（一路累加），首列只能从上来（逐行累加），先特殊处理；内层 <code>j</code> 必须从左往右扫，别把还要用的上一行提前覆盖。</li><li>答案就是 <code>dp[n-1]</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> minPathSum(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = grid.length, n = grid[<span class="n">0</span>].length;</span><span class="ln"><span class="no">4</span>        <span class="c">// dp[j]：走到当前行第 j 列的最小路径和</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">6</span>        dp[<span class="n">0</span>] = grid[<span class="n">0</span>][<span class="n">0</span>];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">8</span>            dp[j] = dp[j - <span class="n">1</span>] + grid[<span class="n">0</span>][j]; <span class="c">// 首行：只能从左来</span></span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">11</span>            dp[<span class="n">0</span>] += grid[i][<span class="n">0</span>];            <span class="c">// 首列：只能从上来</span></span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">13</span>                <span class="c">// dp[j] 旧值是上一行（上），dp[j-1] 已是本行（左）</span></span><span class="ln"><span class="no">14</span>                dp[j] = <span class="t">Math</span>.min(dp[j], dp[j - <span class="n">1</span>]) + grid[i][j];</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> dp[n - <span class="n">1</span>];</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个包含非负整数的 <code><em>m</em>&nbsp;x&nbsp;<em>n</em></code>&nbsp;网格&nbsp;<code>grid</code> ，请找出一条从左上角到右下角的路径，使得路径上的数字总和为最小。</p>
+
+<p><strong>说明：</strong>每次只能向下或者向右移动一步。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+<img alt="" src="../assets/img/7dc5d097a117.jpg" style="width: 242px; height: 242px;" />
+<pre>
+<strong>输入：</strong>grid = [[1,3,1],[1,5,1],[4,2,1]]
+<strong>输出：</strong>7
+<strong>解释：</strong>因为路径 1→3→1→1→1 的总和最小。
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>grid = [[1,2,3],[4,5,6]]
+<strong>输出：</strong>12
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == grid.length</code></li>
+	<li><code>n == grid[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 200</code></li>
+	<li><code>0 &lt;= grid[i][j] &lt;= 200</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int minPathSum(int[][] grid) {", "        int m = grid.length, n = grid[0].length;", "        // dp[j]：走到当前行第 j 列的最小路径和", "        int[] dp = new int[n];", "        dp[0] = grid[0][0];", "        for (int j = 1; j < n; j++) {", "            dp[j] = dp[j - 1] + grid[0][j]; // 首行：只能从左来", "        }", "        for (int i = 1; i < m; i++) {", "            dp[0] += grid[i][0];            // 首列：只能从上来", "            for (int j = 1; j < n; j++) {", "                // dp[j] 旧值是上一行（上），dp[j-1] 已是本行（左）", "                dp[j] = Math.min(dp[j], dp[j - 1]) + grid[i][j];", "            }", "        }", "        return dp[n - 1];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 64. 最小路径和 —— 图解：复刻 Solution.java 的一维滚动递推，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[1, 3, 1], [1, 5, 1], [4, 2, 1]] };
+
+function trace(input) {
+  var g = input.grid;
+  var m = g.length, n = g[0].length;
+  var frames = [];
+
+  var rowsLbl = [], colsLbl = [];
+  for (var i0 = 0; i0 < m; i0++) rowsLbl.push(String(i0));
+  for (var j0 = 0; j0 < n; j0++) colsLbl.push(String(j0));
+
+  function matrixPanel(marks) {
+    return Viz.grid(g, { title: 'grid：原网格', marks: marks || {}, rowLabels: rowsLbl, colLabels: colsLbl, corner: 'i＼j' });
+  }
+  function cellsPanel(marks, pointers, range) {
+    var vals = [];
+    for (var j = 0; j < n; j++) vals.push(String(dp[j]));
+    return Viz.cells(vals, { title: 'dp[j]：滚动一维', marks: marks || {}, pointers: pointers || [], range: range || null });
+  }
+
+  // 滚动一维，跟 Solution 一致：先处理第一行
+  var dp = new Array(n);
+  dp[0] = g[0][0];
+  for (var j = 1; j < n; j++) dp[j] = dp[j - 1] + g[0][j];
+
+  if (n >= 2) {
+    var m1 = {}, c1 = {};
+    for (var j = 0; j < n; j++) { m1['0,' + j] = 'win'; c1[j] = 'win'; }
+    frames.push(Viz.frame('dp[j] = dp[j - 1] + grid[0][j];',
+      '第一行只能从左来：前缀和 ' + dp.join('、'),
+      [matrixPanel(m1), cellsPanel(c1)]));
+  }
+
+  for (var i = 1; i < m; i++) {
+    var old0 = dp[0];
+    dp[0] += g[i][0];
+    if (i === 1) {
+      var m2 = {}; m2['1,0'] = 'cur';
+      var c2 = {}; c2[0] = 'new';
+      for (var k = 1; k < n; k++) c2[k] = 'dim';
+      frames.push(Viz.frame('dp[0] += grid[i][0];',
+        '第 1 行先算首列：dp[0] = ' + old0 + ' + ' + g[1][0] + ' = ' + dp[0] + '（只能从上来）',
+        [matrixPanel(m2), cellsPanel(c2)]));
+    }
+    for (var j = 1; j < n; j++) {
+      var up = dp[j], left = dp[j - 1]; // 旧 dp[j] 是上，dp[j-1] 已是本行的左
+      dp[j] = Math.min(up, left) + g[i][j];
+      if (i === 1 && j === 1) {
+        var m3 = {}; m3['1,1'] = 'cur';
+        var c3 = {}; c3[0] = 'win'; c3[1] = 'new';
+        for (var k = 2; k < n; k++) c3[k] = 'dim';
+        frames.push(Viz.frame('dp[j] = Math.min(dp[j], dp[j - 1]) + grid[i][j];',
+          'dp[' + j + ']：min(上 ' + up + ', 左 ' + left + ') + ' + g[i][j] + ' = ' + dp[j] + '，旧 dp[j] 是「上」',
+          [matrixPanel(m3), cellsPanel(c3, [{ at: j, label: 'j', cls: 'p-cur' }], { from: 0, to: j - 1, label: '本行' })]));
+      }
+    }
+  }
+
+  var result = dp[n - 1];
+
+  // 完整表 f：只为回溯路径，画在原网格上；数值和滚动 dp 完全一致
+  var f = [];
+  for (var i = 0; i < m; i++) { f[i] = []; for (var j = 0; j < n; j++) f[i][j] = 0; }
+  f[0][0] = g[0][0];
+  for (var j = 1; j < n; j++) f[0][j] = f[0][j - 1] + g[0][j];
+  for (var i = 1; i < m; i++) {
+    f[i][0] = f[i - 1][0] + g[i][0];
+    for (var j = 1; j < n; j++) f[i][j] = Math.min(f[i - 1][j], f[i][j - 1]) + g[i][j];
+  }
+  var path = [], pi = m - 1, pj = n - 1;
+  while (true) {
+    path.push(pi + ',' + pj);
+    if (pi === 0 && pj === 0) break;
+    if (pi === 0) pj--;
+    else if (pj === 0) pi--;
+    else if (f[pi - 1][pj] <= f[pi][pj - 1]) pi--;
+    else pj--;
+  }
+  var m4 = {};
+  for (var k = 0; k < path.length; k++) m4[path[k]] = 'done';
+  var c4 = {};
+  for (var j = 0; j < n; j++) c4[j] = 'win';
+  c4[n - 1] = 'done';
+  frames.push(Viz.frame('return dp[n - 1];',
+    '滚完所有行：dp[n-1] = ' + result + ' 就是最小路径和',
+    [matrixPanel(m4), cellsPanel(c4)]));
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

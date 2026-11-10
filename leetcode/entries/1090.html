@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>受标签影响的最大值 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 758 / 1159</span>
+  <nav class="pn"><a href="0186.html">上一篇</a><a href="0969.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1090. </span>受标签影响的最大值</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">计数</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">贪心：按 value 从大到小挑，凑满 numWanted 件为止；某标签用到 useLimit 次就跳过。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>按值降序排下标（值相同的先后不影响答案的和）。</li><li>依次挑：标签没用满（<code>used[label] &lt; useLimit</code>）就收下并计数，满了跳过。</li><li>挑满 <code>numWanted</code> 件就停；「大值优先 + 标签限额」交换一下顺序只会更差，贪心即最优。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> largestValsFromLabels(<span class="k">int</span>[] values, <span class="k">int</span>[] labels, <span class="k">int</span> numWanted, <span class="k">int</span> useLimit) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = values.length;</span><span class="ln"><span class="no">6</span>        <span class="t">Integer</span>[] idx = <span class="k">new</span> <span class="t">Integer</span>[n];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) idx[i] = i;</span><span class="ln"><span class="no">8</span>        <span class="t">Arrays</span>.sort(idx, (a, b) -&gt; values[b] - values[a]);   <span class="c">// 值大的先挑</span></span><span class="ln"><span class="no">9</span>        <span class="k">int</span>[] used = <span class="k">new</span> <span class="k">int</span>[<span class="n">20001</span>];                          <span class="c">// 每个标签已用次数</span></span><span class="ln"><span class="no">10</span>        <span class="k">int</span> ans = <span class="n">0</span>, taken = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n &amp;&amp; taken &lt; numWanted; i++) {</span><span class="ln"><span class="no">12</span>            <span class="k">int</span> j = idx[i];</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (used[labels[j]] == useLimit) <span class="k">continue</span>;        <span class="c">// 该标签用满，跳过</span></span><span class="ln"><span class="no">14</span>            used[labels[j]]++;</span><span class="ln"><span class="no">15</span>            ans += values[j];</span><span class="ln"><span class="no">16</span>            taken++;</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>以两个整数数组 &nbsp;<code>values</code>&nbsp;和 <code>labels</code>&nbsp;给定&nbsp;<code>n</code>&nbsp;个项的值和标签，并且给出两个整数&nbsp;<code>numWanted</code>&nbsp;和 <code>useLimit</code> 。</p>
+
+<p>你的任务是从这些项中找到一个值的和 <strong>最大</strong> 的子集使得：</p>
+
+<ul>
+	<li>项的数量 <strong>最多</strong> 为&nbsp;<code>numWanted</code>。</li>
+	<li>相同标签的项的数量&nbsp;<strong>最多 </strong>为&nbsp;<code>useLimit</code>。</li>
+</ul>
+
+<p>返回最大的和。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<div class="example-block">
+<p><strong>输入：</strong><span class="example-io">values = [5,4,3,2,1], labels = [1,1,2,2,3], numWanted = 3, useLimit = 1</span></p>
+
+<p><strong>输出：</strong><span class="example-io">9</span></p>
+
+<p><strong>解释：</strong></p>
+
+<p>选择的子集是第一个、第三个和第五个项，其值之和为 5 + 3 + 1。</p>
+</div>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<div class="example-block">
+<p><strong>输入：</strong><span class="example-io">values = [5,4,3,2,1], labels = [1,3,3,3,2], numWanted = 3, useLimit = 2</span></p>
+
+<p><strong>输出：</strong><span class="example-io">12</span></p>
+
+<p><strong>解释：</strong></p>
+
+<p>选择的子集是第一个、第二个和第三个项，其值之和为 5 + 4 + 3。</p>
+</div>
+
+<p><strong class="example">示例 3：</strong></p>
+
+<div class="example-block">
+<p><strong>输入：</strong><span class="example-io">values = [9,8,8,7,6], labels = [0,0,0,1,1], numWanted = 3, useLimit = 1</span></p>
+
+<p><strong>输出：</strong><span class="example-io">16</span></p>
+
+<p><strong>解释：</strong></p>
+
+<p>选择的子集是第一个和第四个项，其值之和为 9 + 7。</p>
+</div>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == values.length == labels.length</code></li>
+	<li><code>1 &lt;= n &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= values[i], labels[i] &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= numWanted, useLimit &lt;= n</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int largestValsFromLabels(int[] values, int[] labels, int numWanted, int useLimit) {", "        int n = values.length;", "        Integer[] idx = new Integer[n];", "        for (int i = 0; i < n; i++) idx[i] = i;", "        Arrays.sort(idx, (a, b) -> values[b] - values[a]);   // 值大的先挑", "        int[] used = new int[20001];                          // 每个标签已用次数", "        int ans = 0, taken = 0;", "        for (int i = 0; i < n && taken < numWanted; i++) {", "            int j = idx[i];", "            if (used[labels[j]] == useLimit) continue;        // 该标签用满，跳过", "            used[labels[j]]++;", "            ans += values[j];", "            taken++;", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1090. 受标签影响的最大值 —— 图解：复刻 Solution.java 的「值大优先 + 标签限额」贪心。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { values: [5, 4, 3, 2, 1], labels: [1, 1, 2, 2, 3], numWanted: 3, useLimit: 1 };
+
+function trace(input) {
+  var values = input.values, labels = input.labels;
+  var want = input.numWanted, limit = input.useLimit;
+  var n = values.length;
+  var idx = [];
+  for (var i = 0; i < n; i++) idx.push(i);
+  idx.sort(function (a, b) { return values[b] - values[a]; });
+
+  var frames = [];
+  function snap(at, key, st, ans, taken) {
+    var rows = idx.map(function (j, r) {
+      var cls = st[j] || '';
+      var note = cls === 'bad' ? '（标签已满）' : (cls === 'hit' ? '（已收下）' : '');
+      return { k: '第 ' + (r + 1) + ' 大：值 ' + values[j], v: '标签 ' + labels[j] + note, cls: cls };
+    });
+    frames.push(Viz.frame(at, key, [
+      Viz.table('按值从大到小的候选', rows),
+      Viz.vars([{ name: '已选和', v: ans }, { name: '已选件数', v: taken + ' / ' + want }])
+    ]));
+  }
+
+  snap('Arrays.sort(idx, (a, b) -> values[b] - values[a]);', '先按值从大到小排：值大的尽量都要', {}, 0, 0);
+
+  var used = {}, st = {}, ans = 0, taken = 0, decisions = 0;
+  for (var i = 0; i < n && taken < want; i++) {
+    var j = idx[i], L = labels[j];
+    var full = (used[L] || 0) >= limit;
+    st[j] = full ? 'bad' : 'hit';
+    decisions++;
+    if (decisions <= 2) {
+      snap('if (used[labels[j]] == useLimit) continue;',
+        full ? '值 ' + values[j] + ' 的标签 ' + L + ' 已用满 ' + limit + ' 个，跳过'
+             : '值 ' + values[j] + '：标签 ' + L + ' 还能用，收下',
+        st, ans, taken);
+    }
+    if (!full) {
+      used[L] = (used[L] || 0) + 1;
+      ans += values[j];
+      taken++;
+    }
+  }
+
+  snap('return ans;', '挑满 ' + taken + ' 件：最大和为 ' + ans, st, ans, taken);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>有效的括号字符串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 156 / 1159</span>
+  <nav class="pn"><a href="offer-42.html">上一篇</a><a href="offer-10-i.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">678. </span>有效的括号字符串</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 37</li><li class="algo">贪心</li><li class="tag">栈</li><li class="tag">贪心</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="tag">bracket-sequences</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">不真的给 &#x27;*&#x27; 定角色：维护「未配对左括号数」的可行区间 [lo, hi]，逐字符更新，最后看 0 在不在区间里。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>(</code>：两端 +1；<code>)</code>：两端 -1；<code>*</code>：左端 -1（当右括号）、右端 +1（当左括号），区间被撑开。</li><li><code>hi &lt; 0</code> 立即 false：右括号多到把 <code>*</code> 全当左括号都填不平。</li><li><code>lo &lt; 0</code> 时<strong>重置回 0 而不是 false</strong>：说明某个 <code>*</code> 不必当右括号（改成空串即可），下限不该为负。</li><li>结尾 <code>lo == 0</code> 才有效：即使全按最省的分法也剩不下未配对的左括号。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> checkValidString(<span class="t">String</span> s) {</span><span class="ln"><span class="no">3</span>        <span class="c">// [lo, hi]：扫到现在，未配对左括号数的最小 / 最大可能值</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span> lo = <span class="n">0</span>, hi = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">char</span> c : s.toCharArray()) {</span><span class="ln"><span class="no">6</span>            <span class="k">if</span> (c == <span class="s">'('</span>) { lo++; hi++; }</span><span class="ln"><span class="no">7</span>            <span class="k">else</span> <span class="k">if</span> (c == <span class="s">')'</span>) { lo--; hi--; }</span><span class="ln"><span class="no">8</span>            <span class="k">else</span> { lo--; hi++; }           <span class="c">// '*' 当右括号最坏、当左括号最好</span></span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (hi &lt; <span class="n">0</span>) <span class="k">return</span> <span class="k">false</span>;      <span class="c">// 连 '*' 都当左括号也填不平右括号</span></span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (lo &lt; <span class="n">0</span>) lo = <span class="n">0</span>;            <span class="c">// lo 为负说明某个 '*' 改当空串就好，兜回 0</span></span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="k">return</span> lo == <span class="n">0</span>;                    <span class="c">// 最省的分法下也没剩左括号，才配得平</span></span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个只包含三种字符的字符串，支持的字符类型分别是 <code>'('</code>、<code>')'</code> 和 <code>'*'</code>。请你检验这个字符串是否为有效字符串，如果是 <strong>有效</strong> 字符串返回 <code>true</code> 。</p>
+
+<p><strong>有效</strong> 字符串符合如下规则：</p>
+
+<ul>
+	<li>任何左括号 <code>'('</code>&nbsp;必须有相应的右括号 <code>')'</code>。</li>
+	<li>任何右括号 <code>')'</code>&nbsp;必须有相应的左括号 <code>'('</code>&nbsp;。</li>
+	<li>左括号 <code>'('</code> 必须在对应的右括号之前 <code>')'</code>。</li>
+	<li><code>'*'</code>&nbsp;可以被视为单个右括号 <code>')'</code>&nbsp;，或单个左括号 <code>'('</code>&nbsp;，或一个空字符串 <code>""</code>。</li>
+</ul>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "()"
+<strong>输出：</strong>true
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "(*)"
+<strong>输出：</strong>true
+</pre>
+
+<p><strong class="example">示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "(*))"
+<strong>输出：</strong>true
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 100</code></li>
+	<li><code>s[i]</code> 为 <code>'('</code>、<code>')'</code> 或 <code>'*'</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean checkValidString(String s) {", "        // [lo, hi]：扫到现在，未配对左括号数的最小 / 最大可能值", "        int lo = 0, hi = 0;", "        for (char c : s.toCharArray()) {", "            if (c == '(') { lo++; hi++; }", "            else if (c == ')') { lo--; hi--; }", "            else { lo--; hi++; }           // '*' 当右括号最坏、当左括号最好", "            if (hi < 0) return false;      // 连 '*' 都当左括号也填不平右括号", "            if (lo < 0) lo = 0;            // lo 为负说明某个 '*' 改当空串就好，兜回 0", "        }", "        return lo == 0;                    // 最省的分法下也没剩左括号，才配得平", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 678. 有效的括号字符串 —— 图解：复刻 Solution.java 的 [lo, hi] 区间贪心，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: '(*))' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+  var lo = 0, hi = 0;   // 未配对左括号数的最小 / 最大可能值，对应 Java 里的 lo、hi
+  var failed = false;
+  var INIT = 'int lo = 0, hi = 0;';
+  var STAR = 'else { lo--; hi++; }';
+  var RESET = 'if (lo < 0) lo = 0;';
+  var RET = 'return lo == 0;';
+
+  function charsPanel(i, dimAll) {
+    var marks = {};
+    for (var k = 0; k < n; k++) {
+      if (dimAll || k < i) marks[k] = 'dim';
+    }
+    if (i != null && i >= 0) marks[i] = 'cur';
+    return Viz.cells(s.split(''), { title: 's（* 可当左括号、右括号或空串）', marks: marks, hideIndex: true });
+  }
+  function varsPanel(chgLo, chgHi) {
+    return Viz.vars([
+      { name: 'lo（最少剩）', v: lo, cls: chgLo ? 'chg' : '' },
+      { name: 'hi（最多剩）', v: hi, cls: chgHi ? 'chg' : '' }
+    ]);
+  }
+
+  var firedStar = false, firedReset = false;
+
+  for (var i = 0; i < n; i++) {
+    var c = s[i];
+    if (c === '(') { lo++; hi++; }
+    else if (c === ')') { lo--; hi--; }
+    else { lo--; hi++; }
+    if (i === 0) {   // 第 1 帧：读完第一个字符
+      frames.push(Viz.frame(INIT, '读完「' + c + '」：未配对左括号数在 ' + lo + '~' + hi + ' 之间',
+        [charsPanel(0, false), varsPanel(true, true)]));
+    }
+    if (c === '*' && !firedStar) {   // 第 2 帧：第一个 '*' 把区间撑开
+      firedStar = true;
+      frames.push(Viz.frame(STAR, '「*」把区间撑开成 [' + lo + ', ' + hi + ']：当右括号左端 -1，当左括号右端 +1',
+        [charsPanel(i, false), varsPanel(true, true)]));
+    }
+    if (lo < 0) {
+      lo = 0;
+      if (!firedReset) {   // 第 3 帧：lo 触底被兜回 0（最容易忘的一步）
+        firedReset = true;
+        frames.push(Viz.frame(RESET, 'lo 掉到 -1：说明某个「*」不用当右括号，改当空串就好，兜回 0',
+          [charsPanel(i, false), varsPanel(true, true)]));
+      }
+    }
+    if (hi < 0) {   // 右括号严重过剩，提前判负
+      failed = true;
+      frames.push(Viz.frame('if (hi < 0) return false;', 'hi = ' + hi + '：连「*」全当左括号都填不平，直接 false',
+        [charsPanel(i, false), varsPanel(false, true)]));
+      break;
+    }
+  }
+
+  if (!failed) {   // 第 4 帧：扫完给结论
+    frames.push(Viz.frame(RET, '扫完：hi = ' + hi + ' 没爆，lo = ' + lo + (lo === 0 ? '，存在一种分法恰好配平 → true' : '，怎么分都剩左括号 → false'),
+      [charsPanel(n - 1, true), varsPanel(true, true)]));
+  }
+
+  return { frames: frames, result: failed ? false : lo === 0 };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

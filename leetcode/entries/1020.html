@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>飞地的数量 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 732 / 1159</span>
+  <nav class="pn"><a href="1248.html">上一篇</a><a href="0901.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1020. </span>飞地的数量</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">广度优先搜索</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">反向沉岛：从边界上的 1 出发 BFS，连通的全沉成 0，剩下的 1 就是飞地。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>飞地 = 走不出边界的陆地；与其逐格判断「能否出去」，不如从边界一次 BFS 标记全部「能出去的」。</li><li>边界上的 1 全部入队，<strong>入队时顺手置 0</strong> 兼当访问标记，省掉 visited 数组。</li><li>BFS 扩散沉掉整片连通块后，把剩下的 1 求和一遍即答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> numEnclaves(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> m = grid.length, n = grid[<span class="n">0</span>].length;</span><span class="ln"><span class="no">6</span>        <span class="t">Deque</span>&lt;<span class="k">int</span>[]&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="c">// 边界上的陆地先沉掉：入队时顺手改成 0，兼当「已访问」标记</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">10</span>                <span class="k">if</span> (grid[i][j] == <span class="n">1</span> &amp;&amp; (i == <span class="n">0</span> || i == m - <span class="n">1</span> || j == <span class="n">0</span> || j == n - <span class="n">1</span>)) {</span><span class="ln"><span class="no">11</span>                    grid[i][j] = <span class="n">0</span>;</span><span class="ln"><span class="no">12</span>                    queue.add(<span class="k">new</span> <span class="k">int</span>[]{i, j});</span><span class="ln"><span class="no">13</span>                }</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">int</span>[] d = {<span class="n">1</span>, <span class="n">0</span>, -<span class="n">1</span>, <span class="n">0</span>, <span class="n">1</span>};   <span class="c">// (d[k], d[k+1])：下、右、上、左</span></span><span class="ln"><span class="no">17</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">18</span>            <span class="k">int</span>[] p = queue.poll();</span><span class="ln"><span class="no">19</span>            <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; <span class="n">4</span>; k++) {</span><span class="ln"><span class="no">20</span>                <span class="k">int</span> x = p[<span class="n">0</span>] + d[k], y = p[<span class="n">1</span>] + d[k + <span class="n">1</span>];</span><span class="ln"><span class="no">21</span>                <span class="k">if</span> (x &gt;= <span class="n">0</span> &amp;&amp; x &lt; m &amp;&amp; y &gt;= <span class="n">0</span> &amp;&amp; y &lt; n &amp;&amp; grid[x][y] == <span class="n">1</span>) {</span><span class="ln"><span class="no">22</span>                    grid[x][y] = <span class="n">0</span>;   <span class="c">// 与边界连通的陆地一并沉掉</span></span><span class="ln"><span class="no">23</span>                    queue.add(<span class="k">new</span> <span class="k">int</span>[]{x, y});</span><span class="ln"><span class="no">24</span>                }</span><span class="ln"><span class="no">25</span>            }</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        <span class="c">// 沉剩下的 1 就是飞地：出不了边界的陆地</span></span><span class="ln"><span class="no">28</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">29</span>        <span class="k">for</span> (<span class="k">int</span>[] row : grid) {</span><span class="ln"><span class="no">30</span>            <span class="k">for</span> (<span class="k">int</span> v : row) ans += v;</span><span class="ln"><span class="no">31</span>        }</span><span class="ln"><span class="no">32</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个大小为 <code>m x n</code> 的二进制矩阵 <code>grid</code> ，其中 <code>0</code> 表示一个海洋单元格、<code>1</code> 表示一个陆地单元格。</p>
+
+<p>一次 <strong>移动</strong> 是指从一个陆地单元格走到另一个相邻（<strong>上、下、左、右</strong>）的陆地单元格或跨过 <code>grid</code> 的边界。</p>
+
+<p>返回网格中<strong> 无法 </strong>在任意次数的移动中离开网格边界的陆地单元格的数量。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/cdf7f1309538.jpg" style="height: 200px; width: 200px;" />
+<pre>
+<strong>输入：</strong>grid = [[0,0,0,0],[1,0,1,0],[0,1,1,0],[0,0,0,0]]
+<strong>输出：</strong>3
+<strong>解释：</strong>有三个 1 被 0 包围。一个 1 没有被包围，因为它在边界上。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/4572e7972f12.jpg" style="height: 200px; width: 200px;" />
+<pre>
+<strong>输入：</strong>grid = [[0,1,1,0],[0,0,1,0],[0,0,1,0],[0,0,0,0]]
+<strong>输出：</strong>0
+<strong>解释：</strong>所有 1 都在边界上或可以到达边界。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == grid.length</code></li>
+	<li><code>n == grid[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 500</code></li>
+	<li><code>grid[i][j]</code> 的值为 <code>0</code> 或 <code>1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int numEnclaves(int[][] grid) {", "        int m = grid.length, n = grid[0].length;", "        Deque<int[]> queue = new ArrayDeque<>();", "        // 边界上的陆地先沉掉：入队时顺手改成 0，兼当「已访问」标记", "        for (int i = 0; i < m; i++) {", "            for (int j = 0; j < n; j++) {", "                if (grid[i][j] == 1 && (i == 0 || i == m - 1 || j == 0 || j == n - 1)) {", "                    grid[i][j] = 0;", "                    queue.add(new int[]{i, j});", "                }", "            }", "        }", "        int[] d = {1, 0, -1, 0, 1};   // (d[k], d[k+1])：下、右、上、左", "        while (!queue.isEmpty()) {", "            int[] p = queue.poll();", "            for (int k = 0; k < 4; k++) {", "                int x = p[0] + d[k], y = p[1] + d[k + 1];", "                if (x >= 0 && x < m && y >= 0 && y < n && grid[x][y] == 1) {", "                    grid[x][y] = 0;   // 与边界连通的陆地一并沉掉", "                    queue.add(new int[]{x, y});", "                }", "            }", "        }", "        // 沉剩下的 1 就是飞地：出不了边界的陆地", "        int ans = 0;", "        for (int[] row : grid) {", "            for (int v : row) ans += v;", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1020. 飞地的数量 —— 图解：从边界沉岛 BFS，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[0, 1, 0, 0, 0], [0, 1, 0, 0, 1], [0, 1, 0, 1, 0], [0, 1, 0, 0, 0]] };
+
+function trace(input) {
+  var g = input.grid.map(function (row) { return row.slice(); });
+  var m = g.length, n = g[0].length;
+  var frames = [];
+  var queue = [];     // 待扩展的格子 [r, c]
+  var sunkMap = {};   // 被沉掉的坐标："r,c" -> true（原本就是海洋的不算）
+  var sinks = 0;
+
+  function gridPanel(extra) {
+    var marks = {};
+    for (var k in sunkMap) marks[k] = 'dim';
+    if (extra) for (var e in extra) marks[e] = extra[e];
+    return Viz.grid(g.map(function (row) { return row.map(String); }),
+      { title: 'grid（灰 = 被 BFS 沉成 0 的陆地）', marks: marks });
+  }
+  function varsPanel(finalAns) {
+    var items = [{ name: '已沉', v: String(Object.keys(sunkMap).length) }];
+    if (finalAns !== undefined) items.push({ name: 'ans（剩下的 1）', v: String(finalAns), cls: 'done' });
+    return Viz.vars(items);
+  }
+  function snap(at, key, extra, finalAns) {
+    frames.push(Viz.frame(at, key, [gridPanel(extra), varsPanel(finalAns)]));
+  }
+  function rcList(list) {
+    return list.map(function (rc) { return '(' + rc + ')'; }).join('、');
+  }
+
+  // 1) 边界上的陆地先入队沉掉
+  for (var i = 0; i < m; i++) {
+    for (var j = 0; j < n; j++) {
+      if (g[i][j] === 1 && (i === 0 || i === m - 1 || j === 0 || j === n - 1)) {
+        g[i][j] = 0;
+        sunkMap[i + ',' + j] = true;
+        queue.push([i, j]);
+      }
+    }
+  }
+  var seedMarks = {};
+  queue.forEach(function (p) { seedMarks[p[0] + ',' + p[1]] = 'bad'; });
+  snap('queue.add(new int[]{i, j});', '四条边上的 1 先入队沉掉：它们本来就能走出边界', seedMarks);
+
+  // 2) BFS 扩散：与边界连通的 1 一并沉掉
+  var d = [1, 0, -1, 0, 1];
+  while (queue.length) {
+    var p = queue.shift();
+    for (var k = 0; k < 4; k++) {
+      var x = p[0] + d[k], y = p[1] + d[k + 1];
+      if (x >= 0 && x < m && y >= 0 && y < n && g[x][y] === 1) {
+        g[x][y] = 0;
+        sunkMap[x + ',' + y] = true;
+        sinks++;
+        queue.push([x, y]);
+        if (sinks === 1) snap('grid[x][y] = 0;', '出队 (' + p + ')：连通的邻居 (' + x + ',' + y + ') 也沉掉入队', null);
+        else if (sinks === 2) snap('grid[x][y] = 0;', '波纹继续扩散：整片连通陆地一格格沉没', null);
+      }
+    }
+  }
+
+  // 3) 数剩下的 1
+  var ans = 0, left = [];
+  for (i = 0; i < m; i++) {
+    for (j = 0; j < n; j++) if (g[i][j] === 1) { ans++; left.push(i + ',' + j); }
+  }
+  var leftMarks = {};
+  left.forEach(function (rc) { leftMarks[rc] = 'cur'; });
+  if (left.length) {
+    snap('for (int[] row : grid) {', '连通的都沉完了：剩下的 ' + rcList(left) + ' 四邻全是 0，BFS 够不到', leftMarks);
+  }
+  var doneMarks = {};
+  left.forEach(function (rc) { doneMarks[rc] = 'done'; });
+  snap('return ans;', '数剩下的 1：飞地 = ' + ans + ' 格', doneMarks, ans);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

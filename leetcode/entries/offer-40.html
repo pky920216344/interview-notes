@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>库存管理 III · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 149 / 1159</span>
+  <nav class="pn"><a href="0010.html">上一篇</a><a href="0287.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 40. </span>库存管理 III</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 40</li><li class="algo">堆</li><li class="tag">数组</li><li class="tag">分治</li><li class="tag">快速选择</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">大根堆只留最小的 cnt 个：没满就进堆；满了且比堆顶小就换掉堆顶；堆顶是「前 cnt 小里最大的」守门员。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>维护大小为 <code>cnt</code> 的大根堆：堆顶是已见过的 cnt 个最小值里最大的那个，相当于守门员。</li><li>没满直接进堆；来了更小的就弹出堆顶、放进新值；不比堆顶小直接跳过。</li><li><code>cnt</code> 为 0 时堆是空的，判 <code>heap.isEmpty()</code> 再 <code>peek</code>，别抛异常。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log cnt)，空间复杂度 O(cnt)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] inventoryManagement(<span class="k">int</span>[] stock, <span class="k">int</span> cnt) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 大根堆只留「目前见过的 cnt 个最小值」，堆顶是它们里最大的守门员</span></span><span class="ln"><span class="no">6</span>        <span class="t">PriorityQueue</span>&lt;<span class="t">Integer</span>&gt; heap = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;((a, b) -&gt; b - a);</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> v : stock) {</span><span class="ln"><span class="no">8</span>            <span class="c">// 没满：先收进来</span></span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (heap.size() &lt; cnt) {</span><span class="ln"><span class="no">10</span>                heap.offer(v);</span><span class="ln"><span class="no">11</span>            <span class="c">// 满了且比堆顶小：换掉守门员</span></span><span class="ln"><span class="no">12</span>            } <span class="k">else</span> <span class="k">if</span> (!heap.isEmpty() &amp;&amp; v &lt; heap.peek()) {</span><span class="ln"><span class="no">13</span>                heap.poll();</span><span class="ln"><span class="no">14</span>                heap.offer(v);</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="c">// 堆里剩下的就是最小的 cnt 个，题目对顺序不限</span></span><span class="ln"><span class="no">18</span>        <span class="k">int</span>[] ans = <span class="k">new</span> <span class="k">int</span>[heap.size()];</span><span class="ln"><span class="no">19</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; ans.length; i++) ans[i] = heap.poll();</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>仓库管理员以数组 <code>stock</code> 形式记录商品库存表，其中 <code>stock[i]</code> 表示对应商品库存余量。请返回库存余量最少的 <code>cnt</code> 个商品余量，返回&nbsp;<strong>顺序不限</strong>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>stock = [2,5,7,4], cnt = 1
+<strong>输出：</strong>[2]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>stock = [0,2,3,6], cnt = 2
+<strong>输出：</strong>[0,2] 或 [2,0]</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= cnt &lt;= stock.length &lt;= 10000</code></li>
+	<li><code>0 &lt;= stock[i] &lt;= 10000</code></li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] inventoryManagement(int[] stock, int cnt) {", "        // 大根堆只留「目前见过的 cnt 个最小值」，堆顶是它们里最大的守门员", "        PriorityQueue<Integer> heap = new PriorityQueue<>((a, b) -> b - a);", "        for (int v : stock) {", "            // 没满：先收进来", "            if (heap.size() < cnt) {", "                heap.offer(v);", "            // 满了且比堆顶小：换掉守门员", "            } else if (!heap.isEmpty() && v < heap.peek()) {", "                heap.poll();", "                heap.offer(v);", "            }", "        }", "        // 堆里剩下的就是最小的 cnt 个，题目对顺序不限", "        int[] ans = new int[heap.size()];", "        for (int i = 0; i < ans.length; i++) ans[i] = heap.poll();", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// offer-40 库存管理 III（最小的 k 个数）—— 图解：复刻 Solution.java 的「大小为 k 的大根堆」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { stock: [5, 2, 7, 4, 1, 6], cnt: 3 };
+
+function trace(input) {
+  var stock = input.stock, cnt = input.cnt;
+  var frames = [];
+  var kept = [];   // 堆里保留的数，升序摆（右端 = 堆顶，即「前 cnt 小里最大的守门员」）
+
+  // 动态 key 里的列表只展示前几个，避免超长
+  var brief = function (arr, atMost) {
+    var head = arr.slice(0, atMost).join(',');
+    return arr.length > atMost ? head + '…' : head;
+  };
+
+  function heapPanel(newIdx) {
+    var marks = {};
+    if (newIdx != null && newIdx >= 0) marks[newIdx] = 'new';
+    var pointers = kept.length ? [{ at: kept.length - 1, label: '堆顶', cls: 'p-tail' }] : [];
+    return Viz.cells(kept.map(String), { title: '大根堆（升序摆，右端是堆顶守门员）', marks: marks, pointers: pointers });
+  }
+  function varsPanel(extra) {
+    var items = [
+      { name: 'cnt', v: cnt, cls: '' },
+      { name: '堆顶', v: kept.length ? kept[kept.length - 1] : '—', cls: '' }
+    ];
+    if (extra) items.push(extra);
+    return Viz.vars(items);
+  }
+  function snap(at, key, newIdx, extra) { frames.push(Viz.frame(at, key, [heapPanel(newIdx), varsPanel(extra)])); }
+
+  // 与 Solution.java 结果一致：维护「目前最小的 cnt 个」（多重集），堆内部次序不影响结果
+  var PUSH = 'if (heap.size() < cnt) {';
+  var DECIDE = '} else if (!heap.isEmpty() && v < heap.peek()) {';
+
+  var fillShot = false, replaceShots = 0, skipShot = false;
+  for (var i = 0; i < stock.length; i++) {
+    var v = stock[i];
+    if (kept.length < cnt) {
+      kept.push(v);
+      kept.sort(function (x, y) { return x - y; });
+      var at = kept.indexOf(v);
+      if (kept.length === cnt && !fillShot) {
+        fillShot = true;
+        snap(PUSH, '堆没满（size<' + cnt + '）：前 ' + cnt + ' 个数（' + brief(stock.slice(0, cnt), 4) + '）都直接进堆，堆顶 ' + kept[kept.length - 1], at, null);
+      }
+    } else if (kept.length > 0 && v < kept[kept.length - 1]) {
+      var out = kept.pop();          // 换掉守门员
+      kept.push(v);
+      kept.sort(function (x, y) { return x - y; });
+      if (replaceShots < 2) {
+        snap(DECIDE, '来 ' + v + ' < 堆顶 ' + out + '：换掉守门员，堆里永远是最小的 ' + cnt + ' 个', kept.indexOf(v),
+          { name: '换出', v: out, cls: 'bad' });
+        replaceShots++;
+      }
+    } else if (!skipShot) {
+      skipShot = true;
+      snap(DECIDE, '来 ' + v + ' ≥ 堆顶 ' + (kept.length ? kept[kept.length - 1] : '—') + '：不比守门员小，直接跳过', null, null);
+    }
+  }
+
+  var result = kept.slice().sort(function (x, y) { return x - y; });
+  frames.push(Viz.frame('return ans;', '扫完：堆里剩下的就是最小的 ' + cnt + ' 个，排序输出 [' + brief(result, 8) + ']',
+    [heapPanel(null), varsPanel(null)]));
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

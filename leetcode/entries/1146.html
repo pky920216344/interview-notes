@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>快照数组 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 394 / 1159</span>
+  <nav class="pn"><a href="0480.html">上一篇</a><a href="0716.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1146. </span>快照数组</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 8</li><li class="algo">二分查找</li><li class="aux">设计</li><li class="tag">设计</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">二分查找</li><li class="tag">persistent-data-structure</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">每个下标挂一个「版本号 → 值」的 TreeMap：set 只写当前版本（覆盖），get 用 floorEntry 找 ≤ snap_id 的最近版本。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>不复制数组：<code>snap()</code> 只把版本号 +1 返回旧值，快照本身零成本。</li><li><code>set(index, val)</code> 记成 <code>版本号 → 值</code>；同一版本内重复 set 走 TreeMap 覆盖写，不堆积重复键。</li><li><code>get(index, snap_id)</code> = 在该下标的版本表里找 <strong>≤ snap_id 的最大版本</strong>（<code>floorEntry</code>），表空返回初始值 0。</li><li>空间只与写入次数成正比，与 <code>length</code> 和快照数无关——这正是这题的核心收益。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 set/snap O(1)，get O(log 写入次数)，空间复杂度 O(set 次数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">SnapshotArray</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 每个下标一个 TreeMap：版本号 -&gt; 值；同版本重复 set 直接覆盖</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">List</span>&lt;<span class="t">TreeMap</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt;&gt; a = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">int</span> snapId = <span class="n">0</span>;   <span class="c">// 当前版本号，也是下一次 snap 的返回值</span></span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">SnapshotArray</span>(<span class="k">int</span> length) {</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; length; i++) a.add(<span class="k">new</span> <span class="t">TreeMap</span>&lt;&gt;());</span><span class="ln"><span class="no">10</span>    }</span><span class="ln"><span class="no">11</span> </span><span class="ln"><span class="no">12</span>    <span class="k">public</span> <span class="k">void</span> set(<span class="k">int</span> index, <span class="k">int</span> val) {</span><span class="ln"><span class="no">13</span>        <span class="c">// 只写当前版本这一个键，历史版本不动</span></span><span class="ln"><span class="no">14</span>        a.get(index).put(snapId, val);</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span> </span><span class="ln"><span class="no">17</span>    <span class="k">public</span> <span class="k">int</span> snap() {</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> snapId++;   <span class="c">// 先返回旧编号再自增，数组本身不用复制</span></span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>    <span class="k">public</span> <span class="k">int</span> get(<span class="k">int</span> index, <span class="k">int</span> snap_id) {</span><span class="ln"><span class="no">22</span>        <span class="c">// 快照 snap_id 的值 = 版本号 ≤ snap_id 的最近一次写入；没有就是初始值 0</span></span><span class="ln"><span class="no">23</span>        <span class="t">Map</span>.<span class="t">Entry</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; e = a.get(index).floorEntry(snap_id);</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> e == <span class="k">null</span> ? <span class="n">0</span> : e.getValue();</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>实现支持下列接口的「快照数组」-&nbsp;SnapshotArray：</p>
+
+<ul>
+	<li><code>SnapshotArray(int length)</code>&nbsp;- 初始化一个与指定长度相等的 类数组 的数据结构。<strong>初始时，每个元素都等于</strong><strong>&nbsp;0</strong>。</li>
+	<li><code>void set(index, val)</code>&nbsp;- 会将指定索引&nbsp;<code>index</code>&nbsp;处的元素设置为&nbsp;<code>val</code>。</li>
+	<li><code>int snap()</code>&nbsp;- 获取该数组的快照，并返回快照的编号&nbsp;<code>snap_id</code>（快照号是调用&nbsp;<code>snap()</code>&nbsp;的总次数减去&nbsp;<code>1</code>）。</li>
+	<li><code>int get(index, snap_id)</code>&nbsp;- 根据指定的&nbsp;<code>snap_id</code>&nbsp;选择快照，并返回该快照指定索引 <code>index</code>&nbsp;的值。</li>
+</ul>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre><strong>输入：</strong>[&quot;SnapshotArray&quot;,&quot;set&quot;,&quot;snap&quot;,&quot;set&quot;,&quot;get&quot;]
+     [[3],[0,5],[],[0,6],[0,0]]
+<strong>输出：</strong>[null,null,0,null,5]
+<strong>解释：
+</strong>SnapshotArray snapshotArr = new SnapshotArray(3); // 初始化一个长度为 3 的快照数组
+snapshotArr.set(0,5);  // 令 array[0] = 5
+snapshotArr.snap();  // 获取快照，返回 snap_id = 0
+snapshotArr.set(0,6);
+snapshotArr.get(0,0);  // 获取 snap_id = 0 的快照中 array[0] 的值，返回 5</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= length&nbsp;&lt;= 50000</code></li>
+	<li>题目最多进行<code>50000</code> 次<code>set</code>，<code>snap</code>，和&nbsp;<code>get</code>的调用 。</li>
+	<li><code>0 &lt;= index&nbsp;&lt;&nbsp;length</code></li>
+	<li><code>0 &lt;=&nbsp;snap_id &lt;&nbsp;</code>我们调用&nbsp;<code>snap()</code>&nbsp;的总次数</li>
+	<li><code>0 &lt;=&nbsp;val &lt;= 10^9</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class SnapshotArray {", "    // 每个下标一个 TreeMap：版本号 -> 值；同版本重复 set 直接覆盖", "    private final List<TreeMap<Integer, Integer>> a = new ArrayList<>();", "    private int snapId = 0;   // 当前版本号，也是下一次 snap 的返回值", "", "    public SnapshotArray(int length) {", "        for (int i = 0; i < length; i++) a.add(new TreeMap<>());", "    }", "", "    public void set(int index, int val) {", "        // 只写当前版本这一个键，历史版本不动", "        a.get(index).put(snapId, val);", "    }", "", "    public int snap() {", "        return snapId++;   // 先返回旧编号再自增，数组本身不用复制", "    }", "", "    public int get(int index, int snap_id) {", "        // 快照 snap_id 的值 = 版本号 ≤ snap_id 的最近一次写入；没有就是初始值 0", "        Map.Entry<Integer, Integer> e = a.get(index).floorEntry(snap_id);", "        return e == null ? 0 : e.getValue();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1146. 快照数组 —— 图解：复刻 Solution.java 的「每下标版本表 + floorEntry」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { length: 3, ops: [['set', 0, 5], ['snap'], ['set', 0, 6], ['get', 0, 0], ['get', 0, 1]] };
+
+function trace(input) {
+  var ops = input.ops;
+  var frames = [];
+  var isStory = input === STORY_INPUT;
+  var snapId = 0;
+  var tables = {};    // 下标 -> 版本表 [[版本, 值], ...]；图解只展示下标 0 的那张
+  var out = [];
+
+  function tablePanel(hitVer) {
+    var t = tables[0] || [];
+    return Viz.table('下标 0 的版本表（版本 → 值）', t.map(function (e) {
+      return { k: '版本 ' + e[0], v: String(e[1]), cls: hitVer != null && e[0] === hitVer ? 'hit' : '' };
+    }), { hint: '旧版本一直留着，供任意快照号查询' });
+  }
+  function varsPanel(q) {
+    var items = [{ name: 'snapId（当前版本）', v: String(snapId) }];
+    if (q != null) items.push({ name: '查询版本', v: String(q), cls: 'hit' });
+    return Viz.vars(items);
+  }
+  function snap2(at, key, hitVer, q) {
+    if (!isStory) return;
+    frames.push(Viz.frame(at, key, [tablePanel(hitVer), varsPanel(q)]));
+  }
+  function floorOf(idx, sid) {   // 复刻 floorEntry：≤ sid 的最大版本
+    var t = tables[idx] || [], best = null;
+    for (var i = 0; i < t.length; i++) {
+      if (t[i][0] <= sid && (best === null || t[i][0] > best[0])) best = t[i];
+    }
+    return best;
+  }
+
+  var SET = 'a.get(index).put(snapId, val);';
+  var SNP = 'return snapId++;';
+  var GET = 'Map.Entry<Integer, Integer> e = a.get(index).floorEntry(snap_id);';
+
+  ops.forEach(function (op, oi) {
+    if (op[0] === 'set') {
+      var idx = op[1], val = op[2];
+      var t = tables[idx] || (tables[idx] = []);
+      var last = t[t.length - 1];
+      if (last && last[0] === snapId) last[1] = val;   // 同版本覆盖写
+      else t.push([snapId, val]);
+      if (oi === 0) snap2(SET, 'set(0,5)：当前版本是 0，写入「版本 0 → 5」', null, null);
+      if (oi === 2) snap2(SET, 'set(0,6)：版本号已是 1，写「版本 1 → 6」，版本 0 的 5 原样保留', null, null);
+    } else if (op[0] === 'snap') {
+      out.push(snapId);
+      if (oi === 1) snap2(SNP, 'snap()：返回 0 后版本号推进到 1——不复制数组，快照只是个编号', null, null);
+      snapId++;
+    } else {
+      var sid = op[2];
+      var hit = floorOf(op[1], sid);
+      out.push(hit ? hit[1] : 0);
+      if (oi === 3) snap2(GET, 'get(0,0)：floorEntry(0) 取 ≤ 0 的最大版本 → 版本 0 的 5（旧值没被覆盖）', hit ? hit[0] : null, sid);
+      if (oi === 4) snap2(GET, 'get(0,1)：floorEntry(1) 取 ≤ 1 的最大版本 → 版本 1 的 6；全部查询完成', hit ? hit[0] : null, sid);
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

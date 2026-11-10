@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>检查替换后的词是否有效 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1096 / 1159</span>
+  <nav class="pn"><a href="mianshi-04-06.html">上一篇</a><a href="1166.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1003. </span>检查替换后的词是否有效</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">栈</li><li class="tag">栈</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">栈模拟插入的逆过程：a、b 压栈，读到 c 就核对栈顶是 b、其下是 a，弹两个；读完栈空才有效。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每个插入的 <code>"abc"</code> 一定是按 a→b→c 的顺序被读到的：看到 <code>c</code> 时，它前面刚压栈的就是 <code>b</code>、<code>a</code>。</li><li>遇 <code>c</code>：栈顶两个恰好是 <code>b</code>、<code>a</code> 就弹掉（栈不足两个直接无效）。</li><li>扫完后栈必须为空，剩着 <code>a</code>、<code>b</code> 说明有 <code>"abc"</code> 没凑齐。</li><li>用字符数组当栈（<code>top</code> 计数），避免 <code>StringBuilder</code> 删字符的搬移开销。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> isValid(<span class="t">String</span> s) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 字符数组当栈：top 指向栈顶的下一位</span></span><span class="ln"><span class="no">4</span>        <span class="k">char</span>[] st = <span class="k">new</span> <span class="k">char</span>[s.length()];</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> top = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) {</span><span class="ln"><span class="no">7</span>            <span class="k">char</span> c = s.charAt(i);</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (c == <span class="s">'c'</span>) {</span><span class="ln"><span class="no">9</span>                <span class="c">// 凑一个 "abc"：栈顶必须是 b、再下面是 a，否则无效</span></span><span class="ln"><span class="no">10</span>                <span class="k">if</span> (top &lt; <span class="n">2</span> || st[top - <span class="n">1</span>] != <span class="s">'b'</span> || st[top - <span class="n">2</span>] != <span class="s">'a'</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">11</span>                top -= <span class="n">2</span>;</span><span class="ln"><span class="no">12</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">13</span>                st[top++] = c;</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="c">// 读完了还有剩，说明 abc 没凑完</span></span><span class="ln"><span class="no">17</span>        <span class="k">return</span> top == <span class="n">0</span>;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">给你一个字符串 <code>s</code> ，请你判断它是否 <strong>有效</strong> 。
+<p>字符串 <code>s</code> <strong>有效</strong> 需要满足：假设开始有一个空字符串 <code>t = ""</code> ，你可以执行 <strong>任意次</strong> 下述操作将<code>t</code><strong> 转换为 </strong><code>s</code> ：</p>
+
+<ul>
+	<li>将字符串 <code>"abc"</code> 插入到 <code>t</code> 中的任意位置。形式上，<code>t</code> 变为 <code>t<sub>left</sub> + "abc" + t<sub>right</sub></code>，其中 <code>t == t<sub>left</sub> + t<sub>right</sub></code> 。注意，<code>t<sub>left</sub></code> 和 <code>t<sub>right</sub></code> 可能为 <strong>空</strong> 。</li>
+</ul>
+
+<p>如果字符串 <code>s</code> 有效，则返回 <code>true</code>；否则，返回 <code>false</code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "aabcbc"
+<strong>输出：</strong>true
+<strong>解释：</strong>
+"" -&gt; "<strong>abc</strong>" -&gt; "a<strong>abc</strong>bc"
+因此，"aabcbc" 有效。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "abcabcababcc"
+<strong>输出：</strong>true
+<strong>解释：</strong>
+"" -&gt; "<strong>abc</strong>" -&gt; "abc<strong>abc</strong>" -&gt; "abcabc<strong>abc</strong>" -&gt; "abcabcab<strong>abc</strong>c"
+因此，"abcabcababcc" 有效。</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "abccba"
+<strong>输出：</strong>false
+<strong>解释：</strong>执行操作无法得到 "abccba" 。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>s</code> 由字母 <code>'a'</code>、<code>'b'</code> 和 <code>'c'</code> 组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean isValid(String s) {", "        // 字符数组当栈：top 指向栈顶的下一位", "        char[] st = new char[s.length()];", "        int top = 0;", "        for (int i = 0; i < s.length(); i++) {", "            char c = s.charAt(i);", "            if (c == 'c') {", "                // 凑一个 \"abc\"：栈顶必须是 b、再下面是 a，否则无效", "                if (top < 2 || st[top - 1] != 'b' || st[top - 2] != 'a') return false;", "                top -= 2;", "            } else {", "                st[top++] = c;", "            }", "        }", "        // 读完了还有剩，说明 abc 没凑完", "        return top == 0;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1003. 检查替换后的词是否有效 —— 图解：复刻 Solution.java 的数组栈，c 来了核对栈顶 b、a 再弹掉。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'aabcbc' };
+
+function trace(input) {
+  var s = input.s;
+  var st = [];
+  var frames = [];
+  var CHECK = "if (top < 2 || st[top - 1] != 'b' || st[top - 2] != 'a') return false;";
+  var checkedShown = false, poppedShown = false;
+
+  function sPanel(cur) {
+    var marks = {};
+    for (var i = 0; i < s.length; i++) {
+      if (i < cur) marks[i] = 'dim';
+      else if (i === cur) marks[i] = 'cur';
+    }
+    return Viz.cells(s.split(''), { title: '字符串 s（从左到右读）', marks: marks });
+  }
+  function stPanel(pair) {
+    var marks = {};
+    if (pair != null) { marks[st.length - 1] = 'hit'; marks[st.length - 2] = 'hit'; }
+    return Viz.cells(st.slice(), { title: '栈（右端是栈顶）', marks: marks });
+  }
+  function snap(at, key, cur, pair) {
+    frames.push(Viz.frame(at, key, [sPanel(cur), stPanel(pair)]));
+  }
+
+  snap('char[] st = new char[s.length()];', '开局：a、b 只管压栈，等 c 来核对', -1, null);
+
+  for (var i = 0; i < s.length; i++) {
+    var c = s[i];
+    if (c === 'c') {
+      var ok = st.length >= 2 && st[st.length - 1] === 'b' && st[st.length - 2] === 'a';
+      if (st.length === 3 && !checkedShown) {
+        checkedShown = true;
+        snap(CHECK, '读到 c：栈顶是 b、再下是 a，正好凑一个 "abc"', i, true);
+      }
+      if (!ok) {
+        snap(CHECK, '栈顶不是 b、a（或栈里不足两个）→ 无效', i, st.length >= 2);
+        return { frames: frames, result: false };
+      }
+      st.pop(); st.pop();
+      if (!poppedShown) {
+        poppedShown = true;
+        snap('top -= 2;', '弹掉 b、a：这组 "abc" 消掉，继续读', i, null);
+      }
+    } else {
+      st.push(c);
+    }
+  }
+
+  snap('return top == 0;', st.length === 0 ? '读完且栈空 → 有效' : '栈里还剩 ' + st.length + ' 个字符，"abc" 没凑完 → 无效', -1, null);
+  return { frames: frames, result: st.length === 0 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

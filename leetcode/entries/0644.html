@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>子数组最大平均数 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 954 / 1159</span>
+  <nav class="pn"><a href="1052.html">上一篇</a><a href="1178.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">644. </span>子数组最大平均数 II</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">二分查找</li><li class="aux">前缀和/差分</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">前缀和</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">二分均值 mid：把前缀和减去 mid·下标，判定变成「存在 j−i ≥ k 使 b[j] ≥ b[i]」，b[x] = pre[x] − mid·x。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>均值越大越难达成 → check 关于 mid 单调，可以二分；范围就是 <code>[min, max]</code>，收敛到 1e-6。</li><li>判定转化：均值 ≥ mid ⟺ <code>pre[j] − pre[i] ≥ mid·(j−i)</code> ⟺ <code>b[j] ≥ b[i]</code>，其中 <code>b[x] = pre[x] − mid·x</code>。</li><li>只需找 <code>j − i ≥ k</code> 且 <code>b[j] − b[i] ≥ 0</code>：从左往右扫，维护「i ≤ j−k 范围内的最小 b[i]」，<code>b[0]=0</code> 起步。</li><li>精度：答案误差 ≤ 二分宽度 1e-6 &lt; 题目要求 1e-5；浮点比较不需要额外容差。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log((max−min)/ε))，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">double</span> findMaxAverage(<span class="k">int</span>[] nums, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="k">double</span> lo = <span class="t">Integer</span>.MAX_VALUE, hi = <span class="t">Integer</span>.MIN_VALUE;</span><span class="ln"><span class="no">4</span>        <span class="k">for</span> (<span class="k">int</span> v : nums) { lo = <span class="t">Math</span>.min(lo, v); hi = <span class="t">Math</span>.max(hi, v); }</span><span class="ln"><span class="no">5</span>        <span class="c">// 答案是某个子段均值，必落在 [min, max]；直接二分「均值」本身</span></span><span class="ln"><span class="no">6</span>        <span class="k">while</span> (hi - lo &gt; 1e-<span class="n">6</span>) {</span><span class="ln"><span class="no">7</span>            <span class="k">double</span> mid = (lo + hi) / <span class="n">2</span>;</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (check(nums, k, mid)) lo = mid;   <span class="c">// 存在均值 ≥ mid 的子段 → 答案还能更大</span></span><span class="ln"><span class="no">9</span>            <span class="k">else</span> hi = mid;</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="k">return</span> lo;</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="c">// 是否存在长度 ≥ k 的子段均值 ≥ mid：即存在 j − i ≥ k 使 pre[j] − pre[i] ≥ mid·(j−i)</span></span><span class="ln"><span class="no">15</span>    <span class="k">private</span> <span class="k">boolean</span> check(<span class="k">int</span>[] nums, <span class="k">int</span> k, <span class="k">double</span> mid) {</span><span class="ln"><span class="no">16</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">17</span>        <span class="k">double</span>[] b = <span class="k">new</span> <span class="k">double</span>[n + <span class="n">1</span>];   <span class="c">// b[j] = pre[j] − mid·j，均值比较变成纯减法</span></span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) b[j + <span class="n">1</span>] = b[j] + nums[j] - mid;</span><span class="ln"><span class="no">19</span>        <span class="k">double</span> minB = <span class="n">0</span>;   <span class="c">// i ≤ j−k 范围内见过的最小 b[i]，b[0] = 0 起步</span></span><span class="ln"><span class="no">20</span>        <span class="k">for</span> (<span class="k">int</span> j = k; j &lt;= n; j++) {</span><span class="ln"><span class="no">21</span>            minB = <span class="t">Math</span>.min(minB, b[j - k]);</span><span class="ln"><span class="no">22</span>            <span class="k">if</span> (b[j] - minB &gt;= <span class="n">0</span>) <span class="k">return</span> <span class="k">true</span>;   <span class="c">// 这段 [i, j) 均值 ≥ mid</span></span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public double findMaxAverage(int[] nums, int k) {", "        double lo = Integer.MAX_VALUE, hi = Integer.MIN_VALUE;", "        for (int v : nums) { lo = Math.min(lo, v); hi = Math.max(hi, v); }", "        // 答案是某个子段均值，必落在 [min, max]；直接二分「均值」本身", "        while (hi - lo > 1e-6) {", "            double mid = (lo + hi) / 2;", "            if (check(nums, k, mid)) lo = mid;   // 存在均值 ≥ mid 的子段 → 答案还能更大", "            else hi = mid;", "        }", "        return lo;", "    }", "", "    // 是否存在长度 ≥ k 的子段均值 ≥ mid：即存在 j − i ≥ k 使 pre[j] − pre[i] ≥ mid·(j−i)", "    private boolean check(int[] nums, int k, double mid) {", "        int n = nums.length;", "        double[] b = new double[n + 1];   // b[j] = pre[j] − mid·j，均值比较变成纯减法", "        for (int j = 0; j < n; j++) b[j + 1] = b[j] + nums[j] - mid;", "        double minB = 0;   // i ≤ j−k 范围内见过的最小 b[i]，b[0] = 0 起步", "        for (int j = k; j <= n; j++) {", "            minB = Math.min(minB, b[j - k]);", "            if (b[j] - minB >= 0) return true;   // 这段 [i, j) 均值 ≥ mid", "        }", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 644. 子数组最大平均数 II —— 图解：复刻 Solution.java 的「二分均值 + b[]=前缀和−mid·下标 判定」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 注意：JS 与 Java 逐行同构地跑同一个二分，才能保证 result 和 Java 导出逐位一致（导出时放大 1e4 取整）。
+
+var STORY_INPUT = { nums: [1, 12, -5, -6, 50, 3], k: 4 };
+
+function trace(input) {
+  var nums = input.nums, k = input.k;
+  var n = nums.length;
+  var lo = Infinity, hi = -Infinity;
+  for (var i = 0; i < n; i++) { lo = Math.min(lo, nums[i]); hi = Math.max(hi, nums[i]); }
+  var frames = [];
+  var firstMid = null, firstSuccess = null;
+
+  // 与 Java 的 check 完全同构：minB 用 if 写法，数值上和 Math.min 等价
+  function check(mid) {
+    var b = [0];
+    for (var j = 0; j < n; j++) b.push(b[j] + nums[j] - mid);
+    var minB = 0, argI = 0;
+    for (j = k; j <= n; j++) {
+      if (b[j - k] < minB) { minB = b[j - k]; argI = j - k; }
+      if (b[j] - minB >= 0) {
+        if (firstSuccess === null) firstSuccess = { mid: mid, b: b.slice(), j: j, argI: argI, minB: minB };
+        return true;
+      }
+    }
+    return false;
+  }
+
+  var iter = 0;
+  while (hi - lo > 1e-6) {
+    var mid = (lo + hi) / 2;
+    if (iter === 0) firstMid = { lo: lo, hi: hi, mid: mid };
+    iter++;
+    if (check(mid)) lo = mid;
+    else hi = mid;
+  }
+
+  function fmt(v) {
+    var s = v.toFixed(2);
+    return s === '-0.00' ? '0.00' : s;
+  }
+
+  if (firstMid) {
+    frames.push(Viz.frame('double mid = (lo + hi) / 2;',
+      '猜一个均值 mid：答案一定落在 [min, max] 里，对「均值」本身二分',
+      [Viz.cells(nums, { title: 'nums（子段长度 ≥ k=' + k + '）' })],
+      [{ name: 'lo', v: fmt(firstMid.lo) }, { name: 'hi', v: fmt(firstMid.hi) }, { name: 'mid', v: fmt(firstMid.mid) }]));
+  }
+
+  if (firstSuccess) {
+    var b = firstSuccess.b, j = firstSuccess.j, argI = firstSuccess.argI;
+    var cells = b.map(fmt);
+    var m1 = {};
+    m1[b.length - 1] = 'new';
+    frames.push(Viz.frame('for (int j = 0; j < n; j++) b[j + 1] = b[j] + nums[j] - mid;',
+      'check(' + fmt(firstSuccess.mid) + ')：b[j] = 前缀和 − mid·下标，均值比较变成减法',
+      [Viz.cells(cells, { title: 'b[j] = pre[j] − mid·j（显示保留 2 位）', marks: m1 })],
+      [{ name: 'mid', v: fmt(firstSuccess.mid) }]));
+
+    var m2 = {};
+    m2[j] = 'cur';
+    m2[argI] = 'hit';
+    frames.push(Viz.frame('if (b[j] - minB >= 0) return true;',
+      'b[' + j + ']−b[' + argI + ']=' + fmt(b[j] - firstSuccess.minB) + ' ≥ 0 且 j−i=' + (j - argI) + ' ≥ k：达得到',
+      [Viz.cells(cells, { title: 'b[j] = pre[j] − mid·j', marks: m2,
+        range: { from: argI, to: j, label: 'j − i = ' + (j - argI) } })],
+      [{ name: 'b[' + j + ']', v: fmt(b[j]) }, { name: 'minB（i ≤ j−k）', v: fmt(firstSuccess.minB) },
+       { name: '差值', v: fmt(b[j] - firstSuccess.minB) }]));
+  }
+
+  frames.push(Viz.frame('return lo;',
+    '二分收敛：lo 就是最大平均数 ≈ ' + fmt(lo),
+    [Viz.vars([{ name: 'lo', v: fmt(lo) }, { name: 'hi', v: fmt(hi) },
+      { name: '放大 1e4 取整', v: String(Math.floor(lo * 10000 + 0.5)) }])]));
+
+  return { frames: frames, result: Math.floor(lo * 10000 + 0.5) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

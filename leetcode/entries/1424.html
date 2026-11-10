@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>对角线遍历 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 485 / 1159</span>
+  <nav class="pn"><a href="mianshi-08-02.html">上一篇</a><a href="0027.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1424. </span>对角线遍历 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">模拟</li><li class="tag">数组</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">同一条对角线 r+c 相同：按 r+c 分桶（行号递增扫入，桶内自然升序），再按编号依次倒出。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>从右上到左下的对角线上，行号 <code>r</code> 递增；同一对角线共享 <code>r + c</code>。</li><li>按行扫描，把每个值放进 <code>r + c</code> 号桶：行号递增扫入，桶内天然就是输出顺序。</li><li>桶数组里可能有空桶（锯齿矩阵短行够不着某条对角线），倒出时空桶自动跳过。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(元素总数)，空间复杂度 O(元素总数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] findDiagonalOrder(<span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; nums) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 同一条对角线的 r+c 相同：按 s = r+c 分桶</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; groups = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> total = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="c">// 行号从大到小扫入：桶内天然「从下往上」，与题面要求一致</span></span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> r = nums.size() - <span class="n">1</span>; r &gt;= <span class="n">0</span>; r--) {</span><span class="ln"><span class="no">10</span>            <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; row = nums.get(r);</span><span class="ln"><span class="no">11</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; row.size(); c++) {</span><span class="ln"><span class="no">12</span>                <span class="k">while</span> (groups.size() &lt;= r + c) groups.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;());</span><span class="ln"><span class="no">13</span>                groups.get(r + c).add(row.get(c));</span><span class="ln"><span class="no">14</span>                total++;</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">int</span>[] out = <span class="k">new</span> <span class="k">int</span>[total];</span><span class="ln"><span class="no">18</span>        <span class="k">int</span> k = <span class="n">0</span>;</span><span class="ln"><span class="no">19</span>        <span class="c">// 对角线编号 s 从小到大，依次倒出每个桶；锯齿够不着的空桶自动跳过</span></span><span class="ln"><span class="no">20</span>        <span class="k">for</span> (<span class="t">List</span>&lt;<span class="t">Integer</span>&gt; g : groups) {</span><span class="ln"><span class="no">21</span>            <span class="k">for</span> (<span class="k">int</span> v : g) out[k++] = v;</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个列表&nbsp;<code>nums</code>&nbsp;，里面每一个元素都是一个整数列表。请你依照下面各图的规则，按顺序返回&nbsp;<code>nums</code>&nbsp;中对角线上的整数。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/64a737e5eb17.png" style="height: 143px; width: 158px;"></strong></p>
+
+<pre><strong>输入：</strong>nums = [[1,2,3],[4,5,6],[7,8,9]]
+<strong>输出：</strong>[1,4,2,7,5,3,8,6,9]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/59b62b900511.png" style="height: 177px; width: 230px;"></strong></p>
+
+<pre><strong>输入：</strong>nums = [[1,2,3,4,5],[6,7],[8],[9,10,11],[12,13,14,15,16]]
+<strong>输出：</strong>[1,6,2,8,7,3,9,4,12,10,5,13,11,14,15,16]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>nums = [[1,2,3],[4],[5,6,7],[8],[9,10,11]]
+<strong>输出：</strong>[1,4,2,5,3,8,6,9,7,10,11]
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre><strong>输入：</strong>nums = [[1,2,3,4,5,6]]
+<strong>输出：</strong>[1,2,3,4,5,6]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 10^5</code></li>
+	<li><code>1 &lt;= nums[i].length &lt;=&nbsp;10^5</code></li>
+	<li><code>1 &lt;= nums[i][j] &lt;= 10^9</code></li>
+	<li><code>nums</code>&nbsp;中最多有&nbsp;<code>10^5</code>&nbsp;个数字。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] findDiagonalOrder(List<List<Integer>> nums) {", "        // 同一条对角线的 r+c 相同：按 s = r+c 分桶", "        List<List<Integer>> groups = new ArrayList<>();", "        int total = 0;", "        // 行号从大到小扫入：桶内天然「从下往上」，与题面要求一致", "        for (int r = nums.size() - 1; r >= 0; r--) {", "            List<Integer> row = nums.get(r);", "            for (int c = 0; c < row.size(); c++) {", "                while (groups.size() <= r + c) groups.add(new ArrayList<>());", "                groups.get(r + c).add(row.get(c));", "                total++;", "            }", "        }", "        int[] out = new int[total];", "        int k = 0;", "        // 对角线编号 s 从小到大，依次倒出每个桶；锯齿够不着的空桶自动跳过", "        for (List<Integer> g : groups) {", "            for (int v : g) out[k++] = v;", "        }", "        return out;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1424. 对角线遍历 II —— 图解：复刻 Solution.java 的「按 r+c 分桶再倒出」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [[1, 2, 3], [4], [5, 6, 7], [8], [9, 10, 11]] };
+
+function trace(input) {
+  var nums = input.nums;
+  var m = nums.length;
+  var maxLen = 0, r, c, i, j;
+  for (r = 0; r < m; r++) maxLen = Math.max(maxLen, nums[r].length);
+
+  // 每条对角线 s 的格子总数：判断「凑齐」用
+  var diagSize = {};
+  for (r = 0; r < m; r++) for (c = 0; c < nums[r].length; c++) diagSize[r + c] = (diagSize[r + c] || 0) + 1;
+
+  var groups = [];
+  var diagCount = {};
+  var out = [];
+  var frames = [];
+  var fired = { group1: false, group2: false, pour1: false, pour2: false };
+
+  var ADD = 'groups.get(r + c).add(row.get(c));';
+  var POUR = 'for (int v : g) out[k++] = v;';
+  var DONE = 'return out;';
+
+  function gridPanel(curS, freshRC) {
+    // 用局部变量，避免覆写外层扫描循环正在用的 r/c
+    var marks = {};
+    for (var gr = 0; gr < m; gr++) {
+      for (var gc = 0; gc < nums[gr].length; gc++) {
+        var s = gr + gc;
+        if (curS == null) marks[gr + ',' + gc] = 'done';
+        else if (s === curS) marks[gr + ',' + gc] = 'cur';
+        else if (s < curS) marks[gr + ',' + gc] = 'done';
+      }
+    }
+    if (freshRC) marks[freshRC[0] + ',' + freshRC[1]] = 'new';
+    var rows = [], rowLabels = [], colLabels = [];
+    for (var ir = 0; ir < m; ir++) {
+      var row = [];
+      for (var jc = 0; jc < maxLen; jc++) row.push(jc < nums[ir].length ? nums[ir][jc] : '');
+      rows.push(row);
+      rowLabels.push(String(ir));
+    }
+    for (var ic = 0; ic < maxLen; ic++) colLabels.push(String(ic));
+    return Viz.grid(rows, { title: 'nums（同一条对角线 r+c 相同）', marks: marks, rowLabels: rowLabels, colLabels: colLabels, corner: 'r＼c' });
+  }
+
+  function outPanel(allDone) {
+    var marks = {};
+    for (var t = 0; t < out.length - 1; t++) marks[t] = 'done';
+    if (out.length && !allDone) marks[out.length - 1] = 'new';
+    if (allDone) for (var t2 = 0; t2 < out.length; t2++) marks[t2] = 'done';
+    return Viz.cells(out, { title: 'out：输出顺序' , marks: marks });
+  }
+
+  // 分组：行号从大到小扫入，桶内天然「从下往上」
+  for (r = m - 1; r >= 0; r--) {
+    for (c = 0; c < nums[r].length; c++) {
+      var s = r + c;
+      while (groups.length <= s) groups.push([]);
+      groups[s].push(nums[r][c]);
+      diagCount[s] = (diagCount[s] || 0) + 1;
+      var full = diagCount[s] === diagSize[s];
+      if (full && !fired.group1 && diagSize[s] >= 2) {
+        fired.group1 = true;
+        frames.push(Viz.frame(ADD, '对角线 s=' + s + ' 凑齐：行号大的先进桶，组内天然从下往上',
+          [gridPanel(s), outPanel()]));
+      }
+      if (full && !fired.group2 && diagSize[s] < Math.min(s + 1, m)) {
+        fired.group2 = true;
+        frames.push(Viz.frame(ADD, '对角线 s=' + s + ' 只有 ' + diagSize[s] + ' 格：短行够不着它，位置就是空的',
+          [gridPanel(s), outPanel()]));
+      }
+    }
+  }
+
+  // 倒桶：对角线编号从小到大
+  for (var gi = 0; gi < groups.length; gi++) {
+    for (var p = 0; p < groups[gi].length; p++) {
+      var v = groups[gi][p];
+      out.push(v);
+      if (!fired.pour1 && gi === 0 && p === groups[0].length - 1) {
+        fired.pour1 = true;
+        frames.push(Viz.frame(POUR, '开始倒桶：s=0 只有 (0,0) 的 ' + v + '，先进 out',
+          [gridPanel(gi), outPanel()]));
+      }
+      if (!fired.pour2 && gi === 2 && p === groups[2].length - 1) {
+        fired.pour2 = true;
+        frames.push(Viz.frame(POUR, 's=2 的桶按行号从小到大倒出：' + groups[2].join('、'),
+          [gridPanel(gi), outPanel()]));
+      }
+    }
+  }
+
+  frames.push(Viz.frame(DONE, '全部倒完：对角线一条接一条，正好是要求的顺序',
+    [gridPanel(null), outPanel(true)]));
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

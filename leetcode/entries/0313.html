@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>超级丑数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 703 / 1159</span>
+  <nav class="pn"><a href="1668.html">上一篇</a><a href="0397.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">313. </span>超级丑数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">动态规划</li><li class="aux">双指针</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">多指针 DP：每个质数一个指针，指着「下一个要乘的丑数」；每轮取最小候选入表，撞车的指针一起前进防重复。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp</code> 顺序生成超级丑数；<code>ptr[j]</code> 记质数 <code>primes[j]</code> 该乘 <code>dp</code> 里的第几个，候选 = <code>primes[j] × dp[ptr[j]]</code>。</li><li>每轮扫一遍候选取最小入 <code>dp</code>，再把<strong>所有</strong>等于最小值的指针一起前移——否则 <code>6 = 2×3 = 3×2</code> 会进表两次。</li><li>候选用 <code>long</code> 存：<code>dp</code> 最大到 <code>2^31</code> 附近时，<code>primes[j] × dp[ptr]</code> 会先溢出 <code>int</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n × m)，空间复杂度 O(n + m)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> nthSuperUglyNumber(<span class="k">int</span> n, <span class="k">int</span>[] primes) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = primes.length;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[n];       <span class="c">// dp[i]：第 i+1 个超级丑数，dp[0] = 1</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] ptr = <span class="k">new</span> <span class="k">int</span>[m];      <span class="c">// 每个质数下一步乘 dp 的第几个</span></span><span class="ln"><span class="no">6</span>        <span class="k">long</span>[] cand = <span class="k">new</span> <span class="k">long</span>[m];   <span class="c">// 每个质数的候选值，用 long 防乘法溢出</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; m; j++) cand[j] = primes[j];</span><span class="ln"><span class="no">8</span>        dp[<span class="n">0</span>] = <span class="n">1</span>;                   <span class="c">// 1 不含质因数，也算超级丑数</span></span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">10</span>            <span class="k">long</span> min = <span class="t">Long</span>.MAX_VALUE;</span><span class="ln"><span class="no">11</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; m; j++) min = <span class="t">Math</span>.min(min, cand[j]);</span><span class="ln"><span class="no">12</span>            dp[i] = (<span class="k">int</span>) min;</span><span class="ln"><span class="no">13</span>            <span class="c">// 所有撞上同一个最小值的指针一起前进，同一个数才不会生成两次</span></span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; m; j++) {</span><span class="ln"><span class="no">15</span>                <span class="k">if</span> (cand[j] == min) {</span><span class="ln"><span class="no">16</span>                    ptr[j]++;</span><span class="ln"><span class="no">17</span>                    cand[j] = (<span class="k">long</span>) primes[j] * dp[ptr[j]];</span><span class="ln"><span class="no">18</span>                }</span><span class="ln"><span class="no">19</span>            }</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> dp[n - <span class="n">1</span>];</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p><strong>超级丑数</strong> 是一个正整数，并满足其所有质因数都出现在质数数组 <code>primes</code> 中。</p>
+
+<p>给你一个整数 <code>n</code> 和一个整数数组 <code>primes</code> ，返回第 <code>n</code> 个 <strong>超级丑数</strong> 。</p>
+
+<p>题目数据保证第 <code>n</code> 个 <strong>超级丑数</strong> 在 <strong>32-bit</strong> 带符号整数范围内。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 12, <code>primes</code> = <code>[2,7,13,19]</code>
+<strong>输出：</strong>32 
+<strong>解释：</strong>给定长度为 4 的质数数组 primes = [2,7,13,19]，前 12 个超级丑数序列为：[1,2,4,7,8,13,14,16,19,26,28,32] 。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 1, primes = [2,3,5]
+<strong>输出：</strong>1
+<strong>解释：</strong>1 不含质因数，因此它的所有质因数都在质数数组 primes = [2,3,5] 中。
+</pre>
+&nbsp;
+
+<div class="top-view__1vxA">
+<div class="original__bRMd">
+<div>
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 10<sup>5</sup></code></li>
+	<li><code>1 &lt;= primes.length &lt;= 100</code></li>
+	<li><code>2 &lt;= primes[i] &lt;= 1000</code></li>
+	<li>题目数据<strong> 保证</strong> <code>primes[i]</code> 是一个质数</li>
+	<li><code>primes</code> 中的所有值都 <strong>互不相同</strong> ，且按 <strong>递增顺序</strong> 排列</li>
+</ul>
+</div>
+</div>
+</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int nthSuperUglyNumber(int n, int[] primes) {", "        int m = primes.length;", "        int[] dp = new int[n];       // dp[i]：第 i+1 个超级丑数，dp[0] = 1", "        int[] ptr = new int[m];      // 每个质数下一步乘 dp 的第几个", "        long[] cand = new long[m];   // 每个质数的候选值，用 long 防乘法溢出", "        for (int j = 0; j < m; j++) cand[j] = primes[j];", "        dp[0] = 1;                   // 1 不含质因数，也算超级丑数", "        for (int i = 1; i < n; i++) {", "            long min = Long.MAX_VALUE;", "            for (int j = 0; j < m; j++) min = Math.min(min, cand[j]);", "            dp[i] = (int) min;", "            // 所有撞上同一个最小值的指针一起前进，同一个数才不会生成两次", "            for (int j = 0; j < m; j++) {", "                if (cand[j] == min) {", "                    ptr[j]++;", "                    cand[j] = (long) primes[j] * dp[ptr[j]];", "                }", "            }", "        }", "        return dp[n - 1];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 313. 超级丑数 —— 图解：多指针 DP，候选取最小入表、撞车一起前进，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 6, primes: [2, 3, 5] };
+
+function trace(input) {
+  var n = input.n, primes = input.primes;
+  var m = primes.length;
+  var dp = [1];
+  var ptr = [], cand = [];
+  var j;
+  for (j = 0; j < m; j++) { ptr.push(0); cand.push(primes[j]); }
+  var frames = [];
+  var didDouble = false;
+
+  var FILL = 'dp[i] = (int) min;';
+  var ADV = 'cand[j] = (long) primes[j] * dp[ptr[j]];';
+  var HIT = 'if (cand[j] == min) {';
+
+  function dpPanel() {
+    var marks = {};
+    marks[dp.length - 1] = 'new';
+    return Viz.cells(dp, { title: 'dp：已生成的超级丑数', marks: marks });
+  }
+  // hit：这一轮候选撞上最小值的质数（即将前进）
+  function tablePanel(hit) {
+    var rows = [];
+    for (j = 0; j < m; j++) {
+      rows.push({ k: '×' + primes[j], v: 'ptr=' + ptr[j] + '，候选 ' + cand[j], cls: hit && hit[j] ? 'hit' : '' });
+    }
+    return Viz.table('每个质数的指针与候选', rows, { hint: '候选 = 质数 × dp[ptr]' });
+  }
+
+  frames.push(Viz.frame('dp[0] = 1;',
+    'dp[0]=1 起步：每个质数的候选先是它乘 1',
+    [dpPanel(), tablePanel(null)]));
+
+  for (var i = 1; i < n; i++) {
+    var min = cand[0];
+    for (j = 1; j < m; j++) if (cand[j] < min) min = cand[j];
+    var hits = [], hitsCount = 0;
+    for (j = 0; j < m; j++) { hits[j] = cand[j] === min; if (hits[j]) hitsCount++; }
+    dp.push(min);
+    if (i === 1) frames.push(Viz.frame(FILL,
+      '最小候选 ' + min + ' 入表，命中它的指针要前进',
+      [dpPanel(), tablePanel(hits)]));
+    if (i === 3 && hitsCount === 1) frames.push(Viz.frame(ADV,
+      '常规一轮：' + min + ' 入表，命中的指针前移一格',
+      [dpPanel(), tablePanel(hits)]));
+    if (hitsCount >= 2 && !didDouble) {
+      didDouble = true;
+      frames.push(Viz.frame(HIT,
+        '多个候选撞车（都是 ' + min + '）：一起前进，' + min + ' 只进一次表',
+        [dpPanel(), tablePanel(hits)]));
+    }
+    for (j = 0; j < m; j++) {
+      if (cand[j] === min) {
+        ptr[j]++;
+        cand[j] = primes[j] * dp[ptr[j]];
+      }
+    }
+  }
+
+  var doneMarks = {};
+  for (j = 0; j < dp.length; j++) doneMarks[j] = 'done';
+  frames.push(Viz.frame('return dp[n - 1];',
+    '凑够 ' + n + ' 个：第 ' + n + ' 个超级丑数是 ' + dp[n - 1],
+    [Viz.cells(dp, { title: 'dp：已生成的超级丑数', marks: doneMarks }), tablePanel(null)]));
+
+  return { frames: frames, result: dp[n - 1] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最大二叉搜索子树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 824 / 1159</span>
+  <nav class="pn"><a href="0770.html">上一篇</a><a href="0990.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">333. </span>最大二叉搜索子树</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">动态规划</li><li class="aux">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉搜索树</li><li class="tag">动态规划</li><li class="tag">二叉树</li><li class="tag">dp-on-trees</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">后序递归返回四元组 (是否BST, 结点数, 子树min, 子树max)，空树当作合法 BST，合法就合并刷新答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>空树返回 <code>(1, 0, +∞, −∞)</code>：天然合法、min/max 是哨兵，方便合并。</li><li>结点合法条件：左右都返回 <code>是 BST</code>，且 <code>val &gt; 左子树max</code>、<code>val &lt; 右子树min</code>（严格，重复值不算 BST）。</li><li>合法 → 大小 = 左右大小 + 1，刷新答案；min/max 取 <code>min(左min, val)</code>、<code>max(右max, val)</code>。</li><li>不合法 → 上传 <code>(0, …)</code>，父结点看到 0 就永远合并不上，天然把「最大 BST 只能是完整子树」切断。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> largestBSTSubtree(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">5</span>        ans = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        dfs(root);</span><span class="ln"><span class="no">7</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="c">// 返回 {是否 BST(1/0), 结点数, 子树最小值, 子树最大值}；空树视作合法 BST：大小 0、min=+∞、max=−∞</span></span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">long</span>[] dfs(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="k">new</span> <span class="k">long</span>[]{<span class="n">1</span>, <span class="n">0</span>, <span class="t">Long</span>.MAX_VALUE, <span class="t">Long</span>.MIN_VALUE};</span><span class="ln"><span class="no">13</span>        <span class="k">long</span>[] L = dfs(node.left), R = dfs(node.right);</span><span class="ln"><span class="no">14</span>        <span class="c">// 左右都是 BST，且当前值严格大于左子树最大、小于右子树最小，合起来才是 BST</span></span><span class="ln"><span class="no">15</span>        <span class="k">if</span> (L[<span class="n">0</span>] == <span class="n">1</span> &amp;&amp; R[<span class="n">0</span>] == <span class="n">1</span> &amp;&amp; node.val &gt; L[<span class="n">3</span>] &amp;&amp; node.val &lt; R[<span class="n">2</span>]) {</span><span class="ln"><span class="no">16</span>            <span class="k">int</span> size = (<span class="k">int</span>) (L[<span class="n">1</span>] + R[<span class="n">1</span>] + <span class="n">1</span>);</span><span class="ln"><span class="no">17</span>            ans = <span class="t">Math</span>.max(ans, size);</span><span class="ln"><span class="no">18</span>            <span class="c">// 左子树非空时 min 就是 L[2]；右子树非空时 max 就是 R[3]</span></span><span class="ln"><span class="no">19</span>            <span class="k">return</span> <span class="k">new</span> <span class="k">long</span>[]{<span class="n">1</span>, size, <span class="t">Math</span>.min(L[<span class="n">2</span>], node.val), <span class="t">Math</span>.max(R[<span class="n">3</span>], node.val)};</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="c">// 不是 BST：往上传一个永远合并不上的标记</span></span><span class="ln"><span class="no">22</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">long</span>[]{<span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>};</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private int ans = 0;", "", "    public int largestBSTSubtree(TreeNode root) {", "        ans = 0;", "        dfs(root);", "        return ans;", "    }", "", "    // 返回 {是否 BST(1/0), 结点数, 子树最小值, 子树最大值}；空树视作合法 BST：大小 0、min=+∞、max=−∞", "    private long[] dfs(TreeNode node) {", "        if (node == null) return new long[]{1, 0, Long.MAX_VALUE, Long.MIN_VALUE};", "        long[] L = dfs(node.left), R = dfs(node.right);", "        // 左右都是 BST，且当前值严格大于左子树最大、小于右子树最小，合起来才是 BST", "        if (L[0] == 1 && R[0] == 1 && node.val > L[3] && node.val < R[2]) {", "            int size = (int) (L[1] + R[1] + 1);", "            ans = Math.max(ans, size);", "            // 左子树非空时 min 就是 L[2]；右子树非空时 max 就是 R[3]", "            return new long[]{1, size, Math.min(L[2], node.val), Math.max(R[3], node.val)};", "        }", "        // 不是 BST：往上传一个永远合并不上的标记", "        return new long[]{0, 0, 0, 0};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 333. 最大 BST 子树 —— 图解：复刻 Solution.java 的后序四元组递归，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [10, 5, 15, 1, 8, null, 7] };
+
+function trace(input) {
+  var frames = [];
+  var fired = { first: false, merge: false, reject: false };
+
+  // 力扣层序数组 -> 结点；idx 是结点在数组里的下标
+  function build(arr) {
+    if (!arr.length || arr[0] === null) return null;
+    var root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var n = q.shift();
+      if (i < arr.length) { if (arr[i] !== null) { n.left = { idx: i, val: arr[i], left: null, right: null }; q.push(n.left); } i++; }
+      if (i < arr.length) { if (arr[i] !== null) { n.right = { idx: i, val: arr[i], left: null, right: null }; q.push(n.right); } i++; }
+    }
+    return root;
+  }
+  var root = build(input.root);
+  var allIdx = [];
+  (function collect(n) { if (n) { allIdx.push(n.idx); collect(n.left); collect(n.right); } })(root);
+  var subIdx = function (n) {   // 以 n 为根的子树里所有结点下标
+    var out = [];
+    (function go(x) { if (x) { out.push(x.idx); go(x.left); go(x.right); } })(n);
+    return out;
+  };
+
+  function panel(marks, labels, title) {
+    return Viz.tree(input.root, { title: title || '树：后序递归，四元组（是 BST？，大小，min，max）往上传', marks: marks || {}, labels: labels || [] });
+  }
+  function sizeLabels(map) {
+    var labels = [];
+    Object.keys(map).forEach(function (k) { labels.push({ at: Number(k), label: map[k], cls: 'p-next' }); });
+    return labels;
+  }
+
+  var ans = 0, bestNode = null;
+  function dfs(node) {
+    if (node === null) return [1, 0, Infinity, -Infinity];   // 空树：合法 BST，大小 0
+    var L = dfs(node.left), R = dfs(node.right);
+    if (!fired.first) {
+      fired.first = true;
+      var m = {};
+      m[node.idx] = 'cur';
+      frames.push(Viz.frame('long[] L = dfs(node.left), R = dfs(node.right);',
+        '后序递归：左右子树的四元组先算完回来，当前轮到结点 ' + node.val,
+        [panel(m, [], '树：先算叶子，再合父结点')]));
+    }
+    if (L[0] === 1 && R[0] === 1 && node.val > L[3] && node.val < R[2]) {
+      var size = L[1] + R[1] + 1;
+      if (size > ans) { ans = size; bestNode = node; }
+      if (!fired.merge && size >= 2) {
+        fired.merge = true;
+        var mk = {}, lb = {};
+        subIdx(node).forEach(function (i) { mk[i] = 'win'; });
+        mk[node.idx] = 'cur';
+        lb[node.idx] = '共' + size + '结点';
+        frames.push(Viz.frame('ans = Math.max(ans, size);',
+          node.val + ' 的左右都是 BST 且 ' + L[3] + ' < ' + node.val + ' < ' + R[2] + '：合并成 ' + size + ' 个结点，刷新答案',
+          [panel(mk, sizeLabels(lb), '树：蓝色 = 这个子树是合法 BST'), Viz.vars([{ name: 'ans', v: ans, cls: 'chg' }])]));
+      }
+      // 左右子树非空时，min/max 直接继承孩子的
+      return [1, size, Math.min(L[2], node.val), Math.max(R[3], node.val)];
+    }
+    if (!fired.reject) {
+      fired.reject = true;
+      var mk2 = {};
+      subIdx(node).forEach(function (i) { mk2[i] = 'bad'; });
+      frames.push(Viz.frame('return new long[]{0, 0, 0, 0};',
+        '以 ' + node.val + ' 为根不是 BST：上传 (0,0,0,0)，父结点没法再合并它',
+        [panel(mk2, [], '树：红色子树不是 BST')]));
+    }
+    return [0, 0, 0, 0];
+  }
+
+  dfs(root);
+
+  var done = {}, lb2 = {};
+  allIdx.forEach(function (i) { done[i] = 'dim'; });
+  if (bestNode) {
+    subIdx(bestNode).forEach(function (i) { done[i] = 'done'; });
+    lb2[bestNode.idx] = '答案：' + ans + ' 结点';
+  }
+  frames.push(Viz.frame('return ans;',
+    ans === 0 ? '整棵树没有合法 BST 子树：返回 0' : '全树扫完：最大 BST 子树共 ' + ans + ' 个结点',
+    [panel(done, sizeLabels(lb2), '树：绿色 = 答案子树'), Viz.vars([{ name: 'ans', v: ans, cls: 'done' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

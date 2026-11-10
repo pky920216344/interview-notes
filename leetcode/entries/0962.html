@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最大宽度坡 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1006 / 1159</span>
+  <nav class="pn"><a href="0860.html">上一篇</a><a href="1022.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">962. </span>最大宽度坡</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">单调栈</li><li class="tag">栈</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">单调递减栈存候选左端点；从右往左扫，栈顶值 ≤ 当前值就配成一对坡并弹栈，宽度 j−i 取最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>从左往右建栈：只把「比栈顶还小」的下标压栈——更大的值当左端点只会更窄，不必记。</li><li>从右往左扫 <code>j</code>：j 越靠右宽度越大，所以栈顶（最早的下标、最小的值）一旦 ≤ <code>nums[j]</code> 就能配出它这辈子最宽的坡，放心弹出。</li><li>栈空或配不上就继续左移 <code>j</code>；全程取最大宽度。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> maxWidthRamp(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 栈里存「候选左端点」下标：从底到顶值严格递减（比栈顶大的不可能是更优左端点）</span></span><span class="ln"><span class="no">6</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; nums.length; i++)</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (stack.isEmpty() || nums[i] &lt; nums[stack.peek()]) stack.push(i);</span><span class="ln"><span class="no">9</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="c">// 从右往左：j 越早遇到，宽度越大；栈顶值 ≤ nums[j] 就配成一对坡并弹掉</span></span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> j = nums.length - <span class="n">1</span>; j &gt;= <span class="n">0</span>; j--)</span><span class="ln"><span class="no">12</span>            <span class="k">while</span> (!stack.isEmpty() &amp;&amp; nums[stack.peek()] &lt;= nums[j])</span><span class="ln"><span class="no">13</span>                ans = <span class="t">Math</span>.max(ans, j - stack.pop());</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个整数数组&nbsp;<code>A</code>，<em>坡</em>是元组&nbsp;<code>(i, j)</code>，其中&nbsp;&nbsp;<code>i &lt; j</code>&nbsp;且&nbsp;<code>A[i] &lt;= A[j]</code>。这样的坡的宽度为&nbsp;<code>j - i</code>。</p>
+
+<p>找出&nbsp;<code>A</code>&nbsp;中的坡的最大宽度，如果不存在，返回 0 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>[6,0,8,2,1,5]
+<strong>输出：</strong>4
+<strong>解释：</strong>
+最大宽度的坡为 (i, j) = (1, 5): A[1] = 0 且 A[5] = 5.
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>[9,8,1,0,1,9,4,0,4,1]
+<strong>输出：</strong>7
+<strong>解释：</strong>
+最大宽度的坡为 (i, j) = (2, 9): A[2] = 1 且 A[9] = 1.
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ol>
+	<li><code>2 &lt;= A.length &lt;= 50000</code></li>
+	<li><code>0 &lt;= A[i] &lt;= 50000</code></li>
+</ol>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int maxWidthRamp(int[] nums) {", "        // 栈里存「候选左端点」下标：从底到顶值严格递减（比栈顶大的不可能是更优左端点）", "        Deque<Integer> stack = new ArrayDeque<>();", "        for (int i = 0; i < nums.length; i++)", "            if (stack.isEmpty() || nums[i] < nums[stack.peek()]) stack.push(i);", "        int ans = 0;", "        // 从右往左：j 越早遇到，宽度越大；栈顶值 ≤ nums[j] 就配成一对坡并弹掉", "        for (int j = nums.length - 1; j >= 0; j--)", "            while (!stack.isEmpty() && nums[stack.peek()] <= nums[j])", "                ans = Math.max(ans, j - stack.pop());", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 962. 最大宽度坡 —— 图解：复刻 Solution.java 的单调栈，在 4 个关键时刻拍快照。
+// 上面板是数组（青 = 还在栈里的候选左端点，灰 = 已弹出，黄 = 当前的 j），下面板是栈本身。
+
+var STORY_INPUT = { nums: [6, 0, 8, 2, 1, 5] };
+
+function trace(input) {
+  var nums = input.nums;
+  var n = nums.length;
+  var frames = [];
+  var stack = [];       // 存下标，从底到顶值严格递减
+  var popped = {};      // 已弹出（确认过最优配对）的下标
+  var ans = 0;
+
+  var PUSH = 'if (stack.isEmpty() || nums[i] < nums[stack.peek()]) stack.push(i);';
+  var POP = 'ans = Math.max(ans, j - stack.pop());';
+  var RET = 'return ans;';
+
+  function numsPanel(marks, ptrs) {
+    return Viz.cells(nums, { title: 'nums', marks: marks || {}, pointers: ptrs || [] });
+  }
+  function stackPanel() {
+    var vals = stack.map(function (i) { return i + ':' + nums[i]; });
+    var ptrs = stack.length ? [{ at: stack.length - 1, label: '栈顶', cls: 'p-tail' }] : [];
+    return Viz.cells(vals, { title: '栈（候选左端点下标:值，顶在上越小）', marks: stack.length ? (function () { var m = {}; m[stack.length - 1] = 'cur'; return m; })() : {}, pointers: ptrs, hideIndex: true });
+  }
+  function varsPanel() { return Viz.vars([{ name: 'ans（最大宽度）', v: ans }]); }
+  function snap(at, key, marks, ptrs) { frames.push(Viz.frame(at, key, [numsPanel(marks, ptrs), stackPanel(), varsPanel()])); }
+
+  // 1) 从左往右建栈
+  for (var i = 0; i < n; i++)
+    if (!stack.length || nums[i] < nums[stack[stack.length - 1]]) stack.push(i);
+  if (n) snap(PUSH, '先建栈：只存「比左边都小」的下标当候选左端点', (function () { var m = {}; stack.forEach(function (x) { m[x] = 'win'; }); return m; })());
+
+  // 2) 从右往左配对
+  var pops = 0, bestL = -1, bestR = -1;
+  for (var j = n - 1; j >= 0; j--) {
+    while (stack.length && nums[stack[stack.length - 1]] <= nums[j]) {
+      var left = stack.pop();
+      popped[left] = true;
+      if (j - left > ans) { ans = j - left; bestL = left; bestR = j; }
+      pops++;
+      if (pops <= 2) {
+        var m = {};
+        m[j] = 'cur';
+        stack.forEach(function (x) { m[x] = 'win'; });
+        Object.keys(popped).forEach(function (x) { m[x] = 'dim'; });
+        snap(POP, 'j=' + j + '：栈顶 ' + left + ' 的值 ≤ nums[j]，配成坡，宽 ' + (j - left), m, [{ at: j, label: 'j', cls: 'p-right' }]);
+      }
+    }
+  }
+
+  // 3) 结果
+  var m2 = {};
+  Object.keys(popped).forEach(function (x) { m2[x] = 'dim'; });
+  if (ans > 0) { m2[bestL] = 'done'; m2[bestR] = 'done'; }
+  if (n) snap(RET, ans > 0 ? '扫完：最宽的坡是 (' + bestL + ',' + bestR + ')，宽 ' + ans : '扫完：没有坡，宽度 0', m2, []);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

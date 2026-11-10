@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>图像重叠 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1079 / 1159</span>
+  <nav class="pn"><a href="0768.html">上一篇</a><a href="0555.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">835. </span>图像重叠</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">模拟</li><li class="aux">位运算</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">枚举 img1 的每个平移量 (dx, dy)，数重叠加大的那个；每行压成 long，位移+按位与一次算一行。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>平移把 1 移出边界就丢弃，所以平移量只需取 <code>−(n−1) … n−1</code>，共 <code>(2n−1)²</code> 种。</li><li><code>dx ≥ 0</code> 左移 <code>&lt;&lt; dx</code>、<code>dx &lt; 0</code> 右移，把 img1 的第 <code>R−dy</code> 行对齐到 img2 的第 <code>R</code> 行，<code>bitCount(与)</code> 就是该行重叠数。</li><li>行区间 <code>[max(dy,0), min(n+dy,n))</code> 天然跳过出界行，不用单独清零。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n³)（位运算加速到 ~n²/64 每平移），空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> largestOverlap(<span class="k">int</span>[][] img1, <span class="k">int</span>[][] img2) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = img1.length;</span><span class="ln"><span class="no">4</span>        <span class="c">// 每行压成一个 long：第 j 位就是第 j 列，位移 + 按位与一次算一整行</span></span><span class="ln"><span class="no">5</span>        <span class="k">long</span>[] a = <span class="k">new</span> <span class="k">long</span>[n], b = <span class="k">new</span> <span class="k">long</span>[n];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++)</span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">8</span>                <span class="k">if</span> (img1[i][j] == <span class="n">1</span>) a[i] |= <span class="n">1L</span> &lt;&lt; j;</span><span class="ln"><span class="no">9</span>                <span class="k">if</span> (img2[i][j] == <span class="n">1</span>) b[i] |= <span class="n">1L</span> &lt;&lt; j;</span><span class="ln"><span class="no">10</span>            }</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">12</span>        <span class="c">// 枚举 img1 的平移量 (dx, dy)：dx 向右为正，dy 向下为正</span></span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> dy = <span class="n">1</span> - n; dy &lt; n; dy++)</span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> dx = <span class="n">1</span> - n; dx &lt; n; dx++) {</span><span class="ln"><span class="no">15</span>                <span class="k">int</span> cnt = <span class="n">0</span>;</span><span class="ln"><span class="no">16</span>                <span class="c">// img1 的第 R−dy 行压上 img2 的第 R 行，出界的行自动跳过</span></span><span class="ln"><span class="no">17</span>                <span class="k">for</span> (<span class="k">int</span> R = <span class="t">Math</span>.max(dy, <span class="n">0</span>); R &lt; <span class="t">Math</span>.min(n + dy, n); R++) {</span><span class="ln"><span class="no">18</span>                    <span class="k">long</span> ra = dx &gt;= <span class="n">0</span> ? a[R - dy] &lt;&lt; dx : a[R - dy] &gt;&gt; -dx;</span><span class="ln"><span class="no">19</span>                    cnt += <span class="t">Long</span>.bitCount(ra &amp; b[R]);</span><span class="ln"><span class="no">20</span>                }</span><span class="ln"><span class="no">21</span>                ans = <span class="t">Math</span>.max(ans, cnt);</span><span class="ln"><span class="no">22</span>            }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你两个图像 <code>img1</code> 和 <code>img2</code> ，两个图像的大小都是 <code>n x n</code> ，用大小相同的二进制正方形矩阵表示。二进制矩阵仅由若干 <code>0</code> 和若干 <code>1</code> 组成。</p>
+
+<p><strong>转换</strong> 其中一个图像，将所有的 <code>1</code> 向左，右，上，或下滑动任何数量的单位；然后把它放在另一个图像的上面。该转换的 <strong>重叠</strong> 是指两个图像 <strong>都</strong> 具有 <code>1</code> 的位置的数目。</p>
+
+<div class="original__bRMd">
+<div>
+<p>请注意，转换 <strong>不包括</strong> 向任何方向旋转。越过矩阵边界的 <code>1</code> 都将被清除。</p>
+
+<p>最大可能的重叠数量是多少？</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/8f55e70d3e37.jpg" style="width: 450px; height: 231px;" />
+<pre>
+<strong>输入：</strong>img1 = [[1,1,0],[0,1,0],[0,1,0]], img2 = [[0,0,0],[0,1,1],[0,0,1]]
+<strong>输出：</strong>3
+<strong>解释：</strong>将 img1 向右移动 1 个单位，再向下移动 1 个单位。
+<img alt="" src="../assets/img/c8f4df6e46d9.jpg" style="width: 450px; height: 105px;" />
+两个图像都具有 <code>1</code> 的位置的数目是 3（用红色标识）。
+<img alt="" src="../assets/img/e9ccaae37dbf.jpg" style="width: 450px; height: 231px;" />
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>img1 = [[1]], img2 = [[1]]
+<strong>输出：</strong>1
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>img1 = [[0]], img2 = [[0]]
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == img1.length == img1[i].length</code></li>
+	<li><code>n == img2.length == img2[i].length</code></li>
+	<li><code>1 &lt;= n &lt;= 30</code></li>
+	<li><code>img1[i][j]</code> 为 <code>0</code> 或 <code>1</code></li>
+	<li><code>img2[i][j]</code> 为 <code>0</code> 或 <code>1</code></li>
+</ul>
+</div>
+</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int largestOverlap(int[][] img1, int[][] img2) {", "        int n = img1.length;", "        // 每行压成一个 long：第 j 位就是第 j 列，位移 + 按位与一次算一整行", "        long[] a = new long[n], b = new long[n];", "        for (int i = 0; i < n; i++)", "            for (int j = 0; j < n; j++) {", "                if (img1[i][j] == 1) a[i] |= 1L << j;", "                if (img2[i][j] == 1) b[i] |= 1L << j;", "            }", "        int ans = 0;", "        // 枚举 img1 的平移量 (dx, dy)：dx 向右为正，dy 向下为正", "        for (int dy = 1 - n; dy < n; dy++)", "            for (int dx = 1 - n; dx < n; dx++) {", "                int cnt = 0;", "                // img1 的第 R−dy 行压上 img2 的第 R 行，出界的行自动跳过", "                for (int R = Math.max(dy, 0); R < Math.min(n + dy, n); R++) {", "                    long ra = dx >= 0 ? a[R - dy] << dx : a[R - dy] >> -dx;", "                    cnt += Long.bitCount(ra & b[R]);", "                }", "                ans = Math.max(ans, cnt);", "            }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 835. 图像重叠 —— 图解：复刻 Solution.java 的「枚举平移量取最大重叠」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  img1: [[1, 1, 0], [0, 1, 0], [0, 1, 0]],
+  img2: [[0, 0, 0], [0, 1, 1], [0, 0, 1]]
+};
+
+function trace(input) {
+  var a = input.img1, b = input.img2;
+  var n = a.length;
+  var frames = [];
+  var CNT = 'cnt += Long.bitCount(ra & b[R]);';
+  var RET = 'return ans;';
+
+  function gridPanel(img, marks, title) {
+    var rows = img.map(function (row) { return row.slice(); });
+    return Viz.grid(rows, { title: title, marks: marks || {} });
+  }
+  function varsPanel(dx, dy, best) {
+    return Viz.vars([
+      { name: '(dx, dy)', v: '(' + dx + ', ' + dy + ')', cls: 'chg' },
+      { name: '本次重叠', v: cur, cls: 'chg' },
+      { name: 'ans（最大重叠）', v: best }
+    ]);
+  }
+
+  var ans = 0, bestDx = 0, bestDy = 0, bestCnt = 0, cur = 0, seen = 0;
+  for (var dy = 1 - n; dy < n; dy++) {
+    for (var dx = 1 - n; dx < n; dx++) {
+      cur = 0;
+      for (var R = Math.max(dy, 0); R < Math.min(n + dy, n); R++)
+        for (var c = Math.max(dx, 0); c < Math.min(n + dx, n); c++)
+          if (a[R - dy][c - dx] === 1 && b[R][c] === 1) cur++;
+      if (cur > ans) {
+        ans = cur;
+        bestDx = dx;
+        bestDy = dy;
+        bestCnt = cur;
+        // 题面示例的最佳平移：img1 右移 1、下移 1
+        if (n === 3 && dx === 1 && dy === 1 && ans === 3) {
+          var mk = {}, ov = [];
+          for (var r = 0; r < n; r++) {
+            ov.push([]);
+            for (var c2 = 0; c2 < n; c2++) {
+              var x1 = r - dy >= 0 && c2 - dx >= 0 ? a[r - dy][c2 - dx] : 0;
+              if (x1 === 1 && b[r][c2] === 1) {
+                mk[r + ',' + c2] = 'done';
+                ov[r].push('1');
+              } else ov[r].push(x1 === 1 || b[r][c2] === 1 ? '·' : '0');
+            }
+          }
+          frames.push(Viz.frame(CNT, 'img1 右移 1、下移 1：三个 1 正好压上', [gridPanel(ov, mk, '平移后的重叠（红格 = 都是 1）'), varsPanel(dx, dy, ans)]));
+        }
+      }
+    }
+  }
+
+  var m1 = {}, m2 = {};
+  for (var i = 0; i < n; i++)
+    for (var j = 0; j < n; j++) {
+      if (a[i][j] === 1) m1[i + ',' + j] = 'win';
+      if (b[i][j] === 1) m2[i + ',' + j] = 'win';
+    }
+  frames.unshift(Viz.frame('if (img1[i][j] == 1) a[i] |= 1L << j;', '两图各自把 1 标出来：重叠 = 平移后都为 1 的格子数', [gridPanel(a, m1, 'img1'), gridPanel(b, m2, 'img2')]));
+  frames.push(Viz.frame(RET, '枚举完所有平移量：最大重叠 = ' + ans,
+    [Viz.vars([{ name: '最佳平移 (dx, dy)', v: '(' + bestDx + ', ' + bestDy + ')' }, { name: 'ans（最大重叠）', v: ans, cls: 'done' }])]));
+
+  return { frames: frames, result: ans };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

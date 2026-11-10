@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>删除注释 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 379 / 1159</span>
+  <nav class="pn"><a href="supp-13.html">上一篇</a><a href="0895.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">722. </span>删除注释</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 9</li><li class="algo">模拟</li><li class="tag">数组</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">逐字符状态机（普通 / 行注释 / 块注释）跨行扫描：// 丢掉行尾，/* */ 吞掉跨行内容，行尾拼出的空行不输出。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>sb</code> 拼当前行的代码，<code>inBlock</code> 标记是否在块注释里，逐行逐字符扫。</li><li>遇 <code>//</code> 直接丢掉本行剩余；遇 <code>/*</code> 进块注释状态（连换行一起吞），只有 <code>*/</code> 能退出；第一个生效的注释优先。</li><li>行尾时 <code>sb</code> 非空才输出；块注释没结束就留着 <code>sb</code> 接到下一行，整行被吞的行自然变空不输出。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(总字符数)，空间复杂度 O(总字符数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; removeComments(<span class="t">String</span>[] source) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; out = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();   <span class="c">// 正在拼的当前行代码</span></span><span class="ln"><span class="no">7</span>        <span class="k">boolean</span> inBlock = <span class="k">false</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="t">String</span> line : source) {</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; line.length(); ) {</span><span class="ln"><span class="no">10</span>                <span class="c">// 第一个生效的注释优先：块注释里的 // 和 /* 都只是普通字符</span></span><span class="ln"><span class="no">11</span>                <span class="k">if</span> (!inBlock &amp;&amp; line.startsWith(<span class="s">"//"</span>, i)) <span class="k">break</span>;</span><span class="ln"><span class="no">12</span>                <span class="k">if</span> (!inBlock &amp;&amp; line.startsWith(<span class="s">"/*"</span>, i)) { inBlock = <span class="k">true</span>; i += <span class="n">2</span>; <span class="k">continue</span>; }</span><span class="ln"><span class="no">13</span>                <span class="k">if</span> (inBlock &amp;&amp; line.startsWith(<span class="s">"*/"</span>, i)) { inBlock = <span class="k">false</span>; i += <span class="n">2</span>; <span class="k">continue</span>; }</span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (!inBlock) sb.append(line.charAt(i));</span><span class="ln"><span class="no">15</span>                i++;</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>            <span class="c">// 变空的行（包括整行都在注释里）不输出；块注释没完，sb 留给下一行接着拼</span></span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (!inBlock &amp;&amp; sb.length() &gt; <span class="n">0</span>) { out.add(sb.toString()); sb.setLength(<span class="n">0</span>); }</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给一个 C++ 程序，删除程序中的注释。这个程序<code>source</code>是一个数组，其中<code>source[i]</code>表示第&nbsp;<code>i</code>&nbsp;行源码。&nbsp;这表示每行源码由 <code>'\n'</code>&nbsp;分隔。</p>
+
+<p>在 C++ 中有两种注释风格，行内注释和块注释。</p>
+
+<ul>
+	<li>字符串<code>//</code> 表示行注释，表示<code>//</code>和其右侧的其余字符应该被忽略。</li>
+	<li>字符串<code>/*</code> 表示一个块注释，它表示直到下一个（非重叠）出现的<code>*/</code>之间的所有字符都应该被忽略。（阅读顺序为从左到右）非重叠是指，字符串<code>/*/</code>并没有结束块注释，因为注释的结尾与开头相重叠。</li>
+</ul>
+
+<p>第一个有效注释优先于其他注释。</p>
+
+<ul>
+	<li>如果字符串<code>//</code>出现在块注释中会被忽略。</li>
+	<li>同样，如果字符串<code>/*</code>出现在行或块注释中也会被忽略。</li>
+</ul>
+
+<p>如果一行在删除注释之后变为空字符串，那么<strong>不要</strong>输出该行。即，答案列表中的每个字符串都是非空的。</p>
+
+<p>样例中<strong>没有</strong>控制字符，单引号或双引号字符。</p>
+
+<ul>
+	<li>比如，<code>source = "string s = "/* Not a comment. */";"</code> 不会出现在测试样例里。</li>
+</ul>
+
+<p>此外，没有其他内容（如定义或宏）会干扰注释。</p>
+
+<p>我们保证每一个块注释最终都会被闭合， 所以在行或块注释之外的<code>/*</code>总是开始新的注释。</p>
+
+<p>最后，隐式换行符<strong>可以</strong>通过块注释删除。 有关详细信息，请参阅下面的示例。</p>
+
+<p>从源代码中删除注释后，需要以相同的格式返回源代码。</p>
+
+
+
+<p><strong>示例&nbsp;1:</strong></p>
+
+<pre>
+<strong>输入:</strong> source = ["/*Test program */", "int main()", "{ ", "  // variable declaration ", "int a, b, c;", "/* This is a test", "   multiline  ", "   comment for ", "   testing */", "a = b + c;", "}"]
+<strong>输出:</strong> ["int main()","{ ","  ","int a, b, c;","a = b + c;","}"]
+<strong>解释:</strong> 示例代码可以编排成这样:
+/*Test program */
+int main()
+{ 
+  // variable declaration 
+int a, b, c;
+/* This is a test
+   multiline  
+   comment for 
+   testing */
+a = b + c;
+}
+第 1 行和第 6-9 行的字符串 /* 表示块注释。第 4 行的字符串 // 表示行注释。
+编排后: 
+int main()
+{ 
+  
+int a, b, c;
+a = b + c;
+}</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> source = ["a/*comment", "line", "more_comment*/b"]
+<strong>输出:</strong> ["ab"]
+<strong>解释:</strong> 原始的 source 字符串是 "a/*comment<strong>\n</strong>line<strong>\n</strong>more_comment*/b", 其中我们用粗体显示了换行符。删除注释后，隐含的换行符被删除，留下字符串 "ab" 用换行符分隔成数组时就是 ["ab"].
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= source.length &lt;= 100</code></li>
+	<li><code>0 &lt;= source[i].length &lt;= 80</code></li>
+	<li><code>source[i]</code>&nbsp;由可打印的 <strong>ASCII</strong> 字符组成。</li>
+	<li>每个块注释都会被闭合。</li>
+	<li>给定的源码中不会有单引号、双引号或其他控制字符。</li>
+</ul>
+<span style="display:block"><span style="height:0px"><span style="position:absolute"><span style="top:0px"><span style="left:-9999px"><span style="opacity:0"><span style="overflow:hidden">&nbsp;</span></span></span></span></span></span>​​​​​​</span></div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<String> removeComments(String[] source) {", "        List<String> out = new ArrayList<>();", "        StringBuilder sb = new StringBuilder();   // 正在拼的当前行代码", "        boolean inBlock = false;", "        for (String line : source) {", "            for (int i = 0; i < line.length(); ) {", "                // 第一个生效的注释优先：块注释里的 // 和 /* 都只是普通字符", "                if (!inBlock && line.startsWith(\"//\", i)) break;", "                if (!inBlock && line.startsWith(\"/*\", i)) { inBlock = true; i += 2; continue; }", "                if (inBlock && line.startsWith(\"*/\", i)) { inBlock = false; i += 2; continue; }", "                if (!inBlock) sb.append(line.charAt(i));", "                i++;", "            }", "            // 变空的行（包括整行都在注释里）不输出；块注释没完，sb 留给下一行接着拼", "            if (!inBlock && sb.length() > 0) { out.add(sb.toString()); sb.setLength(0); }", "        }", "        return out;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 722. 删除注释 —— 图解：复刻 Solution.java 的逐字符状态机，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { source: ['a/*b', 'c*/d//e'] };
+
+function trace(input) {
+  var source = input.source;
+  var out = [], frames = [], captured = {};
+  var sb = [];          // 正在拼的当前行（字符数组）
+  var inBlock = false;
+
+  var LOOP = 'for (String line : source) {';
+  var OPEN = 'line.startsWith("/*", i)';
+  var CLOSE = 'line.startsWith("*/", i)';
+  var LINE = 'line.startsWith("//", i)';
+  var FLUSH = 'sb.length() > 0';
+
+  function push(tag, at, key, panels) {
+    if (captured[tag]) return;
+    captured[tag] = true;
+    frames.push(Viz.frame(at, key, panels));
+  }
+  function clip(s, n) { return s.length > n ? s.slice(0, n) + '…' : s; }
+  function rec() { return source.join('').length <= 60; }
+  // 当前行的格子：i 前的已处理变灰，i 高亮
+  function linePanel(line, i) {
+    var marks = {};
+    for (var k = 0; k < i; k++) marks[k] = 'dim';
+    if (i < line.length) marks[i] = 'cur';
+    return Viz.cells(line.split(''), { title: '当前行', marks: marks,
+      pointers: i < line.length ? [{ at: i, label: 'i', cls: 'p-cur' }] : [] });
+  }
+  function varsPanel() {
+    return Viz.vars([{ name: 'inBlock', v: String(inBlock) },
+                     { name: 'sb（拼到的代码）', v: sb.length ? sb.join('') : '（空）' }]);
+  }
+
+  if (rec()) push('start', LOOP, '逐行扫描：普通字符进 sb，盯着 // 和 /* 两种注释记号', [linePanel(source[0], 0), varsPanel()]);
+
+  for (var li = 0; li < source.length; li++) {
+    var line = source[li];
+    for (var i = 0; i < line.length; ) {
+      if (!inBlock && line.startsWith('//', i)) {
+        if (rec()) push('line', LINE, '遇到 //：本行剩下的全丢（注释里的 /* 不算数）', [linePanel(line, i), varsPanel()]);
+        break;
+      }
+      if (!inBlock && line.startsWith('/*', i)) {
+        inBlock = true;
+        i += 2;
+        if (rec()) push('open', OPEN, '遇到 /*：进入块注释状态，之后连换行都一起吞掉', [linePanel(line, i), varsPanel()]);
+        continue;
+      }
+      if (inBlock && line.startsWith('*/', i)) {
+        inBlock = false;
+        i += 2;
+        if (rec()) push('close', CLOSE, '块注释跨行：遇到 */ 恢复正常，sb 里留着 ' + (sb.length ? '「' + clip(sb.join(''), 8) + '」' : '空'), [linePanel(line, i), varsPanel()]);
+        continue;
+      }
+      if (!inBlock) sb.push(line[i]);
+      i++;
+    }
+    if (!inBlock && sb.length) { out.push(sb.join('')); sb = []; }
+  }
+
+  if (rec()) push('end', FLUSH, '行尾 sb 非空才输出：得到 ' + clip(out.join('、'), 14) + '；整行被吞的行不输出',
+    [Viz.vars([{ name: 'out', v: out.join(' | '), cls: 'done' }])]);
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

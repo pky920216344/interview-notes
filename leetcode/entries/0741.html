@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>摘樱桃 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 994 / 1159</span>
+  <nav class="pn"><a href="0289.html">上一篇</a><a href="0276.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">741. </span>摘樱桃</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">去程回程看成两个人同时走：k 步时两人必在同一条反对角线上，dp[k][i1][i2] 记两人位置；同格樱桃只摘一次。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>一个人走两趟会因「摘过的变空」互相影响，把回程倒过来看：<strong>两个人同时从 (0,0) 走到终点</strong>。</li><li>两人每步都右/下走，步数相同时 <code>i1 + j1 == i2 + j2 == k</code>，状态只要记两个行号。</li><li>转移：两人各自从上/左来，四种组合取最大；<code>i1 == i2</code> 时同格樱桃只加一份。</li><li><code>-1</code> 表示这个状态走不到（被荆棘挡或前一步全死）；终点仍是 <code>-1</code> 说明无通路，返回 0。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n³)，空间复杂度 O(n³)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> cherryPickup(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = grid.length, N = <span class="n">2</span> * n - <span class="n">1</span>;</span><span class="ln"><span class="no">6</span>        <span class="c">// dp[k][i1][i2]：两人同走 k 步、分别在第 i1、i2 行（同一条反对角线）的最多樱桃；-1 = 走不到</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[][][] dp = <span class="k">new</span> <span class="k">int</span>[N][n][n];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span>[][] a : dp) <span class="k">for</span> (<span class="k">int</span>[] r : a) <span class="t">Arrays</span>.fill(r, -<span class="n">1</span>);</span><span class="ln"><span class="no">9</span>        dp[<span class="n">0</span>][<span class="n">0</span>][<span class="n">0</span>] = grid[<span class="n">0</span>][<span class="n">0</span>];</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> k = <span class="n">1</span>; k &lt; N; k++) {</span><span class="ln"><span class="no">11</span>            <span class="k">for</span> (<span class="k">int</span> i1 = <span class="t">Math</span>.max(<span class="n">0</span>, k - n + <span class="n">1</span>); i1 &lt;= <span class="t">Math</span>.min(k, n - <span class="n">1</span>); i1++) {</span><span class="ln"><span class="no">12</span>                <span class="k">int</span> j1 = k - i1;</span><span class="ln"><span class="no">13</span>                <span class="k">if</span> (grid[i1][j1] == -<span class="n">1</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">14</span>                <span class="k">for</span> (<span class="k">int</span> i2 = <span class="t">Math</span>.max(<span class="n">0</span>, k - n + <span class="n">1</span>); i2 &lt;= <span class="t">Math</span>.min(k, n - <span class="n">1</span>); i2++) {</span><span class="ln"><span class="no">15</span>                    <span class="k">int</span> j2 = k - i2;</span><span class="ln"><span class="no">16</span>                    <span class="k">if</span> (grid[i2][j2] == -<span class="n">1</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">17</span>                    <span class="c">// 上一步两人各自从左或上来，四种组合取最大</span></span><span class="ln"><span class="no">18</span>                    <span class="k">int</span> best = -<span class="n">1</span>;</span><span class="ln"><span class="no">19</span>                    <span class="k">for</span> (<span class="k">int</span> p1 = i1 - <span class="n">1</span>; p1 &lt;= i1; p1++)</span><span class="ln"><span class="no">20</span>                        <span class="k">for</span> (<span class="k">int</span> p2 = i2 - <span class="n">1</span>; p2 &lt;= i2; p2++) {</span><span class="ln"><span class="no">21</span>                            <span class="k">if</span> (p1 &lt; <span class="n">0</span> || p2 &lt; <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">22</span>                            best = <span class="t">Math</span>.max(best, dp[k - <span class="n">1</span>][p1][p2]);</span><span class="ln"><span class="no">23</span>                        }</span><span class="ln"><span class="no">24</span>                    <span class="k">if</span> (best &lt; <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">25</span>                    <span class="c">// 两人同格只摘一次</span></span><span class="ln"><span class="no">26</span>                    <span class="k">int</span> add = grid[i1][j1];</span><span class="ln"><span class="no">27</span>                    <span class="k">if</span> (i1 != i2) add += grid[i2][j2];</span><span class="ln"><span class="no">28</span>                    dp[k][i1][i2] = best + add;</span><span class="ln"><span class="no">29</span>                }</span><span class="ln"><span class="no">30</span>            }</span><span class="ln"><span class="no">31</span>        }</span><span class="ln"><span class="no">32</span>        <span class="c">// 走不到终点说明没有任何通路，摘 0 个</span></span><span class="ln"><span class="no">33</span>        <span class="k">return</span> <span class="t">Math</span>.max(dp[N - <span class="n">1</span>][n - <span class="n">1</span>][n - <span class="n">1</span>], <span class="n">0</span>);</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个 <code>n x n</code> 的网格 <code>grid</code> ，代表一块樱桃地，每个格子由以下三种数字的一种来表示：</p>
+
+<ul>
+	<li><code>0</code> 表示这个格子是空的，所以你可以穿过它。</li>
+	<li><code>1</code> 表示这个格子里装着一个樱桃，你可以摘到樱桃然后穿过它。</li>
+	<li><code>-1</code> 表示这个格子里有荆棘，挡着你的路。</li>
+</ul>
+
+<p>请你统计并返回：在遵守下列规则的情况下，能摘到的最多樱桃数：</p>
+
+<ul>
+	<li>从位置&nbsp;<code>(0, 0)</code> 出发，最后到达 <code>(n - 1, n - 1)</code> ，只能向下或向右走，并且只能穿越有效的格子（即只可以穿过值为 <code>0</code> 或者 <code>1</code> 的格子）；</li>
+	<li>当到达 <code>(n - 1, n&nbsp;- 1)</code> 后，你要继续走，直到返回到 <code>(0, 0) </code>，只能向上或向左走，并且只能穿越有效的格子；</li>
+	<li>当你经过一个格子且这个格子包含一个樱桃时，你将摘到樱桃并且这个格子会变成空的（值变为 <code>0</code> ）；</li>
+	<li>如果在 <code>(0, 0)</code> 和 <code>(n - 1, n - 1)</code> 之间不存在一条可经过的路径，则无法摘到任何一个樱桃。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/90a121dec8d2.jpg" />
+<pre>
+<b>输入：</b>grid = [[0,1,-1],[1,0,-1],[1,1,1]]
+<b>输出：</b>5
+<b>解释：</b>玩家从 (0, 0) 出发：向下、向下、向右、向右移动至 (2, 2) 。
+在这一次行程中捡到 4 个樱桃，矩阵变成 [[0,1,-1],[0,0,-1],[0,0,0]] 。
+然后，玩家向左、向上、向上、向左返回起点，再捡到 1 个樱桃。
+总共捡到 5 个樱桃，这是最大可能值。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<b>输入：</b>grid = [[1,1,-1],[1,-1,1],[-1,1,1]]
+<b>输出：</b>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == grid.length</code></li>
+	<li><code>n == grid[i].length</code></li>
+	<li><code>1 &lt;= n &lt;= 50</code></li>
+	<li><code>grid[i][j]</code>&nbsp;为&nbsp;<code>-1</code>、<code>0</code>&nbsp;或&nbsp;<code>1</code></li>
+	<li><code>grid[0][0] != -1</code></li>
+	<li><code>grid[n - 1][n - 1] != -1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int cherryPickup(int[][] grid) {", "        int n = grid.length, N = 2 * n - 1;", "        // dp[k][i1][i2]：两人同走 k 步、分别在第 i1、i2 行（同一条反对角线）的最多樱桃；-1 = 走不到", "        int[][][] dp = new int[N][n][n];", "        for (int[][] a : dp) for (int[] r : a) Arrays.fill(r, -1);", "        dp[0][0][0] = grid[0][0];", "        for (int k = 1; k < N; k++) {", "            for (int i1 = Math.max(0, k - n + 1); i1 <= Math.min(k, n - 1); i1++) {", "                int j1 = k - i1;", "                if (grid[i1][j1] == -1) continue;", "                for (int i2 = Math.max(0, k - n + 1); i2 <= Math.min(k, n - 1); i2++) {", "                    int j2 = k - i2;", "                    if (grid[i2][j2] == -1) continue;", "                    // 上一步两人各自从左或上来，四种组合取最大", "                    int best = -1;", "                    for (int p1 = i1 - 1; p1 <= i1; p1++)", "                        for (int p2 = i2 - 1; p2 <= i2; p2++) {", "                            if (p1 < 0 || p2 < 0) continue;", "                            best = Math.max(best, dp[k - 1][p1][p2]);", "                        }", "                    if (best < 0) continue;", "                    // 两人同格只摘一次", "                    int add = grid[i1][j1];", "                    if (i1 != i2) add += grid[i2][j2];", "                    dp[k][i1][i2] = best + add;", "                }", "            }", "        }", "        // 走不到终点说明没有任何通路，摘 0 个", "        return Math.max(dp[N - 1][n - 1][n - 1], 0);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 741. 摘樱桃 —— 图解：复刻 Solution.java 的「两人同步双走 DP」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[0, 1, -1], [1, 0, -1], [1, 1, 1]] };
+
+function trace(input) {
+  var g = input.grid;
+  var n = g.length, N = 2 * n - 1;
+  var dp = [];
+  for (var k = 0; k < N; k++) {
+    dp.push([]);
+    for (var i = 0; i < n; i++) dp[k].push(new Array(n).fill(-1));
+  }
+  var frames = [];
+  var isStory = n === 3;
+
+  function gridPanel(marks, title) {
+    return Viz.grid(g.map(function (r) { return r.map(String); }), { title: title || 'grid（1 樱桃、0 空地、-1 荆棘）', marks: marks || {} });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+  function pos(i, j) { return '(' + i + ',' + j + ')'; }
+
+  var START = 'dp[0][0][0] = grid[0][0];';
+  var BEST = 'best = Math.max(best, dp[k - 1][p1][p2]);';
+  var ADD = 'int add = grid[i1][j1];';
+  var WRITE = 'dp[k][i1][i2] = best + add;';
+  var RET = 'return Math.max(dp[N - 1][n - 1][n - 1], 0);';
+
+  dp[0][0][0] = g[0][0];
+  frames.push(Viz.frame(START,
+    '去程和回程看成两个人同时从 (0,0) 出发：起点樱桃 ' + g[0][0] + ' 已入账',
+    [gridPanel({ '0,0': 'cur' }), varsPanel([{ name: 'k', v: '0' }, { name: '两人位置', v: pos(0, 0) + '、' + pos(0, 0) }, { name: 'dp', v: String(dp[0][0][0]) }])]));
+
+  for (k = 1; k < N; k++) {
+    for (var i1 = Math.max(0, k - n + 1); i1 <= Math.min(k, n - 1); i1++) {
+      var j1 = k - i1;
+      if (g[i1][j1] === -1) continue;
+      for (var i2 = Math.max(0, k - n + 1); i2 <= Math.min(k, n - 1); i2++) {
+        var j2 = k - i2;
+        if (g[i2][j2] === -1) continue;
+        var best = -1;
+        for (var p1 = i1 - 1; p1 <= i1; p1++)
+          for (var p2 = i2 - 1; p2 <= i2; p2++) {
+            if (p1 < 0 || p2 < 0) continue;
+            best = Math.max(best, dp[k - 1][p1][p2]);
+            if (isStory && k === 1 && i1 === 0 && i2 === 1 && p1 === 0 && p2 === 0) {
+              frames.push(Viz.frame(BEST,
+                '第 ' + k + ' 步两人在同一反对角线：各从左/上来，四种组合取最大',
+                [gridPanel({ '0,1': 'cur', '1,0': 'new' }), varsPanel([
+                  { name: 'k', v: String(k) }, { name: '人1', v: pos(i1, j1) }, { name: '人2', v: pos(i2, j2) },
+                  { name: '来源最大', v: String(best) }])]));
+            }
+          }
+        if (best < 0) continue;
+        if (isStory && k === 1 && i1 === 0 && i2 === 0) {
+          frames.push(Viz.frame(ADD,
+            '两人同时到 (0,1)：同格只摘一次，add = ' + g[0][1],
+            [gridPanel({ '0,1': 'cur' }), varsPanel([
+              { name: '人1', v: pos(0, 1) }, { name: '人2', v: pos(0, 1) }, { name: 'add', v: String(g[0][1]) }])]));
+        }
+        var add = g[i1][j1];
+        if (i1 !== i2) add += g[i2][j2];
+        dp[k][i1][i2] = best + add;
+        if (isStory && k === 2 && i1 === 1 && i2 === 2) {
+          frames.push(Viz.frame(WRITE,
+            '不在同格就各自摘：(1,1) 空 +0、(2,0) +1，dp = ' + best + '+' + add,
+            [gridPanel({ '1,1': 'cur', '2,0': 'win' }), varsPanel([
+              { name: '人1', v: pos(1, 1) }, { name: '人2', v: pos(2, 0) },
+              { name: 'best', v: String(best) }, { name: 'dp', v: String(dp[k][i1][i2]) }])]));
+        }
+      }
+    }
+  }
+
+  var last = (n - 1) + ',' + (n - 1);
+  var endMarks = {};
+  endMarks[last] = 'done';
+  frames.push(Viz.frame(RET,
+    '两人会合在终点 ' + pos(n - 1, n - 1) + '：dp = ' + dp[N - 1][n - 1][n - 1] + '，走不到才是 0',
+    [gridPanel(endMarks), varsPanel([{ name: '答案', v: String(Math.max(dp[N - 1][n - 1][n - 1], 0)) }])]));
+
+  return { frames: frames, result: Math.max(dp[N - 1][n - 1][n - 1], 0) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

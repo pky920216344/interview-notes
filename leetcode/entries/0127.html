@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>单词接龙 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 323 / 1159</span>
+  <nav class="pn"><a href="mianshi-16-25.html">上一篇</a><a href="0581.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">127. </span>单词接龙</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 12</li><li class="algo">广度优先搜索</li><li class="aux">哈希表</li><li class="tag">广度优先搜索</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">bidirectional-search</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">BFS 逐层：层号就是变换次数，beginWord 算第 1 个词；弹出 endWord 时返回当前层号；邻居用「每个位置换 26 个字母」在字典里查。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>起点 <code>beginWord</code> 算第 1 个词，<code>depth</code> 从 1 起；<strong>一次处理一整层</strong>，层号 = 当前序列长度。</li><li>邻居生成：每个位置试 26 个字母，<code>dict.contains(next) &amp;&amp; visited.add(next)</code> 才入队（<code>add</code> 返回 false 就是来过，顺便去重）。</li><li><strong>弹出 <code>endWord</code> 时返回当前 <code>depth</code></strong>——BFS 第一次到达就是最短。</li><li>开头先判 <code>endWord</code> 在不在字典里，不在直接返回 0。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(26·L·n·L)，空间复杂度 O(n·L)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> ladderLength(<span class="t">String</span> beginWord, <span class="t">String</span> endWord, <span class="t">List</span>&lt;<span class="t">String</span>&gt; wordList) {</span><span class="ln"><span class="no">5</span>        <span class="t">Set</span>&lt;<span class="t">String</span>&gt; dict = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;(wordList);</span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (!dict.contains(endWord)) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="t">Set</span>&lt;<span class="t">String</span>&gt; visited = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        visited.add(beginWord);</span><span class="ln"><span class="no">9</span>        <span class="t">Queue</span>&lt;<span class="t">String</span>&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">10</span>        queue.add(beginWord);</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> depth = <span class="n">1</span>;                        <span class="c">// 序列里的单词数，beginWord 算第 1 个</span></span><span class="ln"><span class="no">12</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">13</span>            <span class="k">int</span> size = queue.size();          <span class="c">// 一次处理一整层：层号就是当前序列长度</span></span><span class="ln"><span class="no">14</span>            <span class="k">while</span> (size-- &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">15</span>                <span class="t">String</span> cur = queue.poll();</span><span class="ln"><span class="no">16</span>                <span class="k">if</span> (cur.equals(endWord)) <span class="k">return</span> depth;</span><span class="ln"><span class="no">17</span>                <span class="c">// 邻居怎么找：每个位置换 26 个字母，在字典里且没访问过的就是下一步</span></span><span class="ln"><span class="no">18</span>                <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; cur.length(); i++) {</span><span class="ln"><span class="no">19</span>                    <span class="k">char</span>[] cs = cur.toCharArray();</span><span class="ln"><span class="no">20</span>                    <span class="k">for</span> (<span class="k">char</span> c = <span class="s">'a'</span>; c &lt;= <span class="s">'z'</span>; c++) {</span><span class="ln"><span class="no">21</span>                        cs[i] = c;</span><span class="ln"><span class="no">22</span>                        <span class="t">String</span> next = <span class="k">new</span> <span class="t">String</span>(cs);</span><span class="ln"><span class="no">23</span>                        <span class="c">// visited.add 返回 false 说明来过，顺便完成去重</span></span><span class="ln"><span class="no">24</span>                        <span class="k">if</span> (dict.contains(next) &amp;&amp; visited.add(next)) queue.add(next);</span><span class="ln"><span class="no">25</span>                    }</span><span class="ln"><span class="no">26</span>                }</span><span class="ln"><span class="no">27</span>            }</span><span class="ln"><span class="no">28</span>            depth++;</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> <span class="n">0</span>;   <span class="c">// 扫完所有层都没碰到 endWord</span></span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>字典&nbsp;<code>wordList</code> 中从单词 <code>beginWord</code><em>&nbsp;</em>到&nbsp;<code>endWord</code> 的 <strong>转换序列 </strong>是一个按下述规格形成的序列<meta charset="UTF-8" />&nbsp;<code>beginWord -&gt; s<sub>1</sub>&nbsp;-&gt; s<sub>2</sub>&nbsp;-&gt; ... -&gt; s<sub>k</sub></code>：</p>
+
+<ul>
+	<li>每一对相邻的单词只差一个字母。</li>
+	<li><meta charset="UTF-8" />&nbsp;对于&nbsp;<code>1 &lt;= i &lt;= k</code>&nbsp;时，每个<meta charset="UTF-8" />&nbsp;<code>s<sub>i</sub></code>&nbsp;都在<meta charset="UTF-8" />&nbsp;<code>wordList</code>&nbsp;中。注意， <code>beginWord</code><em>&nbsp;</em>不需要在<meta charset="UTF-8" />&nbsp;<code>wordList</code>&nbsp;中。<meta charset="UTF-8" /></li>
+	<li><code>s<sub>k</sub>&nbsp;== endWord</code></li>
+</ul>
+
+<p>给你两个单词<em> </em><code>beginWord</code><em>&nbsp;</em>和 <code>endWord</code> 和一个字典 <code>wordList</code> ，返回 <em>从&nbsp;<code>beginWord</code> 到&nbsp;<code>endWord</code> 的 <strong>最短转换序列</strong> 中的 <strong>单词数目</strong></em> 。如果不存在这样的转换序列，返回 <code>0</code> 。</p>
+&nbsp;
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log","cog"]
+<strong>输出：</strong>5
+<strong>解释：</strong>一个最短转换序列是 "hit" -&gt; "hot" -&gt; "dot" -&gt; "dog" -&gt; "cog", 返回它的长度 5。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log"]
+<strong>输出：</strong>0
+<strong>解释：</strong>endWord "cog" 不在字典中，所以无法进行转换。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= beginWord.length &lt;= 10</code></li>
+	<li><code>endWord.length == beginWord.length</code></li>
+	<li><code>1 &lt;= wordList.length &lt;= 5000</code></li>
+	<li><code>wordList[i].length == beginWord.length</code></li>
+	<li><code>beginWord</code>、<code>endWord</code> 和 <code>wordList[i]</code> 由小写英文字母组成</li>
+	<li><code>beginWord != endWord</code></li>
+	<li><code>wordList</code> 中的所有字符串 <strong>互不相同</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int ladderLength(String beginWord, String endWord, List<String> wordList) {", "        Set<String> dict = new HashSet<>(wordList);", "        if (!dict.contains(endWord)) return 0;", "        Set<String> visited = new HashSet<>();", "        visited.add(beginWord);", "        Queue<String> queue = new ArrayDeque<>();", "        queue.add(beginWord);", "        int depth = 1;                        // 序列里的单词数，beginWord 算第 1 个", "        while (!queue.isEmpty()) {", "            int size = queue.size();          // 一次处理一整层：层号就是当前序列长度", "            while (size-- > 0) {", "                String cur = queue.poll();", "                if (cur.equals(endWord)) return depth;", "                // 邻居怎么找：每个位置换 26 个字母，在字典里且没访问过的就是下一步", "                for (int i = 0; i < cur.length(); i++) {", "                    char[] cs = cur.toCharArray();", "                    for (char c = 'a'; c <= 'z'; c++) {", "                        cs[i] = c;", "                        String next = new String(cs);", "                        // visited.add 返回 false 说明来过，顺便完成去重", "                        if (dict.contains(next) && visited.add(next)) queue.add(next);", "                    }", "                }", "            }", "            depth++;", "        }", "        return 0;   // 扫完所有层都没碰到 endWord", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 127. 单词接龙 —— 图解：复刻 Solution.java 的「逐层 BFS」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { begin: 'hit', end: 'cog', words: ['hot', 'dot', 'dog', 'lot', 'log', 'cog'] };
+
+function trace(input) {
+  var begin = input.begin, end = input.end;
+  var dict = {};
+  // 展示顺序：begin 在最前，字典词按原顺序去重（begin 可能也在字典里，只保留最前那份）
+  var words = [begin];
+  input.words.forEach(function (w) {
+    dict[w] = true;
+    if (w !== begin && words.indexOf(w) < 0) words.push(w);
+  });
+  var n = words.length;
+  var frames = [];
+
+  var visited = {};
+  visited[begin] = true;
+  var queue = [begin];
+  var depth = 1;
+
+  function wordsPanel(marks, ptrAt) {
+    var pointers = ptrAt != null && ptrAt >= 0 && ptrAt < n ? [{ at: ptrAt, label: 'cur', cls: 'p-cur' }] : [];
+    return Viz.cells(words, { title: 'begin 和字典里的词', marks: marks, pointers: pointers });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: 'depth（层号 = 序列长度）', v: depth, cls: 'chg' },
+      { name: '队列（当前层剩 + 下一层）', v: queue.join(' ') || '（空）' }
+    ]);
+  }
+  var state = {};            // 下标 → 'done' 处理完 / 'win' 在队里等展开 / 'new' 刚入队
+  function snap(at, key, ptrAt) {
+    frames.push(Viz.frame(at, key, [wordsPanel(Object.assign({}, state), ptrAt), varsPanel()]));
+  }
+
+  snap('int depth = 1;', '开局：begin 是第 1 层，depth 从 1 起（它算序列的第 1 个词）', 0);
+
+  var addSnaps = 0, layerSnaps = 0, foundSnap = false;
+  var answer = null;
+  while (queue.length) {
+    var size = queue.length;
+    while (size-- > 0) {
+      var cur = queue.shift();
+      var curIdx = words.indexOf(cur);
+      if (cur === end) {                       // Java 在这里直接 return depth
+        answer = depth;
+        if (!foundSnap) {
+          foundSnap = true;
+          state[curIdx] = 'done';
+          snap('if (cur.equals(endWord)) return depth;',
+            '弹出 ' + cur + ' = endWord：返回当前 depth=' + depth + '，它就是序列长度', curIdx);
+        }
+        size = 0;
+        queue.length = 0;
+        break;
+      }
+      state[curIdx] = 'done';
+      // 邻居怎么找：每个位置换 26 个字母，在字典里且没访问过的才是下一步
+      for (var p = 0; p < cur.length; p++) {
+        for (var ci = 97; ci <= 122; ci++) {
+          var ch = String.fromCharCode(ci);
+          if (ch === cur[p]) continue;
+          var next = cur.slice(0, p) + ch + cur.slice(p + 1);
+          if (dict[next] && !visited[next]) {
+            visited[next] = true;
+            queue.push(next);
+            var idx = words.indexOf(next);
+            state[idx] = 'new';
+            if (addSnaps < 1) {
+              addSnaps++;
+              snap('if (dict.contains(next) && visited.add(next)) queue.add(next);',
+                cur + ' 换一个字母变出 ' + next + '：在字典且没访问过，入队', curIdx);
+            }
+          }
+        }
+      }
+    }
+    if (queue.length) {
+      depth++;
+      for (var q = 0; q < n; q++) if (state[q] === 'new') state[q] = 'win';
+      if (layerSnaps < 1) {
+        layerSnaps++;
+        snap('depth++;', '这一层处理完：depth + 1，刚入队的词组成下一层', null);
+      }
+    }
+  }
+
+  if (answer == null) {
+    snap('return 0;   // 扫完所有层都没碰到 endWord', '队列空了还没碰到 endWord：不存在转换序列，返回 0', null);
+    return { frames: frames, result: 0 };
+  }
+  var doneMarks = {};
+  for (var w = 0; w < n; w++) if (state[w]) doneMarks[w] = 'done';
+  frames.push(Viz.frame('if (cur.equals(endWord)) return depth;',
+    'BFS 第 ' + answer + ' 层第一次到达 ' + end + '：最短序列就有 ' + answer + ' 个词',
+    [wordsPanel(doneMarks, null), varsPanel()]));
+  return { frames: frames, result: answer };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

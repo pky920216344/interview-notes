@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>迷宫 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 613 / 1159</span>
+  <nav class="pn"><a href="0391.html">上一篇</a><a href="0474.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">490. </span>迷宫</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">广度优先搜索</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">BFS，但结点不是格子而是「停点」：球沿一个方向一口气滚到撞墙才停，停点才入队，问终点是否是可达停点。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>普通格子 BFS 不行：球不能停在任意格，只能停在撞墙处。</li><li>从停点向四个方向「一口气滚」：<code>while</code> 下一格在界内且为空就继续，停下才是新停点。</li><li>停点去重后入队；弹出时等于终点就 <code>true</code>。</li><li>终点若只会被路过、从不停靠（或根本到不了），队列耗尽返回 <code>false</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m × n × max(m, n))，空间复杂度 O(m × n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> hasPath(<span class="k">int</span>[][] maze, <span class="k">int</span>[] start, <span class="k">int</span>[] destination) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> m = maze.length, n = maze[<span class="n">0</span>].length;</span><span class="ln"><span class="no">6</span>        <span class="k">boolean</span>[][] seen = <span class="k">new</span> <span class="k">boolean</span>[m][n];</span><span class="ln"><span class="no">7</span>        seen[start[<span class="n">0</span>]][start[<span class="n">1</span>]] = <span class="k">true</span>;</span><span class="ln"><span class="no">8</span>        <span class="t">ArrayDeque</span>&lt;<span class="k">int</span>[]&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        queue.add(start);</span><span class="ln"><span class="no">10</span>        <span class="k">int</span>[][] dirs = {{<span class="n">1</span>, <span class="n">0</span>}, {-<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">0</span>, <span class="n">1</span>}, {<span class="n">0</span>, -<span class="n">1</span>}};</span><span class="ln"><span class="no">11</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">12</span>            <span class="k">int</span>[] p = queue.poll();</span><span class="ln"><span class="no">13</span>            <span class="c">// 球只在撞墙处停，队列里全是停点；走到终点停点就成了</span></span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (p[<span class="n">0</span>] == destination[<span class="n">0</span>] &amp;&amp; p[<span class="n">1</span>] == destination[<span class="n">1</span>]) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">15</span>            <span class="k">for</span> (<span class="k">int</span>[] d : dirs) {</span><span class="ln"><span class="no">16</span>                <span class="k">int</span> r = p[<span class="n">0</span>], c = p[<span class="n">1</span>];</span><span class="ln"><span class="no">17</span>                <span class="k">while</span> (open(maze, r + d[<span class="n">0</span>], c + d[<span class="n">1</span>])) {</span><span class="ln"><span class="no">18</span>                    r += d[<span class="n">0</span>];</span><span class="ln"><span class="no">19</span>                    c += d[<span class="n">1</span>];</span><span class="ln"><span class="no">20</span>                }</span><span class="ln"><span class="no">21</span>                <span class="k">if</span> (!seen[r][c]) {</span><span class="ln"><span class="no">22</span>                    seen[r][c] = <span class="k">true</span>;</span><span class="ln"><span class="no">23</span>                    queue.add(<span class="k">new</span> <span class="k">int</span>[]{r, c});</span><span class="ln"><span class="no">24</span>                }</span><span class="ln"><span class="no">25</span>            }</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span> </span><span class="ln"><span class="no">30</span>    <span class="c">// (r, c) 在界内且是空格，球就能滚过去</span></span><span class="ln"><span class="no">31</span>    <span class="k">private</span> <span class="k">boolean</span> open(<span class="k">int</span>[][] maze, <span class="k">int</span> r, <span class="k">int</span> c) {</span><span class="ln"><span class="no">32</span>        <span class="k">return</span> r &gt;= <span class="n">0</span> &amp;&amp; r &lt; maze.length &amp;&amp; c &gt;= <span class="n">0</span> &amp;&amp; c &lt; maze[<span class="n">0</span>].length &amp;&amp; maze[r][c] == <span class="n">0</span>;</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean hasPath(int[][] maze, int[] start, int[] destination) {", "        int m = maze.length, n = maze[0].length;", "        boolean[][] seen = new boolean[m][n];", "        seen[start[0]][start[1]] = true;", "        ArrayDeque<int[]> queue = new ArrayDeque<>();", "        queue.add(start);", "        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};", "        while (!queue.isEmpty()) {", "            int[] p = queue.poll();", "            // 球只在撞墙处停，队列里全是停点；走到终点停点就成了", "            if (p[0] == destination[0] && p[1] == destination[1]) return true;", "            for (int[] d : dirs) {", "                int r = p[0], c = p[1];", "                while (open(maze, r + d[0], c + d[1])) {", "                    r += d[0];", "                    c += d[1];", "                }", "                if (!seen[r][c]) {", "                    seen[r][c] = true;", "                    queue.add(new int[]{r, c});", "                }", "            }", "        }", "        return false;", "    }", "", "    // (r, c) 在界内且是空格，球就能滚过去", "    private boolean open(int[][] maze, int r, int c) {", "        return r >= 0 && r < maze.length && c >= 0 && c < maze[0].length && maze[r][c] == 0;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 490. 迷宫 —— 图解：球沿一个方向滚到撞墙才停，BFS 只在「停点」之间走。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { maze: [[0, 0, 1, 0], [0, 0, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0]], start: [0, 0], destination: [3, 3] };
+
+function trace(input) {
+  var maze = input.maze, start = input.start, dest = input.destination;
+  var m = maze.length, n = maze[0].length;
+  var frames = [];
+  var DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+  var SEEN = 'seen[start[0]][start[1]] = true;';
+  var ADD = 'queue.add(new int[]{r, c});';
+  var ROLL = 'while (open(maze, r + d[0], c + d[1])) {';
+  var TRUE = 'if (p[0] == destination[0] && p[1] == destination[1]) return true;';
+  var FALSE = 'return false;';
+
+  var visited = {};
+  var queue = [start.slice()];
+  visited[start[0] + ',' + start[1]] = true;
+
+  function mazePanel(poll, path, land) {
+    var marks = {};
+    for (var r = 0; r < m; r++) {
+      for (var c = 0; c < n; c++) {
+        if (maze[r][c] === 1) marks[r + ',' + c] = 'dim';
+        else if (visited[r + ',' + c]) marks[r + ',' + c] = 'done';
+      }
+    }
+    (path || []).forEach(function (p) { marks[p[0] + ',' + p[1]] = 'chg'; });
+    if (land) marks[land[0] + ',' + land[1]] = 'new';
+    if (poll) marks[poll[0] + ',' + poll[1]] = 'cur';
+    return Viz.grid(maze.map(function (row) { return row.slice(); }), {
+      title: '迷宫（0 空格，1 墙；高亮 = 这一轮滚过的格子）',
+      marks: marks,
+      rowLabels: maze.map(function (_, r) { return 'r=' + r; }),
+      colLabels: maze[0].map(function (_, c) { return 'c=' + c; })
+    });
+  }
+
+  function varsPanel(queueLen, note) {
+    var items = [
+      { name: '起点 / 终点', v: '(' + start + ') / (' + dest + ')', cls: '' },
+      { name: '队列里的停点数', v: queueLen, cls: '' }
+    ];
+    if (note) items.push({ name: '状态', v: note, cls: 'chg' });
+    return Viz.vars(items);
+  }
+
+  frames.push(Viz.frame(SEEN, '开局：起点是第一个停点，入队', [mazePanel(null, null, null), varsPanel(1, '')]));
+
+  var open = function (r, c) { return r >= 0 && r < m && c >= 0 && c < n && maze[r][c] === 0; };
+  var dirName = function (d) {
+    if (d[0] === 1) return '下';
+    if (d[0] === -1) return '上';
+    if (d[1] === 1) return '右';
+    return '左';
+  };
+  var found = false, sawFirst = false, sawDest = false;
+
+  while (queue.length) {
+    var p = queue.shift();
+    if (p[0] === dest[0] && p[1] === dest[1]) { found = true; break; }
+    for (var di = 0; di < 4; di++) {
+      var d = DIRS[di];
+      var r = p[0], c = p[1];
+      var path = [];
+      while (open(r + d[0], c + d[1])) {
+        r += d[0];
+        c += d[1];
+        path.push([r, c]);
+      }
+      if (!visited[r + ',' + c]) {
+        visited[r + ',' + c] = true;
+        queue.push([r, c]);
+        if (!sawFirst && path.length > 0) {
+          sawFirst = true;
+          frames.push(Viz.frame(ADD, '从 (' + p + ') 向' + dirName(d) + '滚 ' + path.length + ' 格撞墙，新停点 (' + r + ',' + c + ') 入队',
+            [mazePanel(p, path, [r, c]), varsPanel(queue.length, '')]));
+        }
+        if (!sawDest && r === dest[0] && c === dest[1]) {
+          sawDest = true;
+          frames.push(Viz.frame(ROLL, '从 (' + p + ') 向' + dirName(d) + '滚 ' + path.length + ' 格，正好停在终点',
+            [mazePanel(p, path, [r, c]), varsPanel(queue.length, '终点入队')]));
+        }
+      }
+    }
+  }
+
+  var key = found ? '弹出停点 (' + dest + ')：它就是终点，返回 true' : '队列空了：终点不是任何停点，返回 false';
+  frames.push(Viz.frame(found ? TRUE : FALSE, key, [mazePanel(null, null, null), varsPanel(0, found ? '找到' : '不可达')]));
+
+  return { frames: frames, result: found };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

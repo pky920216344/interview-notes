@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉树的序列化与反序列化 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 107 / 1159</span>
+  <nav class="pn"><a href="0138.html">上一篇</a><a href="0011.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">297. </span>二叉树的序列化与反序列化</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 59</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">设计</li><li class="tag">字符串</li><li class="tag">二叉树</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">前序递归序列化，空子树记成 n；反序列化用队列按同一前序消费标记，读到 n 还原空、读到值就建结点。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>序列化就是<strong>前序遍历</strong>：结点写「值,」，空子树写「n,」；<code>n</code> 把空位也记下来，串才能唯一还原。</li><li>反序列化：把串切开进队列，<code>read()</code> 每次取队首——<code>n</code> 返回 null，否则建结点后<strong>先递归左、再递归右</strong>。</li><li>递归顺序两边完全对称：写出去的顺序就是读回来的顺序，不需要任何额外结构。</li><li>串用逗号分隔，负值直接可解析；空树序列化成 <code>n,</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Codec</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 前序序列化：结点写成「值,」，空子树写成「n,」——n 补齐了结构信息，一颗树只对应一个串</span></span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="t">String</span> serialize(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">6</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">7</span>        write(root, sb);</span><span class="ln"><span class="no">8</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">void</span> write(<span class="t">TreeNode</span> node, <span class="t">StringBuilder</span> sb) {</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (node == <span class="k">null</span>) {</span><span class="ln"><span class="no">13</span>            sb.append(<span class="s">"n,"</span>);</span><span class="ln"><span class="no">14</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        sb.append(node.val).append(<span class="s">','</span>);</span><span class="ln"><span class="no">17</span>        write(node.left, sb);</span><span class="ln"><span class="no">18</span>        write(node.right, sb);</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>    <span class="k">public</span> <span class="t">TreeNode</span> deserialize(<span class="t">String</span> data) {</span><span class="ln"><span class="no">22</span>        <span class="c">// 队列按序消费标记：读到 n 还原成空子树，读到值就建结点</span></span><span class="ln"><span class="no">23</span>        <span class="t">Queue</span>&lt;<span class="t">String</span>&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;(<span class="t">Arrays</span>.asList(data.split(<span class="s">","</span>)));</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> read(q);</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span> </span><span class="ln"><span class="no">27</span>    <span class="k">private</span> <span class="t">TreeNode</span> read(<span class="t">Queue</span>&lt;<span class="t">String</span>&gt; q) {</span><span class="ln"><span class="no">28</span>        <span class="t">String</span> s = q.poll();</span><span class="ln"><span class="no">29</span>        <span class="k">if</span> (s.equals(<span class="s">"n"</span>)) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">30</span>        <span class="t">TreeNode</span> node = <span class="k">new</span> <span class="t">TreeNode</span>(<span class="t">Integer</span>.parseInt(s));</span><span class="ln"><span class="no">31</span>        node.left = read(q);</span><span class="ln"><span class="no">32</span>        node.right = read(q);</span><span class="ln"><span class="no">33</span>        <span class="k">return</span> node;</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>序列化是将一个数据结构或者对象转换为连续的比特位的操作，进而可以将转换后的数据存储在一个文件或者内存中，同时也可以通过网络传输到另一个计算机环境，采取相反方式重构得到原数据。</p>
+
+<p>请设计一个算法来实现二叉树的序列化与反序列化。这里不限定你的序列 / 反序列化算法执行逻辑，你只需要保证一个二叉树可以被序列化为一个字符串并且将这个字符串反序列化为原始的树结构。</p>
+
+<p><strong>提示: </strong>输入输出格式与 LeetCode 目前使用的方式一致，详情请参阅&nbsp;<a href="https://leetcode.cn/help-center/3812581/">LeetCode 序列化二叉树的格式</a>。你并非必须采取这种方式，你也可以采用其他的方法解决这个问题。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/38ecfef344e6.jpg" style="width: 442px; height: 324px;" />
+<pre>
+<strong>输入：</strong>root = [1,2,3,null,null,4,5]
+<strong>输出：</strong>[1,2,3,null,null,4,5]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = []
+<strong>输出：</strong>[]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [1]
+<strong>输出：</strong>[1]
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [1,2]
+<strong>输出：</strong>[1,2]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中结点数在范围 <code>[0, 10<sup>4</sup>]</code> 内</li>
+	<li><code>-1000 &lt;= Node.val &lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Codec {", "    // 前序序列化：结点写成「值,」，空子树写成「n,」——n 补齐了结构信息，一颗树只对应一个串", "    public String serialize(TreeNode root) {", "        StringBuilder sb = new StringBuilder();", "        write(root, sb);", "        return sb.toString();", "    }", "", "    private void write(TreeNode node, StringBuilder sb) {", "        if (node == null) {", "            sb.append(\"n,\");", "            return;", "        }", "        sb.append(node.val).append(',');", "        write(node.left, sb);", "        write(node.right, sb);", "    }", "", "    public TreeNode deserialize(String data) {", "        // 队列按序消费标记：读到 n 还原成空子树，读到值就建结点", "        Queue<String> q = new ArrayDeque<>(Arrays.asList(data.split(\",\")));", "        return read(q);", "    }", "", "    private TreeNode read(Queue<String> q) {", "        String s = q.poll();", "        if (s.equals(\"n\")) return null;", "        TreeNode node = new TreeNode(Integer.parseInt(s));", "        node.left = read(q);", "        node.right = read(q);", "        return node;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 297. 二叉树的序列化与反序列化 —— 图解：复刻 Solution.java 的「前序序列化 + 队列反序列化」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, 2, 3, null, null, 4, 5] };
+
+function trace(input) {
+  var frames = [];
+  var shown = { emit: false, nil: false, done: false, consume: false };
+
+  var EMIT = "sb.append(node.val).append(',');";
+  var NIL = 'sb.append("n,");';
+  var SER = 'return sb.toString();';
+  var READ = 'return read(q);';
+  var NODE = 'return node;';
+
+  // 力扣层序数组 -> 结点（idx 是数组下标，图解高亮靠它）
+  function build(arr) {
+    if (!arr.length || arr[0] === null) return null;
+    var root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var nd = q.shift();
+      if (i < arr.length) { if (arr[i] !== null) { nd.left = { idx: i, val: arr[i], left: null, right: null }; q.push(nd.left); } i++; }
+      if (i < arr.length) { if (arr[i] !== null) { nd.right = { idx: i, val: arr[i], left: null, right: null }; q.push(nd.right); } i++; }
+    }
+    return root;
+  }
+  var root = build(input.root);
+
+  // 当前树 -> 力扣层序数组 + 每个结点此刻的层序下标
+  function snapshot(tree) {
+    var arr = [], at = [], q = [tree];
+    while (q.length) {
+      var nd = q.shift();
+      arr.push(nd === null ? null : nd.val);
+      if (nd !== null) { at.push([nd, arr.length - 1]); q.push(nd.left); q.push(nd.right); }
+    }
+    while (arr.length && arr[arr.length - 1] === null) arr.pop();
+    return { arr: arr, at: at };
+  }
+  function treePanel(title, tree, marksFn) {
+    var s = snapshot(tree);
+    var marks = {};
+    s.at.forEach(function (pr) { var c = marksFn && marksFn(pr[0]); if (c) marks[pr[1]] = c; });
+    return Viz.tree(s.arr, { title: title, marks: marks });
+  }
+  function tokensPanel(tokens, freshIdx, curIdx, done) {
+    var marks = {};
+    if (done) for (var i = 0; i < tokens.length; i++) marks[i] = 'win';
+    if (freshIdx != null) marks[freshIdx] = 'new';
+    if (curIdx != null) marks[curIdx] = 'cur';
+    return Viz.cells(tokens.slice(), { title: '序列化串（逗号分隔的标记）', marks: marks });
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  // ---------- 序列化：前序递归 ----------
+  var tokens = [];
+  function write(node) {
+    if (node === null) {
+      tokens.push('n');
+      if (!shown.nil) {
+        shown.nil = true;
+        snap(NIL, '走到空子树：写个 n 占位，空位记下来结构才不会歧义',
+          [treePanel('原二叉树（黄 = 当前递归到）', root, function (nd) { return nd === node ? 'cur' : (emitted.has(nd) ? 'win' : ''); }),
+           tokensPanel(tokens, tokens.length - 1, null, false)]);
+      }
+      return;
+    }
+    tokens.push(String(node.val));
+    var isNew = !shown.emit;
+    if (!shown.emit) shown.emit = true;
+    if (isNew) {
+      snap(EMIT, '前序出发：先写根 ' + node.val + '，再递归左子树、右子树',
+        [treePanel('原二叉树（黄 = 当前递归到）', root, function (nd) { return nd === node ? 'cur' : (emitted.has(nd) ? 'win' : ''); }),
+         tokensPanel(tokens, tokens.length - 1, null, false)]);
+    }
+    emitted.add(node);
+    write(node.left);
+    write(node.right);
+  }
+  var emitted = new Set();
+  write(root);
+  var serial = tokens.join(',') + ',';
+  snap(SER, '序列化完成：共 ' + tokens.length + ' 个标记（串见下）',
+    [tokensPanel(tokens, null, null, true), treePanel('原二叉树', root, function () { return 'win'; })]);
+
+  // ---------- 反序列化：队列按序消费 ----------
+  var queue = serial.split(',');     // 末尾多一个空串，永远消费不到，无影响
+  var pos = 0;
+  var built = null;
+  function read() {
+    var s = queue[pos++];
+    if (s === 'n') return null;
+    var node = { val: parseInt(s, 10), left: null, right: null };
+    node.left = read();
+    node.right = read();
+    return node;
+  }
+  if (root !== null) {
+    built = read();
+    if (!shown.consume) {
+      shown.consume = true;
+      snap(READ, '反序列化：队列按序消费——读值建结点、读 n 还原空子树',
+        [tokensPanel(queue.slice(0, queue.length - 1), null, pos - 1, false),
+         treePanel('重建出的树（青 = 重建的结点）', built, function () { return 'new'; })]);
+    }
+    if (!shown.done) {
+      shown.done = true;
+      snap(NODE, '队列消费完：重建的树和原来一模一样',
+        [tokensPanel(queue.slice(0, queue.length - 1), null, null, true),
+         treePanel('重建出的二叉树', built, function () { return 'done'; })]);
+    }
+  }
+
+  // 输出和 Java 的 out 一致：重建树的力扣层序数组
+  var s3 = snapshot(built);
+  return { frames: frames, result: s3.arr };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

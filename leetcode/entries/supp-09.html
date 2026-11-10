@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>36进制加法 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 196 / 1159</span>
+  <nav class="pn"><a href="0264.html">上一篇</a><a href="offer-29.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">补充题9. </span>36进制加法</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 25</li><li class="algo">模拟</li><li class="aux">双指针</li><li class="st-warn" title="codetop 自行补充的条目，力扣上没有对应页面，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">和十进制竖式加法一样：从最低位逐位相加、满 36 进一；&#x27;0&#x27;-&#x27;9&#x27; 与 &#x27;a&#x27;-&#x27;z&#x27; 各做一次 数字↔字符 互转，低位拼完 reverse。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>双指针从两个串的末尾往前走：<code>sum = 两位数字 + 进位</code>，本位写 <code>sum % 36</code>，进位 <code>sum / 36</code>。</li><li>一方走完就只加另一方的位；两边走完还有进位就再补一位（<code>zz + 1 = 100</code> 就是典型）。</li><li>数字 ↔ 字符：<code>'0'..'9'</code> → 0..9，<code>'a'..'z'</code> → 10..35，写出时反向转换。</li><li>结果是低位在前拼出来的，最后 <code>reverse</code> 一次。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(max(|a|, |b|))，空间复杂度 O(1)（不计输出）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="c">// 36 进制加法：a、b 是 0-9、a-z 组成的非负整数，返回它们的和（同样 36 进制）</span></span><span class="ln"><span class="no">3</span>    <span class="k">public</span> <span class="t">String</span> add36(<span class="t">String</span> a, <span class="t">String</span> b) {</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> i = a.length() - <span class="n">1</span>, j = b.length() - <span class="n">1</span>, carry = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">6</span>        <span class="k">while</span> (i &gt;= <span class="n">0</span> || j &gt;= <span class="n">0</span> || carry &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">7</span>            <span class="c">// 从最低位开始：两位数字相加，再加低位进位</span></span><span class="ln"><span class="no">8</span>            <span class="k">int</span> sum = carry;</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (i &gt;= <span class="n">0</span>) sum += digit(a.charAt(i--));</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (j &gt;= <span class="n">0</span>) sum += digit(b.charAt(j--));</span><span class="ln"><span class="no">11</span>            sb.append(charOf(sum % <span class="n">36</span>));   <span class="c">// 本位</span></span><span class="ln"><span class="no">12</span>            carry = sum / <span class="n">36</span>;              <span class="c">// 满 36 进一</span></span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> sb.reverse().toString();</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span> </span><span class="ln"><span class="no">17</span>    <span class="c">// '0'-'9' → 0..9，'a'-'z' → 10..35</span></span><span class="ln"><span class="no">18</span>    <span class="k">private</span> <span class="k">int</span> digit(<span class="k">char</span> c) {</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> c &lt;= <span class="s">'9'</span> ? c - <span class="s">'0'</span> : c - <span class="s">'a'</span> + <span class="n">10</span>;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>    <span class="c">// 反向：0..9 → '0'-'9'，10..35 → 'a'-'z'</span></span><span class="ln"><span class="no">23</span>    <span class="k">private</span> <span class="k">char</span> charOf(<span class="k">int</span> d) {</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> d &lt; <span class="n">10</span> ? (<span class="k">char</span>) (<span class="s">'0'</span> + d) : (<span class="k">char</span>) (<span class="s">'a'</span> + d - <span class="n">10</span>);</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>这个条目没有现成的题面。</p></div></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    // 36 进制加法：a、b 是 0-9、a-z 组成的非负整数，返回它们的和（同样 36 进制）", "    public String add36(String a, String b) {", "        int i = a.length() - 1, j = b.length() - 1, carry = 0;", "        StringBuilder sb = new StringBuilder();", "        while (i >= 0 || j >= 0 || carry > 0) {", "            // 从最低位开始：两位数字相加，再加低位进位", "            int sum = carry;", "            if (i >= 0) sum += digit(a.charAt(i--));", "            if (j >= 0) sum += digit(b.charAt(j--));", "            sb.append(charOf(sum % 36));   // 本位", "            carry = sum / 36;              // 满 36 进一", "        }", "        return sb.reverse().toString();", "    }", "", "    // '0'-'9' → 0..9，'a'-'z' → 10..35", "    private int digit(char c) {", "        return c <= '9' ? c - '0' : c - 'a' + 10;", "    }", "", "    // 反向：0..9 → '0'-'9'，10..35 → 'a'-'z'", "    private char charOf(int d) {", "        return d < 10 ? (char) ('0' + d) : (char) ('a' + d - 10);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 补充题9. 36进制加法 —— 图解：复刻 Solution.java 的竖式加法，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { a: 'zz', b: '1' };
+
+function trace(input) {
+  var a = input.a, b = input.b;
+  var frames = [];
+  var sb = [];          // 低位在前
+  var carry = 0, step = 0;
+
+  function digit(c) { return c <= '9' ? c.charCodeAt(0) - 48 : c.charCodeAt(0) - 87; }
+  function charOf(d) { return d < 10 ? String.fromCharCode(48 + d) : String.fromCharCode(87 + d); }
+
+  function strPanel(s, o) {
+    var marks = {};
+    var k;
+    for (k = 0; k < s.length; k++) if (o && o.dimTo != null && k > o.dimTo) marks[k] = 'dim';
+    var pointers = o && o.at != null && o.at >= 0 && o.at < s.length
+      ? [{ at: o.at, label: o.label, cls: 'p-cur' }] : [];
+    return Viz.cells(s.split(''), { title: o.title, marks: marks, pointers: pointers });
+  }
+  function sbPanel(o) {
+    var marks = {};
+    if (o && o.newIdx != null) marks[o.newIdx] = 'new';
+    if (o && o.done) for (var k = 0; k < sb.length; k++) marks[k] = 'done';
+    return Viz.cells(sb.slice().reverse(), { title: '和（高位在前）', marks: marks });
+  }
+  function varsPanel(sum) {
+    return Viz.vars([
+      { name: 'sum', v: sum == null ? '—' : sum, cls: sum != null ? 'chg' : '' },
+      { name: 'carry', v: carry, cls: carry > 0 ? 'bad' : '' }
+    ]);
+  }
+
+  frames.push(Viz.frame('int i = a.length() - 1, j = b.length() - 1, carry = 0;',
+    '双指针对齐最低位，进位从 0 开始',
+    [strPanel(a, { title: 'a', at: a.length - 1, label: 'i' }), strPanel(b, { title: 'b', at: b.length - 1, label: 'j' }), varsPanel(null)]));
+
+  var i = a.length - 1, j = b.length - 1;
+  while (i >= 0 || j >= 0 || carry > 0) {
+    step++;
+    var sum = carry;
+    if (i >= 0) sum += digit(a.charAt(i--));
+    if (j >= 0) sum += digit(b.charAt(j--));
+    sb.push(charOf(sum % 36));
+    carry = Math.floor(sum / 36);   // Java 是整数除法，这里必须取整
+    if (step === 1) {
+      frames.push(Viz.frame('carry = sum / 36;',
+        sum >= 36
+          ? a.charAt(a.length - 1) + ' + ' + (b.length ? b.charAt(b.length - 1) : 0) + ' = ' + sum + '：本位记 ' + (sum % 36) + '、进位 1 —— 逢 36 进一'
+          : sum + ' 不满 36：本位直接写，进位保持 0',
+        [strPanel(a, { title: 'a', at: i, label: 'i', dimTo: i }), strPanel(b, { title: 'b', at: j, label: 'j', dimTo: j }), sbPanel({ newIdx: 0 }), varsPanel(sum)]));
+    }
+    if (step === 2) {
+      frames.push(Viz.frame('carry = sum / 36;',
+        sum >= 36 ? '这一位 ' + sum + '：又满 36，继续进位' : '这一位 ' + sum + '：不满 36，进位归 0',
+        [strPanel(a, { title: 'a', at: i, label: 'i', dimTo: i }), strPanel(b, { title: 'b', at: j, label: 'j', dimTo: j }), sbPanel({ newIdx: 0 }), varsPanel(sum)]));
+    }
+  }
+
+  var res = sb.slice().reverse().join('');
+  var shown = res.length <= 12 ? res : res.slice(0, 6) + '…';
+  frames.push(Viz.frame('return sb.reverse().toString();',
+    '低位在前拼好，reverse 一次：' + a + ' + ' + b + ' = ' + shown,
+    [strPanel(a, { title: 'a', at: null, dimTo: -1 }), strPanel(b, { title: 'b', at: null, dimTo: -1 }), sbPanel({ done: true }), varsPanel(null)]));
+
+  return { frames: frames, result: res };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

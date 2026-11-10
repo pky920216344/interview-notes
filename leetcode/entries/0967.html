@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>连续差相同的数字 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 549 / 1159</span>
+  <nav class="pn"><a href="offer-13.html">上一篇</a><a href="0326.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">967. </span>连续差相同的数字</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">广度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">回溯</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">BFS 式逐位延长：首位 1~9 起步，每个数的末位 ±k 生成下一层候选，长度到 n 收集。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>首位放 <code>1..9</code>（无前导零），放进当前层列表。</li><li>每延长一位：末位 <code>d</code> 只能接 <code>d+k</code>（不越 9）和 <code>d−k</code>（不越 0，且 <code>k&gt;0</code> 才加，<strong>k=0 时两支相同只留一支</strong>）。</li><li>延长到长度 <code>n</code> 时整层就是答案；任何顺序都可返回。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(2ⁿ)，空间复杂度 O(2ⁿ)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] numsSameConsecDiff(<span class="k">int</span> n, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 第一位 1..9（不能有前导零），之后逐位延长</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; cur = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> d = <span class="n">1</span>; d &lt;= <span class="n">9</span>; d++) cur.add(d);</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> len = <span class="n">2</span>; len &lt;= n; len++) {</span><span class="ln"><span class="no">9</span>            <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; next = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> x : cur) {</span><span class="ln"><span class="no">11</span>                <span class="k">int</span> last = x % <span class="n">10</span>;</span><span class="ln"><span class="no">12</span>                <span class="k">if</span> (last + k &lt; <span class="n">10</span>) next.add(x * <span class="n">10</span> + last + k);          <span class="c">// 末位向上差 k</span></span><span class="ln"><span class="no">13</span>                <span class="k">if</span> (k &gt; <span class="n">0</span> &amp;&amp; last - k &gt;= <span class="n">0</span>) next.add(x * <span class="n">10</span> + last - k); <span class="c">// 向下差 k；k=0 时两支重合，只留一支</span></span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>            cur = next;</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">int</span>[] ans = <span class="k">new</span> <span class="k">int</span>[cur.size()];</span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; ans.length; i++) ans[i] = cur.get(i);</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>返回所有长度为 <code>n</code> 且满足其每两个连续位上的数字之间的差的绝对值为 <code>k</code> 的<strong> 非负整数 </strong>。</p>
+
+<p>请注意，<strong>除了 </strong>数字 <code>0</code> 本身之外，答案中的每个数字都 <strong>不能 </strong>有前导零。例如，<code>01</code> 有一个前导零，所以是无效的；但 <code>0</code>&nbsp;是有效的。</p>
+
+<p>你可以按 <strong>任何顺序</strong> 返回答案。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 3, k = 7
+<strong>输出：</strong>[181,292,707,818,929]
+<strong>解释：</strong>注意，070 不是一个有效的数字，因为它有前导零。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 2, k = 1
+<strong>输出：</strong>[10,12,21,23,32,34,43,45,54,56,65,67,76,78,87,89,98]</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 2, k = 0
+<strong>输出：</strong>[11,22,33,44,55,66,77,88,99]
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 2, k = 2
+<strong>输出：</strong>[13,20,24,31,35,42,46,53,57,64,68,75,79,86,97]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= n &lt;= 9</code></li>
+	<li><code>0 &lt;= k &lt;= 9</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] numsSameConsecDiff(int n, int k) {", "        // 第一位 1..9（不能有前导零），之后逐位延长", "        List<Integer> cur = new ArrayList<>();", "        for (int d = 1; d <= 9; d++) cur.add(d);", "        for (int len = 2; len <= n; len++) {", "            List<Integer> next = new ArrayList<>();", "            for (int x : cur) {", "                int last = x % 10;", "                if (last + k < 10) next.add(x * 10 + last + k);          // 末位向上差 k", "                if (k > 0 && last - k >= 0) next.add(x * 10 + last - k); // 向下差 k；k=0 时两支重合，只留一支", "            }", "            cur = next;", "        }", "        int[] ans = new int[cur.size()];", "        for (int i = 0; i < ans.length; i++) ans[i] = cur.get(i);", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 967. 连续差相同的数字 —— 图解：复刻 Solution.java 的「逐位 ±k 延长」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// Java 对拍导出的 out 是排序后的结果，这里最后同样排序，保证两边一致。
+
+var STORY_INPUT = { n: 3, k: 7 };
+
+function trace(input) {
+  var n = input.n, k = input.k;
+  var frames = [];
+
+  var START = 'for (int d = 1; d <= 9; d++) cur.add(d);';
+  var UP = 'if (last + k < 10) next.add(x * 10 + last + k);';
+  var DOWN = 'if (k > 0 && last - k >= 0) next.add(x * 10 + last - k);';
+
+  function numsPanel(list, cls) {
+    var marks = {};
+    for (var i = 0; i < list.length; i++) marks[i] = cls || '';
+    return Viz.cells(list, { title: '当前这层的数', marks: marks, hideIndex: true });
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  var cur = [];
+  for (var d = 1; d <= 9; d++) cur.push(d);
+  snap(START, '开局：首位不能为 0，1~9 各成一个候选', [numsPanel(cur, '')]);
+
+  for (var len = 2; len <= n; len++) {
+    var next = [], upHit = null, downHit = null;
+    for (var i = 0; i < cur.length; i++) {
+      var x = cur[i], last = x % 10;
+      if (last + k < 10) { next.push(x * 10 + last + k); if (upHit === null) upHit = x; }
+      if (k > 0 && last - k >= 0) { next.push(x * 10 + last - k); if (downHit === null) downHit = x; }
+    }
+    if (len === 2) {
+      var bits = [];
+      if (upHit !== null) bits.push(upHit + ' 末位 +' + k);
+      if (downHit !== null) bits.push(downHit + ' 末位 −' + k);
+      snap(UP, '逐位延长：每个候选的末位 ±k（' + bits.join('；') + ' 先走通），得到 ' + next.length + ' 个新候选',
+        [numsPanel(next, 'new')]);
+    }
+    cur = next;
+    if (len === n - 1 && n > 2)
+      snap(DOWN, '延长到 ' + len + ' 位：还剩 ' + cur.length + ' 个候选，继续一轮', [numsPanel(cur, 'win')]);
+  }
+
+  cur.sort(function (a, b) { return a - b; });
+  snap(START, '长度到 ' + n + '：共 ' + cur.length + ' 个，排序后返回（' + cur.slice(0, 3).join('、') + (cur.length > 3 ? ' …' : '') + '）',
+    [numsPanel(cur, 'done')]);
+  return { frames: frames, result: cur };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

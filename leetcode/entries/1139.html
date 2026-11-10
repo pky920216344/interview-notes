@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最大的以 1 为边界的正方形 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 820 / 1159</span>
+  <nav class="pn"><a href="offer-64.html">上一篇</a><a href="mianshi-17-22.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1139. </span>最大的以 1 为边界的正方形</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">预处理每格「向左、向上连续 1 的长度」；枚举右下角，边长从 min(左,上) 往下试，只验顶边和左边够不够长。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>left[i][j]</code>、<code>up[i][j]</code>：该格向左、向上连续 1 的长度，一次扫描递推出来。</li><li>以 <code>(i,j)</code> 为右下角、边长 <code>s</code>：底边、右边自动满足（<code>left</code>、<code>up</code> ≥ <code>s</code> 才进循环），只需再验<strong>顶边</strong> <code>left[i-s+1][j] ≥ s</code> 和<strong>左边</strong> <code>up[i][j-s+1] ≥ s</code>。</li><li>边长从大到小试，成立就更新答案；最多试到 <code>min(m,n)</code> 种，总面积答案 = 最大边长²。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m·n·min(m,n))，空间复杂度 O(m·n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> largest1BorderedSquare(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = grid.length, n = grid[<span class="n">0</span>].length;</span><span class="ln"><span class="no">4</span>        <span class="c">// left/up 多留一行一列：每格向左、向上连续 1 的长度（含自己）</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[][] left = <span class="k">new</span> <span class="k">int</span>[m + <span class="n">1</span>][n + <span class="n">1</span>], up = <span class="k">new</span> <span class="k">int</span>[m + <span class="n">1</span>][n + <span class="n">1</span>];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">8</span>                <span class="k">if</span> (grid[i][j] == <span class="n">1</span>) {</span><span class="ln"><span class="no">9</span>                    left[i + <span class="n">1</span>][j + <span class="n">1</span>] = left[i + <span class="n">1</span>][j] + <span class="n">1</span>;</span><span class="ln"><span class="no">10</span>                    up[i + <span class="n">1</span>][j + <span class="n">1</span>] = up[i][j + <span class="n">1</span>] + <span class="n">1</span>;</span><span class="ln"><span class="no">11</span>                }</span><span class="ln"><span class="no">12</span>            }</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">16</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">17</span>                <span class="c">// 以 (i,j) 为右下角：边长从 min(向左, 向上) 往下试，成功就停</span></span><span class="ln"><span class="no">18</span>                <span class="k">for</span> (<span class="k">int</span> s = <span class="t">Math</span>.min(left[i + <span class="n">1</span>][j + <span class="n">1</span>], up[i + <span class="n">1</span>][j + <span class="n">1</span>]); s &gt; ans; s--) {</span><span class="ln"><span class="no">19</span>                    <span class="c">// 顶边、左边也要够长</span></span><span class="ln"><span class="no">20</span>                    <span class="k">if</span> (left[i - s + <span class="n">2</span>][j + <span class="n">1</span>] &gt;= s &amp;&amp; up[i + <span class="n">1</span>][j - s + <span class="n">2</span>] &gt;= s) {</span><span class="ln"><span class="no">21</span>                        ans = s;</span><span class="ln"><span class="no">22</span>                        <span class="k">break</span>;</span><span class="ln"><span class="no">23</span>                    }</span><span class="ln"><span class="no">24</span>                }</span><span class="ln"><span class="no">25</span>            }</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> ans * ans;</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个由若干 <code>0</code> 和 <code>1</code> 组成的二维网格&nbsp;<code>grid</code>，请你找出边界全部由 <code>1</code> 组成的最大 <strong>正方形</strong> 子网格，并返回该子网格中的元素数量。如果不存在，则返回 <code>0</code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>grid = [[1,1,1],[1,0,1],[1,1,1]]
+<strong>输出：</strong>9
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>grid = [[1,1,0,0]]
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= grid.length &lt;= 100</code></li>
+	<li><code>1 &lt;= grid[0].length &lt;= 100</code></li>
+	<li><code>grid[i][j]</code> 为&nbsp;<code>0</code>&nbsp;或&nbsp;<code>1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int largest1BorderedSquare(int[][] grid) {", "        int m = grid.length, n = grid[0].length;", "        // left/up 多留一行一列：每格向左、向上连续 1 的长度（含自己）", "        int[][] left = new int[m + 1][n + 1], up = new int[m + 1][n + 1];", "        for (int i = 0; i < m; i++) {", "            for (int j = 0; j < n; j++) {", "                if (grid[i][j] == 1) {", "                    left[i + 1][j + 1] = left[i + 1][j] + 1;", "                    up[i + 1][j + 1] = up[i][j + 1] + 1;", "                }", "            }", "        }", "        int ans = 0;", "        for (int i = 0; i < m; i++) {", "            for (int j = 0; j < n; j++) {", "                // 以 (i,j) 为右下角：边长从 min(向左, 向上) 往下试，成功就停", "                for (int s = Math.min(left[i + 1][j + 1], up[i + 1][j + 1]); s > ans; s--) {", "                    // 顶边、左边也要够长", "                    if (left[i - s + 2][j + 1] >= s && up[i + 1][j - s + 2] >= s) {", "                        ans = s;", "                        break;", "                    }", "                }", "            }", "        }", "        return ans * ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1139. 最大的以 1 为边界的正方形 —— 图解：复刻 Solution.java 的 left/up 预处理 + 收缩验证，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[1, 1, 1], [1, 0, 1], [1, 1, 1]] };
+
+function trace(input) {
+  var g = input.grid;
+  var m = g.length, n = g[0].length;
+  var frames = [];
+  var PRE = 'left[i + 1][j + 1] = left[i + 1][j] + 1;';
+  var TRY = 'for (int s = Math.min(left[i + 1][j + 1], up[i + 1][j + 1]); s > ans; s--) {';
+  var CHK = 'if (left[i - s + 2][j + 1] >= s && up[i + 1][j - s + 2] >= s) {';
+  var RET = 'return ans * ans;';
+
+  // 与 Java 相同的填充数组（多一行一列）
+  var left = [], up = [];
+  for (var i = 0; i <= m; i++) { left.push(new Array(n + 1).fill(0)); up.push(new Array(n + 1).fill(0)); }
+  for (i = 0; i < m; i++) {
+    for (var j = 0; j < n; j++) {
+      if (g[i][j] === 1) {
+        left[i + 1][j + 1] = left[i + 1][j] + 1;
+        up[i + 1][j + 1] = up[i][j + 1] + 1;
+      }
+    }
+  }
+
+  function trim(a) {   // 去掉填充的第 0 行/列再展示
+    var out = [];
+    for (var r = 1; r < a.length; r++) out.push(a[r].slice(1));
+    return out;
+  }
+  function markGrid(fn) {
+    var marks = {};
+    for (var r = 0; r < m; r++) for (var c = 0; c < n; c++) { var cl = fn(r, c); if (cl) marks[r + ',' + c] = cl; }
+    return marks;
+  }
+  function border(r, c, s) {   // 边长 s 的正方形边界格
+    var set = {};
+    for (var k = 0; k < s; k++) {
+      set[(r - s + 1) + ',' + (c - s + 1 + k)] = 1;   // 顶边
+      set[r + ',' + (c - s + 1 + k)] = 1;             // 底边
+      set[(r - s + 1 + k) + ',' + c] = 1;             // 右边
+      set[(r - s + 1 + k) + ',' + (c - s + 1)] = 1;   // 左边
+    }
+    return set;
+  }
+  function panels(marks, title, vars) {
+    var ps = [
+      Viz.grid(g.map(function (row) { return row.map(String); }), { title: title, marks: marks }),
+      Viz.grid(trim(left).map(function (row) { return row.map(String); }), { title: 'left：向左连续 1 的长度', marks: marks }),
+      Viz.grid(trim(up).map(function (row) { return row.map(String); }), { title: 'up：向上连续 1 的长度', marks: marks })
+    ];
+    if (vars) ps.push(Viz.vars(vars));
+    return ps;
+  }
+  function snap(at, key, marks, title, vars) {
+    frames.push(Viz.frame(at, key, panels(marks, title, vars)));
+  }
+
+  snap(PRE, '预处理：每格算出向左、向上连续 1 的长度，验证边长时不用再扫格子',
+    markGrid(function (r, c) { return g[r][c] === 1 ? 'win' : ''; }), 'grid（亮 = 1）',
+    [{ name: 'ans（当前最大边长）', v: '0' }]);
+
+  var ans = 0;
+  var bestCell = null, bestS = 0;
+  for (i = 0; i < m; i++) {
+    for (j = 0; j < n; j++) {
+      var sMax = Math.min(left[i + 1][j + 1], up[i + 1][j + 1]);
+      var isLast = (i === m - 1 && j === n - 1);
+      if (isLast && sMax > 0) {
+        snap(TRY, '枚举到右下角 (' + i + ',' + j + ')：向左、向上都够 ' + sMax + '，先试最大边长 ' + sMax,
+          markGrid(function (r, c) { return border(i, j, sMax)[r + ',' + c] ? 'win' : (r === i && c === j ? 'cur' : ''); }),
+          'grid（亮 = 想要的边框）',
+          [{ name: 'sMax = min(左, 上)', v: String(sMax) }, { name: 'ans（当前最大）', v: String(ans) }]);
+      }
+      for (var s = sMax; s > ans; s--) {
+        var ok = left[i - s + 2][j + 1] >= s && up[i + 1][j - s + 2] >= s;
+        if (isLast && !ok) {
+          snap(CHK, '右下角 (' + i + ',' + j + ') 试边长 ' + s + '：顶边或左边不够长，缩小边长再试',
+            markGrid(function (r, c) { return border(i, j, s)[r + ',' + c] ? 'bad' : (r === i && c === j ? 'cur' : ''); }),
+            'grid（红 = 试的边框，黄 = 右下角）',
+            [{ name: '边长 s', v: String(s) }, { name: 'ans（当前最大）', v: String(ans) }]);
+        }
+        if (ok) {
+          if (isLast) {
+            snap(CHK, '右下角 (' + i + ',' + j + ')：边长 ' + s + ' 的四条边都够长，成立',
+              markGrid(function (r, c) { return border(i, j, s)[r + ',' + c] ? 'done' : ''; }),
+              'grid（绿 = 成立的边框）',
+              [{ name: '边长 s', v: String(s) }, { name: 'ans', v: String(s), cls: 'done' }]);
+          }
+          ans = s;
+          if (ans > bestS) { bestS = ans; bestCell = [i, j]; }
+          break;
+        }
+      }
+    }
+  }
+
+  var finMarks = bestCell ? markGrid(function (r, c) { return border(bestCell[0], bestCell[1], bestS)[r + ',' + c] ? 'done' : ''; }) : {};
+  frames.push(Viz.frame(RET, bestS > 0 ? '最大边长 ' + bestS + '，面积 = ' + (bestS * bestS) : '没有任何以 1 为边框的正方形，返回 0',
+    panels(finMarks, 'grid（绿 = 最大边框）', [{ name: '返回值', v: String(bestS * bestS), cls: 'done' }])));
+
+  return { frames: frames, result: ans * ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

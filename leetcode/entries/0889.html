@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>从前序与后序遍历序列构造二叉树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 384 / 1159</span>
+  <nav class="pn"><a href="1293.html">上一篇</a><a href="1171.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">889. </span>从前序与后序遍历序列构造二叉树</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 9</li><li class="algo">分治</li><li class="aux">哈希表</li><li class="tag">树</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">分治</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">前序第一个是根，左子树的根就是紧随其后的 pre[pl+1]；在后序里定位它，切出左子树长度后递归。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>前序 = 根 + 左子树 + 右子树，后序 = 左子树 + 右子树 + 根：两头的「根」都在端点上。</li><li>前序里根后面那个值 <code>pre[pl+1]</code> 必是<strong>左子树的根</strong>；用哈希表查它在后序的位置，减去段起点就是左子树长度 <code>leftLen</code>。</li><li>按 <code>leftLen</code> 把两段各自切成左、右子树递归；空段返回 <code>null</code>。</li><li>只有独生孩子时答案不唯一，本解法约定挂<strong>左</strong>孩子（LeetCode 判题接受任一答案）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span>[] pre, post;</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; pos;   <span class="c">// 值 -&gt; 它在后序里的下标</span></span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">TreeNode</span> constructFromPrePost(<span class="k">int</span>[] preorder, <span class="k">int</span>[] postorder) {</span><span class="ln"><span class="no">8</span>        pre = preorder;</span><span class="ln"><span class="no">9</span>        post = postorder;</span><span class="ln"><span class="no">10</span>        pos = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; post.length; i++) pos.put(post[i], i);</span><span class="ln"><span class="no">12</span>        <span class="k">return</span> build(<span class="n">0</span>, pre.length - <span class="n">1</span>, <span class="n">0</span>, post.length - <span class="n">1</span>);</span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span>    <span class="c">// pre[pl..pr] 与 post[ol..or] 是同一段子树</span></span><span class="ln"><span class="no">16</span>    <span class="k">private</span> <span class="t">TreeNode</span> build(<span class="k">int</span> pl, <span class="k">int</span> pr, <span class="k">int</span> ol, <span class="k">int</span> or) {</span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (pl &gt; pr) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">18</span>        <span class="t">TreeNode</span> root = <span class="k">new</span> <span class="t">TreeNode</span>(pre[pl]);   <span class="c">// 前序第一个是根</span></span><span class="ln"><span class="no">19</span>        <span class="k">if</span> (pl == pr) <span class="k">return</span> root;</span><span class="ln"><span class="no">20</span>        <span class="c">// 左子树的根是 pre[pl+1]：在后序里找到它，它之前（含）都是左子树</span></span><span class="ln"><span class="no">21</span>        <span class="k">int</span> leftLen = pos.get(pre[pl + <span class="n">1</span>]) - ol + <span class="n">1</span>;</span><span class="ln"><span class="no">22</span>        root.left = build(pl + <span class="n">1</span>, pl + leftLen, ol, ol + leftLen - <span class="n">1</span>);</span><span class="ln"><span class="no">23</span>        root.right = build(pl + leftLen + <span class="n">1</span>, pr, ol + leftLen, or - <span class="n">1</span>);</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> root;</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定两个整数数组，<code>preorder</code>&nbsp;和 <code>postorder</code> ，其中 <code>preorder</code> 是一个具有 <strong>无重复</strong> 值的二叉树的前序遍历，<code>postorder</code> 是同一棵树的后序遍历，重构并返回二叉树。</p>
+
+<p>如果存在多个答案，您可以返回其中 <strong>任何</strong> 一个。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/cfa01fb99d56.jpg" style="height: 265px; width: 304px;" /></p>
+
+<pre>
+<strong>输入：</strong>preorder = [1,2,4,5,3,6,7], postorder = [4,5,2,6,7,3,1]
+<strong>输出：</strong>[1,2,3,4,5,6,7]
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> preorder = [1], postorder = [1]
+<strong>输出:</strong> [1]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= preorder.length &lt;= 30</code></li>
+	<li><code>1 &lt;= preorder[i] &lt;= preorder.length</code></li>
+	<li><code>preorder</code>&nbsp;中所有值都 <strong>不同</strong></li>
+	<li><code>postorder.length == preorder.length</code></li>
+	<li><code>1 &lt;= postorder[i] &lt;= postorder.length</code></li>
+	<li><code>postorder</code>&nbsp;中所有值都 <strong>不同</strong></li>
+	<li>保证 <code>preorder</code>&nbsp;和 <code>postorder</code>&nbsp;是同一棵二叉树的前序遍历和后序遍历</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private int[] pre, post;", "    private Map<Integer, Integer> pos;   // 值 -> 它在后序里的下标", "", "    public TreeNode constructFromPrePost(int[] preorder, int[] postorder) {", "        pre = preorder;", "        post = postorder;", "        pos = new HashMap<>();", "        for (int i = 0; i < post.length; i++) pos.put(post[i], i);", "        return build(0, pre.length - 1, 0, post.length - 1);", "    }", "", "    // pre[pl..pr] 与 post[ol..or] 是同一段子树", "    private TreeNode build(int pl, int pr, int ol, int or) {", "        if (pl > pr) return null;", "        TreeNode root = new TreeNode(pre[pl]);   // 前序第一个是根", "        if (pl == pr) return root;", "        // 左子树的根是 pre[pl+1]：在后序里找到它，它之前（含）都是左子树", "        int leftLen = pos.get(pre[pl + 1]) - ol + 1;", "        root.left = build(pl + 1, pl + leftLen, ol, ol + leftLen - 1);", "        root.right = build(pl + leftLen + 1, pr, ol + leftLen, or - 1);", "        return root;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 889. 前序+后序构造二叉树 —— 图解：复刻 Solution.java 的「前序定根、后序切段」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { preorder: [1, 2, 4, 5, 3, 6, 7], postorder: [4, 5, 2, 6, 7, 3, 1] };
+
+function trace(input) {
+  var pre = input.preorder, post = input.postorder;
+  var pos = {};                          // 值 -> 后序下标
+  post.forEach(function (v, i) { pos[v] = i; });
+  var frames = [], seen = { root: false, split: false, leaf: false, right: false };
+  var topRoot = null, lastNew = null;
+
+  var ROOT = 'new TreeNode(pre[pl])';
+  var SPLIT = 'int leftLen = pos.get(pre[pl + 1]) - ol + 1;';
+  var LEAF = 'if (pl == pr) return root;';
+  var RIGHT = 'root.right = build(pl + leftLen + 1, pr, ol + leftLen, or - 1);';
+
+  // 层序结点数组（空位 null，去掉尾部 null），和 lib Trees.toLevel 一致
+  function levelNodes(root) {
+    var out = [];
+    if (!root) return out;
+    var q = [root];
+    while (q.length) {
+      var nd = q.shift();
+      if (!nd) { out.push(null); continue; }
+      out.push(nd);
+      q.push(nd.left);
+      q.push(nd.right);
+    }
+    while (out.length && out[out.length - 1] === null) out.pop();
+    return out;
+  }
+
+  // 数组面板：[pl, pr] 是当前递归段，之前的已消费；后序的根在段尾，额外标出
+  function segCells(arr, pl, pr, isPost) {
+    var marks = {};
+    for (var i = 0; i < arr.length; i++) {
+      if (i < pl) marks[i] = 'dim';
+      else if (i <= pr) marks[i] = 'win';
+    }
+    marks[pl] = 'cur';
+    if (isPost) marks[pr] = 'cur';
+    return Viz.cells(arr, { title: isPost ? '后序 postorder' : '前序 preorder', marks: marks });
+  }
+
+  function treePanel(curNode, finalAll) {
+    var nodes = levelNodes(topRoot);
+    var level = nodes.map(function (nd) { return nd ? nd.val : null; });
+    var marks = {}, labels = [];
+    nodes.forEach(function (nd, i) {
+      if (!nd) return;
+      if (finalAll) { marks[i] = 'done'; return; }
+      if (nd === curNode) { marks[i] = 'cur'; labels.push({ at: i, label: '当前根', cls: 'p-cur' }); }
+      else if (nd === lastNew) marks[i] = 'new';
+    });
+    return Viz.tree(level, { title: finalAll ? '构造完成的树' : '正在构造的树', marks: marks, labels: labels });
+  }
+
+  function snap(at, key, seg, finalAll) {
+    var panels;
+    if (finalAll) panels = [treePanel(null, true)];
+    else panels = [segCells(pre, seg.pl, seg.pr, false), segCells(post, seg.ol, seg.or, true), treePanel(seg.node, false)];
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  function build(pl, pr, ol, or) {
+    if (pl > pr) return null;
+    var root = { val: pre[pl], left: null, right: null };
+    if (!topRoot) topRoot = root;
+    if (pl === pr) {
+      lastNew = root;
+      if (!seen.leaf) {
+        seen.leaf = true;
+        snap(LEAF, '单值段：直接作叶子（独生孩子按约定挂左）', { node: root, pl: pl, pr: pr, ol: ol, or: or });
+      }
+      return root;
+    }
+    var leftRoot = pre[pl + 1];
+    var leftLen = pos[leftRoot] - ol + 1;
+    if (!seen.root) {
+      seen.root = true;
+      snap(ROOT, '根 = 前序第一个值 ' + pre[pl] + '；左子树根 = 紧随的 ' + leftRoot, { node: root, pl: pl, pr: pr, ol: ol, or: or });
+    }
+    if (!seen.split) {
+      seen.split = true;
+      snap(SPLIT, '后序里 ' + leftRoot + ' 之前（含）共 ' + leftLen + ' 个值：这就是左子树', { node: root, pl: pl, pr: pr, ol: ol, or: or });
+    }
+    root.left = build(pl + 1, pl + leftLen, ol, ol + leftLen - 1);
+    lastNew = root.left;
+    if (!seen.right) {
+      seen.right = true;
+      snap(RIGHT, '左子树建好（蓝结点），剩 ' + (pr - pl - leftLen) + ' 个值递归成右子树', { node: root, pl: pl, pr: pr, ol: ol, or: or });
+    }
+    root.right = build(pl + leftLen + 1, pr, ol + leftLen, or - 1);
+    return root;
+  }
+
+  var root = build(0, pre.length - 1, 0, post.length - 1);
+  var level = levelNodes(root).map(function (nd) { return nd ? nd.val : null; });
+  snap(RIGHT, '递归结束：n 个值全部归位，独生孩子都在左边', null, true);
+  return { frames: frames, result: level };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>阈值距离内邻居最少的城市 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 683 / 1159</span>
+  <nav class="pn"><a href="1498.html">上一篇</a><a href="0666.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1334. </span>阈值距离内邻居最少的城市</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">图算法</li><li class="tag">图</li><li class="tag">动态规划</li><li class="tag">最短路</li><li class="tag">dijkstra</li><li class="tag">floyd-warshall-algorithm</li><li class="tag">bellman-ford-algorithm</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">n ≤ 100 直接 Floyd 求全源最短路，再逐城市数距离 ≤ threshold 的可达城市数，取最少的（并列取编号大的）。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先建 <code>dist</code> 矩阵：对角线 0、直达边取最小权、其余 <code>INF</code>（取 <code>Integer.MAX_VALUE / 2</code>，相加不溢出）。</li><li>Floyd 三重循环枚举中转点 <code>k</code>：<code>dist[i][k] + dist[k][j] &lt; dist[i][j]</code> 就更新，跑完得到任意两点最短路。</li><li>逐城市数 <code>dist[i][j] ≤ threshold</code> 的 <code>j</code> 个数（自己也是 0 ≤ 阈值，每城都多算 1，不影响比大小），<code>cnt &lt;= best</code> 让并列时编号大的胜出。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n³)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> findTheCity(<span class="k">int</span> n, <span class="k">int</span>[][] edges, <span class="k">int</span> distanceThreshold) {</span><span class="ln"><span class="no">5</span>        <span class="c">// INF 取 int 上限一半：Floyd 相加不会溢出，又远大于任何真实距离</span></span><span class="ln"><span class="no">6</span>        <span class="k">final</span> <span class="k">int</span> INF = <span class="t">Integer</span>.MAX_VALUE / <span class="n">2</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[][] dist = <span class="k">new</span> <span class="k">int</span>[n][n];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) <span class="t">Arrays</span>.fill(dist[i], INF);</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) dist[i][i] = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span>[] e : edges) {</span><span class="ln"><span class="no">11</span>            dist[e[<span class="n">0</span>]][e[<span class="n">1</span>]] = <span class="t">Math</span>.min(dist[e[<span class="n">0</span>]][e[<span class="n">1</span>]], e[<span class="n">2</span>]);</span><span class="ln"><span class="no">12</span>            dist[e[<span class="n">1</span>]][e[<span class="n">0</span>]] = <span class="t">Math</span>.min(dist[e[<span class="n">1</span>]][e[<span class="n">0</span>]], e[<span class="n">2</span>]);</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="c">// Floyd：枚举中转点 k，看绕 k 是否更近</span></span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; n; k++)</span><span class="ln"><span class="no">16</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++)</span><span class="ln"><span class="no">17</span>                <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++)</span><span class="ln"><span class="no">18</span>                    <span class="k">if</span> (dist[i][k] + dist[k][j] &lt; dist[i][j]) dist[i][j] = dist[i][k] + dist[k][j];</span><span class="ln"><span class="no">19</span>        <span class="c">// 逐城市数阈值内的可达城市，取最少的；&lt;= 让并列时编号大的胜出</span></span><span class="ln"><span class="no">20</span>        <span class="k">int</span> ans = -<span class="n">1</span>, best = <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">21</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">22</span>            <span class="k">int</span> cnt = <span class="n">0</span>;</span><span class="ln"><span class="no">23</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) <span class="k">if</span> (dist[i][j] &lt;= distanceThreshold) cnt++;</span><span class="ln"><span class="no">24</span>            <span class="k">if</span> (cnt &lt;= best) { best = cnt; ans = i; }</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>有 <code>n</code>&nbsp;个城市，按从 <code>0</code> 到 <code>n-1</code>&nbsp;编号。给你一个边数组&nbsp;<code>edges</code>，其中 <code>edges[i] = [from<sub>i</sub>, to<sub>i</sub>, weight<sub>i</sub>]</code>&nbsp;代表&nbsp;<code>from<sub>i</sub></code>&nbsp;和&nbsp;<code>to<sub>i</sub></code><sub>&nbsp;</sub>两个城市之间的双向加权边，距离阈值是一个整数&nbsp;<code>distanceThreshold</code>。</p>
+
+<p>返回在路径距离限制为 <code>distanceThreshold</code> 以内可到达城市最少的城市。如果有多个这样的城市，则返回编号最大的城市。</p>
+
+<p>注意，连接城市 <em><strong>i</strong></em> 和 <em><strong>j</strong></em> 的路径的距离等于沿该路径的所有边的权重之和。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/fa2b57b662ae.png" style="width: 300px; height: 224px;" /></p>
+
+<pre>
+<strong>输入：</strong>n = 4, edges = [[0,1,3],[1,2,1],[1,3,4],[2,3,1]], distanceThreshold = 4
+<strong>输出：</strong>3
+<strong>解释：</strong>城市分布图如上。
+每个城市阈值距离 distanceThreshold = 4 内的邻居城市分别是：
+城市 0 -&gt; [城市 1, 城市 2]&nbsp;
+城市 1 -&gt; [城市 0, 城市 2, 城市 3]&nbsp;
+城市 2 -&gt; [城市 0, 城市 1, 城市 3]&nbsp;
+城市 3 -&gt; [城市 1, 城市 2]&nbsp;
+城市 0 和 3 在阈值距离 4 以内都有 2 个邻居城市，但是我们必须返回城市 3，因为它的编号最大。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/143f4a0d68d1.png" style="width: 300px; height: 224px;" /></strong></p>
+
+<pre>
+<strong>输入：</strong>n = 5, edges = [[0,1,2],[0,4,8],[1,2,3],[1,4,2],[2,3,1],[3,4,1]], distanceThreshold = 2
+<strong>输出：</strong>0
+<strong>解释：</strong>城市分布图如上。&nbsp;
+每个城市阈值距离 distanceThreshold = 2 内的邻居城市分别是：
+城市 0 -&gt; [城市 1]&nbsp;
+城市 1 -&gt; [城市 0, 城市 4]&nbsp;
+城市 2 -&gt; [城市 3, 城市 4]&nbsp;
+城市 3 -&gt; [城市 2, 城市 4]
+城市 4 -&gt; [城市 1, 城市 2, 城市 3]&nbsp;
+城市 0 在阈值距离 2 以内只有 1 个邻居城市。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= n &lt;= 100</code></li>
+	<li><code>1 &lt;= edges.length &lt;= n * (n - 1) / 2</code></li>
+	<li><code>edges[i].length == 3</code></li>
+	<li><code>0 &lt;= from<sub>i</sub> &lt; to<sub>i</sub> &lt; n</code></li>
+	<li><code>1 &lt;= weight<sub>i</sub>,&nbsp;distanceThreshold &lt;= 10^4</code></li>
+	<li>所有 <code>(from<sub>i</sub>, to<sub>i</sub>)</code>&nbsp;都是不同的。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int findTheCity(int n, int[][] edges, int distanceThreshold) {", "        // INF 取 int 上限一半：Floyd 相加不会溢出，又远大于任何真实距离", "        final int INF = Integer.MAX_VALUE / 2;", "        int[][] dist = new int[n][n];", "        for (int i = 0; i < n; i++) Arrays.fill(dist[i], INF);", "        for (int i = 0; i < n; i++) dist[i][i] = 0;", "        for (int[] e : edges) {", "            dist[e[0]][e[1]] = Math.min(dist[e[0]][e[1]], e[2]);", "            dist[e[1]][e[0]] = Math.min(dist[e[1]][e[0]], e[2]);", "        }", "        // Floyd：枚举中转点 k，看绕 k 是否更近", "        for (int k = 0; k < n; k++)", "            for (int i = 0; i < n; i++)", "                for (int j = 0; j < n; j++)", "                    if (dist[i][k] + dist[k][j] < dist[i][j]) dist[i][j] = dist[i][k] + dist[k][j];", "        // 逐城市数阈值内的可达城市，取最少的；<= 让并列时编号大的胜出", "        int ans = -1, best = Integer.MAX_VALUE;", "        for (int i = 0; i < n; i++) {", "            int cnt = 0;", "            for (int j = 0; j < n; j++) if (dist[i][j] <= distanceThreshold) cnt++;", "            if (cnt <= best) { best = cnt; ans = i; }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1334. 阈值距离内邻居最少的城市 —— 图解：复刻 Solution.java 的「Floyd 全源最短路 + 逐城计数」，4 张关键帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 4, edges: [[0, 1, 3], [1, 2, 1], [1, 3, 4], [2, 3, 1]], threshold: 4 };
+
+function trace(input) {
+  var n = input.n, threshold = input.threshold;
+  var INF = 1073741823;   // 与 Java 的 Integer.MAX_VALUE / 2 一致
+  var dist = [];
+  for (var i = 0; i < n; i++) {
+    dist.push([]);
+    for (var j = 0; j < n; j++) dist[i].push(INF);
+    dist[i][i] = 0;
+  }
+  input.edges.forEach(function (e) {
+    dist[e[0]][e[1]] = Math.min(dist[e[0]][e[1]], e[2]);
+    dist[e[1]][e[0]] = Math.min(dist[e[1]][e[0]], e[2]);
+  });
+  var frames = [];
+  var labels = [];
+  for (i = 0; i < n; i++) labels.push(String(i));
+
+  function gridPanel(changed) {
+    var marks = {};
+    (changed || []).forEach(function (p) { marks[p[0] + ',' + p[1]] = 'new'; });
+    return Viz.grid(dist.map(function (row) {
+      return row.map(function (v) { return v >= INF ? '∞' : v; });
+    }), { title: 'dist 全源最短路矩阵', rowLabels: labels, colLabels: labels, marks: marks, corner: 'from\\to' });
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  snap('dist[i][i] = 0;', '初始化：直达边填权重，其余 ∞，对角线 0', [gridPanel()]);
+
+  // 与 Java 相同的三重循环；记录每轮被更新的格子
+  for (var k = 0; k < n; k++) {
+    var changed = [];
+    for (i = 0; i < n; i++)
+      for (var j = 0; j < n; j++)
+        if (dist[i][k] + dist[k][j] < dist[i][j]) {
+          dist[i][j] = dist[i][k] + dist[k][j];
+          changed.push([i, j]);
+        }
+    if (k === 1 && changed.length) snap(
+      'if (dist[i][k] + dist[k][j] < dist[i][j]) dist[i][j] = dist[i][k] + dist[k][j];',
+      '以 1 为中转：0→2=3+1=4、0→3=3+4=7 进表', [gridPanel(changed)]);
+    if (k === 2 && changed.length) snap(
+      'if (dist[i][k] + dist[k][j] < dist[i][j]) dist[i][j] = dist[i][k] + dist[k][j];',
+      '以 2 为中转：0→3 缩到 4+1=5，1→3 缩到 1+1=2', [gridPanel(changed)]);
+  }
+
+  // 逐城市计数（含自己，各城一样多算 1，不影响比大小）
+  var counts = [];
+  var ans = -1, best = Infinity;
+  for (i = 0; i < n; i++) {
+    var cnt = 0;
+    for (j = 0; j < n; j++) if (dist[i][j] <= threshold) cnt++;
+    counts.push(cnt);
+    if (cnt <= best) { best = cnt; ans = i; }
+  }
+  var items = [];
+  for (i = 0; i < n; i++) items.push({ name: '城市 ' + i, v: counts[i] + ' 个', cls: i === ans ? 'done' : '' });
+  snap('if (cnt <= best) { best = cnt; ans = i; }',
+    '数 ≤' + threshold + ' 的可达城市：' + ans + ' 号最少，并列取编号大的', [Viz.vars(items)]);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

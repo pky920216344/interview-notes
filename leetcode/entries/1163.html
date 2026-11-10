@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>按字典序排在最后的子串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 921 / 1159</span>
+  <nav class="pn"><a href="0982.html">上一篇</a><a href="1472.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1163. </span>按字典序排在最后的子串</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">双指针</li><li class="tag">双指针</li><li class="tag">字符串</li><li class="tag">lyndon-factorization</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">双指针挑战制：i 是当前最优起点、j 是挑战者、k 是已匹配长度；挑战者胜则 i 跳到 max(i+k+1, j)，输则 j 跳过 k+1 位。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>比较两个候选时若前 k 位都相同，只需看第 k 位：<strong>大的一方整段胜出</strong>，输家连同它已匹配的前缀都不可能再是答案，指针直接跳过。</li><li>挑战者胜：<code>i = max(i+k+1, j)</code>——i 自己开头的串输了，i..i+k 这些起点也只会更差；挑战者的起点若更远，取更远的。</li><li>挑战者输：<code>j = j+k+1</code>——j 与 i 共享前 k 位，j 开头的串必小于 i 开头的对应串，连同前缀一起跳。</li><li>全同字符、k 走到串尾都安全：循环条件 <code>j+k &lt; n</code> 兜底，答案为 <code>s.substring(i)</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> lastSubstring(<span class="t">String</span> s) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">6</span>        <span class="c">// i：当前最优候选的起点；j：挑战者起点；k：两串已匹配的长度</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> i = <span class="n">0</span>, j = <span class="n">1</span>, k = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">while</span> (j + k &lt; n) {</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (s.charAt(i + k) == s.charAt(j + k)) {</span><span class="ln"><span class="no">10</span>                k++;                        <span class="c">// 继续比下一位</span></span><span class="ln"><span class="no">11</span>            } <span class="k">else</span> <span class="k">if</span> (s.charAt(i + k) &lt; s.charAt(j + k)) {</span><span class="ln"><span class="no">12</span>                <span class="c">// 挑战者胜出：i 之前连同 i+k 都不可能再当最优起点，跳过去</span></span><span class="ln"><span class="no">13</span>                i = <span class="t">Math</span>.max(i + k + <span class="n">1</span>, j);</span><span class="ln"><span class="no">14</span>                j = i + <span class="n">1</span>;</span><span class="ln"><span class="no">15</span>                k = <span class="n">0</span>;</span><span class="ln"><span class="no">16</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">17</span>                j = j + k + <span class="n">1</span>;              <span class="c">// 挑战者输掉：连同它已匹配的前缀一起跳过</span></span><span class="ln"><span class="no">18</span>                k = <span class="n">0</span>;</span><span class="ln"><span class="no">19</span>            }</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> s.substring(i);</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串&nbsp;<code>s</code>&nbsp;，找出它的所有子串并按字典序排列，返回排在最后的那个子串。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "abab"
+<strong>输出：</strong>"bab"
+<strong>解释：</strong>我们可以找出 7 个子串 ["a", "ab", "aba", "abab", "b", "ba", "bab"]。按字典序排在最后的子串是 "bab"。
+</pre>
+
+<p><strong>示例&nbsp;2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "leetcode"
+<strong>输出：</strong>"tcode"
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 4 * 10<sup>5</sup></code></li>
+	<li><code>s</code> 仅含有小写英文字符。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String lastSubstring(String s) {", "        int n = s.length();", "        // i：当前最优候选的起点；j：挑战者起点；k：两串已匹配的长度", "        int i = 0, j = 1, k = 0;", "        while (j + k < n) {", "            if (s.charAt(i + k) == s.charAt(j + k)) {", "                k++;                        // 继续比下一位", "            } else if (s.charAt(i + k) < s.charAt(j + k)) {", "                // 挑战者胜出：i 之前连同 i+k 都不可能再当最优起点，跳过去", "                i = Math.max(i + k + 1, j);", "                j = i + 1;", "                k = 0;", "            } else {", "                j = j + k + 1;              // 挑战者输掉：连同它已匹配的前缀一起跳过", "                k = 0;", "            }", "        }", "        return s.substring(i);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1163. 按字典序排在最后的子串 —— 图解：复刻 Solution.java 的双指针 i/j/k 走位，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: "acacacb" };
+
+function trace(input) {
+  var s = input.s || "";
+  var n = s.length;
+  var frames = [];
+
+  var i = 0, j = 1, k = 0;
+
+  function cellsPanel(markI, markJ, markK) {
+    var marks = {};
+    for (var t = 0; t < n; t++) {
+      if (markK != null && t >= markI + markK && t < markJ + markK) marks[t] = 'cur';
+      else if (t >= markI && t < markI + (markK || 0)) marks[t] = 'win';
+      else if (t >= markJ && t < markJ + (markK || 0)) marks[t] = 'cur';
+    }
+    if (markI != null) marks[markI] = 'p-i';
+    if (markJ != null) marks[markJ] = 'p-j';
+    return Viz.cells(s.split(''), { title: 's（i=候选起点，j=挑战者）', marks: marks });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: 'i', v: i, cls: '' },
+      { name: 'j', v: j, cls: '' },
+      { name: 'k（已匹配长）', v: k, cls: '' }
+    ]);
+  }
+
+  frames.push(Viz.frame('int i = 0, j = 1, k = 0;',
+    '开局：i=0 是候选起点，j=1 是挑战者，k=0',
+    [cellsPanel(0, 1, 0), varsPanel()]));
+
+  var shown = { win: false, lose: false, eq: false };
+  while (j + k < n) {
+    var a = s.charAt(i + k), b = s.charAt(j + k);
+    if (a === b) {
+      k++;
+      if (!shown.eq && k >= 2) {
+        shown.eq = true;
+        frames.push(Viz.frame('k++;',
+          '连着 ' + k + ' 位都相同：把 k 记下去，谁赢看下一位',
+          [cellsPanel(i, j, k), varsPanel()]));
+      }
+      continue;
+    }
+    if (a < b) {
+      var oldI = i;
+      i = Math.max(i + k + 1, j);
+      j = i + 1;
+      k = 0;
+      if (!shown.win) {
+        shown.win = true;
+        frames.push(Viz.frame('i = Math.max(i + k + 1, j);',
+          '挑战者 ' + b + ' 胜 ' + a + '：i 直接跳过到新的更强起点',
+          [cellsPanel(i, j, 0), varsPanel()]));
+      }
+    } else {
+      j = j + k + 1;
+      k = 0;
+      if (!shown.lose) {
+        shown.lose = true;
+        frames.push(Viz.frame('j = j + k + 1;',
+          '挑战者输掉：j 连同它已匹配的前缀一起跳过',
+          [cellsPanel(i, j, 0), varsPanel()]));
+      }
+    }
+  }
+
+  var ans = s.substring(i);
+  frames.push(Viz.frame('return s.substring(i);',
+    'j 越界：i 之后就是字典序最大的子串 ' + ans,
+    [cellsPanel(i, null, null), Viz.vars([{ name: '答案', v: ans, cls: 'done' }])]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>计算右侧小于当前元素的个数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 333 / 1159</span>
+  <nav class="pn"><a href="0202.html">上一篇</a><a href="1312.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">315. </span>计算右侧小于当前元素的个数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 12</li><li class="algo">分治</li><li class="tag">树状数组</li><li class="tag">线段树</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">分治</li><li class="tag">有序集合</li><li class="tag">treap</li><li class="tag">归并排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">归并排序统计：下标跟着值一起归并；左半的值出队时，右半已出队的个数就是它右侧更小数的增量。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>答案要按<strong>原始下标</strong>落位，所以归并时 <code>idx</code> 数组跟着值一起换位，统计记在 <code>cnt[原下标]</code> 上。</li><li>归并两段各自有序：右半的值 <code>a[j] &lt; a[i]</code> 就先出队；轮到左半的 <code>a[i]</code> 出队时，右半已出队 <code>j−(mid+1)</code> 个，它们全部 <code>&lt; a[i]</code> 且都在原数组里位于它右侧。</li><li>相等时左半先出队（<code>a[j] &lt; a[i]</code> 才跳），保证相等的右侧元素不计入。</li><li>左半收尾时右半必已全出队，剩余元素一口气 <code>+ (r−mid)</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; countSmaller(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] a = nums.clone();   <span class="c">// 不动入参：在副本上归并</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] idx = <span class="k">new</span> <span class="k">int</span>[n], cnt = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) idx[i] = i;</span><span class="ln"><span class="no">9</span>        <span class="c">// 值带着原始下标一起归并，统计才能落回原位</span></span><span class="ln"><span class="no">10</span>        mergeSort(a, idx, <span class="k">new</span> <span class="k">int</span>[n], <span class="k">new</span> <span class="k">int</span>[n], cnt, <span class="n">0</span>, n - <span class="n">1</span>);</span><span class="ln"><span class="no">11</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(n);</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> c : cnt) ans.add(c);</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="c">// 归并排序 a[l..r]；idx 与 a 同步换位，cnt[原下标] 记右侧更小数</span></span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="k">void</span> mergeSort(<span class="k">int</span>[] a, <span class="k">int</span>[] idx, <span class="k">int</span>[] ta, <span class="k">int</span>[] tidx, <span class="k">int</span>[] cnt, <span class="k">int</span> l, <span class="k">int</span> r) {</span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (l &gt;= r) <span class="k">return</span>;</span><span class="ln"><span class="no">19</span>        <span class="k">int</span> mid = (l + r) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">20</span>        mergeSort(a, idx, ta, tidx, cnt, l, mid);</span><span class="ln"><span class="no">21</span>        mergeSort(a, idx, ta, tidx, cnt, mid + <span class="n">1</span>, r);</span><span class="ln"><span class="no">22</span>        <span class="k">int</span> i = l, j = mid + <span class="n">1</span>, k = l;</span><span class="ln"><span class="no">23</span>        <span class="k">while</span> (i &lt;= mid &amp;&amp; j &lt;= r) {</span><span class="ln"><span class="no">24</span>            <span class="k">if</span> (a[j] &lt; a[i]) { ta[k] = a[j]; tidx[k] = idx[j]; j++; }</span><span class="ln"><span class="no">25</span>            <span class="k">else</span> {</span><span class="ln"><span class="no">26</span>                <span class="c">// a[i] 出队时，右半已有 j-(mid+1) 个更小的先出队，全记在它头上</span></span><span class="ln"><span class="no">27</span>                cnt[idx[i]] += j - mid - <span class="n">1</span>;</span><span class="ln"><span class="no">28</span>                ta[k] = a[i]; tidx[k] = idx[i]; i++;</span><span class="ln"><span class="no">29</span>            }</span><span class="ln"><span class="no">30</span>            k++;</span><span class="ln"><span class="no">31</span>        }</span><span class="ln"><span class="no">32</span>        <span class="c">// 左半剩下的：右半已全部出队，个个都更小</span></span><span class="ln"><span class="no">33</span>        <span class="k">while</span> (i &lt;= mid) { cnt[idx[i]] += r - mid; ta[k] = a[i]; tidx[k] = idx[i]; i++; k++; }</span><span class="ln"><span class="no">34</span>        <span class="k">while</span> (j &lt;= r) { ta[k] = a[j]; tidx[k] = idx[j]; j++; k++; }</span><span class="ln"><span class="no">35</span>        <span class="t">System</span>.arraycopy(ta, l, a, l, r - l + <span class="n">1</span>);</span><span class="ln"><span class="no">36</span>        <span class="t">System</span>.arraycopy(tidx, l, idx, l, r - l + <span class="n">1</span>);</span><span class="ln"><span class="no">37</span>    }</span><span class="ln"><span class="no">38</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code><em> </em>，按要求返回一个新数组&nbsp;<code>counts</code><em> </em>。数组 <code>counts</code> 有该性质： <code>counts[i]</code> 的值是&nbsp; <code>nums[i]</code> 右侧小于&nbsp;<code>nums[i]</code> 的元素的数量。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [5,2,6,1]
+<strong>输出：</strong><code>[2,1,1,0] 
+<strong>解释：</strong></code>
+5 的右侧有 <strong>2 </strong>个更小的元素 (2 和 1)
+2 的右侧仅有 <strong>1 </strong>个更小的元素 (1)
+6 的右侧有 <strong>1 </strong>个更小的元素 (1)
+1 的右侧有 <strong>0 </strong>个更小的元素
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [-1]
+<strong>输出：</strong>[0]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [-1,-1]
+<strong>输出：</strong>[0,0]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>-10<sup>4</sup> &lt;= nums[i] &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> countSmaller(int[] nums) {", "        int n = nums.length;", "        int[] a = nums.clone();   // 不动入参：在副本上归并", "        int[] idx = new int[n], cnt = new int[n];", "        for (int i = 0; i < n; i++) idx[i] = i;", "        // 值带着原始下标一起归并，统计才能落回原位", "        mergeSort(a, idx, new int[n], new int[n], cnt, 0, n - 1);", "        List<Integer> ans = new ArrayList<>(n);", "        for (int c : cnt) ans.add(c);", "        return ans;", "    }", "", "    // 归并排序 a[l..r]；idx 与 a 同步换位，cnt[原下标] 记右侧更小数", "    private void mergeSort(int[] a, int[] idx, int[] ta, int[] tidx, int[] cnt, int l, int r) {", "        if (l >= r) return;", "        int mid = (l + r) >>> 1;", "        mergeSort(a, idx, ta, tidx, cnt, l, mid);", "        mergeSort(a, idx, ta, tidx, cnt, mid + 1, r);", "        int i = l, j = mid + 1, k = l;", "        while (i <= mid && j <= r) {", "            if (a[j] < a[i]) { ta[k] = a[j]; tidx[k] = idx[j]; j++; }", "            else {", "                // a[i] 出队时，右半已有 j-(mid+1) 个更小的先出队，全记在它头上", "                cnt[idx[i]] += j - mid - 1;", "                ta[k] = a[i]; tidx[k] = idx[i]; i++;", "            }", "            k++;", "        }", "        // 左半剩下的：右半已全部出队，个个都更小", "        while (i <= mid) { cnt[idx[i]] += r - mid; ta[k] = a[i]; tidx[k] = idx[i]; i++; k++; }", "        while (j <= r) { ta[k] = a[j]; tidx[k] = idx[j]; j++; k++; }", "        System.arraycopy(ta, l, a, l, r - l + 1);", "        System.arraycopy(tidx, l, idx, l, r - l + 1);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 315. 计算右侧小于当前元素的个数 —— 图解：复刻 Solution.java 的「下标跟着值归并」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [5, 2, 6, 1] };
+
+function trace(input) {
+  var a = input.nums.slice();
+  var n = a.length;
+  var frames = [];
+  var INIT = 'for (int i = 0; i < n; i++) idx[i] = i;';
+  var COUNT = 'cnt[idx[i]] += j - mid - 1;';
+  var TAIL = 'while (i <= mid) { cnt[idx[i]] += r - mid; ta[k] = a[i]; tidx[k] = idx[i]; i++; k++; }';
+  var OUT = 'for (int c : cnt) ans.add(c);';
+
+  var orig = [], cnt = [];
+  for (var q = 0; q < n; q++) { orig.push(q); cnt.push(0); }
+
+  function cellsOf(arr, title, marks, ptrs) {
+    return Viz.cells(arr.map(String), { title: title, marks: marks || {}, pointers: ptrs || [] });
+  }
+
+  // 归并现场：ta 是左右两段拼一起（各自有序），i 在左半、j 在右半
+  function segPanel(ta, midStart, i, j) {
+    var marks = {}, ptrs = [], p;
+    for (p = 0; p < midStart; p++) marks[p] = 'win';
+    for (p = midStart; p < j; p++) marks[p] = 'dim';   // 右半已出队的
+    if (i < midStart) {
+      marks[i] = 'cur';
+      ptrs.push({ at: i, label: 'i', cls: 'p-left' });
+    }
+    if (j < ta.length) ptrs.push({ at: j, label: 'j', cls: 'p-right' });
+    return cellsOf(ta, '待归并两段（win=左半，dim=右半已出队）', marks, ptrs);
+  }
+
+  function outPanel(outA) {
+    var marks = {}, p;
+    for (p = 0; p < outA.length; p++) marks[p] = 'win';
+    return cellsOf(outA.length ? outA : ['（还没出队）'], '归并输出（从小到大出队）', marks);
+  }
+
+  function cntPanel(marks) {
+    return cellsOf(cnt, 'cnt[原下标]：右侧更小数', marks);
+  }
+
+  frames.push(Viz.frame(INIT, '每个值先记住原始下标：统计要按原位落回去',
+    [cellsOf(a, '原始数组 nums', {}), cntPanel({})]));
+
+  var shownTail = false, shownMain = false, shownAgain = false;
+  var counted = {};
+
+  function mergeSort(l, r) {
+    if (l >= r) return;
+    var mid = (l + r) >>> 1;
+    mergeSort(l, mid);
+    mergeSort(mid + 1, r);
+    var ta = a.slice(l, r + 1), tidx = orig.slice(l, r + 1);   // 两段有序值 + 各自原始下标
+    var mStart = mid + 1 - l;
+    var i = 0, j = mStart;
+    var outA = [], outI = [];
+    while (i < mStart && j < ta.length) {
+      if (ta[j] < ta[i]) { outA.push(ta[j]); outI.push(tidx[j]); j++; }
+      else {
+        var bump = j - mStart;
+        var origin = tidx[i];
+        cnt[origin] += bump;
+        if (bump > 0 && !shownMain) {
+          shownMain = true;
+          var mc = {};
+          mc[origin] = 'new';
+          frames.push(Viz.frame(COUNT, ta[i] + ' 出队：右半已有 ' + bump + ' 个更小的先出队，'
+            + 'cnt[原下标 ' + origin + '] += ' + bump,
+            [segPanel(ta, mStart, i, j), outPanel(outA), cntPanel(mc)]));
+        }
+        if (bump > 0 && shownMain && counted[origin] != null && !shownAgain) {
+          shownAgain = true;
+          var mc2 = {};
+          mc2[origin] = 'new';
+          frames.push(Viz.frame(COUNT, ta[i] + ' 之前记过 ' + counted[origin] + '：右半又有 ' + bump
+            + ' 个更小的越过它，cnt 累到 ' + cnt[origin],
+            [segPanel(ta, mStart, i, j), outPanel(outA), cntPanel(mc2)]));
+        }
+        counted[origin] = cnt[origin];
+        outA.push(ta[i]); outI.push(origin); i++;
+      }
+    }
+    while (i < mStart) {
+      var origin2 = tidx[i];
+      cnt[origin2] += r - mid;
+      counted[origin2] = cnt[origin2];
+      if (!shownTail) {
+        shownTail = true;
+        var mt = {};
+        mt[origin2] = 'new';
+        frames.push(Viz.frame(TAIL, '右半全出完了：剩下的 ' + ta[i] + ' 记上全部 ' + (r - mid) + ' 个',
+          [segPanel(ta, mStart, i, j), outPanel(outA), cntPanel(mt)]));
+      }
+      outA.push(ta[i]); outI.push(origin2); i++;
+    }
+    while (j < ta.length) { outA.push(ta[j]); outI.push(tidx[j]); j++; }
+    // 写回：a[l..r] 变有序，原始下标跟着值一起换位
+    for (var w = 0; w < ta.length; w++) { a[l + w] = outA[w]; orig[l + w] = outI[w]; }
+  }
+  mergeSort(0, n - 1);
+
+  var mAll = {}, q2;
+  for (q2 = 0; q2 < n; q2++) mAll[q2] = 'done';
+  frames.push(Viz.frame(OUT, '归并完：cnt 按原下标读出 [' + cnt.join(', ') + ']',
+    [cellsOf(a, '值数组（已整体有序）', mAll),
+     cellsOf(orig, '各位置值原来的下标', mAll),
+     cntPanel(mAll)]));
+
+  return { frames: frames, result: cnt.slice() };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

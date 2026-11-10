@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最多 K 次交换相邻数位后得到的最小整数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 782 / 1159</span>
+  <nav class="pn"><a href="1208.html">上一篇</a><a href="0991.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1505. </span>最多 K 次交换相邻数位后得到的最小整数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">贪心</li><li class="aux">树状数组/线段树</li><li class="tag">贪心</li><li class="tag">树状数组</li><li class="tag">线段树</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">逐位定数位：每次在「还能跨到的窗口」（剩余前 k+1 个数位）里挑最小的提到最前，k 扣掉跨过的个数；树状数组找位置、算代价。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>第 i 位要尽量小：把某个剩余数位提到最前要花「它前面剩余数位的个数」次交换，所以只有剩余前 <code>k+1</code> 个数位够得着；够得着的里面挑最小，同值挑最左（最省交换）。</li><li>提走后 <code>k</code> 扣掉代价，被提走的数位从剩余序列里删掉；逐位贪心即得字典序最小。</li><li>实现：10 个树状数组 <code>where[d]</code> 管数字 <code>d</code> 的剩余位置，<code>kth(1)</code> 找最左出现；<code>all</code> 管全部剩余位置，<code>sum(p−1)</code> 就是交换代价。</li><li><code>k</code> 达到 <code>10^9</code> 但每次只减去实际代价，<code>int</code> 足够；<code>n</code> 达到 <code>3×10^4</code>，树状数组 O(log n) 撑得住。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="c">// 树状数组：单点加减、前缀和、找计数首次达到 k 的位置</span></span><span class="ln"><span class="no">3</span>    <span class="k">static</span> <span class="k">class</span> <span class="t">Fenwick</span> {</span><span class="ln"><span class="no">4</span>        <span class="k">private</span> <span class="k">final</span> <span class="k">int</span>[] tree;</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>        <span class="t">Fenwick</span>(<span class="k">int</span> n) { tree = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>]; }</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>        <span class="k">void</span> add(<span class="k">int</span> i, <span class="k">int</span> v) {</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (; i &lt; tree.length; i += i &amp; -i) tree[i] += v;</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span> </span><span class="ln"><span class="no">12</span>        <span class="k">int</span> sum(<span class="k">int</span> i) {</span><span class="ln"><span class="no">13</span>            <span class="k">int</span> s = <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (; i &gt; <span class="n">0</span>; i -= i &amp; -i) s += tree[i];</span><span class="ln"><span class="no">15</span>            <span class="k">return</span> s;</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>        <span class="c">// 最小的 i：前 i 个位置的计数和 ≥ k（保证存在这样的 i）</span></span><span class="ln"><span class="no">19</span>        <span class="k">int</span> kth(<span class="k">int</span> k) {</span><span class="ln"><span class="no">20</span>            <span class="k">int</span> i = <span class="n">0</span>;</span><span class="ln"><span class="no">21</span>            <span class="k">for</span> (<span class="k">int</span> bit = <span class="t">Integer</span>.highestOneBit(tree.length - <span class="n">1</span>); bit &gt; <span class="n">0</span>; bit &gt;&gt;= <span class="n">1</span>) {</span><span class="ln"><span class="no">22</span>                <span class="k">if</span> (i + bit &lt; tree.length &amp;&amp; tree[i + bit] &lt; k) {</span><span class="ln"><span class="no">23</span>                    k -= tree[i + bit];</span><span class="ln"><span class="no">24</span>                    i += bit;</span><span class="ln"><span class="no">25</span>                }</span><span class="ln"><span class="no">26</span>            }</span><span class="ln"><span class="no">27</span>            <span class="k">return</span> i + <span class="n">1</span>;</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span> </span><span class="ln"><span class="no">31</span>    <span class="k">public</span> <span class="t">String</span> minInteger(<span class="t">String</span> num, <span class="k">int</span> k) {</span><span class="ln"><span class="no">32</span>        <span class="k">int</span> n = num.length();</span><span class="ln"><span class="no">33</span>        <span class="t">Fenwick</span> all = <span class="k">new</span> <span class="t">Fenwick</span>(n);       <span class="c">// 每个位置的数位还剩没剩</span></span><span class="ln"><span class="no">34</span>        <span class="t">Fenwick</span>[] where = <span class="k">new</span> <span class="t">Fenwick</span>[<span class="n">10</span>];  <span class="c">// where[d]：数字 d 剩余出现的位置</span></span><span class="ln"><span class="no">35</span>        <span class="k">for</span> (<span class="k">int</span> d = <span class="n">0</span>; d &lt; <span class="n">10</span>; d++) where[d] = <span class="k">new</span> <span class="t">Fenwick</span>(n);</span><span class="ln"><span class="no">36</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= n; i++) {</span><span class="ln"><span class="no">37</span>            all.add(i, <span class="n">1</span>);</span><span class="ln"><span class="no">38</span>            where[num.charAt(i - <span class="n">1</span>) - <span class="s">'0'</span>].add(i, <span class="n">1</span>);</span><span class="ln"><span class="no">39</span>        }</span><span class="ln"><span class="no">40</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>(n);</span><span class="ln"><span class="no">41</span>        <span class="k">for</span> (<span class="k">int</span> step = <span class="n">0</span>; step &lt; n; step++) {</span><span class="ln"><span class="no">42</span>            <span class="k">for</span> (<span class="k">int</span> d = <span class="n">0</span>; d &lt; <span class="n">10</span>; d++) {</span><span class="ln"><span class="no">43</span>                <span class="k">if</span> (where[d].sum(n) == <span class="n">0</span>) <span class="k">continue</span>;   <span class="c">// 数字 d 已经放完了</span></span><span class="ln"><span class="no">44</span>                <span class="k">int</span> p = where[d].kth(<span class="n">1</span>);              <span class="c">// d 最左的剩余位置</span></span><span class="ln"><span class="no">45</span>                <span class="k">int</span> cost = all.sum(p - <span class="n">1</span>);            <span class="c">// 提到最前要跨过几个剩余数位</span></span><span class="ln"><span class="no">46</span>                <span class="k">if</span> (cost &gt; k) <span class="k">continue</span>;               <span class="c">// 搬不动，看更大的数字</span></span><span class="ln"><span class="no">47</span>                k -= cost;</span><span class="ln"><span class="no">48</span>                all.add(p, -<span class="n">1</span>);</span><span class="ln"><span class="no">49</span>                where[d].add(p, -<span class="n">1</span>);</span><span class="ln"><span class="no">50</span>                sb.append(d);</span><span class="ln"><span class="no">51</span>                <span class="k">break</span>;</span><span class="ln"><span class="no">52</span>            }</span><span class="ln"><span class="no">53</span>        }</span><span class="ln"><span class="no">54</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">55</span>    }</span><span class="ln"><span class="no">56</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个字符串&nbsp;<code>num</code> 表示非常大的整数和一个整数 <code>k</code>。你可以交换这个整数相邻数位的数字 <strong>最多</strong>&nbsp;<code>k</code>&nbsp;次。</p>
+
+<p>请你返回你能得到的最小整数，并以字符串形式返回。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/a581076d6cd2.jpg" style="height:40px; width:500px" /></p>
+
+<pre>
+<strong>输入：</strong>num = "4321", k = 4
+<strong>输出：</strong>"1342"
+<strong>解释：</strong>4321 通过 4 次交换相邻数位得到最小整数的步骤如上图所示。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>num = "100", k = 1
+<strong>输出：</strong>"010"
+<strong>解释：</strong>输出可以包含前导 0 ，但输入保证不会有前导 0 。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>num = "36789", k = 1000
+<strong>输出：</strong>"36789"
+<strong>解释：</strong>不需要做任何交换。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= num.length &lt;= 3 * 10<sup>4</sup></code></li>
+	<li><code>num</code>&nbsp;只包含&nbsp;<strong>数字</strong>&nbsp;且不含有<strong>&nbsp;前导 0&nbsp;</strong>。</li>
+	<li><code>1 &lt;= k &lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    // 树状数组：单点加减、前缀和、找计数首次达到 k 的位置", "    static class Fenwick {", "        private final int[] tree;", "", "        Fenwick(int n) { tree = new int[n + 1]; }", "", "        void add(int i, int v) {", "            for (; i < tree.length; i += i & -i) tree[i] += v;", "        }", "", "        int sum(int i) {", "            int s = 0;", "            for (; i > 0; i -= i & -i) s += tree[i];", "            return s;", "        }", "", "        // 最小的 i：前 i 个位置的计数和 ≥ k（保证存在这样的 i）", "        int kth(int k) {", "            int i = 0;", "            for (int bit = Integer.highestOneBit(tree.length - 1); bit > 0; bit >>= 1) {", "                if (i + bit < tree.length && tree[i + bit] < k) {", "                    k -= tree[i + bit];", "                    i += bit;", "                }", "            }", "            return i + 1;", "        }", "    }", "", "    public String minInteger(String num, int k) {", "        int n = num.length();", "        Fenwick all = new Fenwick(n);       // 每个位置的数位还剩没剩", "        Fenwick[] where = new Fenwick[10];  // where[d]：数字 d 剩余出现的位置", "        for (int d = 0; d < 10; d++) where[d] = new Fenwick(n);", "        for (int i = 1; i <= n; i++) {", "            all.add(i, 1);", "            where[num.charAt(i - 1) - '0'].add(i, 1);", "        }", "        StringBuilder sb = new StringBuilder(n);", "        for (int step = 0; step < n; step++) {", "            for (int d = 0; d < 10; d++) {", "                if (where[d].sum(n) == 0) continue;   // 数字 d 已经放完了", "                int p = where[d].kth(1);              // d 最左的剩余位置", "                int cost = all.sum(p - 1);            // 提到最前要跨过几个剩余数位", "                if (cost > k) continue;               // 搬不动，看更大的数字", "                k -= cost;", "                all.add(p, -1);", "                where[d].add(p, -1);", "                sb.append(d);", "                break;", "            }", "        }", "        return sb.toString();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1505. 最多 K 次交换相邻数位后得到的最小整数 —— 图解：复刻 Solution.java 的贪心，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 这里用「剩余数位数组」复刻同一个贪心：能动的窗口 = 剩余前 min(k, 剩余数-1)+1 个数位，选其中最小的提到最前。
+
+var STORY_INPUT = { num: '4321', k: 4 };
+
+function trace(input) {
+  var num = input.num, k = input.k;
+  var n = num.length;
+  var frames = [];
+  var KTH = 'int p = where[d].kth(1);';
+  var COST = 'if (cost > k) continue;';
+  var TAKE = 'k -= cost;';
+  var RET = 'return sb.toString();';
+
+  // 一帧 = 剩余数位队列 + 已排好的结果 + 变量。bad = 要被跨过的数位，cur = 提上来的数位。
+  function snap(at, key, o) {
+    var marks = {};
+    for (var i = 0; i < o.rem.length; i++) {
+      if (i < o.best) marks[i] = 'bad';
+      else if (i === o.best) marks[i] = 'cur';
+    }
+    var outMarks = {};
+    if (o.out.length) outMarks[o.out.length - 1] = 'new';
+    frames.push(Viz.frame(at, key, [
+      Viz.cells(o.rem, { title: '剩余数位（窗口 = 前 ' + (o.m + 1) + ' 个，是 k 次交换够得着的范围）',
+        marks: marks, pointers: o.best < o.rem.length ? [{ at: o.best, label: '提出', cls: 'p-cur' }] : [] }),
+      Viz.cells(o.out, { title: '已确定的前缀', marks: outMarks,
+        pointers: o.out.length ? [{ at: o.out.length - 1, label: '刚写入', cls: 'p-cur' }] : [] }),
+      Viz.vars([
+        { name: 'k（剩余交换次数）', v: o.k, cls: o.k === 0 ? 'bad' : '' },
+        { name: '本次代价 cost', v: o.cost }
+      ])
+    ]));
+  }
+
+  var rem = num.split('');
+  var out = [];
+  var small = n >= 2 && n <= 8;
+
+  for (var step = 0; step < n; step++) {
+    var m = Math.min(k, rem.length - 1);
+    var best = 0;
+    for (var j = 1; j <= m; j++) if (rem[j] < rem[best]) best = j;
+    var cost = best, d = rem[best];
+    if (small && step === 0) {
+      snap(KTH, '窗口是最前 ' + (m + 1) + ' 个数位：最小的「' + d + '」在第 ' + (best + 1) + ' 位，提上来要跨过 ' + cost + ' 个数位',
+        { rem: rem, out: out, k: k, m: m, best: best, cost: cost });
+    }
+    if (small && step === 1) {
+      snap(COST, 'k 只剩 ' + k + '，窗口缩到 ' + (m + 1) + ' 个数位：够得着的最小是「' + d + '」，花 ' + cost + ' 次交换',
+        { rem: rem, out: out, k: k, m: m, best: best, cost: cost });
+    }
+    k -= cost;
+    rem.splice(best, 1);
+    out.push(d);
+    if (small && step === 2) {
+      snap(TAKE, 'k 用完了：只能原样取最前面的「' + d + '」，剩下的数位不再动',
+        { rem: rem, out: out, k: k, m: m, best: 0, cost: 0 });
+    }
+  }
+
+  var shown = out.join('');
+  if (shown.length > 20) shown = shown.slice(0, 20) + '…';
+  snap(RET, '每个数位都放好了：最小整数是 ' + shown,
+    { rem: rem, out: out, k: k, m: 0, best: 0, cost: 0 });
+
+  return { frames: frames, result: out.join('') };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

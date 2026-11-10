@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>重复的子字符串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 227 / 1159</span>
+  <nav class="pn"><a href="0509.html">上一篇</a><a href="0168.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">459. </span>重复的子字符串</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 21</li><li class="algo">双指针</li><li class="tag">字符串</li><li class="tag">字符串匹配</li><li class="tag">knuth-morris-pratt-algorithm</li><li class="tag">z-algorithm</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">KMP 的 next 数组：最长相等前后缀之外就是最小循环节，n 能整除 (n - next[n-1]) 且 next[n-1] &gt; 0 即成立。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>next[i]</code>：<code>s[0..i]</code> 的最长相等前后缀长度；失配时 <code>j = next[j-1]</code> 一步跳到次长前后缀，不用逐格退。</li><li>设 <code>len = next[n-1]</code>：整个串的最长相等前后缀；去掉它，剩下 <code>n - len</code> 就是<strong>最小循环节</strong>。</li><li><code>len &gt; 0 &amp;&amp; n % (n - len) == 0</code> → 由循环节重复构成。<code>len = 0</code> 说明没有周期；不整除说明循环节不完整。</li><li>直观记法：<code>n - len</code> 是「多出来的尾巴」，它既是周期又能整除 n，串就是它重复出来的。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> repeatedSubstringPattern(<span class="t">String</span> s) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">4</span>        <span class="c">// next[i]：s[0..i] 的最长相等前后缀长度</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] next = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>, j = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">7</span>            <span class="c">// 失配：沿着 next 链回退，退到没得退为止</span></span><span class="ln"><span class="no">8</span>            <span class="k">while</span> (j &gt; <span class="n">0</span> &amp;&amp; s.charAt(i) != s.charAt(j)) j = next[j - <span class="n">1</span>];</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (s.charAt(i) == s.charAt(j)) j++;</span><span class="ln"><span class="no">10</span>            next[i] = j;</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="c">// 去掉最长相等前后缀，剩下的就是最小循环节；n 能整除它才成立</span></span><span class="ln"><span class="no">13</span>        <span class="k">int</span> len = next[n - <span class="n">1</span>];</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> len &gt; <span class="n">0</span> &amp;&amp; n % (n - len) == <span class="n">0</span>;</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个非空的字符串<meta charset="UTF-8" />&nbsp;<code>s</code>&nbsp;，检查是否可以通过由它的一个子串重复多次构成。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> s = "abab"
+<strong>输出:</strong> true
+<strong>解释:</strong> 可由子串 "ab" 重复两次构成。
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> s = "aba"
+<strong>输出:</strong> false
+</pre>
+
+<p><strong>示例 3:</strong></p>
+
+<pre>
+<strong>输入:</strong> s = "abcabcabcabc"
+<strong>输出:</strong> true
+<strong>解释:</strong> 可由子串 "abc" 重复四次构成。 (或子串 "abcabc" 重复两次构成。)
+</pre>
+
+
+
+<p><b>提示：</b></p>
+
+<p><meta charset="UTF-8" /></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>s</code>&nbsp;由小写英文字母组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean repeatedSubstringPattern(String s) {", "        int n = s.length();", "        // next[i]：s[0..i] 的最长相等前后缀长度", "        int[] next = new int[n];", "        for (int i = 1, j = 0; i < n; i++) {", "            // 失配：沿着 next 链回退，退到没得退为止", "            while (j > 0 && s.charAt(i) != s.charAt(j)) j = next[j - 1];", "            if (s.charAt(i) == s.charAt(j)) j++;", "            next[i] = j;", "        }", "        // 去掉最长相等前后缀，剩下的就是最小循环节；n 能整除它才成立", "        int len = next[n - 1];", "        return len > 0 && n % (n - len) == 0;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 459. 重复的子字符串 —— 图解：复刻 Solution.java 的 KMP next 数组，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 重点画失配回退：j 退回 next[j-1]，一次就跳到「次长的相等前后缀」。
+
+var STORY_INPUT = { s: 'aabaab' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+  var FOR = 'for (int i = 1, j = 0; i < n; i++) {';
+  var WHILE = 'while (j > 0 && s.charAt(i) != s.charAt(j)) j = next[j - 1];';
+  var MATCH = 'if (s.charAt(i) == s.charAt(j)) j++;';
+  var LEN = 'int len = next[n - 1];';
+  var RET = 'return len > 0 && n % (n - len) == 0;';
+
+  var next = [];
+  for (var z = 0; z < n; z++) next.push(0);
+  var sawMatch = false, sawFall = false;
+
+  function sPanel(i, j, marks) {
+    var m = marks || {};
+    if (i != null) m[i] = 'cur';
+    if (j != null && j !== i) m[j] = 'hit';
+    var ptrs = [];
+    if (i != null) ptrs.push({ at: i, label: 'i', cls: 'p-fast' });
+    if (j != null) ptrs.push({ at: j, label: 'j', cls: 'p-slow' });
+    return Viz.cells(s.split(''), { title: 's（j 对着前缀，i 往右扫）', marks: m, pointers: ptrs });
+  }
+  function nextPanel(filledTo, newAt) {
+    var m = {};
+    for (var k = 0; k <= filledTo && k < n; k++) m[k] = 'win';
+    if (newAt != null) m[newAt] = 'new';
+    return Viz.cells(next.slice(), { title: 'next：最长相等前后缀长度', marks: m });
+  }
+
+  frames.push(Viz.frame(FOR, 'next[i] 记 s[0..i] 的最长相等前后缀；j 是当前匹配到的前缀长度',
+    [sPanel(0, 0), nextPanel(-1)]));
+
+  for (var i = 1, j = 0; i < n; i++) {
+    var jBefore = j;
+    var fell = false;
+    while (j > 0 && s[i] !== s[j]) {
+      j = next[j - 1];
+      fell = true;
+    }
+    if (s[i] === s[j]) j++;
+    next[i] = j;
+    if (i === 1 && j > 0 && !sawMatch) {
+      sawMatch = true;
+      frames.push(Viz.frame(MATCH, 's[i] = s[j]：前缀和刚扫到的后缀同时延长一格，next[' + i + ']=' + j,
+        [sPanel(i, j - 1), nextPanel(i, i)]));
+    }
+    if (fell && !sawFall) {
+      sawFall = true;
+      frames.push(Viz.frame(WHILE, 's[' + i + ']=' + s[i] + ' ≠ s[' + jBefore + ']=' + s[jBefore] + '：失配，j 退回 next[' + (jBefore - 1) + ']=' + j + ' 再试',
+        [sPanel(i, j), nextPanel(i - 1)]));
+    }
+  }
+
+  var len = next[n - 1];
+  var period = n - len;
+  var ok = len > 0 && n % period === 0;
+  frames.push(Viz.frame(LEN, '扫完：next[' + (n - 1) + ']=' + len + '，去掉最长相等前后缀，剩下 ' + period + ' 就是最小循环节',
+    [nextPanel(n - 1), Viz.vars([{ name: 'len', v: len }, { name: 'n - len', v: period, cls: 'chg' }])]));
+  var unit = ok ? s.slice(0, period) : '—';
+  frames.push(Viz.frame(RET, ok ? 'n=' + n + ' 能被 ' + period + ' 整除：s 由「' + unit + '」重复构成'
+    : 'len=' + len + (len === 0 ? '（无相等前后缀）：false' : '，n % ' + period + ' ≠ 0：false'),
+    [nextPanel(n - 1), Viz.vars([{ name: 'n % (n-len)', v: n % period, cls: 'chg' }, { name: '结果', v: ok, cls: 'chg' }])]));
+
+  return { frames: frames, result: ok };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

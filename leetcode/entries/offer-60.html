@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>统计结果概率 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 358 / 1159</span>
+  <nav class="pn"><a href="0767.html">上一篇</a><a href="0252.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 60. </span>统计结果概率</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 10</li><li class="algo">动态规划</li><li class="tag">数学</li><li class="tag">动态规划</li><li class="tag">概率与统计</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">组合数 DP：dp[i][s] = i 颗骰子点数和为 s 的组合数，新骰子的 6 个面把 dp[i-1] 累加到 s+1..s+6；最后除以 6^n。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[s]</code>：当前颗数下点数和为 <code>s</code> 的组合数；1 颗时 <code>dp[1..6] = 1</code>。</li><li>再掷一颗：<code>ndp[s+k] += dp[s]</code>（k=1..6）——新和由上一轮的 <code>s-1..s-6</code> 六种来源累加，滚动数组即可。</li><li>答案数组第 <code>i</code> 位对应点数和 <code>num+i</code>（共 <code>5n+1</code> 个），值为 <code>dp[s] / 6^n</code>；组合数用 <code>long</code>（6^11 ≈ 3.6e8 超过 int 的幂次累加安全，但除法前转 double）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">double</span>[] statisticsProbability(<span class="k">int</span> num) {</span><span class="ln"><span class="no">3</span>        <span class="c">// dp[s]：当前颗数下点数和为 s 的组合数；s 的范围 [dice, 6*dice]</span></span><span class="ln"><span class="no">4</span>        <span class="k">long</span>[] dp = <span class="k">new</span> <span class="k">long</span>[<span class="n">6</span> * num + <span class="n">1</span>];</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> s = <span class="n">1</span>; s &lt;= <span class="n">6</span>; s++) dp[s] = <span class="n">1</span>;</span><span class="ln"><span class="no">6</span>        <span class="c">// 再掷一颗：新和 s 由上一轮的 s-1..s-6 六种来源累加</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> dice = <span class="n">2</span>; dice &lt;= num; dice++) {</span><span class="ln"><span class="no">8</span>            <span class="k">long</span>[] ndp = <span class="k">new</span> <span class="k">long</span>[<span class="n">6</span> * num + <span class="n">1</span>];</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> s = dice - <span class="n">1</span>; s &lt;= <span class="n">6</span> * (dice - <span class="n">1</span>); s++) {</span><span class="ln"><span class="no">10</span>                <span class="k">for</span> (<span class="k">int</span> k = <span class="n">1</span>; k &lt;= <span class="n">6</span>; k++) ndp[s + k] += dp[s];</span><span class="ln"><span class="no">11</span>            }</span><span class="ln"><span class="no">12</span>            dp = ndp;</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="c">// 组合数除以总方案数 6^num 得概率；数组第 i 位对应点数和 num+i</span></span><span class="ln"><span class="no">15</span>        <span class="k">long</span> total = <span class="n">1</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; num; i++) total *= <span class="n">6</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">double</span>[] ans = <span class="k">new</span> <span class="k">double</span>[<span class="n">5</span> * num + <span class="n">1</span>];</span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="k">int</span> s = num; s &lt;= <span class="n">6</span> * num; s++) ans[s - num] = (<span class="k">double</span>) dp[s] / total;</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你选择掷出 <code>num</code> 个色子，请返回所有点数总和的概率。</p>
+
+<p>你需要用一个浮点数数组返回答案，其中第 <code>i</code> 个元素代表这 <code>num</code> 个骰子所能掷出的点数集合中第 <code>i</code> 小的那个的概率。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>num = 3
+<strong>输出：</strong>[0.00463,0.01389,0.02778,0.04630,0.06944,0.09722,0.11574,0.12500,0.12500,0.11574,0.09722,0.06944,0.04630,0.02778,0.01389,0.00463]
+</pre>
+
+<p><strong>示例&nbsp;2：</strong></p>
+
+<pre>
+<strong>输入：</strong>num = 5
+<strong>输出:</strong>[0.00013,0.00064,0.00193,0.00450,0.00900,0.01620,0.02636,0.03922,0.05401,0.06944,0.08372,0.09452,0.10031,0.10031,0.09452,0.08372,0.06944,0.05401,0.03922,0.02636,0.01620,0.00900,0.00450,0.00193,0.00064,0.00013]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= num &lt;= 11</code></li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public double[] statisticsProbability(int num) {", "        // dp[s]：当前颗数下点数和为 s 的组合数；s 的范围 [dice, 6*dice]", "        long[] dp = new long[6 * num + 1];", "        for (int s = 1; s <= 6; s++) dp[s] = 1;", "        // 再掷一颗：新和 s 由上一轮的 s-1..s-6 六种来源累加", "        for (int dice = 2; dice <= num; dice++) {", "            long[] ndp = new long[6 * num + 1];", "            for (int s = dice - 1; s <= 6 * (dice - 1); s++) {", "                for (int k = 1; k <= 6; k++) ndp[s + k] += dp[s];", "            }", "            dp = ndp;", "        }", "        // 组合数除以总方案数 6^num 得概率；数组第 i 位对应点数和 num+i", "        long total = 1;", "        for (int i = 0; i < num; i++) total *= 6;", "        double[] ans = new double[5 * num + 1];", "        for (int s = num; s <= 6 * num; s++) ans[s - num] = (double) dp[s] / total;", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// offer-60 (LCR 185). n 个骰子的点数 —— 图解：复刻 Solution.java 的「组合数递推 + 除以 6^n」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { num: 3 };
+
+function trace(input) {
+  var num = input.num;
+  var frames = [];
+  var W = 6 * num;
+  var dp = [];
+  for (var s = 0; s <= W; s++) dp.push(0);
+  for (var s1 = 1; s1 <= 6; s1++) dp[s1] = 1;
+  var fired = { open: false, add: false, counts: false };
+
+  // dp 表格：显示 1..6*dice 的格子（下标 = 点数和 − 1），0 画 ·
+  function dpPanel(dice, marks) {
+    var items = [];
+    var top = 6 * dice;
+    for (var s = 1; s <= top; s++) items.push(dp[s] > 0 ? String(dp[s]) : '·');
+    return Viz.cells(items, {
+      title: 'dp：' + dice + ' 颗骰子各点数和的组合数（格子下标 + 1 = 点数和）',
+      marks: marks || {}
+    });
+  }
+  function varsPanel(text) {
+    return Viz.vars([{ name: '进度', v: text, cls: 'chg' }]);
+  }
+
+  if (!fired.open) {
+    fired.open = true;
+    frames.push(Viz.frame('for (int s = 1; s <= 6; s++) dp[s] = 1;',
+      '开局：1 颗骰子掷出 1..6 各 1 种，这 6 格都是 1',
+      [dpPanel(1, null), varsPanel('已掷 1 颗')]));
+  }
+
+  for (var dice = 2; dice <= num; dice++) {
+    var ndp = [];
+    for (var s2 = 0; s2 <= W; s2++) ndp.push(0);
+    for (var s3 = dice - 1; s3 <= 6 * (dice - 1); s3++) {
+      if (dp[s3] === 0) continue;
+      if (!fired.add) {
+        fired.add = true;
+        var mk = {};
+        mk[s3 - 1] = 'cur';   // 面板下标 = 点数和 − 1
+        frames.push(Viz.frame('for (int k = 1; k <= 6; k++) ndp[s + k] += dp[s];',
+          '再掷一颗：dp[' + s3 + '] 的 ' + dp[s3] + ' 种组合，分别累加到下一轮的和 ' + (s3 + 1) + '..' + (s3 + 6),
+          [dpPanel(dice - 1, mk), varsPanel('正在算 ' + dice + ' 颗')]));
+      }
+      for (var k = 1; k <= 6; k++) ndp[s3 + k] += dp[s3];
+    }
+    dp = ndp;
+  }
+
+  var total = 1;
+  for (var t = 0; t < num; t++) total *= 6;
+  if (!fired.counts) {
+    fired.counts = true;
+    frames.push(Viz.frame('long total = 1;',
+      num + ' 颗骰子掷完：组合数都齐了，总和 = ' + total + ' = 6^' + num,
+      [dpPanel(num, null), varsPanel('组合数齐了')]));
+  }
+
+  var out = [];
+  for (var s4 = num; s4 <= W; s4++) out.push(dp[s4] / total);
+  frames.push(Viz.frame('ans[s - num] = (double) dp[s] / total;',
+    '各组合数除以 ' + total + ' 得概率；数组第 i 位对应点数和 ' + num + '+i',
+    [Viz.cells(out.map(function (p) { return p.toFixed(5); }),
+      { title: '概率数组（显示保留 5 位，内部是精确值）' }), varsPanel('完成')]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>制作 m 束花所需的最少天数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 689 / 1159</span>
+  <nav class="pn"><a href="1123.html">上一篇</a><a href="0667.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1482. </span>制作 m 束花所需的最少天数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">二分查找</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">可行天数单调（等越久花越多）→ 二分最小天数 d；check 扫一遍数组，连续开花每够 k 朵扎一束，够 m 束就可行。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>m*k &gt; n</code> 直接返回 <code>-1</code>（乘积用 <code>long</code> 防溢出）；二分下界 1、上界最大花期。</li><li><code>check(d)</code>：扫一遍，<code>bloomDay[i] ≤ d</code> 就把连续段延长，攒够 <code>k</code> 朵立刻扎一束并清零（每段贡献 <code>⌊段长/k⌋</code>）。</li><li><code>check ≥ m</code> 说明 <code>d</code> 可行，收缩上界；否则收缩下界，最后 <code>lo</code> 即答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log max(bloomDay))，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> minDays(<span class="k">int</span>[] bloomDay, <span class="k">int</span> m, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 花不够 m*k 朵直接无解；乘积用 long 防溢出</span></span><span class="ln"><span class="no">4</span>        <span class="k">if</span> ((<span class="k">long</span>) m * k &gt; bloomDay.length) <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> lo = <span class="n">1</span>, hi = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> d : bloomDay) hi = <span class="t">Math</span>.max(hi, d);</span><span class="ln"><span class="no">7</span>        <span class="c">// 等待天数越多越好扎，可行性单调 → 二分最小可行天数</span></span><span class="ln"><span class="no">8</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">9</span>            <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (bouquets(bloomDay, mid, k) &gt;= m) hi = mid;</span><span class="ln"><span class="no">11</span>            <span class="k">else</span> lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> lo;</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="c">// 第 d 天：连续开花每够 k 朵扎一束；每段贡献 ⌊段长/k⌋ 束</span></span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="k">int</span> bouquets(<span class="k">int</span>[] day, <span class="k">int</span> d, <span class="k">int</span> k) {</span><span class="ln"><span class="no">18</span>        <span class="k">int</span> ans = <span class="n">0</span>, run = <span class="n">0</span>;</span><span class="ln"><span class="no">19</span>        <span class="k">for</span> (<span class="k">int</span> x : day) {</span><span class="ln"><span class="no">20</span>            run = x &lt;= d ? run + <span class="n">1</span> : <span class="n">0</span>;</span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (run == k) {</span><span class="ln"><span class="no">22</span>                ans++;</span><span class="ln"><span class="no">23</span>                run = <span class="n">0</span>;</span><span class="ln"><span class="no">24</span>            }</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>bloomDay</code>，以及两个整数 <code>m</code> 和 <code>k</code> 。</p>
+
+<p>现需要制作 <code>m</code> 束花。制作花束时，需要使用花园中 <strong>相邻的 <code>k</code> 朵花</strong> 。</p>
+
+<p>花园中有 <code>n</code> 朵花，第 <code>i</code> 朵花会在 <code>bloomDay[i]</code> 时盛开，<strong>恰好</strong> 可以用于 <strong>一束</strong> 花中。</p>
+
+<p>请你返回从花园中摘 <code>m</code> 束花需要等待的 <strong>最少</strong> 的天数。如果不能摘到 <code>m</code> 束花则返回 -1。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>bloomDay = [1,10,3,10,2], m = 3, k = 1
+<strong>输出：</strong>3
+<strong>解释：</strong>让我们一起观察这三天的花开过程，x 表示花开，而 _ 表示花还未开。
+现在需要制作 3 束花，每束只需要 1 朵。
+1 天后：[x, _, _, _, _]   // 只能制作 1 束花
+2 天后：[x, _, _, _, x]   // 只能制作 2 束花
+3 天后：[x, _, x, _, x]   // 可以制作 3 束花，答案为 3
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>bloomDay = [1,10,3,10,2], m = 3, k = 2
+<strong>输出：</strong>-1
+<strong>解释：</strong>要制作 3 束花，每束需要 2 朵花，也就是一共需要 6 朵花。而花园中只有 5 朵花，无法满足制作要求，返回 -1 。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>bloomDay = [7,7,7,7,12,7,7], m = 2, k = 3
+<strong>输出：</strong>12
+<strong>解释：</strong>要制作 2 束花，每束需要 3 朵。
+花园在 7 天后和 12 天后的情况如下：
+7 天后：[x, x, x, x, _, x, x]
+可以用前 3 朵盛开的花制作第一束花。但不能使用后 3 朵盛开的花，因为它们不相邻。
+12 天后：[x, x, x, x, x, x, x]
+显然，我们可以用不同的方式制作两束花。
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre>
+<strong>输入：</strong>bloomDay = [1000000000,1000000000], m = 1, k = 1
+<strong>输出：</strong>1000000000
+<strong>解释：</strong>需要等 1000000000 天才能采到花来制作花束
+</pre>
+
+<p><strong>示例 5：</strong></p>
+
+<pre>
+<strong>输入：</strong>bloomDay = [1,10,2,9,3,8,4,7,5,6], m = 4, k = 2
+<strong>输出：</strong>9
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>bloomDay.length == n</code></li>
+	<li><code>1 &lt;= n &lt;= 10^5</code></li>
+	<li><code>1 &lt;= bloomDay[i] &lt;= 10^9</code></li>
+	<li><code>1 &lt;= m &lt;= 10^6</code></li>
+	<li><code>1 &lt;= k &lt;= n</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int minDays(int[] bloomDay, int m, int k) {", "        // 花不够 m*k 朵直接无解；乘积用 long 防溢出", "        if ((long) m * k > bloomDay.length) return -1;", "        int lo = 1, hi = 0;", "        for (int d : bloomDay) hi = Math.max(hi, d);", "        // 等待天数越多越好扎，可行性单调 → 二分最小可行天数", "        while (lo < hi) {", "            int mid = (lo + hi) >>> 1;", "            if (bouquets(bloomDay, mid, k) >= m) hi = mid;", "            else lo = mid + 1;", "        }", "        return lo;", "    }", "", "    // 第 d 天：连续开花每够 k 朵扎一束；每段贡献 ⌊段长/k⌋ 束", "    private int bouquets(int[] day, int d, int k) {", "        int ans = 0, run = 0;", "        for (int x : day) {", "            run = x <= d ? run + 1 : 0;", "            if (run == k) {", "                ans++;", "                run = 0;", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1482. 制作 m 束花所需的最少天数 —— 图解：复刻 Solution.java 的「二分天数 + 连续段扎花」，5 张关键帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { bloomDay: [7, 7, 7, 7, 12, 7, 7], m: 2, k: 3 };
+
+function trace(input) {
+  var day = input.bloomDay, m = input.m, k = input.k;
+  var frames = [];
+
+  // 与 Java 的 bouquets 相同：连续开花每够 k 朵扎一束
+  function bouquets(d) {
+    var ans = 0, run = 0, states = [];
+    for (var i = 0; i < day.length; i++) {
+      run = day[i] <= d ? run + 1 : 0;
+      if (run === k) { ans++; run = 0; }
+      states.push({ bloom: day[i] <= d, runLen: run });
+    }
+    return { ans: ans, states: states };
+  }
+
+  function cellsPanel(o) {
+    var marks = {}, i;
+    for (i = 0; i < day.length; i++) {
+      if (o.states) {
+        if (o.states[i].bloom) marks[i] = 'win';
+        else marks[i] = 'dim';
+        if (o.states[i].inRun) marks[i] = 'cur';
+      }
+    }
+    if (o.done) for (i = 0; i < day.length; i++) marks[i] = 'done';
+    return Viz.cells(day, { title: 'bloomDay（按 d=' + (o.d == null ? '?' : o.d) + ' 天看开花）', marks: marks });
+  }
+  function snap(at, key, cells, vars) {
+    var panels = [cellsPanel(cells)];
+    if (vars) panels.push(Viz.vars(vars));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  var hi = 0;
+  for (var i = 0; i < day.length; i++) hi = Math.max(hi, day[i]);
+  var lo = 1;
+
+  // 二分过程：记录第一次 check 失败和成功收尾的两个时刻
+  var checked = [];
+  while (lo < hi) {
+    var mid = (lo + hi) >>> 1;
+    var r = bouquets(mid);
+    checked.push({ mid: mid, ans: r.ans, states: r.states });
+    if (r.ans >= m) hi = mid;
+    else lo = mid + 1;
+  }
+  var finalR = bouquets(lo);
+
+  var earlyExit = (input.m * input.k > day.length);
+  if (earlyExit) {
+    snap('if ((long) m * k > bloomDay.length) return -1;',
+      'm×k = ' + (input.m * input.k) + ' > 花数 ' + day.length + '：再等也凑不够，返回 -1', { d: 0 });
+    return { frames: frames, result: -1 };
+  }
+  snap('for (int d : bloomDay) hi = Math.max(hi, d);',
+    '上界 = 最大花期 ' + hi + '：天数越多越好扎，二分最小可行天数',
+    { d: hi }, [{ name: 'lo', v: 1, cls: '' }, { name: 'hi', v: hi, cls: '' }]);
+
+  for (i = 0; i < checked.length; i++) {
+    var c = checked[i];
+    if (i === 0) snap('int mid = (lo + hi) >>> 1;',
+      '试 mid=' + c.mid + '：还没到花期，一朵没开，lo = ' + c.mid + '+1',
+      { d: c.mid, states: c.states },
+      [{ name: 'mid', v: c.mid, cls: '' }, { name: '能扎', v: c.ans + ' < ' + m, cls: '' },
+       { name: 'lo', v: c.mid + 1, cls: 'chg' }, { name: 'hi', v: hi, cls: '' }]);
+    if (i === 1) snap('if (bouquets(bloomDay, mid, k) >= m) hi = mid;',
+      '试 mid=' + c.mid + '：连续 4 朵只扎 1 束 < ' + m + '，仍不够，lo = ' + c.mid + '+1',
+      { d: c.mid, states: c.states },
+      [{ name: 'mid', v: c.mid, cls: '' }, { name: '能扎', v: c.ans + ' < ' + m, cls: '' },
+       { name: 'lo', v: c.mid + 1, cls: 'chg' }, { name: 'hi', v: hi, cls: '' }]);
+  }
+
+  // 收尾：展示 lo 时刻的扎花过程
+  var storyShape = (day.length === 7 && m === 2 && k === 3);
+  snap('if (run == k) {',
+    storyShape
+      ? '第 ' + lo + ' 天：全部盛开，连续段 4 和 3 → 1+1 = ' + finalR.ans + ' 束 ≥ ' + m + '，够了'
+      : '第 ' + lo + ' 天：能扎 ' + finalR.ans + ' 束 ≥ ' + m + '，二分收敛到最小可行天数',
+    { d: lo, states: finalR.states },
+    [{ name: '答案', v: lo, cls: 'done' }, { name: '能扎', v: finalR.ans + ' ≥ ' + m, cls: 'done' }]);
+  return { frames: frames, result: lo };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

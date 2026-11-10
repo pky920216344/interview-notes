@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最长的斐波那契子序列的长度 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 442 / 1159</span>
+  <nav class="pn"><a href="0331.html">上一篇</a><a href="0382.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">873. </span>最长的斐波那契子序列的长度</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 6</li><li class="algo">动态规划</li><li class="aux">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">dp[j][k]=以 arr[j]、arr[k] 结尾的长度：哈希找 need=arr[k]−arr[j]，dp[j][k]=dp[i][j]+1，最后 +2。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>固定结尾两个数 <code>(j, k)</code>，前一个数被唯一确定：<code>need = arr[k] − arr[j]</code>，哈希表 O(1) 定位。</li><li><code>need</code> 必须严格小于 <code>arr[j]</code>（否则不递增），找到就 <code>dp[j][k] = dp[need 的下标][j] + 1</code>。</li><li><code>dp</code> 初值 0 表示「开头一对」；答案是最大 <code>dp + 2</code>，一个都接不上就返回 <code>0</code>。</li><li>严格递增保证值→下标一一对应，也保证了转移只用已算过的 <code>dp[i][j]</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> lenLongestFibSubseq(<span class="k">int</span>[] arr) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = arr.length;</span><span class="ln"><span class="no">6</span>        <span class="c">// pos[v]：值 v 的下标；严格递增所以一一对应</span></span><span class="ln"><span class="no">7</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; pos = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) pos.put(arr[i], i);</span><span class="ln"><span class="no">9</span>        <span class="c">// dp[j][k]：以 arr[j]、arr[k] 结尾的斐波那契式子序列，比「开头两个数」多接了几步</span></span><span class="ln"><span class="no">10</span>        <span class="k">int</span>[][] dp = <span class="k">new</span> <span class="k">int</span>[n][n];</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; n; k++)</span><span class="ln"><span class="no">13</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; k; j++) {</span><span class="ln"><span class="no">14</span>                <span class="k">int</span> need = arr[k] - arr[j];   <span class="c">// 想接在 (j,k) 前面的那个数</span></span><span class="ln"><span class="no">15</span>                <span class="c">// 必须比 arr[j] 小才落在 j 左边，数列才严格递增</span></span><span class="ln"><span class="no">16</span>                <span class="k">if</span> (need &lt; arr[j] &amp;&amp; pos.containsKey(need))</span><span class="ln"><span class="no">17</span>                    dp[j][k] = dp[pos.get(need)][j] + <span class="n">1</span>;</span><span class="ln"><span class="no">18</span>                ans = <span class="t">Math</span>.max(ans, dp[j][k]);</span><span class="ln"><span class="no">19</span>            }</span><span class="ln"><span class="no">20</span>        <span class="c">// dp 里存的是「多接的步数」，最长还要加上开头两个数；接不上任何步就返回 0</span></span><span class="ln"><span class="no">21</span>        <span class="k">return</span> ans &gt; <span class="n">0</span> ? ans + <span class="n">2</span> : <span class="n">0</span>;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>如果序列&nbsp;<code>x<sub>1</sub>, x<sub>2</sub>, ..., x<sub>n</sub></code>&nbsp;满足下列条件，就说它是&nbsp;<em>斐波那契式&nbsp;</em>的：</p>
+
+<ul>
+	<li><code>n &gt;= 3</code></li>
+	<li>对于所有&nbsp;<code>i + 2 &lt;= n</code>，都有&nbsp;<code>x<sub>i</sub>&nbsp;+ x<sub>i+1</sub>&nbsp;== x<sub>i+2</sub></code></li>
+</ul>
+
+<p>给定一个&nbsp;<strong>严格递增&nbsp;</strong>的正整数数组形成序列 <code>arr</code>&nbsp;，找到 <code><font color="#c7254e"><font face="Menlo, Monaco, Consolas, Courier New, monospace"><span style="font-size:12.600000381469727px"><span style="caret-color:#c7254e"><span style="background-color:#f9f2f4">arr</span></span></span></font></font></code>&nbsp;中最长的斐波那契式的子序列的长度。如果不存在，返回&nbsp;&nbsp;<code>0</code> 。</p>
+
+<p><strong>子序列</strong> 是通过从另一个序列 <code>arr</code> 中删除任意数量的元素（包括删除 0 个元素）得到的，同时不改变剩余元素顺序。例如，<code>[3, 5, 8]</code> 是 <code>[3, 4, 5, 6, 7, 8]</code>&nbsp;的子序列。</p>
+
+
+
+<ul>
+</ul>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入: </strong>arr =[1,2,3,4,5,6,7,8]
+<strong>输出: </strong>5
+<strong>解释: </strong>最长的斐波那契式子序列为 [1,2,3,5,8] 。
+</pre>
+
+<p><strong>示例&nbsp;2：</strong></p>
+
+<pre>
+<strong>输入: </strong>arr =[1,3,7,11,12,14,18]
+<strong>输出: </strong>3
+<strong>解释</strong>: 最长的斐波那契式子序列有 [1,11,12]、[3,11,14] 以及 [7,11,18] 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>3 &lt;= arr.length &lt;= 1000</code></li>
+	<li>
+	<p><code>1 &lt;= arr[i] &lt; arr[i + 1] &lt;= 10<sup>9</sup></code></p>
+	</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int lenLongestFibSubseq(int[] arr) {", "        int n = arr.length;", "        // pos[v]：值 v 的下标；严格递增所以一一对应", "        Map<Integer, Integer> pos = new HashMap<>();", "        for (int i = 0; i < n; i++) pos.put(arr[i], i);", "        // dp[j][k]：以 arr[j]、arr[k] 结尾的斐波那契式子序列，比「开头两个数」多接了几步", "        int[][] dp = new int[n][n];", "        int ans = 0;", "        for (int k = 0; k < n; k++)", "            for (int j = 0; j < k; j++) {", "                int need = arr[k] - arr[j];   // 想接在 (j,k) 前面的那个数", "                // 必须比 arr[j] 小才落在 j 左边，数列才严格递增", "                if (need < arr[j] && pos.containsKey(need))", "                    dp[j][k] = dp[pos.get(need)][j] + 1;", "                ans = Math.max(ans, dp[j][k]);", "            }", "        // dp 里存的是「多接的步数」，最长还要加上开头两个数；接不上任何步就返回 0", "        return ans > 0 ? ans + 2 : 0;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 873 最长的斐波那契子序列的长度 —— 图解：复刻 Solution.java 的「哈希对 dp[j][k]=dp[i][j]+1」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [1, 2, 3, 4, 5, 6, 7, 8] };
+
+function trace(input) {
+  var arr = input.arr, n = arr.length;
+  var frames = [];
+  var fired = { one: false, two: false };
+
+  // 值 → 下标
+  var pos = {};
+  arr.forEach(function (v, i) { pos[v] = i; });
+
+  function arrPanel(marks, ptr) {
+    var pointers = [];
+    if (ptr) {
+      if (ptr.i != null) pointers.push({ at: ptr.i, label: 'i', cls: 'p-mid' });
+      if (ptr.j != null) pointers.push({ at: ptr.j, label: 'j', cls: 'p-left' });
+      if (ptr.k != null) pointers.push({ at: ptr.k, label: 'k', cls: 'p-right' });
+    }
+    return Viz.cells(arr, { title: 'arr（严格递增）', marks: marks || {}, pointers: pointers });
+  }
+
+  function posPanel(hit) {
+    var rows = arr.map(function (v) { return { k: String(v), v: String(pos[v]), cls: v === hit ? 'hit' : '' }; });
+    return Viz.table('pos：值 → 下标', rows);
+  }
+
+  function varsPanel(o) {
+    var items = [];
+    if (o.need != null) items.push({ name: 'need = arr[k]−arr[j]', v: String(o.need), cls: 'cur' });
+    if (o.dp != null) items.push({ name: 'dp[j][k]（多接的步数）', v: String(o.dp), cls: 'chg' });
+    if (o.len != null) items.push({ name: '这条链的长度', v: String(o.len) });
+    if (o.ans != null) items.push({ name: 'ans（最长）', v: String(o.ans), cls: 'done' });
+    return Viz.vars(items);
+  }
+
+  frames.push(Viz.frame('for (int i = 0; i < n; i++) pos.put(arr[i], i);',
+    '先建值→下标表：想找「前一个数」O(1) 就能定位',
+    [arrPanel(), posPanel()]));
+
+  // dp[j][k]：以 (j,k) 结尾还能再接几步；复刻 Java 的 k 外 j 内顺序
+  var dp = [];
+  for (var x = 0; x < n; x++) dp.push(new Array(n).fill(0));
+  var ans = 0, bestPair = null;
+
+  // 从 (j,k) 往回把整条链的值取出来，用来在图上标色
+  function chainOf(j, k) {
+    var vals = [arr[k], arr[j]];
+    while (dp[j][k] > 0) {
+      var i = pos[arr[k] - arr[j]];
+      vals.unshift(arr[i]);
+      k = j; j = i;
+    }
+    return vals;
+  }
+  function marksOf(vals, cls) {
+    var m = {};
+    vals.forEach(function (v) { m[pos[v]] = cls; });
+    return m;
+  }
+
+  for (var k = 0; k < n; k++)
+    for (var j = 0; j < k; j++) {
+      var need = arr[k] - arr[j];
+      if (need < arr[j] && pos[need] !== undefined) {
+        dp[j][k] = dp[pos[need]][j] + 1;
+        if (dp[j][k] > ans) { ans = dp[j][k]; bestPair = [j, k]; }
+        if (dp[j][k] === 1 && !fired.one) {
+          fired.one = true;
+          var vals1 = chainOf(j, k);
+          frames.push(Viz.frame('dp[j][k] = dp[pos.get(need)][j] + 1;',
+            'need=' + need + ' 就在 j 左边：接上后链长 3，dp 记下「多接了 1 步」',
+            [arrPanel(marksOf(vals1, 'win'), { i: pos[need], j: j, k: k }), posPanel(need),
+             varsPanel({ need: need, dp: 1, len: dp[j][k] + 2 })]));
+        }
+        if (dp[j][k] === 2 && !fired.two) {
+          fired.two = true;
+          var vals2 = chainOf(j, k);
+          frames.push(Viz.frame('dp[j][k] = dp[pos.get(need)][j] + 1;',
+            '又接上一段：这条链已长 ' + (dp[j][k] + 2) + '，转移沿用前面的答案',
+            [arrPanel(marksOf(vals2, 'win'), { i: pos[need], j: j, k: k }), posPanel(need),
+             varsPanel({ need: need, dp: 2, len: dp[j][k] + 2 })]));
+        }
+      }
+    }
+
+  if (bestPair) {
+    var vals = chainOf(bestPair[0], bestPair[1]);
+    frames.push(Viz.frame('return ans > 0 ? ans + 2 : 0;',
+      '最长的链是「' + vals.join(',') + '」：多接 ' + ans + ' 步 + 开头 2 个数 = ' + (ans + 2),
+      [arrPanel(marksOf(vals, 'done')), posPanel(), varsPanel({ ans: ans + 2 })]));
+  } else {
+    frames.push(Viz.frame('return ans > 0 ? ans + 2 : 0;',
+      '任何两数后面都接不上第三个：返回 0',
+      [arrPanel(), posPanel(), varsPanel({ ans: 0 })]));
+  }
+
+  return { frames: frames, result: ans > 0 ? ans + 2 : 0 };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

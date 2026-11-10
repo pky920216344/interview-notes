@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉树的垂序遍历 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 536 / 1159</span>
+  <nav class="pn"><a href="0058.html">上一篇</a><a href="0829.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">987. </span>二叉树的垂序遍历</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">深度优先搜索/递归</li><li class="aux">哈希表</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">哈希表</li><li class="tag">二叉树</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">DFS 给每个结点记 (列, 行, 值)，按「列→行→值」排序后按列分组输出；同一格的冲突靠第三键值序解决。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>坐标：根 <code>(0,0)</code>；左孩子 <code>(col−1, row+1)</code>，右孩子 <code>(col+1, row+1)</code>。DFS 一遍收集全部三元组。</li><li>排序键依次为：列升序、同列行升序（从上到下）、同行同列按值升序——第三键是本题特有的坑。</li><li>排完序线性扫：列号变化就新开一个列表，把值依次放进去。</li><li>不要按「每层 BFS」分组（同层同列的值序会被打乱），排序后分组最稳。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; verticalTraversal(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; nodes = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();   <span class="c">// 收集 {列 col, 行 row, 值 val}</span></span><span class="ln"><span class="no">6</span>        dfs(root, <span class="n">0</span>, <span class="n">0</span>, nodes);</span><span class="ln"><span class="no">7</span>        <span class="c">// 列升序 → 同列行升序 → 同行列按值升序</span></span><span class="ln"><span class="no">8</span>        nodes.sort((a, b) -&gt; a[<span class="n">0</span>] != b[<span class="n">0</span>] ? a[<span class="n">0</span>] - b[<span class="n">0</span>]</span><span class="ln"><span class="no">9</span>                : a[<span class="n">1</span>] != b[<span class="n">1</span>] ? a[<span class="n">1</span>] - b[<span class="n">1</span>] : a[<span class="n">2</span>] - b[<span class="n">2</span>]);</span><span class="ln"><span class="no">10</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> prevCol = <span class="t">Integer</span>.MIN_VALUE;</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span>[] nd : nodes) {</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (nd[<span class="n">0</span>] != prevCol) {              <span class="c">// 换列就新开一个列表</span></span><span class="ln"><span class="no">14</span>                ans.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;());</span><span class="ln"><span class="no">15</span>                prevCol = nd[<span class="n">0</span>];</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>            ans.get(ans.size() - <span class="n">1</span>).add(nd[<span class="n">2</span>]);</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="t">TreeNode</span> node, <span class="k">int</span> col, <span class="k">int</span> row, <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; nodes) {</span><span class="ln"><span class="no">23</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span>;</span><span class="ln"><span class="no">24</span>        nodes.add(<span class="k">new</span> <span class="k">int</span>[]{col, row, node.val});</span><span class="ln"><span class="no">25</span>        dfs(node.left, col - <span class="n">1</span>, row + <span class="n">1</span>, nodes);    <span class="c">// 左下：列减一</span></span><span class="ln"><span class="no">26</span>        dfs(node.right, col + <span class="n">1</span>, row + <span class="n">1</span>, nodes);   <span class="c">// 右下：列加一</span></span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你二叉树的根结点 <code>root</code> ，请你设计算法计算二叉树的<em> </em><strong>垂序遍历</strong> 序列。</p>
+
+<p>对位于&nbsp;<code>(row, col)</code>&nbsp;的每个结点而言，其左右子结点分别位于&nbsp;<code>(row + 1, col - 1)</code>&nbsp;和&nbsp;<code>(row + 1, col + 1)</code> 。树的根结点位于 <code>(0, 0)</code> 。</p>
+
+<p>二叉树的 <strong>垂序遍历</strong> 从最左边的列开始直到最右边的列结束，按列索引每一列上的所有结点，形成一个按出现位置从上到下排序的有序列表。如果同行同列上有多个结点，则按结点的值从小到大进行排序。</p>
+
+<p>返回二叉树的 <strong>垂序遍历</strong> 序列。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+<img alt="" src="../assets/img/0cc162903053.jpg" style="width: 431px; height: 304px;" />
+<pre>
+<strong>输入：</strong>root = [3,9,20,null,null,15,7]
+<strong>输出：</strong>[[9],[3,15],[20],[7]]
+<strong>解释：</strong>
+列 -1 ：只有结点 9 在此列中。
+列  0 ：只有结点 3 和 15 在此列中，按从上到下顺序。
+列  1 ：只有结点 20 在此列中。
+列  2 ：只有结点 7 在此列中。</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+<img alt="" src="../assets/img/40dddb705ca9.jpg" style="width: 512px; height: 304px;" />
+<pre>
+<strong>输入：</strong>root = [1,2,3,4,5,6,7]
+<strong>输出：</strong>[[4],[2],[1,5,6],[3],[7]]
+<strong>解释：</strong>
+列 -2 ：只有结点 4 在此列中。
+列 -1 ：只有结点 2 在此列中。
+列  0 ：结点 1 、5 和 6 都在此列中。
+          1 在上面，所以它出现在前面。
+          5 和 6 位置都是 (2, 0) ，所以按值从小到大排序，5 在 6 的前面。
+列  1 ：只有结点 3 在此列中。
+列  2 ：只有结点 7 在此列中。
+</pre>
+
+<p><strong class="example">示例 3：</strong></p>
+<img alt="" src="../assets/img/6b1b8b4766ec.jpg" style="width: 512px; height: 304px;" />
+<pre>
+<strong>输入：</strong>root = [1,2,3,4,6,5,7]
+<strong>输出：</strong>[[4],[2],[1,5,6],[3],[7]]
+<strong>解释：</strong>
+这个示例实际上与示例 2 完全相同，只是结点 5 和 6 在树中的位置发生了交换。
+因为 5 和 6 的位置仍然相同，所以答案保持不变，仍然按值从小到大排序。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中结点数目总数在范围 <code>[1, 1000]</code> 内</li>
+	<li><code>0 &lt;= Node.val &lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<Integer>> verticalTraversal(TreeNode root) {", "        List<int[]> nodes = new ArrayList<>();   // 收集 {列 col, 行 row, 值 val}", "        dfs(root, 0, 0, nodes);", "        // 列升序 → 同列行升序 → 同行列按值升序", "        nodes.sort((a, b) -> a[0] != b[0] ? a[0] - b[0]", "                : a[1] != b[1] ? a[1] - b[1] : a[2] - b[2]);", "        List<List<Integer>> ans = new ArrayList<>();", "        int prevCol = Integer.MIN_VALUE;", "        for (int[] nd : nodes) {", "            if (nd[0] != prevCol) {              // 换列就新开一个列表", "                ans.add(new ArrayList<>());", "                prevCol = nd[0];", "            }", "            ans.get(ans.size() - 1).add(nd[2]);", "        }", "        return ans;", "    }", "", "    private void dfs(TreeNode node, int col, int row, List<int[]> nodes) {", "        if (node == null) return;", "        nodes.add(new int[]{col, row, node.val});", "        dfs(node.left, col - 1, row + 1, nodes);    // 左下：列减一", "        dfs(node.right, col + 1, row + 1, nodes);   // 右下：列加一", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 987. 二叉树的垂序遍历 —— 图解：复刻 Solution.java 的「DFS 记 (col,row,val) → 排序 → 按列分组」，拍 4 张快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, 2, 3, 4, 5, 6, 7] };
+
+function trace(input) {
+  var frames = [];
+
+  // 力扣层序数组 -> 结点；idx 是层序下标
+  function build(arr) {
+    if (!arr.length || arr[0] === null) return null;
+    var root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var p = q.shift();
+      if (i < arr.length) { if (arr[i] !== null) { p.left = { idx: i, val: arr[i], left: null, right: null }; q.push(p.left); } i++; }
+      if (i < arr.length) { if (arr[i] !== null) { p.right = { idx: i, val: arr[i], left: null, right: null }; q.push(p.right); } i++; }
+    }
+    return root;
+  }
+
+  var root = build(input.root);
+  var collected = [];   // {col, row, val, idx}
+  var path = [];        // 当前 DFS 路径
+
+  function treePanel(marks, labels, title) {
+    return Viz.tree(input.root, { title: title, marks: marks || {}, labels: labels || [] });
+  }
+  function colMarks() {
+    var m = {};
+    path.forEach(function (nd, i) { m[nd.idx] = i === path.length - 1 ? 'cur' : 'win'; });
+    return m;
+  }
+  function colLabels() {
+    return path.map(function (nd) { return { at: nd.idx, label: '(' + nd.col + ',' + nd.row + ')', cls: '' }; });
+  }
+
+  function dfs(node, col, row) {
+    if (!node) return;
+    collected.push({ col: col, row: row, val: node.val, idx: node.idx });
+    path.push(node);
+
+    if (node === root) {
+      frames.push(Viz.frame('dfs(node.left, col - 1, row + 1, nodes);',
+        '根在 (0,0)：向左下 col−1、右下 col+1，给每个结点记坐标', [treePanel(colMarks(), colLabels(), '二叉树（黄=当前路径，标签=(col,row)）')]));
+    }
+    if (collected.length === 4) {   // 故事树里恰好收完一半
+      frames.push(Viz.frame('nodes.add(new int[]{col, row, node.val});',
+        'DFS 每到一个结点就记下 {col, row, val} 三元组', [treePanel(colMarks(), colLabels(), '二叉树（黄=当前路径，标签=(col,row)）')]));
+    }
+
+    dfs(node.left, col - 1, row + 1);
+    dfs(node.right, col + 1, row + 1);
+    path.pop();
+  }
+
+  dfs(root, 0, 0);
+
+  // 排序：col 升 → row 升 → val 升
+  collected.sort(function (a, b) {
+    return a.col !== b.col ? a.col - b.col : a.row !== b.row ? a.row - b.row : a.val - b.val;
+  });
+
+  var groups = [];   // {col, vals}
+  collected.forEach(function (nd) {
+    if (!groups.length || groups[groups.length - 1].col !== nd.col) groups.push({ col: nd.col, vals: [] });
+    groups[groups.length - 1].vals.push(nd.val);
+  });
+
+  frames.push(Viz.frame('nodes.sort((a, b) -> a[0] != b[0] ? a[0] - b[0]',
+    '排好序后换列就新开一组：同 (row,col) 的按值排（5、6）',
+    [treePanel(allMarks(), [], '二叉树（绿=已收进答案）'),
+     Viz.table('按列分组', groups.map(function (g) {
+       return { k: '列 ' + g.col, v: '[' + g.vals.join(', ') + ']' };
+     }))]));
+
+  frames.push(Viz.frame('return ans;',
+    '从最左列到最右列输出：共 ' + groups.length + ' 列，' + collected.length + ' 个结点',
+    [treePanel(allMarks(), [], '二叉树（绿=已收进答案）'),
+     Viz.vars([{ name: '列数', v: String(groups.length) }, { name: '结点数', v: String(collected.length) }])]));
+
+  function allMarks() {
+    var m = {};
+    collected.forEach(function (nd) { m[nd.idx] = 'done'; });
+    return m;
+  }
+
+  return { frames: frames, result: groups.map(function (g) { return g.vals.slice(); }) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

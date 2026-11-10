@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>前K个高频单词 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 192 / 1159</span>
+  <nav class="pn"><a href="0134.html">上一篇</a><a href="0084.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">692. </span>前K个高频单词</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 26</li><li class="algo">堆</li><li class="aux">哈希表</li><li class="tag">字典树</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">桶排序</li><li class="tag">计数</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">计数后用大小为 k 的小根堆养着「最好的 k 个」：堆顶是最差的（频次低、同频字典序大），超员就挤掉它，最后反序输出。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>LinkedHashMap</code> 数次数并保持首次出现顺序，堆的比较器 <code>频次升序、同频字典序降序</code>——谁排前面谁就是该被挤掉的「最差」。</li><li>逐个进堆，超过 k 就 <code>poll</code> 堆顶：结束时堆里恰好是全局最好的 k 个。</li><li>从堆顶往外取得到的是「从差到好」，反序后才是「频次高在前、同频字典序小在前」的答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log k)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; topKFrequent(<span class="t">String</span>[] words, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 数每个单词的出现次数；LinkedHashMap 保持首次出现顺序</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt; cnt = <span class="k">new</span> <span class="t">LinkedHashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="t">String</span> w : words) cnt.merge(w, <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">8</span>        <span class="c">// 小根堆装「目前最好的 k 个」：堆顶是最差的（频次低，同频字典序大）</span></span><span class="ln"><span class="no">9</span>        <span class="t">PriorityQueue</span>&lt;<span class="t">String</span>&gt; heap = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;((a, b) -&gt; {</span><span class="ln"><span class="no">10</span>            <span class="k">int</span> byFreq = cnt.get(a) - cnt.get(b);</span><span class="ln"><span class="no">11</span>            <span class="k">return</span> byFreq != <span class="n">0</span> ? byFreq : b.compareTo(a);</span><span class="ln"><span class="no">12</span>        });</span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="t">String</span> w : cnt.keySet()) {</span><span class="ln"><span class="no">14</span>            heap.offer(w);</span><span class="ln"><span class="no">15</span>            <span class="c">// 超过 k 个就挤掉堆顶那个最差的</span></span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (heap.size() &gt; k) heap.poll();</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="c">// 堆里剩下的就是最好的 k 个；从堆顶取是从差到好，反序才是答案</span></span><span class="ln"><span class="no">19</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">20</span>        <span class="k">while</span> (!heap.isEmpty()) ans.add(heap.poll());</span><span class="ln"><span class="no">21</span>        <span class="t">Collections</span>.reverse(ans);</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个单词列表&nbsp;<code>words</code>&nbsp;和一个整数 <code>k</code> ，返回前&nbsp;<code>k</code><em>&nbsp;</em>个出现次数最多的单词。</p>
+
+<p>返回的答案应该按单词出现频率由高到低排序。如果不同的单词有相同出现频率， <strong>按字典顺序</strong> 排序。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入:</strong> words = ["i", "love", "leetcode", "i", "love", "coding"], k = 2
+<strong>输出:</strong> ["i", "love"]
+<strong>解析:</strong> "i" 和 "love" 为出现次数最多的两个单词，均为2次。
+    注意，按字母顺序 "i" 在 "love" 之前。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入:</strong> ["the", "day", "is", "sunny", "the", "the", "the", "sunny", "is", "is"], k = 4
+<strong>输出:</strong> ["the", "is", "sunny", "day"]
+<strong>解析:</strong> "the", "is", "sunny" 和 "day" 是出现次数最多的四个单词，
+    出现次数依次为 4, 3, 2 和 1 次。
+</pre>
+
+
+
+<p><strong>注意：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= words.length &lt;= 500</code></li>
+	<li><code>1 &lt;= words[i].length &lt;= 10</code></li>
+	<li><code>words[i]</code>&nbsp;由小写英文字母组成。</li>
+	<li><code>k</code> 的取值范围是&nbsp;<code>[1, <strong>不同</strong> words[i] 的数量]</code></li>
+</ul>
+
+
+
+<p><strong>进阶：</strong>尝试以&nbsp;<code>O(n log k)</code> 时间复杂度和&nbsp;<code>O(n)</code> 空间复杂度解决。</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<String> topKFrequent(String[] words, int k) {", "        // 数每个单词的出现次数；LinkedHashMap 保持首次出现顺序", "        Map<String, Integer> cnt = new LinkedHashMap<>();", "        for (String w : words) cnt.merge(w, 1, Integer::sum);", "        // 小根堆装「目前最好的 k 个」：堆顶是最差的（频次低，同频字典序大）", "        PriorityQueue<String> heap = new PriorityQueue<>((a, b) -> {", "            int byFreq = cnt.get(a) - cnt.get(b);", "            return byFreq != 0 ? byFreq : b.compareTo(a);", "        });", "        for (String w : cnt.keySet()) {", "            heap.offer(w);", "            // 超过 k 个就挤掉堆顶那个最差的", "            if (heap.size() > k) heap.poll();", "        }", "        // 堆里剩下的就是最好的 k 个；从堆顶取是从差到好，反序才是答案", "        List<String> ans = new ArrayList<>();", "        while (!heap.isEmpty()) ans.add(heap.poll());", "        Collections.reverse(ans);", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 692. 前K个高频单词 —— 图解：复刻 Solution.java 的「计数 + 大小为 k 的小根堆」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { words: ['i', 'love', 'leetcode', 'i', 'love', 'coding'], k: 2 };
+
+function trace(input) {
+  var words = input.words, k = input.k;
+  var frames = [];
+
+  // 1) 计数：按首次出现顺序（Java 用 LinkedHashMap 保持这个顺序）
+  var order = [], cnt = {};
+  words.forEach(function (w) {
+    if (!(w in cnt)) { cnt[w] = 0; order.push(w); }
+    cnt[w]++;
+  });
+
+  // 2) 数组小根堆：堆顶是「最差」的单词（频次低，同频字典序大）
+  var heap = [];
+  function cmp(a, b) {
+    if (cnt[a] !== cnt[b]) return cnt[a] - cnt[b];
+    return b < a ? -1 : b > a ? 1 : 0;   // 等价于 Java 的 b.compareTo(a)
+  }
+  function siftUp(i) {
+    while (i > 0) {
+      var p = (i - 1) >> 1;
+      if (cmp(heap[i], heap[p]) >= 0) break;
+      var t = heap[i]; heap[i] = heap[p]; heap[p] = t;
+      i = p;
+    }
+  }
+  function siftDown(i) {
+    for (;;) {
+      var l = 2 * i + 1, r = l + 1, m = i;
+      if (l < heap.length && cmp(heap[l], heap[m]) < 0) m = l;
+      if (r < heap.length && cmp(heap[r], heap[m]) < 0) m = r;
+      if (m === i) break;
+      var t = heap[i]; heap[i] = heap[m]; heap[m] = t;
+      i = m;
+    }
+  }
+  function offer(w) { heap.push(w); siftUp(heap.length - 1); }
+  function poll() {
+    var top = heap[0], last = heap.pop();
+    if (heap.length) { heap[0] = last; siftDown(0); }
+    return top;
+  }
+
+  function tablePanel(cur) {
+    return Viz.table('计数 cnt：单词 → 次数',
+      order.map(function (w) { return { k: w, v: String(cnt[w]), cls: w === cur ? 'hit' : '' }; }));
+  }
+  function heapPanel(badIdx) {
+    var marks = {};
+    if (badIdx != null) marks[badIdx] = 'bad';
+    var pointers = heap.length ? [{ at: 0, label: '堆顶（最差）', cls: 'p-head' }] : [];
+    return Viz.cells(heap.map(function (w) { return w + ':' + cnt[w]; }),
+      { title: '小根堆（只留最好的 ' + k + ' 个）', marks: marks, pointers: pointers });
+  }
+
+  var polled = 0;
+  order.forEach(function (w, idx) {
+    offer(w);
+    if (idx === 0) {
+      frames.push(Viz.frame('heap.offer(w);',
+        '数完次数，按首次出现顺序逐个进堆：第一个是 ' + w + '(' + cnt[w] + ')',
+        [tablePanel(w), heapPanel(null)]));
+    }
+    if (idx === 1 && heap.length) {
+      frames.push(Viz.frame('heap.offer(w);',
+        w + '(' + cnt[w] + ') 进堆后：堆顶 ' + heap[0] + ' 是目前最差的（同频里字典序大的）',
+        [tablePanel(w), heapPanel(null)]));
+    }
+    if (heap.length > k) {
+      var worst = heap[0];
+      if (polled === 0) {
+        frames.push(Viz.frame('if (heap.size() > k) heap.poll();',
+          '堆超员：' + worst + ' 只出现 ' + cnt[worst] + ' 次，堆顶最差，挤掉它',
+          [tablePanel(w), heapPanel(0)]));
+      }
+      polled++;
+      poll();
+    }
+  });
+
+  // 3) 收集：从堆顶取是从差到好，反序后才是从好到差
+  var ans = [];
+  while (heap.length) ans.push(poll());
+  ans.reverse();
+  frames.push(Viz.frame('Collections.reverse(ans);',
+    '堆里从顶到底 = 从差到好；反序得到 [' + ans.slice(0, 3).join(', ') + (ans.length > 3 ? ', …' : '') + ']',
+    [Viz.cells(ans, { title: '答案（频次高在前，同频字典序小在前）', marks: ans.map(function () { return 'done'; }) }),
+      tablePanel(null)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

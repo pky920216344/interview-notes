@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>课程表 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 95 / 1159</span>
+  <nav class="pn"><a href="0718.html">上一篇</a><a href="0083.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">207. </span>课程表</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 69</li><li class="algo">图算法</li><li class="aux">广度优先搜索</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="tag">拓扑排序</li><li class="tag">directed-acyclic-graph</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">拓扑排序：入度 0 的课入队，每弹一门就把后继的入度减 1，减到 0 再入队；最后修完的课数等于总课数就没环。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>把 <code>prerequisites[i] = [a, b]</code> 看成边 <code>b → a</code>：a 的入度加 1，a 挂到 b 的邻接表上。</li><li>入度为 0 的课没有前置，先入队；每次弹出一门，<code>done</code> 加 1，并把它的后继入度各减 1。</li><li>后继的入度<strong>减到 0</strong> 才入队（前置全修完）；环上的课入度永远到不了 0，进不了队列。</li><li>队列空后 <code>done == numCourses</code> 说明全修完、无环；不相等说明有课在环里，返回 <code>false</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(V + E)，空间复杂度 O(V + E)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> canFinish(<span class="k">int</span> numCourses, <span class="k">int</span>[][] prerequisites) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 邻接表：学完 b 才能学 a，连边 b → a</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; adj = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; numCourses; i++) adj.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;());</span><span class="ln"><span class="no">8</span>        <span class="k">int</span>[] inDegree = <span class="k">new</span> <span class="k">int</span>[numCourses];</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span>[] p : prerequisites) {</span><span class="ln"><span class="no">10</span>            adj.get(p[<span class="n">1</span>]).add(p[<span class="n">0</span>]);</span><span class="ln"><span class="no">11</span>            inDegree[p[<span class="n">0</span>]]++;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="c">// 入度为 0 的课没有前置，先进队列</span></span><span class="ln"><span class="no">14</span>        <span class="t">Queue</span>&lt;<span class="t">Integer</span>&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; numCourses; i++) {</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (inDegree[i] == <span class="n">0</span>) queue.add(i);</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">int</span> done = <span class="n">0</span>;</span><span class="ln"><span class="no">19</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">20</span>            <span class="k">int</span> cur = queue.poll();</span><span class="ln"><span class="no">21</span>            <span class="c">// 弹出的课当作修完，done 加 1</span></span><span class="ln"><span class="no">22</span>            done++;</span><span class="ln"><span class="no">23</span>            <span class="c">// 学完 cur，后继课的入度各减 1</span></span><span class="ln"><span class="no">24</span>            <span class="k">for</span> (<span class="k">int</span> next : adj.get(cur)) {</span><span class="ln"><span class="no">25</span>                <span class="c">// 减到 0：前置全修完，入队</span></span><span class="ln"><span class="no">26</span>                <span class="k">if</span> (--inDegree[next] == <span class="n">0</span>) queue.add(next);</span><span class="ln"><span class="no">27</span>            }</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="c">// 修完的课数不够，说明剩下的课都在环里</span></span><span class="ln"><span class="no">30</span>        <span class="k">return</span> done == numCourses;</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你这个学期必须选修 <code>numCourses</code> 门课程，记为&nbsp;<code>0</code>&nbsp;到&nbsp;<code>numCourses - 1</code> 。</p>
+
+<p>在选修某些课程之前需要一些先修课程。 先修课程按数组&nbsp;<code>prerequisites</code> 给出，其中&nbsp;<code>prerequisites[i] = [a<sub>i</sub>, b<sub>i</sub>]</code> ，表示如果要学习课程&nbsp;<code>a<sub>i</sub></code> 则 <strong>必须</strong> 先学习课程&nbsp; <code>b<sub>i</sub></code><sub> </sub>。</p>
+
+<ul>
+	<li>例如，先修课程对&nbsp;<code>[0, 1]</code> 表示：想要学习课程 <code>0</code> ，你需要先完成课程 <code>1</code> 。</li>
+</ul>
+
+<p>请你判断是否可能完成所有课程的学习？如果可以，返回 <code>true</code> ；否则，返回 <code>false</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>numCourses = 2, prerequisites = [[1,0]]
+<strong>输出：</strong>true
+<strong>解释：</strong>总共有 2 门课程。学习课程 1 之前，你需要完成课程 0 。这是可能的。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>numCourses = 2, prerequisites = [[1,0],[0,1]]
+<strong>输出：</strong>false
+<strong>解释：</strong>总共有 2 门课程。学习课程 1 之前，你需要先完成​课程 0 ；并且学习课程 0 之前，你还应先完成课程 1 。这是不可能的。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= numCourses &lt;= 2000</code></li>
+	<li><code>0 &lt;= prerequisites.length &lt;= 5000</code></li>
+	<li><code>prerequisites[i].length == 2</code></li>
+	<li><code>0 &lt;= a<sub>i</sub>, b<sub>i</sub> &lt; numCourses</code></li>
+	<li><code>prerequisites[i]</code> 中的所有课程对 <strong>互不相同</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean canFinish(int numCourses, int[][] prerequisites) {", "        // 邻接表：学完 b 才能学 a，连边 b → a", "        List<List<Integer>> adj = new ArrayList<>();", "        for (int i = 0; i < numCourses; i++) adj.add(new ArrayList<>());", "        int[] inDegree = new int[numCourses];", "        for (int[] p : prerequisites) {", "            adj.get(p[1]).add(p[0]);", "            inDegree[p[0]]++;", "        }", "        // 入度为 0 的课没有前置，先进队列", "        Queue<Integer> queue = new ArrayDeque<>();", "        for (int i = 0; i < numCourses; i++) {", "            if (inDegree[i] == 0) queue.add(i);", "        }", "        int done = 0;", "        while (!queue.isEmpty()) {", "            int cur = queue.poll();", "            // 弹出的课当作修完，done 加 1", "            done++;", "            // 学完 cur，后继课的入度各减 1", "            for (int next : adj.get(cur)) {", "                // 减到 0：前置全修完，入队", "                if (--inDegree[next] == 0) queue.add(next);", "            }", "        }", "        // 修完的课数不够，说明剩下的课都在环里", "        return done == numCourses;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 207. 课程表 —— 图解：复刻 Solution.java 的「入度表 + 队列拓扑排序」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { numCourses: 4, prerequisites: [[1, 0], [2, 0], [3, 1], [3, 2]] };
+
+function trace(input) {
+  var numCourses = input.numCourses;
+  var prereq = input.prerequisites;
+  var adj = [];      // 学完 b 解锁哪些课：边 b → a
+  var inDeg = [];    // 每门课还差几门前置
+  var preds = [];    // 每门课的前置课，只用来写图的说明文字
+  var i, k;
+  for (i = 0; i < numCourses; i++) {
+    adj.push([]);
+    inDeg.push(0);
+    preds.push([]);
+  }
+  for (k = 0; k < prereq.length; k++) {
+    var a = prereq[k][0], b = prereq[k][1];
+    adj[b].push(a);
+    inDeg[a]++;
+    preds[a].push(b);
+  }
+  var queue = [];
+  var done = 0;
+  var frames = [];
+  var snapped = { pop: false, zero: false, zero2: false };
+
+  function indegPanel(chg, doneCls) {
+    var rows = [];
+    for (var i = 0; i < numCourses; i++) {
+      rows.push({ k: String(i), v: String(inDeg[i]), cls: chg && chg[i] ? 'chg' : (doneCls === i ? 'done' : '') });
+    }
+    return Viz.table('入度表 inDegree：课 → 还差几门前置', rows);
+  }
+
+  function adjPanel() {
+    var rows = [];
+    for (var i = 0; i < numCourses; i++) {
+      rows.push({ k: String(i), v: adj[i].length ? '解锁 ' + adj[i].join('、') : '（无后继）', cls: '' });
+    }
+    return Viz.table('邻接表：学完左边这门，解锁哪些课', rows);
+  }
+
+  function queuePanel() {
+    return Viz.cells(queue, {
+      title: queue.length ? '队列 queue（入度 0，待修）' : '队列 queue（空）', hideIndex: true,
+      pointers: queue.length ? [{ at: 0, label: '队首', cls: 'p-head' }] : []
+    });
+  }
+
+  function varsPanel(chg) {
+    return Viz.vars([
+      { name: 'done', v: done, cls: chg ? 'chg' : '' },
+      { name: 'numCourses', v: numCourses, cls: '' }
+    ]);
+  }
+
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  // 初始：入度 0 的课直接进队列
+  var initZero = [];
+  for (i = 0; i < numCourses; i++) if (inDeg[i] === 0) { queue.push(i); initZero.push(i); }
+  snap('queue.add(i);',
+    initZero.length
+      ? '建好两表：入度 0 的课 ' + initZero.join('、') + ' 没有前置，先入队'
+      : '建好两表：没有入度 0 的课，队列一开始就是空的',
+    [adjPanel(), indegPanel(null, null), queuePanel()]);
+
+  while (queue.length) {
+    var cur = queue.shift();
+    done++;
+    if (!snapped.pop) {
+      snapped.pop = true;
+      snap('done++;', '弹出队首 ' + cur + '：这门课当作修完，done = ' + done,
+        [indegPanel(null, cur), queuePanel(), varsPanel(true)]);
+    }
+    var zeroedNow = [];
+    for (k = 0; k < adj[cur].length; k++) {
+      var next = adj[cur][k];
+      inDeg[next]--;
+      if (inDeg[next] === 0) {
+        queue.push(next);
+        zeroedNow.push(next);
+      }
+    }
+    if (zeroedNow.length && !snapped.zero) {
+      snapped.zero = true;
+      var chg1 = {};
+      zeroedNow.forEach(function (z) { chg1[z] = true; });
+      snap('if (--inDegree[next] == 0) queue.add(next);',
+        '后继入度减 1，减到 0 的课入队：' + zeroedNow.join('、'),
+        [indegPanel(chg1, null), queuePanel(), varsPanel(false)]);
+    } else if (zeroedNow.length && !snapped.zero2) {
+      snapped.zero2 = true;
+      var chg2 = {};
+      zeroedNow.forEach(function (z) { chg2[z] = true; });
+      var first = zeroedNow[0];
+      var ps = preds[first];
+      snap('if (--inDegree[next] == 0) queue.add(next);',
+        ps.length >= 2
+          ? first + ' 的入度被 ' + ps.join('、') + ' 各减一次，归零才入队'
+          : first + ' 的入度减到 0，入队',
+        [indegPanel(chg2, null), queuePanel(), varsPanel(false)]);
+    }
+  }
+
+  snap('return done == numCourses;',
+    done === numCourses
+      ? '队列空：done = ' + done + ' = 课数 ' + numCourses + '，没有环，返回 true'
+      : '队列空：done = ' + done + ' < 课数 ' + numCourses + '，剩下的课在环里，返回 false',
+    [indegPanel(null, null), queuePanel(), varsPanel(false)]);
+
+  return { frames: frames, result: done === numCourses };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

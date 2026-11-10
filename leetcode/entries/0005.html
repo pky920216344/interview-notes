@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最长回文子串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 8 / 1159</span>
+  <nav class="pn"><a href="0053.html">上一篇</a><a href="supp-04.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">5. </span>最长回文子串</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 366</li><li class="algo">双指针</li><li class="tag">双指针</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="tag">manacher</li><li class="st-ok" title="你在力扣上已经通过这道题，本项目不重复提交；本页代码只做了本地验证">本人已 AC</li></ul>
+<p class="idea">Manacher：插 # 统一奇偶回文；用最靠右回文 (c, r) 的镜像半径给 p[i] 起步，再往外扩。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>预处理：每个字符两侧插 <code>#</code>（<code>aba</code> 变成 <code>#a#b#a#</code>），奇偶长度的回文都变成以单个字符为中心；<code>s[k]</code> 落在 <code>t[2k+1]</code>。</li><li><code>p[i]</code>：以 <code>t[i]</code> 为中心的回文<strong>半径</strong>（不含中心）。回文两端必是 <code>#</code>，所以它在原串里的长度正好是 <code>p[i]</code>，起点是 <code>(i - p[i]) / 2</code>。</li><li>记住目前最靠右的回文：中心 <code>c</code>，右端 <code>r = c + p[c]</code>。<code>r</code> 只增不减，所以整体是 O(n)。</li><li>若 <code>i &lt; r</code>，<code>i</code> 在回文 <code>c</code> 内部，镜像点是 <code>j = 2c - i</code>。回文对称，所以 <code>p[i]</code> 至少是 <code>min(p[j], r - i)</code>，拿它当起点，不用从 <code>0</code> 比起。</li><li>取 <code>r - i</code> 是因为 <code>r</code> 以外还没比较过，镜像半径再大也不能直接信；<code>i &gt;= r</code> 时没有镜像可借，从 <code>0</code> 起步。</li><li>起点之外再一圈一圈往外比（<code>lo</code>、<code>hi</code> 同时向外），把 <code>p[i]</code> 扩大；若 <code>i + p[i] &gt; r</code>，就换成新的中心 <code>c = i</code>、<code>r = i + p[i]</code>。</li><li>最后取 <code>p</code> 最大的中心 <code>mid</code>：起点 <code>(mid - p[mid]) / 2</code>，长度 <code>p[mid]</code>。并列时取最左边的，力扣接受任意一个最长的。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> longestPalindrome(<span class="t">String</span> s) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">6</span>        <span class="c">// t = #a#b#a#：s[k] 放在 t[2k+1]，其余填 '#'</span></span><span class="ln"><span class="no">7</span>        <span class="k">char</span>[] t = <span class="k">new</span> <span class="k">char</span>[<span class="n">2</span> * n + <span class="n">1</span>];</span><span class="ln"><span class="no">8</span>        <span class="t">Arrays</span>.fill(t, <span class="s">'#'</span>);</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; n; k++) t[<span class="n">2</span> * k + <span class="n">1</span>] = s.charAt(k);</span><span class="ln"><span class="no">10</span>        <span class="k">int</span> m = t.length;</span><span class="ln"><span class="no">11</span>        <span class="c">// p[i]：以 t[i] 为中心的回文半径，也是原串里这段回文的长度</span></span><span class="ln"><span class="no">12</span>        <span class="k">int</span>[] p = <span class="k">new</span> <span class="k">int</span>[m];</span><span class="ln"><span class="no">13</span>        <span class="c">// c、r：目前最靠右的回文的中心和右端</span></span><span class="ln"><span class="no">14</span>        <span class="k">int</span> c = <span class="n">0</span>, r = <span class="n">0</span>;</span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">16</span>            <span class="c">// i 在 r 内：借镜像点 2c-i 的半径起步，但不能超过 r</span></span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (i &lt; r) p[i] = <span class="t">Math</span>.min(p[<span class="n">2</span> * c - i], r - i);</span><span class="ln"><span class="no">18</span>            <span class="c">// 起步之外，再一圈一圈往外硬扩</span></span><span class="ln"><span class="no">19</span>            <span class="k">int</span> lo = i - p[i] - <span class="n">1</span>, hi = i + p[i] + <span class="n">1</span>;</span><span class="ln"><span class="no">20</span>            <span class="k">while</span> (lo &gt;= <span class="n">0</span> &amp;&amp; hi &lt; m &amp;&amp; t[lo] == t[hi]) {</span><span class="ln"><span class="no">21</span>                p[i]++;</span><span class="ln"><span class="no">22</span>                lo--;</span><span class="ln"><span class="no">23</span>                hi++;</span><span class="ln"><span class="no">24</span>            }</span><span class="ln"><span class="no">25</span>            <span class="c">// 右端越过了 r，就换成新的中心</span></span><span class="ln"><span class="no">26</span>            <span class="k">if</span> (i + p[i] &gt; r) {</span><span class="ln"><span class="no">27</span>                c = i;</span><span class="ln"><span class="no">28</span>                r = i + p[i];</span><span class="ln"><span class="no">29</span>            }</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>        <span class="c">// 取半径最大的中心 mid，原串起点是 (mid - p[mid]) / 2</span></span><span class="ln"><span class="no">32</span>        <span class="k">int</span> mid = <span class="n">0</span>;</span><span class="ln"><span class="no">33</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; m; i++) <span class="k">if</span> (p[i] &gt; p[mid]) mid = i;</span><span class="ln"><span class="no">34</span>        <span class="k">int</span> start = (mid - p[mid]) / <span class="n">2</span>;</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> s.substring(start, start + p[mid]);</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串 <code>s</code>，找到 <code>s</code> 中最长的 <span>回文</span> <span>子串</span>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "babad"
+<strong>输出：</strong>"bab"
+<strong>解释：</strong>"aba" 同样是符合题意的答案。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "cbbd"
+<strong>输出：</strong>"bb"
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 1000</code></li>
+	<li><code>s</code> 仅由数字和英文字母组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String longestPalindrome(String s) {", "        int n = s.length();", "        // t = #a#b#a#：s[k] 放在 t[2k+1]，其余填 '#'", "        char[] t = new char[2 * n + 1];", "        Arrays.fill(t, '#');", "        for (int k = 0; k < n; k++) t[2 * k + 1] = s.charAt(k);", "        int m = t.length;", "        // p[i]：以 t[i] 为中心的回文半径，也是原串里这段回文的长度", "        int[] p = new int[m];", "        // c、r：目前最靠右的回文的中心和右端", "        int c = 0, r = 0;", "        for (int i = 0; i < m; i++) {", "            // i 在 r 内：借镜像点 2c-i 的半径起步，但不能超过 r", "            if (i < r) p[i] = Math.min(p[2 * c - i], r - i);", "            // 起步之外，再一圈一圈往外硬扩", "            int lo = i - p[i] - 1, hi = i + p[i] + 1;", "            while (lo >= 0 && hi < m && t[lo] == t[hi]) {", "                p[i]++;", "                lo--;", "                hi++;", "            }", "            // 右端越过了 r，就换成新的中心", "            if (i + p[i] > r) {", "                c = i;", "                r = i + p[i];", "            }", "        }", "        // 取半径最大的中心 mid，原串起点是 (mid - p[mid]) / 2", "        int mid = 0;", "        for (int i = 1; i < m; i++) if (p[i] > p[mid]) mid = i;", "        int start = (mid - p[mid]) / 2;", "        return s.substring(start, start + p[mid]);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 5. 最长回文子串 —— 图解：复刻 Solution.java 的 Manacher，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'abab' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+  var FILL = "Arrays.fill(t, '#');";
+  var MIRROR = 'if (i < r) p[i] = Math.min(p[2 * c - i], r - i);';
+  var UPDATE = 'c = i;';
+  var RET = 'return s.substring(start, start + p[mid]);';
+
+  // 预处理：t = #a#b#a#，s[k] 放在 t[2k+1]
+  var t = [];
+  for (var u = 0; u < 2 * n + 1; u++) t.push('#');
+  for (var k = 0; k < n; k++) t[2 * k + 1] = s[k];
+  var m = t.length;
+  var p = [];
+  for (var v = 0; v < m; v++) p.push(0);
+  var c = 0, r = 0;
+
+  // t 面板：i 是正在算的位置，j 是它的镜像点；c、r 用小标签；box 是 c 为中心、右端为 r 的那段最靠右的回文。
+  // dim 把 # 淡化，done 为 [from, to] 时标出最终的回文，mid 在结果里画一个标签。
+  function tPanel(o) {
+    var marks = {};
+    var pointers = [];
+    var x;
+    if (o.dim) for (x = 0; x < m; x++) if (t[x] === '#') marks[x] = 'dim';
+    if (o.done) for (x = o.done[0]; x <= o.done[1]; x++) marks[x] = 'done';
+    if (o.j != null) { marks[o.j] = 'win'; pointers.push({ at: o.j, label: 'j', cls: 'p-cur' }); }
+    if (o.i != null) marks[o.i] = 'cur';
+    if (o.c != null) pointers.push({ at: o.c, label: 'c', cls: 'p-left' });
+    if (o.i != null && o.i !== o.c) pointers.push({ at: o.i, label: 'i', cls: 'p-mid' });
+    if (o.r != null) pointers.push({ at: o.r, label: 'r', cls: 'p-tail' });
+    if (o.mid != null) pointers.push({ at: o.mid, label: 'mid', cls: 'p-mid' });
+    var range = o.c != null && o.r != null
+      ? { from: 2 * o.c - o.r, to: o.r, label: '最靠右的回文 [' + (2 * o.c - o.r) + ', ' + o.r + ']' }
+      : null;
+    return Viz.cells(t, {
+      title: o.title || 't：s 的每个字符两边插 #',
+      marks: marks,
+      pointers: pointers,
+      range: range
+    });
+  }
+
+  // p 面板：画到下标 upTo，后面的还没算，留空。
+  function pPanel(upTo, o) {
+    var items = p.map(function (val, idx) { return idx <= upTo ? val : ''; });
+    var marks = {};
+    if (o.j != null) marks[o.j] = 'win';
+    if (o.i != null) marks[o.i] = 'cur';
+    if (o.done != null) marks[o.done] = 'done';
+    return Viz.cells(items, { title: 'p：以 t[i] 为中心的回文半径', marks: marks, hideIndex: true });
+  }
+
+  frames.push(Viz.frame(FILL, '每个字符两边插入 #：奇偶长度的回文都以单个字符为中心',
+    [tPanel({ dim: true, title: 't：s[k] 落在 t[2k+1]，其余是 #' })]));
+
+  var fresh = null, mirror = null, clamp = null;   // 各挑一个关键时刻
+  for (var i = 0; i < m; i++) {
+    var rBefore = r;
+    if (i < r) {
+      var j = 2 * c - i;
+      var pj = p[j];
+      p[i] = Math.min(pj, r - i);
+      if (!clamp && pj > r - i) {
+        clamp = Viz.frame(MIRROR, '镜像 p[' + j + ']=' + pj + ' 超出了 r：p[' + i + '] 起点只能取 r-i=' + (r - i),
+          [tPanel({ c: c, r: r, i: i, j: j }), pPanel(i, { i: i, j: j })]);
+        frames.push(clamp);
+      } else if (!mirror && p[i] >= 1 && pj <= r - i) {
+        mirror = Viz.frame(MIRROR, 'i=' + i + ' 在 r 内：镜像点 j=2c-i=' + j + '，p[' + i + '] 从 p[' + j + ']=' + pj + ' 起步',
+          [tPanel({ c: c, r: r, i: i, j: j }), pPanel(i, { i: i, j: j })]);
+        frames.push(mirror);
+      }
+    }
+    var lo = i - p[i] - 1, hi = i + p[i] + 1;
+    while (lo >= 0 && hi < m && t[lo] === t[hi]) {
+      p[i]++;
+      lo--;
+      hi++;
+    }
+    if (i + p[i] > r) {
+      c = i;
+      r = i + p[i];
+      if (!fresh && i >= rBefore && p[i] >= 2) {
+        fresh = Viz.frame(UPDATE, 'i=' + i + ' 在 r=' + rBefore + ' 右边，无镜像可借：从 0 扩到 p=' + p[i] + '，新 c=' + c + '、r=' + r,
+          [tPanel({ c: c, r: r, i: i }), pPanel(i, { i: i })]);
+        frames.push(fresh);
+      }
+    }
+  }
+
+  var mid = 0;
+  for (var q = 1; q < m; q++) if (p[q] > p[mid]) mid = q;
+  var start = Math.floor((mid - p[mid]) / 2);
+  var result = s.slice(start, start + p[mid]);
+
+  var doneS = {};
+  for (var z = start; z < start + p[mid]; z++) doneS[z] = 'done';
+  var txt = p[mid] <= 6 ? '，得 "' + result + '"' : '';
+  frames.push(Viz.frame(RET, '取 p 最大的 mid=' + mid + '：起点 (' + mid + '-' + p[mid] + ')/2=' + start + '，长度 ' + p[mid] + txt,
+    [tPanel({ done: [mid - p[mid], mid + p[mid]], mid: mid, title: 't：框住的是最长回文' }),
+      pPanel(m - 1, { done: mid }),
+      Viz.cells(s.split(''), { title: '原串 s', marks: doneS })]));
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

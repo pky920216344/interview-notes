@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>总持续时间可被 60 整除的歌曲 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 929 / 1159</span>
+  <nav class="pn"><a href="1648.html">上一篇</a><a href="1105.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1010. </span>总持续时间可被 60 整除的歌曲</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 1</li><li class="algo">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">计数</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按 t%60 计数：余 0、余 30 各自内部配 C(c,2) 对，其余余数 r 与 60−r 的个数相乘，只扫一半防重复。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>(a+b)%60==0</code> ⟺ 两者余数互补：<code>a%60=r</code> 就必须配 <code>b%60=60−r</code>。</li><li><code>cnt[r]</code> 数完 60 个桶：余 <code>0</code>、余 <code>30</code> 只能同桶内部两两配，各贡献 <code>C(c,2)=c×(c−1)/2</code>。</li><li>其余桶配对 <code>r ↔ 60−r</code>（<code>r</code> 只扫 1~29）：贡献 <code>cnt[r]×cnt[60−r]</code>，扫一半避免算两遍。</li><li>对数最大约 <code>1.8×10⁹</code>，逼近 <code>int</code> 上限，中间量用 <code>long</code> 累加保险。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(60)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> numPairsDivisibleBy60(<span class="k">int</span>[] time) {</span><span class="ln"><span class="no">3</span>        <span class="c">// cnt[r]：时长除以 60 余 r 的歌曲数</span></span><span class="ln"><span class="no">4</span>        <span class="k">long</span>[] cnt = <span class="k">new</span> <span class="k">long</span>[<span class="n">60</span>];</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> t : time) cnt[t % <span class="n">60</span>]++;</span><span class="ln"><span class="no">6</span>        <span class="c">// 余 0 与余 30 只能自己配自己：C(c,2) = c×(c−1)/2</span></span><span class="ln"><span class="no">7</span>        <span class="k">long</span> ans = cnt[<span class="n">0</span>] * (cnt[<span class="n">0</span>] - <span class="n">1</span>) / <span class="n">2</span> + cnt[<span class="n">30</span>] * (cnt[<span class="n">30</span>] - <span class="n">1</span>) / <span class="n">2</span>;</span><span class="ln"><span class="no">8</span>        <span class="c">// 其余余数 r 与 60−r 互补；r 只扫 1~29，避免重复计数</span></span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">1</span>; r &lt; <span class="n">30</span>; r++) ans += cnt[r] * cnt[<span class="n">60</span> - r];</span><span class="ln"><span class="no">10</span>        <span class="k">return</span> (<span class="k">int</span>) ans;</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>在歌曲列表中，第 <code>i</code> 首歌曲的持续时间为 <code>time[i]</code> 秒。</p>
+
+<p>返回其总持续时间（以秒为单位）可被 <code>60</code> 整除的歌曲对的数量。形式上，我们希望下标数字 <code>i</code> 和 <code>j</code> 满足&nbsp; <code>i &lt; j</code> 且有&nbsp;<code>(time[i] + time[j]) % 60 == 0</code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>time = [30,20,150,100,40]
+<strong>输出：</strong>3
+<strong>解释：</strong>这三对的总持续时间可被 60 整除：
+(time[0] = 30, time[2] = 150): 总持续时间 180
+(time[1] = 20, time[3] = 100): 总持续时间 120
+(time[1] = 20, time[4] = 40): 总持续时间 60
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>time = [60,60,60]
+<strong>输出：</strong>3
+<strong>解释：</strong>所有三对的总持续时间都是 120，可以被 60 整除。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= time.length &lt;= 6 * 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= time[i] &lt;= 500</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int numPairsDivisibleBy60(int[] time) {", "        // cnt[r]：时长除以 60 余 r 的歌曲数", "        long[] cnt = new long[60];", "        for (int t : time) cnt[t % 60]++;", "        // 余 0 与余 30 只能自己配自己：C(c,2) = c×(c−1)/2", "        long ans = cnt[0] * (cnt[0] - 1) / 2 + cnt[30] * (cnt[30] - 1) / 2;", "        // 其余余数 r 与 60−r 互补；r 只扫 1~29，避免重复计数", "        for (int r = 1; r < 30; r++) ans += cnt[r] * cnt[60 - r];", "        return (int) ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1010. 总持续时间可被 60 整除的歌曲 —— 图解：余数计数 + 自配/互补配对，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { time: [30, 20, 150, 100, 40] };
+
+function trace(input) {
+  var time = input.time;
+  var cnt = new Array(60).fill(0);
+  var frames = [];
+
+  for (var i = 0; i < time.length; i++) cnt[time[i] % 60]++;
+
+  // 时长数组面板
+  function timePanel() {
+    var marks = {};
+    for (var i = 0; i < time.length; i++) marks[i] = 'win';
+    return Viz.cells(time.slice(), { title: '歌曲时长 time', marks: marks });
+  }
+  // 余数计数表：只列出现过的余数；hi1/hi2 是这一步要强调的余数
+  function cntPanel(hi1, hi2) {
+    var rows = [];
+    for (var r = 0; r < 60; r++) {
+      if (cnt[r] > 0) {
+        var cls = r === hi1 || r === hi2 ? 'hit' : '';
+        rows.push({ k: '余 ' + r, v: cnt[r] + ' 首', cls: cls });
+      }
+    }
+    return Viz.table('cnt[r]：余 r 的歌曲数', rows, { hint: '（只列出现过的余数）' });
+  }
+  function varsPanel(v) {
+    return Viz.vars([{ name: 'ans 累计对数', v: v, cls: 'chg' }]);
+  }
+
+  // 余 0、余 30 自己配自己：C(c,2) = c×(c−1)/2
+  var ans = cnt[0] * (cnt[0] - 1) / 2 + cnt[30] * (cnt[30] - 1) / 2;
+  frames.push(Viz.frame('for (int t : time) cnt[t % 60]++;',
+    '先按 t%60 把每首歌数进余数桶', [timePanel(), cntPanel()]));
+  frames.push(Viz.frame('long ans = cnt[0] * (cnt[0] - 1) / 2 + cnt[30] * (cnt[30] - 1) / 2;',
+    '余 0、余 30 自配：C(c,2) = ' + ans + ' 对', [cntPanel(30), varsPanel(ans)]));
+
+  // 其余余数 r 与 60−r 互补配对；r 只扫 1~29 防重复
+  for (var r = 1; r < 30; r++) {
+    if (cnt[r] > 0 && cnt[60 - r] > 0) {
+      var add = cnt[r] * cnt[60 - r];
+      frames.push(Viz.frame('for (int r = 1; r < 30; r++) ans += cnt[r] * cnt[60 - r];',
+        '余 ' + r + ' 与余 ' + (60 - r) + ' 互补：' + cnt[r] + '×' + cnt[60 - r] + '=' + add + ' 对',
+        [cntPanel(r, 60 - r), varsPanel(ans + add)]));
+      ans += add;
+    }
+  }
+  frames.push(Viz.frame('return (int) ans;', '扫完互补余数，共 ' + ans + ' 对', [varsPanel(ans)]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

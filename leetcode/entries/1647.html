@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字符频次唯一的最小删除次数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1088 / 1159</span>
+  <nav class="pn"><a href="1222.html">上一篇</a><a href="0710.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1647. </span>字符频次唯一的最小删除次数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">频次降序扫一遍：右边的频次已定，左边撞车就压到「右边减一」，删掉的个数累加。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>只有 26 种字符：先数频次，再排序（升序，最大在末尾）。</li><li>从次大到小扫：<code>cnt[i+1]</code> 已是最终值，<code>cnt[i]</code> 若不小于它就压到 <code>max(cnt[i+1]−1, 0)</code>，差值计入答案。</li><li>频次 <code>0</code> 可以重复——删光的字符不算冲突，所以 <code>target</code> 取 <code>max(·, 0)</code> 即可。</li><li>贪心最优：保留的频次越高、删得越少，压到「右边减一」已是能保留的最大值。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + 26 log 26)，空间复杂度 O(26)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> minDeletions(<span class="t">String</span> s) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] cnt = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) cnt[s.charAt(i) - <span class="s">'a'</span>]++;</span><span class="ln"><span class="no">7</span>        <span class="t">Arrays</span>.sort(cnt);                     <span class="c">// 升序，最大的在末尾</span></span><span class="ln"><span class="no">8</span>        <span class="k">int</span> del = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="c">// 从次大到小扫：右边的最终频次已定，左边撞车就压到「右边减一」，删掉的计入 del</span></span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">24</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (cnt[i] &gt;= cnt[i + <span class="n">1</span>]) {</span><span class="ln"><span class="no">12</span>                <span class="k">int</span> target = <span class="t">Math</span>.max(cnt[i + <span class="n">1</span>] - <span class="n">1</span>, <span class="n">0</span>);</span><span class="ln"><span class="no">13</span>                del += cnt[i] - target;</span><span class="ln"><span class="no">14</span>                cnt[i] = target;</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> del;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>如果字符串 <code>s</code> 中 <strong>不存在</strong> 两个不同字符 <strong>频次</strong> 相同的情况，就称 <code>s</code> 是 <strong>优质字符串</strong> 。</p>
+
+<p>给你一个字符串 <code>s</code>，返回使 <code>s</code> 成为 <strong>优质字符串</strong> 需要删除的 <strong>最小</strong> 字符数。</p>
+
+<p>字符串中字符的 <strong>频次</strong> 是该字符在字符串中的出现次数。例如，在字符串 <code>"aab"</code> 中，<code>'a'</code> 的频次是 <code>2</code>，而 <code>'b'</code> 的频次是 <code>1</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "aab"
+<strong>输出：</strong>0
+<strong>解释：</strong><code>s</code> 已经是优质字符串。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "aaabbbcc"
+<strong>输出：</strong>2
+<strong>解释：</strong>可以删除两个 'b' , 得到优质字符串 "aaabcc" 。
+另一种方式是删除一个 'b' 和一个 'c' ，得到优质字符串 "aaabbc" 。</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "ceabaacb"
+<strong>输出：</strong>2
+<strong>解释：</strong>可以删除两个 'c' 得到优质字符串 "eabaab" 。
+注意，只需要关注结果字符串中仍然存在的字符。（即，频次为 0 的字符会忽略不计。）
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= s.length <= 10<sup>5</sup></code></li>
+	<li><code>s</code> 仅含小写英文字母</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int minDeletions(String s) {", "        int[] cnt = new int[26];", "        for (int i = 0; i < s.length(); i++) cnt[s.charAt(i) - 'a']++;", "        Arrays.sort(cnt);                     // 升序，最大的在末尾", "        int del = 0;", "        // 从次大到小扫：右边的最终频次已定，左边撞车就压到「右边减一」，删掉的计入 del", "        for (int i = 24; i >= 0; i--) {", "            if (cnt[i] >= cnt[i + 1]) {", "                int target = Math.max(cnt[i + 1] - 1, 0);", "                del += cnt[i] - target;", "                cnt[i] = target;", "            }", "        }", "        return del;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1647. 字符频次唯一的最小删除次数 —— 图解：复刻 Solution.java 的「频次降序逐个压低」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'aaabbbcc' };
+
+function trace(input) {
+  var s = input.s;
+  var cnt = new Array(26);
+  for (var i = 0; i < 26; i++) cnt[i] = 0;
+  for (i = 0; i < s.length; i++) cnt[s.charCodeAt(i) - 97]++;
+  var letterOf = [];                      // 有字频的字母，供展示
+  for (i = 0; i < 26; i++) if (cnt[i] > 0) letterOf.push(i);
+  var del = 0;
+  var frames = [];
+  var shown = {};                         // 每种关键时刻只拍第一次
+  var curCh = -1, chgCh = -1;             // 这一步正在处理的字母 / 刚被削低的字母
+
+  // 频次表：按当前频次降序展示（表格顺序只是展示，算法仍按 Java 的 26 格数组扫）
+  function cntPanel() {
+    var rows = letterOf.slice().sort(function (a, b) { return cnt[b] - cnt[a]; }).map(function (c) {
+      var cls = '';
+      if (c === curCh) cls += ' cur';
+      if (c === chgCh) cls += ' chg';
+      return { k: String.fromCharCode(97 + c), v: String(cnt[c]), cls: cls.trim() };
+    });
+    return Viz.table('字符频次（按频次降序展示）', rows, { hint: '右边（更大）的频次已定，不能再撞' });
+  }
+  function snap(at, key, cur, chg) {
+    curCh = cur; chgCh = chg;
+    frames.push(Viz.frame(at, key, [cntPanel(), Viz.vars([
+      { name: 'del 已删', v: del, cls: chg >= 0 ? 'chg' : '' }])]));
+  }
+
+  snap('for (int i = 0; i < s.length(); i++) cnt[s.charAt(i) - \'a\']++;', '先数出每个字符的频次', -1, -1);
+  cnt.sort(function (a, b) { return a - b; });   // 升序，最大的在末尾
+  if (!shown.sorted) {
+    shown.sorted = true;
+    snap('Arrays.sort(cnt);', '频次排好序，从次大往左扫：右边的已定，不能再撞', -1, -1);
+  }
+
+  for (i = 24; i >= 0; i--) {
+    if (cnt[i] >= cnt[i + 1]) {
+      var target = Math.max(cnt[i + 1] - 1, 0);
+      var before = cnt[i];
+      del += cnt[i] - target;
+      cnt[i] = target;
+      if (!shown.cut1) {
+        shown.cut1 = true;
+        snap('del += cnt[i] - target;', '频次撞车：压到右边频次减一，删掉 ' + (before - target) + ' 个', i, i);
+      } else if (!shown.cut2) {
+        shown.cut2 = true;
+        snap('cnt[i] = target;', '又撞车：继续压低，删掉 ' + (before - target) + ' 个', i, i);
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return del;', '所有频次互不相同了：共删 ' + del + ' 个字符',
+    [cntPanel(), Viz.vars([{ name: 'del 已删', v: del, cls: 'done' }])]));
+  return { frames: frames, result: del };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

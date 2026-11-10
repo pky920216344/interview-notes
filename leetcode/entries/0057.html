@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>插入区间 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 361 / 1159</span>
+  <nav class="pn"><a href="0875.html">上一篇</a><a href="0392.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">57. </span>插入区间</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 10</li><li class="algo">扫描线/排序</li><li class="tag">数组</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">三段扫描：左段不相交的原样收；中段有交集的用 min/max 并进新区间；右段原样收。一遍扫完。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>用 <code>[s, e]</code> 记新区间当前的融合结果，<code>i</code> 是 <code>intervals</code> 的读指针，结果按三段拼出来。</li><li>左段：<code>intervals[i][1] &lt; newInterval[0]</code> 说明完全在新区间左边，原样收进结果。</li><li>中段：<code>intervals[i][0] &lt;= e</code> 说明有交集（端点相接也算重叠），<code>s</code> 取小、<code>e</code> 取大往大了并。</li><li>右段：剩下的起点都越过 <code>e</code>，原样收下；<code>intervals</code> 为空时结果就是新区间自己。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[][] insert(<span class="k">int</span>[][] intervals, <span class="k">int</span>[] newInterval) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; out = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> i = <span class="n">0</span>, n = intervals.length;</span><span class="ln"><span class="no">7</span>        <span class="c">// 左段：右端点在新区间起点左边，和新区间不相交，原样收下</span></span><span class="ln"><span class="no">8</span>        <span class="k">while</span> (i &lt; n &amp;&amp; intervals[i][<span class="n">1</span>] &lt; newInterval[<span class="n">0</span>]) {</span><span class="ln"><span class="no">9</span>            out.add(intervals[i++]);</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="c">// 中段：起点 &lt;= 当前右端点就有交集（相接也算），并进 [s, e]</span></span><span class="ln"><span class="no">12</span>        <span class="k">int</span> s = newInterval[<span class="n">0</span>], e = newInterval[<span class="n">1</span>];</span><span class="ln"><span class="no">13</span>        <span class="k">while</span> (i &lt; n &amp;&amp; intervals[i][<span class="n">0</span>] &lt;= e) {</span><span class="ln"><span class="no">14</span>            s = <span class="t">Math</span>.min(s, intervals[i][<span class="n">0</span>]);</span><span class="ln"><span class="no">15</span>            e = <span class="t">Math</span>.max(e, intervals[i][<span class="n">1</span>]);</span><span class="ln"><span class="no">16</span>            i++;</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        out.add(<span class="k">new</span> <span class="k">int</span>[]{s, e});</span><span class="ln"><span class="no">19</span>        <span class="c">// 右段：剩下的起点都越过 e，不相交，原样收下</span></span><span class="ln"><span class="no">20</span>        <span class="k">while</span> (i &lt; n) {</span><span class="ln"><span class="no">21</span>            out.add(intervals[i++]);</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> out.toArray(<span class="k">new</span> <span class="k">int</span>[<span class="n">0</span>][]);</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个<strong> 无重叠的</strong><em> ，</em>按照区间起始端点排序的区间列表 <code>intervals</code>，其中&nbsp;<code>intervals[i] = [start<sub>i</sub>, end<sub>i</sub>]</code>&nbsp;表示第&nbsp;<code>i</code>&nbsp;个区间的开始和结束，并且&nbsp;<code>intervals</code>&nbsp;按照&nbsp;<code>start<sub>i</sub></code>&nbsp;升序排列。同样给定一个区间&nbsp;<code>newInterval = [start, end]</code>&nbsp;表示另一个区间的开始和结束。</p>
+
+<p>如果两个区间 <strong>至少</strong> 共享一个点，则认为它们是重叠的。</p>
+
+<p>在&nbsp;<code>intervals</code> 中插入区间&nbsp;<code>newInterval</code>，使得&nbsp;<code>intervals</code>&nbsp;依然按照&nbsp;<code>start<sub>i</sub></code>&nbsp;升序排列，且区间之间不重叠（如果有必要的话，可以合并区间）。</p>
+
+<p>返回插入之后的&nbsp;<code>intervals</code>。</p>
+
+<p><strong>注意</strong> 你不需要原地修改&nbsp;<code>intervals</code>。你可以创建一个新数组然后返回它。</p>
+
+
+
+<p><strong>示例&nbsp;1：</strong></p>
+
+<pre>
+<strong>输入：</strong>intervals = [[1,3],[6,9]], newInterval = [2,5]
+<strong>输出：</strong>[[1,5],[6,9]]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>intervals = [[1,2],[3,5],[6,7],[8,10],[12,16]], newInterval = [4,8]
+<strong>输出：</strong>[[1,2],[3,10],[12,16]]
+<strong>解释：</strong>这是因为新的区间 <code>[4,8]</code> 与 <code>[3,5],[6,7],[8,10]</code>&nbsp;重叠。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= intervals.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>intervals[i].length == 2</code></li>
+	<li><code>0 &lt;=&nbsp;start<sub>i</sub> &lt;=&nbsp;end<sub>i</sub> &lt;= 10<sup>5</sup></code></li>
+	<li><code>intervals</code> 根据 <code>start<sub>i</sub></code> 按 <strong>升序</strong> 排列</li>
+	<li><code>newInterval.length == 2</code></li>
+	<li><code>0 &lt;=&nbsp;start &lt;=&nbsp;end &lt;= 10<sup>5</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[][] insert(int[][] intervals, int[] newInterval) {", "        List<int[]> out = new ArrayList<>();", "        int i = 0, n = intervals.length;", "        // 左段：右端点在新区间起点左边，和新区间不相交，原样收下", "        while (i < n && intervals[i][1] < newInterval[0]) {", "            out.add(intervals[i++]);", "        }", "        // 中段：起点 <= 当前右端点就有交集（相接也算），并进 [s, e]", "        int s = newInterval[0], e = newInterval[1];", "        while (i < n && intervals[i][0] <= e) {", "            s = Math.min(s, intervals[i][0]);", "            e = Math.max(e, intervals[i][1]);", "            i++;", "        }", "        out.add(new int[]{s, e});", "        // 右段：剩下的起点都越过 e，不相交，原样收下", "        while (i < n) {", "            out.add(intervals[i++]);", "        }", "        return out.toArray(new int[0][]);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 57. 插入区间 —— 图解：复刻 Solution.java 的「左段原样收 + 中段合并 + 右段原样收」，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { intervals: [[1, 2], [3, 5], [6, 7], [8, 10], [12, 16]], newInterval: [4, 8] };
+
+function trace(input) {
+  var intervals = input.intervals, ni = input.newInterval;
+  var n = intervals.length;
+  var out = [];
+  var i = 0;
+  var s = ni[0], e = ni[1];
+  var frames = [];
+  var shown = { left: false, first: false, grow: false, merged: false };
+  var state = [];   // 每个原区间当前的状态：dim 未轮到 / done 已收下 / bad 被吸收 / cur 正在处理
+  for (var k = 0; k < n; k++) state.push('dim');
+
+  var fmt = function (iv) { return '[' + iv[0] + ',' + iv[1] + ']'; };
+  var outStr = function () { return out.length ? out.map(fmt).join(' ') : '（空）'; };
+
+  function cellsPanel(cur) {
+    var marks = {};
+    for (var k = 0; k < n; k++) marks[k] = state[k] === 'cur' ? 'cur' : state[k];
+    var pointers = i < n ? [{ at: i, label: 'i', cls: 'p-cur' }] : [];
+    return Viz.cells(intervals.map(fmt), { title: 'intervals（已按起点排好序）', marks: marks, pointers: pointers });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: '新区间 [s, e]', v: '[' + s + ',' + e + ']' },
+      { name: 'i', v: i },
+      { name: '结果 out', v: outStr(), cls: 'chg' }
+    ]);
+  }
+  function snap(at, key) { frames.push(Viz.frame(at, key, [cellsPanel(), varsPanel()])); }
+
+  // 左段：右端点在新区间起点左边，原样收下
+  while (i < n && intervals[i][1] < ni[0]) {
+    state[i] = 'done';
+    out.push(intervals[i]);
+    if (!shown.left) {
+      shown.left = true;
+      snap('while (i < n && intervals[i][1] < newInterval[0]) {',
+        '左段：' + fmt(intervals[i]) + ' 右端 ' + intervals[i][1] + ' < 新区间起点 ' + ni[0] + '，不相交，原样收下');
+    }
+    i++;
+  }
+
+  // 中段：有交集的区间并进 [s, e]
+  while (i < n && intervals[i][0] <= e) {
+    state[i] = 'cur';
+    s = Math.min(s, intervals[i][0]);
+    if (!shown.first) {
+      shown.first = true;
+      snap('s = Math.min(s, intervals[i][0]);',
+        fmt(intervals[i]) + ' 和新区间有交集：起点更小，s 缩到 ' + s);
+    }
+    var old = e;
+    e = Math.max(e, intervals[i][1]);
+    if (e > old && !shown.grow) {
+      shown.grow = true;
+      snap('e = Math.max(e, intervals[i][1]);',
+        fmt(intervals[i]) + ' 也挨着：e 扩到 ' + e + '（红 = 已被吸收的区间）');
+    }
+    state[i] = 'bad';
+    i++;
+  }
+  out.push([s, e]);
+  if (!shown.merged) {
+    shown.merged = true;
+    snap('out.add(new int[]{s, e});', '交集吃完了：融合出的 [' + s + ',' + e + '] 收进结果');
+  }
+
+  // 右段：剩下的原样收下
+  var rightShown = false;
+  while (i < n) {
+    state[i] = 'done';
+    out.push(intervals[i]);
+    if (!rightShown) {
+      rightShown = true;
+      snap('while (i < n) {', '右段：' + fmt(intervals[i]) + ' 起点已越过 e，不相交，原样收下');
+    }
+    i++;
+  }
+
+  snap('return out.toArray(new int[0][]);', '收工：' + outStr());
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>猜猜这个单词 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1036 / 1159</span>
+  <nav class="pn"><a href="1458.html">上一篇</a><a href="1487.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">843. </span>猜猜这个单词</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">贪心</li><li class="tag">极小化极大</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">字符串</li><li class="tag">博弈</li><li class="tag">交互</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">每轮挑「按匹配数分桶后平方和最小」（分得最散）的词去猜，用返回值剪掉不可能的词，几轮就收敛。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每次猜词返回「位置匹配数」（0~6），等于把候选按这个数分成 7 个桶；secret 一定在返回值对应的那一桶。</li><li>挑词用<strong>极小化极大</strong>：枚举每个候选当猜测，选「各桶大小的平方和」最小的——平方和 = 期望剩余候选数，分得越散信息越多。</li><li>猜完按返回值剪枝：与 <code>pick</code> 匹配数 ≠ <code>res</code> 的词全部出局（包括 <code>pick</code> 自己）。</li><li>100 个候选两三轮就压到个位；题面保证合理策略 10 次内猜中。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(轮数 × 候选² × 6)，空间复杂度 O(候选数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="c">/**</span></span><span class="ln"><span class="no">2</span><span class="c"> * // This is the Master's API interface.</span></span><span class="ln"><span class="no">3</span><span class="c"> * // You should not implement it, or speculate about its implementation</span></span><span class="ln"><span class="no">4</span><span class="c"> * interface Master {</span></span><span class="ln"><span class="no">5</span><span class="c"> *     public int guess(String word) {}</span></span><span class="ln"><span class="no">6</span><span class="c"> * }</span></span><span class="ln"><span class="no">7</span><span class="c"> */</span></span><span class="ln"><span class="no">8</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="k">void</span> findSecretWord(<span class="t">String</span>[] words, <span class="t">Master</span> master) {</span><span class="ln"><span class="no">12</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; cand = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(<span class="t">Arrays</span>.asList(words));</span><span class="ln"><span class="no">13</span>        <span class="k">while</span> (<span class="k">true</span>) {</span><span class="ln"><span class="no">14</span>            <span class="c">// 挑「按匹配数分桶后平方和最小」的词：分得越散，期望剩下的候选越少</span></span><span class="ln"><span class="no">15</span>            <span class="t">String</span> pick = cand.get(<span class="n">0</span>);</span><span class="ln"><span class="no">16</span>            <span class="k">long</span> best = <span class="t">Long</span>.MAX_VALUE;</span><span class="ln"><span class="no">17</span>            <span class="k">for</span> (<span class="t">String</span> g : cand) {</span><span class="ln"><span class="no">18</span>                <span class="k">int</span>[] bucket = <span class="k">new</span> <span class="k">int</span>[<span class="n">7</span>];</span><span class="ln"><span class="no">19</span>                <span class="k">for</span> (<span class="t">String</span> w : cand) bucket[match(g, w)]++;</span><span class="ln"><span class="no">20</span>                <span class="k">long</span> score = <span class="n">0</span>;</span><span class="ln"><span class="no">21</span>                <span class="k">for</span> (<span class="k">int</span> b : bucket) score += (<span class="k">long</span>) b * b;</span><span class="ln"><span class="no">22</span>                <span class="k">if</span> (score &lt; best) { best = score; pick = g; }</span><span class="ln"><span class="no">23</span>            }</span><span class="ln"><span class="no">24</span>            <span class="k">int</span> res = master.guess(pick);</span><span class="ln"><span class="no">25</span>            <span class="k">if</span> (res == <span class="n">6</span>) <span class="k">return</span>;   <span class="c">// 6 个位置全中：就是它</span></span><span class="ln"><span class="no">26</span>            <span class="c">// 匹配数不是 res 的词不可能是 secret，全部剪掉</span></span><span class="ln"><span class="no">27</span>            <span class="t">List</span>&lt;<span class="t">String</span>&gt; next = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">28</span>            <span class="k">for</span> (<span class="t">String</span> w : cand) <span class="k">if</span> (match(pick, w) == res) next.add(w);</span><span class="ln"><span class="no">29</span>            cand = next;</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span> </span><span class="ln"><span class="no">33</span>    <span class="k">private</span> <span class="k">int</span> match(<span class="t">String</span> a, <span class="t">String</span> b) {</span><span class="ln"><span class="no">34</span>        <span class="k">int</span> m = <span class="n">0</span>;</span><span class="ln"><span class="no">35</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; <span class="n">6</span>; i++) <span class="k">if</span> (a.charAt(i) == b.charAt(i)) m++;</span><span class="ln"><span class="no">36</span>        <span class="k">return</span> m;</span><span class="ln"><span class="no">37</span>    }</span><span class="ln"><span class="no">38</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个由 <strong>不同</strong> 字符串组成的单词列表&nbsp;<code>words</code> ，其中 <code>words[i]</code>&nbsp;长度均为&nbsp;<code>6</code> 。<code>words</code> 中的一个单词将被选作秘密单词 <code>secret</code>&nbsp;。</p>
+
+<p>另给你一个辅助对象&nbsp;<code>Master</code> ，你可以调用&nbsp;<code>Master.guess(word)</code> 来猜单词，其中参数 <code>word</code> 长度为 6 且必须是 <code>words</code> 中的字符串。</p>
+
+<p><code>Master.guess(word)</code> 将会返回如下结果：</p>
+
+<ul>
+	<li>如果 <code>word</code> 不是 <code>words</code> 中的字符串，返回 <code>-1</code> ，或者</li>
+	<li>一个整数，表示你所猜测的单词 <code>word</code> 与 <strong>秘密单词</strong>&nbsp;<code>secret</code>&nbsp;的准确匹配（值和位置同时匹配）的数目。</li>
+</ul>
+
+<p>每组测试用例都会包含一个参数 <code>allowedGuesses</code> ，其中 <code>allowedGuesses</code> 是你可以调用 <code>Master.guess(word)</code> 的最大次数。</p>
+
+<p>对于每组测试用例，在不超过允许猜测的次数的前提下，你应该调用 <code>Master.guess</code> 来猜出秘密单词。最终，你将会得到以下结果：</p>
+
+<ul>
+	<li>如果你调用 <code>Master.guess</code> 的次数大于 <code>allowedGuesses</code> 所限定的次数或者你没有用 <code>Master.guess</code> 猜到秘密单词，则得到 <strong><code>"Either you took too many guesses, or you did not find the secret word."</code> 。</strong></li>
+	<li>如果你调用 <code>Master.guess</code> 猜到秘密单词，且调用 <code>Master.guess</code> 的次数小于或等于 <code>allowedGuesses</code> ，则得到 <strong><code>"You guessed the secret word correctly."</code> 。</strong></li>
+</ul>
+
+<p>生成的测试用例保证你可以利用某种合理的策略（而不是暴力）猜到秘密单词。</p>
+&nbsp;
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>secret = "acckzz", words = ["acckzz","ccbazz","eiowzz","abcczz"], allowedGuesses = 10
+<strong>输出：</strong>You guessed the secret word correctly.
+<strong>解释：</strong>
+master.guess("aaaaaa") 返回 -1 ，因为 "aaaaaa" 不在 words 中。
+master.guess("acckzz") 返回 6 ，因为 "acckzz" 是秘密单词 secret ，共有 6 个字母匹配。
+master.guess("ccbazz") 返回 3 ，因为 "ccbazz" 共有 3 个字母匹配。
+master.guess("eiowzz") 返回 2 ，因为 "eiowzz" 共有 2 个字母匹配。
+master.guess("abcczz") 返回 4 ，因为 "abcczz" 共有 4 个字母匹配。
+一共调用 5 次 master.guess ，其中一个为秘密单词，所以通过测试用例。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>secret = "hamada", words = ["hamada","khaled"], allowedGuesses = 10
+<strong>输出：</strong>You guessed the secret word correctly.
+<strong>解释：</strong>共有 2 个单词，且其中一个为秘密单词，可以通过测试用例。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= words.length &lt;= 100</code></li>
+	<li><code>words[i].length == 6</code></li>
+	<li><code>words[i]</code> 仅由小写英文字母组成</li>
+	<li><code>words</code> 中所有字符串 <strong>互不相同</strong></li>
+	<li><code>secret</code> 存在于 <code>words</code> 中</li>
+	<li><code>10 &lt;= allowedGuesses &lt;= 30</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["/**", " * // This is the Master's API interface.", " * // You should not implement it, or speculate about its implementation", " * interface Master {", " *     public int guess(String word) {}", " * }", " */", "import java.util.*;", "", "class Solution {", "    public void findSecretWord(String[] words, Master master) {", "        List<String> cand = new ArrayList<>(Arrays.asList(words));", "        while (true) {", "            // 挑「按匹配数分桶后平方和最小」的词：分得越散，期望剩下的候选越少", "            String pick = cand.get(0);", "            long best = Long.MAX_VALUE;", "            for (String g : cand) {", "                int[] bucket = new int[7];", "                for (String w : cand) bucket[match(g, w)]++;", "                long score = 0;", "                for (int b : bucket) score += (long) b * b;", "                if (score < best) { best = score; pick = g; }", "            }", "            int res = master.guess(pick);", "            if (res == 6) return;   // 6 个位置全中：就是它", "            // 匹配数不是 res 的词不可能是 secret，全部剪掉", "            List<String> next = new ArrayList<>();", "            for (String w : cand) if (match(pick, w) == res) next.add(w);", "            cand = next;", "        }", "    }", "", "    private int match(String a, String b) {", "        int m = 0;", "        for (int i = 0; i < 6; i++) if (a.charAt(i) == b.charAt(i)) m++;", "        return m;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 843. 猜猜这个单词 —— 图解：复刻 Solution.java 的「分桶最均匀 + 剪枝」策略，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { words: ['acckzz', 'ccbazz', 'eiowzz', 'abcczz'], secret: 'ccbazz' };
+
+function trace(input) {
+  var words = input.words, secret = input.secret;
+  var frames = [];
+  var cand = words.slice();
+  var guesses = [];
+
+  var PICK = 'if (score < best) { best = score; pick = g; }';
+  var GUESS = 'int res = master.guess(pick);';
+  var KEEP = 'for (String w : cand) if (match(pick, w) == res) next.add(w);';
+  var HIT = 'if (res == 6) return;';
+
+  var match = function (a, b) {
+    var m = 0;
+    for (var i = 0; i < 6; i++) if (a[i] === b[i]) m++;
+    return m;
+  };
+
+  // marks：still = 还在候选；pick = 本轮要猜的；bad = 这轮要剪掉的集合；dim = 之前已剪
+  function cellsPanel(pick, badSet) {
+    var marks = {}, alive = {};
+    cand.forEach(function (w) { alive[w] = true; });
+    words.forEach(function (w, i) {
+      if (!alive[w]) marks[i] = 'dim';
+      else if (badSet && badSet[w]) marks[i] = 'bad';
+      else if (w === pick) marks[i] = 'cur';
+      else marks[i] = 'win';
+    });
+    return Viz.cells(words, { title: '候选词（黄 = 在候选里，红 = 这步剪掉，灰 = 已剪）', marks: marks });
+  }
+
+  function tablePanel(pick, res) {
+    var rows = words.filter(function (w) { return cand.indexOf(w) >= 0; }).map(function (w) {
+      var m = match(pick, w);
+      return { k: w, v: '匹配 ' + m + (res != null && m === res ? ' ← 保留' : ''), cls: res != null && m === res ? 'hit' : '' };
+    });
+    return Viz.table('与 pick=' + pick + ' 的匹配数', rows);
+  }
+
+  function varsPanel(text) {
+    return Viz.vars([
+      { name: '已猜', v: guesses.length ? guesses.join(' → ') : '—' },
+      { name: '这一步', v: text, cls: 'chg' }
+    ]);
+  }
+
+  var fired = { pick: false, res: false, keep: false, hit: false };
+  var round = 0;
+
+  while (true) {
+    round++;
+    // 与 Java 一致：挑分桶平方和最小的词，并列取靠前的
+    var pick = cand[0], best = 1e18;
+    for (var gi = 0; gi < cand.length; gi++) {
+      var g = cand[gi];
+      var bucket = {};
+      for (var wi = 0; wi < cand.length; wi++) {
+        var mv = match(g, cand[wi]);
+        bucket[mv] = (bucket[mv] || 0) + 1;
+      }
+      var score = 0;
+      for (var b = 0; b <= 6; b++) score += (bucket[b] || 0) * (bucket[b] || 0);
+      if (score < best) { best = score; pick = g; }
+    }
+    if (!fired.pick) {
+      fired.pick = true;
+      frames.push(Viz.frame(PICK, '候选 ' + cand.length + ' 个：挑「分桶平方和最小」的 ' + pick + ' 先猜（分得最散）',
+        [cellsPanel(pick, null), tablePanel(pick, null)]));
+    }
+    var res = match(pick, secret);       // 本地 Master 桩的返回值
+    guesses.push(pick);
+    if (res === 6) {
+      if (!fired.hit) {
+        fired.hit = true;
+        frames.push(Viz.frame(HIT, '第 ' + round + ' 次猜中：' + pick + ' 就是 secret（共 ' + guesses.length + ' 次，限 10 次）',
+          [cellsPanel(pick, null), varsPanel('返回 6，猜中收工')]));
+      }
+      break;
+    }
+    if (!fired.res) {
+      fired.res = true;
+      frames.push(Viz.frame(GUESS, 'guess(' + pick + ') 返回 ' + res + '：secret 与它的匹配数是 ' + res,
+        [cellsPanel(pick, null), varsPanel('res = ' + res)]));
+    }
+    var next = [];
+    var badSet = null;
+    for (var k = 0; k < cand.length; k++) {
+      if (match(pick, cand[k]) === res) next.push(cand[k]);
+      else if (!fired.keep) { (badSet = badSet || {})[cand[k]] = true; }
+    }
+    if (!fired.keep) {
+      fired.keep = true;
+      frames.push(Viz.frame(KEEP, '匹配数不是 ' + res + ' 的词不可能：候选从 ' + cand.length + ' 缩到 ' + next.length + ' 个',
+        [cellsPanel(pick, badSet), varsPanel('剪掉 ' + (cand.length - next.length) + ' 个')]));
+    }
+    cand = next;
+  }
+
+  return { frames: frames, result: guesses };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

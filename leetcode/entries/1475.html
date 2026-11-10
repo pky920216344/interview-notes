@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>商品折扣后的最终价格 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1121 / 1159</span>
+  <nav class="pn"><a href="0355.html">上一篇</a><a href="0493.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1475. </span>商品折扣后的最终价格</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 1</li><li class="algo">单调栈</li><li class="tag">栈</li><li class="tag">数组</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">单调栈存下标：新价格把栈里 ≥ 它的都弹出来打折，栈里剩下的等不到折扣按原价。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>栈里存「还没等到折扣」的商品下标，从底到顶价格不升；相等的价格也留在栈里。</li><li>来了新价格 <code>prices[i]</code>：栈顶只要 <code>≥ prices[i]</code>，右边第一个 ≤ 自己的就是 <code>i</code>，弹出并结算 <code>原价 − prices[i]</code>。</li><li>弹完把 <code>i</code> 入栈；最后栈里剩下的右边没有更低价，按原价。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">ArrayDeque</span>;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.<span class="t">Deque</span>;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="k">int</span>[] finalPrices(<span class="k">int</span>[] prices) {</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] ans = <span class="k">new</span> <span class="k">int</span>[prices.length];</span><span class="ln"><span class="no">7</span>        <span class="c">// 栈存下标：还没等到折扣的商品，价格从底到顶不升</span></span><span class="ln"><span class="no">8</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; prices.length; i++) {</span><span class="ln"><span class="no">10</span>            <span class="c">// 栈顶 ≥ 当前价：当前价就是它右边第一个更低价，弹出结算</span></span><span class="ln"><span class="no">11</span>            <span class="k">while</span> (!stack.isEmpty() &amp;&amp; prices[stack.peek()] &gt;= prices[i]) {</span><span class="ln"><span class="no">12</span>                <span class="k">int</span> top = stack.pop();</span><span class="ln"><span class="no">13</span>                ans[top] = prices[top] - prices[i];</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>            stack.push(i);</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="c">// 栈里剩下的右边没有更低价，保持原价</span></span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (!stack.isEmpty()) {</span><span class="ln"><span class="no">19</span>            <span class="k">int</span> top = stack.pop();</span><span class="ln"><span class="no">20</span>            ans[top] = prices[top];</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个数组&nbsp;<code>prices</code>&nbsp;，其中&nbsp;<code>prices[i]</code>&nbsp;是商店里第&nbsp;<code>i</code>&nbsp;件商品的价格。</p>
+
+<p>商店里正在进行促销活动，如果你要买第&nbsp;<code>i</code>&nbsp;件商品，那么你可以得到与 <code>prices[j]</code> 相等的折扣，其中&nbsp;<code>j</code>&nbsp;是满足&nbsp;<code>j &gt; i</code>&nbsp;且&nbsp;<code>prices[j] &lt;= prices[i]</code>&nbsp;的&nbsp;<strong>最小下标</strong>&nbsp;，如果没有满足条件的&nbsp;<code>j</code>&nbsp;，你将没有任何折扣。</p>
+
+<p>请你返回一个数组，数组中第&nbsp;<code>i</code>&nbsp;个元素是折扣后你购买商品 <code>i</code>&nbsp;最终需要支付的价格。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>prices = [8,4,6,2,3]
+<strong>输出：</strong>[4,2,4,2,3]
+<strong>解释：</strong>
+商品 0 的价格为 price[0]=8 ，你将得到 prices[1]=4 的折扣，所以最终价格为 8 - 4 = 4 。
+商品 1 的价格为 price[1]=4 ，你将得到 prices[3]=2 的折扣，所以最终价格为 4 - 2 = 2 。
+商品 2 的价格为 price[2]=6 ，你将得到 prices[3]=2 的折扣，所以最终价格为 6 - 2 = 4 。
+商品 3 和 4 都没有折扣。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>prices = [1,2,3,4,5]
+<strong>输出：</strong>[1,2,3,4,5]
+<strong>解释：</strong>在这个例子中，所有商品都没有折扣。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>prices = [10,1,1,6]
+<strong>输出：</strong>[9,0,1,6]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= prices.length &lt;= 500</code></li>
+	<li><code>1 &lt;= prices[i] &lt;= 10^3</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.ArrayDeque;", "import java.util.Deque;", "", "class Solution {", "    public int[] finalPrices(int[] prices) {", "        int[] ans = new int[prices.length];", "        // 栈存下标：还没等到折扣的商品，价格从底到顶不升", "        Deque<Integer> stack = new ArrayDeque<>();", "        for (int i = 0; i < prices.length; i++) {", "            // 栈顶 ≥ 当前价：当前价就是它右边第一个更低价，弹出结算", "            while (!stack.isEmpty() && prices[stack.peek()] >= prices[i]) {", "                int top = stack.pop();", "                ans[top] = prices[top] - prices[i];", "            }", "            stack.push(i);", "        }", "        // 栈里剩下的右边没有更低价，保持原价", "        while (!stack.isEmpty()) {", "            int top = stack.pop();", "            ans[top] = prices[top];", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1475. 商品折扣后的最终价格 —— 图解：复刻 Solution.java 的单调栈，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { prices: [8, 4, 6, 2, 3] };
+
+function trace(input) {
+  var prices = input.prices;
+  var n = prices.length;
+  var ans = [];
+  for (var z = 0; z < n; z++) ans.push(0);
+  var settled = [];   // 已结算的下标
+  var stack = [];     // 栈里存下标，底 → 顶
+  var frames = [];
+
+  var A_WHILE = 'while (!stack.isEmpty() && prices[stack.peek()] >= prices[i]) {';
+  var A_SETTLE = 'ans[top] = prices[top] - prices[i];';
+  var A_PUSH = 'stack.push(i);';
+  var A_RET = 'return ans;';
+
+  // 价格面板：done 已打折、win 在栈里等折扣、cur 当前下标
+  function pricePanel(cur) {
+    var marks = {};
+    var i;
+    for (i = 0; i < n; i++) {
+      if (settled.indexOf(i) >= 0) marks[i] = 'done';
+      else if (stack.indexOf(i) >= 0) marks[i] = 'win';
+    }
+    if (cur != null) marks[cur] = 'cur';
+    var pointers = cur == null ? [] : [{ at: cur, label: 'i', cls: 'p-cur' }];
+    return Viz.cells(prices.map(String), { title: '价格 prices', marks: marks, pointers: pointers });
+  }
+  // 栈面板：显示栈中下标对应的价格，底 → 顶
+  function stackPanel(marks) {
+    var pointers = stack.length ? [{ at: stack.length - 1, label: '栈顶', cls: 'p-head' }] : [];
+    return Viz.cells(stack.map(function (j) { return String(prices[j]); }),
+      { title: '单调栈（存下标，底→顶价格不升）', marks: marks || {}, pointers: pointers });
+  }
+  function outPanel(marks) {
+    return Viz.cells(ans.map(String), { title: '答案 ans（未结算是 0）', marks: marks || {} });
+  }
+  function snap(at, key, cur, sm, om) {
+    frames.push(Viz.frame(at, key, [pricePanel(cur), stackPanel(sm), outPanel(om)]));
+  }
+
+  for (var i = 0; i < n; i++) {
+    // 关键帧：栈顶价格 ≥ 当前价，这些商品要挨个弹出打折
+    if (i === 3 && stack.length && prices[stack[stack.length - 1]] >= prices[i]) {
+      var sm = {};
+      for (var q = 0; q < stack.length; q++) sm[q] = 'bad';
+      snap(A_WHILE, '读 prices[' + i + ']=' + prices[i] + '：栈顶都 ≥ 它，挨个弹出打折', i, sm, {});
+    }
+    while (stack.length && prices[stack[stack.length - 1]] >= prices[i]) {
+      var top = stack.pop();
+      ans[top] = prices[top] - prices[i];
+      settled.push(top);
+    }
+    if (i === 3 && settled.length) {
+      var om = {};
+      for (var w = 0; w < settled.length; w++) om[settled[w]] = 'new';
+      snap(A_SETTLE, '弹出即结算：原价 − prices[i] 写进答案', i, {}, om);
+    }
+    stack.push(i);
+    if (i === 2) snap(A_PUSH, '前面的先压栈等折扣：栈里价格从底到顶不升', i, {}, {});
+  }
+  while (stack.length) {
+    var rest = stack.pop();
+    ans[rest] = prices[rest];
+    settled.push(rest);
+  }
+  var dm = {};
+  for (var f = 0; f < n; f++) dm[f] = 'done';
+  snap(A_RET, '栈里剩下的没等到折扣，按原价支付', null, {}, dm);
+
+  return { frames: frames, result: ans };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>合并区间 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 27 / 1159</span>
+  <nav class="pn"><a href="0141.html">上一篇</a><a href="0415.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">56. </span>合并区间</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 250</li><li class="algo">扫描线/排序</li><li class="tag">数组</li><li class="tag">排序</li><li class="tag">quicksort</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">按左端点排序，能合并的区间一定挨在一起；一次扫描，和结果里最后一段相交就延长它的右端点，不相交就另开一段。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先按左端点排序；<code>res</code> 里最后一段 <code>last</code> 就是「正在合并的区间」。</li><li><code>cur[0] &gt; last[1]</code>（<code>cur</code> 整个在 <code>last</code> 右边）就不相交，<code>res.add(cur)</code> 另开一段；端点相接（<code>cur[0] == last[1]</code>）也算相交，所以必须是严格大于。</li><li>相交时右端点必须取 <code>Math.max(last[1], cur[1])</code>：<code>cur</code> 可能被 <code>last</code> 整个包住（比如 <code>[1,6]</code> 和 <code>[4,5]</code>），直接赋成 <code>cur[1]</code> 会把右端点缩回去。</li><li>扫完 <code>res</code> 就是答案，不用再收尾。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[][] merge(<span class="k">int</span>[][] intervals) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 按左端点排序，能合并的区间一定挨在一起</span></span><span class="ln"><span class="no">6</span>        <span class="t">Arrays</span>.sort(intervals, <span class="t">Comparator</span>.comparingInt(a -&gt; a[<span class="n">0</span>]));</span><span class="ln"><span class="no">7</span>        <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; res = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span>[] cur : intervals) {</span><span class="ln"><span class="no">9</span>            <span class="c">// last：结果里的最后一段，还没有就是 null</span></span><span class="ln"><span class="no">10</span>            <span class="k">int</span>[] last = res.isEmpty() ? <span class="k">null</span> : res.get(res.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (last == <span class="k">null</span> || cur[<span class="n">0</span>] &gt; last[<span class="n">1</span>]) {</span><span class="ln"><span class="no">12</span>                <span class="c">// 不相交，另开一段</span></span><span class="ln"><span class="no">13</span>                res.add(cur);</span><span class="ln"><span class="no">14</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">15</span>                <span class="c">// 相交（端点相接也算）：右端点取较大的，</span></span><span class="ln"><span class="no">16</span>                <span class="c">// 因为 cur 可能被 last 整个包住</span></span><span class="ln"><span class="no">17</span>                last[<span class="n">1</span>] = <span class="t">Math</span>.max(last[<span class="n">1</span>], cur[<span class="n">1</span>]);</span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> res.toArray(<span class="k">new</span> <span class="k">int</span>[<span class="n">0</span>][]);</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>以数组 <code>intervals</code> 表示若干个区间的集合，其中单个区间为 <code>intervals[i] = [start<sub>i</sub>, end<sub>i</sub>]</code> 。请你合并所有重叠的区间，并返回&nbsp;<em>一个不重叠的区间数组，该数组需恰好覆盖输入中的所有区间</em>&nbsp;。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>intervals = [[1,3],[2,6],[8,10],[15,18]]
+<strong>输出：</strong>[[1,6],[8,10],[15,18]]
+<strong>解释：</strong>区间 [1,3] 和 [2,6] 重叠, 将它们合并为 [1,6].
+</pre>
+
+<p><strong>示例&nbsp;2：</strong></p>
+
+<pre>
+<strong>输入：</strong>intervals = [[1,4],[4,5]]
+<strong>输出：</strong>[[1,5]]
+<strong>解释：</strong>区间 [1,4] 和 [4,5] 可被视为重叠区间。</pre>
+
+<p><strong class="example">示例 3：</strong></p>
+
+<pre>
+<b>输入：</b>intervals = [[4,7],[1,4]]
+<b>输出：</b>[[1,7]]
+<b>解释：</b>区间 [1,4] 和 [4,7] 可被视为重叠区间。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= intervals.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>intervals[i].length == 2</code></li>
+	<li><code>0 &lt;= start<sub>i</sub> &lt;= end<sub>i</sub> &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[][] merge(int[][] intervals) {", "        // 按左端点排序，能合并的区间一定挨在一起", "        Arrays.sort(intervals, Comparator.comparingInt(a -> a[0]));", "        List<int[]> res = new ArrayList<>();", "        for (int[] cur : intervals) {", "            // last：结果里的最后一段，还没有就是 null", "            int[] last = res.isEmpty() ? null : res.get(res.size() - 1);", "            if (last == null || cur[0] > last[1]) {", "                // 不相交，另开一段", "                res.add(cur);", "            } else {", "                // 相交（端点相接也算）：右端点取较大的，", "                // 因为 cur 可能被 last 整个包住", "                last[1] = Math.max(last[1], cur[1]);", "            }", "        }", "        return res.toArray(new int[0][]);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 56. 合并区间 —— 图解：复刻 Solution.java 的「排序 + 一次扫描」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 区间 [s, e] 在格子里写成 s-e。
+
+var STORY_INPUT = { intervals: [[7, 9], [1, 3], [4, 5], [2, 6]] };
+
+function trace(input) {
+  var src = input.intervals.map(function (p) { return [p[0], p[1]]; });
+  // Java 的对象数组排序是稳定的，JS 的 sort 也是稳定的
+  var sorted = src.map(function (p) { return [p[0], p[1]]; }).sort(function (a, b) { return a[0] - b[0]; });
+  var n = sorted.length;
+  var frames = [];
+  var res = [];
+  var seenExtend = false, seenInside = false, seenNew = false;
+
+  function label(p) { return p[0] + '-' + p[1]; }
+
+  // 排序前后：两排格子上下对照
+  frames.push(Viz.frame('Arrays.sort(intervals, Comparator.comparingInt(a -> a[0]));',
+    '先按左端点排序：能合并的区间一定挨在一起',
+    [Viz.cells(src.map(label), { title: '排序前', hideIndex: true }),
+     Viz.cells(sorted.map(label), { title: '按左端点排序后', hideIndex: true })]));
+
+  // 扫描中：上排是排好序的 intervals（扫过的变淡，cur 黄色），下排是 res（最后一段 last 黄色）
+  function panels(idx) {
+    var marks = {};
+    for (var x = 0; x < n; x++) marks[x] = x < idx ? 'dim' : '';
+    marks[idx] = 'cur';
+    var resMarks = {};
+    for (var y = 0; y < res.length; y++) resMarks[y] = 'win';
+    resMarks[res.length - 1] = 'cur';
+    return [
+      Viz.cells(sorted.map(label), { title: 'intervals（已排序）', marks: marks, hideIndex: true,
+        pointers: [{ at: idx, label: 'cur', cls: 'p-next' }] }),
+      Viz.cells(res.map(label), { title: 'res（结果）', marks: resMarks, hideIndex: true,
+        pointers: [{ at: res.length - 1, label: 'last', cls: 'p-prev' }] })
+    ];
+  }
+
+  for (var idx = 0; idx < n; idx++) {
+    var cur = sorted[idx];
+    var last = res.length ? res[res.length - 1] : null;
+    if (last === null || cur[0] > last[1]) {
+      // Java 里 res 和 intervals 共用同一个数组；画图要保留原区间，所以这里复制一份
+      res.push([cur[0], cur[1]]);
+      if (last !== null && !seenNew) {
+        seenNew = true;
+        frames.push(Viz.frame('res.add(cur);',
+          'cur[0]=' + cur[0] + ' > last[1]=' + last[1] + ' 不相交：另开一段 ' + label(cur),
+          panels(idx)));
+      }
+    } else {
+      var before = last[1];
+      last[1] = Math.max(last[1], cur[1]);
+      var inside = cur[1] <= before;       // cur 被 last 整个包住
+      if ((!inside && !seenExtend) || (inside && !seenInside)) {
+        if (inside) seenInside = true; else seenExtend = true;
+        frames.push(Viz.frame('last[1] = Math.max(last[1], cur[1]);',
+          'cur[0]=' + cur[0] + ' ≤ last[1]=' + before + '，' +
+            (inside ? '被包住：max(' + before + ', ' + cur[1] + ') 仍是 ' + last[1]
+                    : '相交：右端点取 max(' + before + ', ' + cur[1] + ')'),
+          panels(idx)));
+      }
+    }
+  }
+
+  var done = {};
+  for (var y = 0; y < res.length; y++) done[y] = 'done';
+  frames.push(Viz.frame('return res.toArray(new int[0][]);',
+    '扫完，res 就是答案：' + res.map(function (p) { return '[' + p[0] + ',' + p[1] + ']'; }).join(' '),
+    [Viz.cells(res.map(label), { title: 'res（结果）', marks: done, hideIndex: true })]));
+
+  return { frames: frames, result: res };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

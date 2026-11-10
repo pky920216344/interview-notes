@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>分割数组的最大值 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 245 / 1159</span>
+  <nav class="pn"><a href="offer-53-i.html">上一篇</a><a href="supp-22.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">410. </span>分割数组的最大值</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 19</li><li class="algo">二分查找</li><li class="aux">贪心</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">动态规划</li><li class="tag">前缀和</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">二分答案：给定上限 cap，贪心数「和超过 cap 就另起一段」的段数，段数 ≤ k 即可行。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>答案范围 <code>[最大元素, 总和]</code>：下界是最大的单元素必占一段，上界是全部并成一段。</li><li><code>check(cap)</code>：从左到右贪心，<code>sum + x &gt; cap</code> 就另起一段；需要的段数 ≤ k 则 cap 可行。</li><li>cap 越大段数只会越少（单调）→ 二分最小的可行 cap：可行 <code>hi = mid</code>，不可行 <code>lo = mid + 1</code>。</li><li>贪心每段尽量装满，段数才最少；连最少段数都超 k，其他切法只会更多，所以判定可信。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log sum)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> splitArray(<span class="k">int</span>[] nums, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="k">long</span> lo = <span class="n">0</span>, hi = <span class="n">0</span>;                       <span class="c">// 答案范围：[最大元素, 总和]</span></span><span class="ln"><span class="no">4</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) { lo = <span class="t">Math</span>.max(lo, x); hi += x; }</span><span class="ln"><span class="no">5</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">6</span>            <span class="k">long</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (check(nums, k, mid)) hi = mid;     <span class="c">// cap 可行 → 试试更小的</span></span><span class="ln"><span class="no">8</span>            <span class="k">else</span> lo = mid + <span class="n">1</span>;                     <span class="c">// 不可行 → 只能更大</span></span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="k">return</span> (<span class="k">int</span>) lo;</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="c">// 上限 cap 下贪心分段：和一旦超过 cap 就另起一段，段数 ≤ k 就可行</span></span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="k">boolean</span> check(<span class="k">int</span>[] nums, <span class="k">int</span> k, <span class="k">long</span> cap) {</span><span class="ln"><span class="no">15</span>        <span class="k">int</span> cnt = <span class="n">1</span>;                               <span class="c">// 至少一段</span></span><span class="ln"><span class="no">16</span>        <span class="k">long</span> sum = <span class="n">0</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) {</span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (sum + x &gt; cap) { cnt++; sum = x; }   <span class="c">// 装不下 → 另起一段</span></span><span class="ln"><span class="no">19</span>            <span class="k">else</span> sum += x;</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> cnt &lt;= k;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个非负整数数组 <code>nums</code> 和一个整数&nbsp;<code>k</code> ，你需要将这个数组分成&nbsp;<code>k</code><em>&nbsp;</em>个非空的连续子数组，使得这&nbsp;<code>k</code><em>&nbsp;</em>个子数组各自和的最大值 <strong>最小</strong>。</p>
+
+<p>返回分割后最小的和的最大值。</p>
+
+<p><strong>子数组</strong> 是数组中连续的部分。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [7,2,5,10,8], k = 2
+<strong>输出：</strong>18
+<strong>解释：</strong>
+一共有四种方法将 nums 分割为 2 个子数组。 
+其中最好的方式是将其分为 [7,2,5] 和 [10,8] 。
+因为此时这两个子数组各自的和的最大值为18，在所有情况中最小。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,3,4,5], k = 2
+<strong>输出：</strong>9
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,4,4], k = 3
+<strong>输出：</strong>4
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 1000</code></li>
+	<li><code>0 &lt;= nums[i] &lt;= 10<sup>6</sup></code></li>
+	<li><code>1 &lt;= k &lt;= min(50, nums.length)</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int splitArray(int[] nums, int k) {", "        long lo = 0, hi = 0;                       // 答案范围：[最大元素, 总和]", "        for (int x : nums) { lo = Math.max(lo, x); hi += x; }", "        while (lo < hi) {", "            long mid = (lo + hi) >>> 1;", "            if (check(nums, k, mid)) hi = mid;     // cap 可行 → 试试更小的", "            else lo = mid + 1;                     // 不可行 → 只能更大", "        }", "        return (int) lo;", "    }", "", "    // 上限 cap 下贪心分段：和一旦超过 cap 就另起一段，段数 ≤ k 就可行", "    private boolean check(int[] nums, int k, long cap) {", "        int cnt = 1;                               // 至少一段", "        long sum = 0;", "        for (int x : nums) {", "            if (sum + x > cap) { cnt++; sum = x; }   // 装不下 → 另起一段", "            else sum += x;", "        }", "        return cnt <= k;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 410. 分割数组的最大值 —— 图解：复刻 Solution.java 的「二分答案 + 贪心判定」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [7, 2, 5, 10, 8], k: 2 };
+
+function trace(input) {
+  var nums = input.nums, k = input.k;
+  var frames = [];
+  var lo = 0, hi = 0;
+  for (var i = 0; i < nums.length; i++) { lo = Math.max(lo, nums[i]); hi += nums[i]; }
+
+  function cellsPanel(marks) {
+    return Viz.cells(nums, { title: 'nums', marks: marks || {} });
+  }
+
+  // 判定：上限 cap 时贪心切段，返回段数和每段区间
+  function greedy(cap) {
+    var cnt = 1, sum = 0, from = 0, segs = [];
+    for (var i = 0; i < nums.length; i++) {
+      if (sum + nums[i] > cap) { segs.push([from, i - 1]); cnt++; sum = nums[i]; from = i; }
+      else sum += nums[i];
+    }
+    segs.push([from, nums.length - 1]);
+    return { cnt: cnt, segs: segs };
+  }
+  function segMarks(segs) {
+    var m = {};
+    segs.forEach(function (s, idx) {
+      for (var x = s[0]; x <= s[1]; x++) m[x] = idx % 2 === 0 ? 'win' : 'new';
+    });
+    return m;
+  }
+  function segText(segs) {
+    return segs.map(function (s) {
+      var v = 0;
+      for (var x = s[0]; x <= s[1]; x++) v += nums[x];
+      return '[' + nums.slice(s[0], s[1] + 1).join(',') + ']=' + v;
+    }).join('、');
+  }
+
+  // 帧 1：开局
+  frames.push(Viz.frame('long lo = 0, hi = 0;',
+    '二分答案：下界 = 最大元素 ' + lo + '（每段至少装下它），上界 = 总和 ' + hi + '（全并一段）',
+    [cellsPanel(null), Viz.vars([{ name: 'lo（下界）', v: String(lo) }, { name: 'hi（上界）', v: String(hi) }])]));
+
+  var seenOk = false, seenBad = false;
+  while (lo < hi) {
+    var mid = Math.floor((lo + hi) / 2);
+    var g = greedy(mid);
+    var ok = g.cnt <= k;
+    if (ok && !seenOk) {
+      seenOk = true;
+      frames.push(Viz.frame('if (sum + x > cap) { cnt++; sum = x; }   // 装不下 → 另起一段',
+        '试 cap=' + mid + '：贪心切出 ' + g.cnt + ' 段 ≤ k=' + k + ' → 可行，hi = ' + mid,
+        [cellsPanel(segMarks(g.segs)),
+         Viz.vars([{ name: 'cap', v: String(mid) }, { name: '段数 cnt', v: String(g.cnt) },
+                   { name: '结论', v: '可行 → hi = ' + mid, cls: 'done' }])]));
+    }
+    if (!ok && !seenBad) {
+      seenBad = true;
+      frames.push(Viz.frame('if (sum + x > cap) { cnt++; sum = x; }   // 装不下 → 另起一段',
+        '试 cap=' + mid + '：贪心要 ' + g.cnt + ' 段 > k=' + k + ' → cap 太小，lo = ' + (mid + 1),
+        [cellsPanel(segMarks(g.segs)),
+         Viz.vars([{ name: 'cap', v: String(mid) }, { name: '段数 cnt', v: String(g.cnt), cls: 'bad' },
+                   { name: '结论', v: '不可行 → lo = ' + (mid + 1) }])]));
+    }
+    if (ok) hi = mid; else lo = mid + 1;
+  }
+
+  var gf = greedy(lo);
+  var fm = {};
+  gf.segs.forEach(function (s) { for (var x = s[0]; x <= s[1]; x++) fm[x] = 'done'; });
+  frames.push(Viz.frame('return (int) lo;',
+    '收敛 lo = hi = ' + lo + '：最大段和的最小值就是 ' + lo,
+    [cellsPanel(fm), Viz.vars([{ name: '答案', v: String(lo), cls: 'done' }])]));
+
+  return { frames: frames, result: lo };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

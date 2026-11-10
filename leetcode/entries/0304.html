@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二维区域和检索 - 矩阵不可变 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 647 / 1159</span>
+  <nav class="pn"><a href="0066.html">上一篇</a><a href="offer-56-ii.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">304. </span>二维区域和检索 - 矩阵不可变</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">前缀和/差分</li><li class="aux">设计</li><li class="tag">设计</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="tag">前缀和</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">预处理二维前缀和（多一圈 0），每次查询用四角容斥 O(1) 拿到任意子矩阵和。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>s[i][j]</code> = 左上矩形 <code>(0,0)~(i−1,j−1)</code> 的和；递推 <code>s[i][j] = 上 + 左 − 左上 + 自己</code>。</li><li><strong>多一圈 0</strong>（下标从 1 起），边界不用特判。</li><li>查询 <code>(r1,c1)~(r2,c2)</code>：<code>s[r2+1][c2+1] − s[r1][c2+1] − s[r2+1][c1] + s[r1][c1]</code>——大矩形减上减左，左上被减两次加回来。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn) 预处理，O(1) 查询，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">NumMatrix</span> {</span><span class="ln"><span class="no">2</span>    <span class="c">// s[i][j] = 矩形 (0,0)-(i-1,j-1) 的元素和；多一圈 0 免去边界判断</span></span><span class="ln"><span class="no">3</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span>[][] s;</span><span class="ln"><span class="no">4</span> </span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="t">NumMatrix</span>(<span class="k">int</span>[][] matrix) {</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> m = matrix.length, n = matrix[<span class="n">0</span>].length;</span><span class="ln"><span class="no">7</span>        s = <span class="k">new</span> <span class="k">int</span>[m + <span class="n">1</span>][n + <span class="n">1</span>];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= m; i++) {</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt;= n; j++) {</span><span class="ln"><span class="no">10</span>                <span class="c">// 上方 + 左方 − 左上重叠 + 自己</span></span><span class="ln"><span class="no">11</span>                s[i][j] = s[i - <span class="n">1</span>][j] + s[i][j - <span class="n">1</span>] - s[i - <span class="n">1</span>][j - <span class="n">1</span>] + matrix[i - <span class="n">1</span>][j - <span class="n">1</span>];</span><span class="ln"><span class="no">12</span>            }</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="k">public</span> <span class="k">int</span> sumRegion(<span class="k">int</span> row1, <span class="k">int</span> col1, <span class="k">int</span> row2, <span class="k">int</span> col2) {</span><span class="ln"><span class="no">17</span>        <span class="c">// 大矩形 − 上面 − 左面 + 左上角（被减了两次，加回来）</span></span><span class="ln"><span class="no">18</span>        <span class="k">return</span> s[row2 + <span class="n">1</span>][col2 + <span class="n">1</span>] - s[row1][col2 + <span class="n">1</span>] - s[row2 + <span class="n">1</span>][col1] + s[row1][col1];</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p><big><small>给定一个二维矩阵 <code>matrix</code>，</small></big>以下类型的多个请求：</p>
+
+<ul>
+	<li><big><small>计算其子矩形范围内元素的总和，该子矩阵的 <strong>左上角</strong> 为 <code>(row1,&nbsp;col1)</code> ，<strong>右下角</strong> 为 <code>(row2,&nbsp;col2)</code> 。</small></big></li>
+</ul>
+
+<p>实现 <code>NumMatrix</code> 类：</p>
+
+<ul>
+	<li><code>NumMatrix(int[][] matrix)</code>&nbsp;给定整数矩阵 <code>matrix</code> 进行初始化</li>
+	<li><code>int sumRegion(int row1, int col1, int row2, int col2)</code>&nbsp;返回<big><small> <strong>左上角</strong></small></big><big><small> <code>(row1,&nbsp;col1)</code>&nbsp;、<strong>右下角</strong>&nbsp;<code>(row2,&nbsp;col2)</code></small></big> 所描述的子矩阵的元素 <strong>总和</strong> 。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/6c1193b50be8.png" style="width: 200px;" /></p>
+
+<pre>
+<strong>输入:</strong> 
+["NumMatrix","sumRegion","sumRegion","sumRegion"]
+[[[[3,0,1,4,2],[5,6,3,2,1],[1,2,0,1,5],[4,1,0,1,7],[1,0,3,0,5]]],[2,1,4,3],[1,1,2,2],[1,2,2,4]]
+<strong>输出:</strong> 
+[null, 8, 11, 12]
+
+<strong>解释:</strong>
+NumMatrix numMatrix = new NumMatrix([[3,0,1,4,2],[5,6,3,2,1],[1,2,0,1,5],[4,1,0,1,7],[1,0,3,0,5]]);
+numMatrix.sumRegion(2, 1, 4, 3); // return 8 (红色矩形框的元素总和)
+numMatrix.sumRegion(1, 1, 2, 2); // return 11 (绿色矩形框的元素总和)
+numMatrix.sumRegion(1, 2, 2, 4); // return 12 (蓝色矩形框的元素总和)
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == matrix.length</code></li>
+	<li><code>n == matrix[i].length</code></li>
+	<li><code>1 &lt;= m,&nbsp;n &lt;=&nbsp;200</code><meta charset="UTF-8" /></li>
+	<li><code>-10<sup>5</sup>&nbsp;&lt;= matrix[i][j] &lt;= 10<sup>5</sup></code></li>
+	<li><code>0 &lt;= row1 &lt;= row2 &lt; m</code></li>
+	<li><code>0 &lt;= col1 &lt;= col2 &lt; n</code></li>
+	<li><meta charset="UTF-8" />最多调用 <code>10<sup>4</sup></code> 次&nbsp;<code>sumRegion</code> 方法</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class NumMatrix {", "    // s[i][j] = 矩形 (0,0)-(i-1,j-1) 的元素和；多一圈 0 免去边界判断", "    private final int[][] s;", "", "    public NumMatrix(int[][] matrix) {", "        int m = matrix.length, n = matrix[0].length;", "        s = new int[m + 1][n + 1];", "        for (int i = 1; i <= m; i++) {", "            for (int j = 1; j <= n; j++) {", "                // 上方 + 左方 − 左上重叠 + 自己", "                s[i][j] = s[i - 1][j] + s[i][j - 1] - s[i - 1][j - 1] + matrix[i - 1][j - 1];", "            }", "        }", "    }", "", "    public int sumRegion(int row1, int col1, int row2, int col2) {", "        // 大矩形 − 上面 − 左面 + 左上角（被减了两次，加回来）", "        return s[row2 + 1][col2 + 1] - s[row1][col2 + 1] - s[row2 + 1][col1] + s[row1][col1];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 304. 二维区域和检索 —— 图解：复刻 Solution.java 的「二维前缀和 + 四角容斥」，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { matrix: [[3, 0, 1, 4], [5, 6, 3, 2], [1, 2, 0, 1]], ops: [[1, 1, 2, 2], [0, 0, 2, 3]] };
+
+function trace(input) {
+  var mat = input.matrix, ops = input.ops;
+  var m = mat.length, n = mat[0].length;
+  var frames = [];
+  var fired = { build: false, big: false, sub: false, add: false };
+
+  var BUILD = 's[i][j] = s[i - 1][j] + s[i][j - 1] - s[i - 1][j - 1] + matrix[i - 1][j - 1];';
+  var QUERY = 'return s[row2 + 1][col2 + 1] - s[row1][col2 + 1] - s[row2 + 1][col1] + s[row1][col1];';
+
+  // 前缀和 s：(i+1)×(j+1)，多一圈 0
+  var s = [];
+  for (var i = 0; i <= m; i++) s.push(new Array(n + 1).fill(0));
+  for (i = 1; i <= m; i++) {
+    for (var j = 1; j <= n; j++) {
+      s[i][j] = s[i - 1][j] + s[i][j - 1] - s[i - 1][j - 1] + mat[i - 1][j - 1];
+    }
+  }
+
+  function mks(list) {   // [[r, c, cls], ...] → marks 对象
+    var o = {};
+    list.forEach(function (x) { o[x[0] + ',' + x[1]] = x[2]; });
+    return o;
+  }
+  function sGrid(marks) {
+    return Viz.grid(s.map(function (row) { return row.slice(); }), {
+      title: '前缀和 s[i][j] = 左上矩形 (0,0)~(i−1,j−1) 的和（外圈 0）',
+      marks: marks || {},
+      rowLabels: ['0行', '1行', '2行', '3行', '4行', '5行', '6行'].slice(0, m + 1),
+      colLabels: ['0列', '1列', '2列', '3列', '4列', '5列', '6列'].slice(0, n + 1),
+      corner: 's'
+    });
+  }
+  function varsPanel(q, expr, cur) {
+    var items = [];
+    if (q) items.push({ name: '查询 (r1,c1,r2,c2)', v: '(' + q.join(',') + ')', cls: 'cur' });
+    if (expr) items.push({ name: '算式', v: expr });
+    if (cur != null) items.push({ name: '当前结果', v: String(cur), cls: 'chg' });
+    return Viz.vars(items);
+  }
+
+  if (!fired.build) {
+    fired.build = true;
+    frames.push(Viz.frame(BUILD, '预处理：每个 s[i][j] = 上 + 左 − 左上 + 自己，一遍扫完', [sGrid({}), varsPanel(null, null, null)]));
+  }
+
+  var out = [];
+  for (var q = 0; q < ops.length; q++) {
+    var r1 = ops[q][0], c1 = ops[q][1], r2 = ops[q][2], c2 = ops[q][3];
+    var big = s[r2 + 1][c2 + 1], top = s[r1][c2 + 1], left = s[r2 + 1][c1], tl = s[r1][c1];
+    var sum = big - top - left + tl;
+    out.push(sum);
+    if (q === 0) {
+      frames.push(Viz.frame(QUERY, '查询 (' + r1 + ',' + c1 + ',' + r2 + ',' + c2 + ')：先取大矩形 s[' + (r2 + 1) + '][' + (c2 + 1) + '] = ' + big,
+        [sGrid(mks([[r2 + 1, c2 + 1, 'cur']])), varsPanel(ops[q], '大矩形 = ' + big, big)]));
+      var mid = big - top - left;
+      frames.push(Viz.frame(QUERY, '减去上面 s[' + r1 + '][' + (c2 + 1) + ']=' + top + '、左面 s[' + (r2 + 1) + '][' + c1 + ']=' + left,
+        [sGrid(mks([[r1, c2 + 1, 'dim'], [r2 + 1, c1, 'dim']])), varsPanel(ops[q], big + ' − ' + top + ' − ' + left + ' = ' + mid, mid)]));
+      frames.push(Viz.frame(QUERY, '左上角 s[' + r1 + '][' + c1 + ']=' + tl + ' 被减了两次，加回来 → ' + sum,
+        [sGrid(mks([[r1, c1, 'hit']])), varsPanel(ops[q], mid + ' + ' + tl + ' = ' + sum, sum)]));
+    }
+  }
+
+  frames.push(Viz.frame(QUERY, ops.length > 1 ? '后续每次查询都是同样的四角容斥，O(1) 出结果' : '查询完成',
+    [sGrid({}), varsPanel(null, null, out.length ? out[out.length - 1] : '—')]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

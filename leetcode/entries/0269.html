@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>火星词典 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 540 / 1159</span>
+  <nav class="pn"><a href="1115.html">上一篇</a><a href="mianshi-17-15.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">269. </span>火星词典</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 4</li><li class="algo">图算法</li><li class="aux">广度优先搜索</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="tag">拓扑排序</li><li class="tag">数组</li><li class="tag">字符串</li><li class="tag">directed-acyclic-graph</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">相邻单词第一对不同字符给出「前 &lt; 后」的偏序边；同前缀时长词在前是矛盾；拓扑排序输出字母序，有环返回空串。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>只看<strong>相邻</strong>两个单词：第一对不同字符 <code>u vs v</code> 给出边 <code>u→v</code>；后面的单词推不出更多约束。</li><li>特判：短词排在长词后面却是其前缀（<code>abc</code> 后跟 <code>ab</code>）直接返回 <code>""</code>；相同前缀部分不建边。</li><li>Kahn 拓扑排序：入度 0 的字母入队，弹一个写进答案、把后继入度减一；<code>26×26</code> 布尔矩阵存边，同一对字母只记一次。</li><li>输出的字母数少于出现过的字母数 ⇒ 有环 ⇒ 返回 <code>""</code>。合法答案不唯一，本题判题接受任意拓扑序。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(C)（C 为全部字符数，拓扑排序内层是 26），空间复杂度 O(1)（26×26 定长矩阵）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">ArrayDeque</span>;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.<span class="t">Queue</span>;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="t">String</span> alienOrder(<span class="t">String</span>[] words) {</span><span class="ln"><span class="no">6</span>        <span class="k">boolean</span>[] seen = <span class="k">new</span> <span class="k">boolean</span>[<span class="n">26</span>];           <span class="c">// 出现过的字母都是结点</span></span><span class="ln"><span class="no">7</span>        <span class="k">boolean</span>[][] before = <span class="k">new</span> <span class="k">boolean</span>[<span class="n">26</span>][<span class="n">26</span>];   <span class="c">// before[a][b]：a 必须排在 b 前面</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="t">String</span> w : words) {</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; w.length(); i++) seen[w.charAt(i) - <span class="s">'a'</span>] = <span class="k">true</span>;</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="c">// 相邻两词第一对不同字符给出一条偏序边；同前缀时长词在前是矛盾</span></span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; words.length; i++) {</span><span class="ln"><span class="no">13</span>            <span class="t">String</span> a = words[i - <span class="n">1</span>], b = words[i];</span><span class="ln"><span class="no">14</span>            <span class="k">int</span> j = <span class="n">0</span>, len = <span class="t">Math</span>.min(a.length(), b.length());</span><span class="ln"><span class="no">15</span>            <span class="k">while</span> (j &lt; len &amp;&amp; a.charAt(j) == b.charAt(j)) j++;</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (j == len) {</span><span class="ln"><span class="no">17</span>                <span class="k">if</span> (a.length() &gt; b.length()) <span class="k">return</span> <span class="s">""</span>;   <span class="c">// 短词在后却是长词前缀：矛盾</span></span><span class="ln"><span class="no">18</span>                <span class="k">continue</span>;                                 <span class="c">// 前缀相同部分推不出边</span></span><span class="ln"><span class="no">19</span>            }</span><span class="ln"><span class="no">20</span>            <span class="k">int</span> u = a.charAt(j) - <span class="s">'a'</span>, v = b.charAt(j) - <span class="s">'a'</span>;</span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (!before[u][v]) { before[u][v] = <span class="k">true</span>; }   <span class="c">// 同一对字母只记一条边</span></span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="c">// 拓扑排序（Kahn）：入度 0 的字母入队，按 a..z 固定顺序拿，输出可复现</span></span><span class="ln"><span class="no">24</span>        <span class="k">int</span>[] indeg = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">25</span>        <span class="k">for</span> (<span class="k">int</span> u = <span class="n">0</span>; u &lt; <span class="n">26</span>; u++) {</span><span class="ln"><span class="no">26</span>            <span class="k">for</span> (<span class="k">int</span> v = <span class="n">0</span>; v &lt; <span class="n">26</span>; v++) {</span><span class="ln"><span class="no">27</span>                <span class="k">if</span> (before[u][v]) indeg[v]++;</span><span class="ln"><span class="no">28</span>            }</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="t">Queue</span>&lt;<span class="t">Integer</span>&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">31</span>        <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; <span class="n">26</span>; c++) {</span><span class="ln"><span class="no">32</span>            <span class="k">if</span> (seen[c] &amp;&amp; indeg[c] == <span class="n">0</span>) q.add(c);</span><span class="ln"><span class="no">33</span>        }</span><span class="ln"><span class="no">34</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">35</span>        <span class="k">int</span> total = <span class="n">0</span>;</span><span class="ln"><span class="no">36</span>        <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; <span class="n">26</span>; c++) <span class="k">if</span> (seen[c]) total++;</span><span class="ln"><span class="no">37</span>        <span class="k">while</span> (!q.isEmpty()) {</span><span class="ln"><span class="no">38</span>            <span class="k">int</span> u = q.poll();</span><span class="ln"><span class="no">39</span>            sb.append((<span class="k">char</span>) (<span class="s">'a'</span> + u));</span><span class="ln"><span class="no">40</span>            <span class="k">for</span> (<span class="k">int</span> v = <span class="n">0</span>; v &lt; <span class="n">26</span>; v++) {</span><span class="ln"><span class="no">41</span>                <span class="k">if</span> (!before[u][v] || --indeg[v] != <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">42</span>                q.add(v);</span><span class="ln"><span class="no">43</span>            }</span><span class="ln"><span class="no">44</span>        }</span><span class="ln"><span class="no">45</span>        <span class="k">return</span> sb.length() == total ? sb.toString() : <span class="s">""</span>;   <span class="c">// 字母没出完 = 有环，字典矛盾</span></span><span class="ln"><span class="no">46</span>    }</span><span class="ln"><span class="no">47</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.ArrayDeque;", "import java.util.Queue;", "", "class Solution {", "    public String alienOrder(String[] words) {", "        boolean[] seen = new boolean[26];           // 出现过的字母都是结点", "        boolean[][] before = new boolean[26][26];   // before[a][b]：a 必须排在 b 前面", "        for (String w : words) {", "            for (int i = 0; i < w.length(); i++) seen[w.charAt(i) - 'a'] = true;", "        }", "        // 相邻两词第一对不同字符给出一条偏序边；同前缀时长词在前是矛盾", "        for (int i = 1; i < words.length; i++) {", "            String a = words[i - 1], b = words[i];", "            int j = 0, len = Math.min(a.length(), b.length());", "            while (j < len && a.charAt(j) == b.charAt(j)) j++;", "            if (j == len) {", "                if (a.length() > b.length()) return \"\";   // 短词在后却是长词前缀：矛盾", "                continue;                                 // 前缀相同部分推不出边", "            }", "            int u = a.charAt(j) - 'a', v = b.charAt(j) - 'a';", "            if (!before[u][v]) { before[u][v] = true; }   // 同一对字母只记一条边", "        }", "        // 拓扑排序（Kahn）：入度 0 的字母入队，按 a..z 固定顺序拿，输出可复现", "        int[] indeg = new int[26];", "        for (int u = 0; u < 26; u++) {", "            for (int v = 0; v < 26; v++) {", "                if (before[u][v]) indeg[v]++;", "            }", "        }", "        Queue<Integer> q = new ArrayDeque<>();", "        for (int c = 0; c < 26; c++) {", "            if (seen[c] && indeg[c] == 0) q.add(c);", "        }", "        StringBuilder sb = new StringBuilder();", "        int total = 0;", "        for (int c = 0; c < 26; c++) if (seen[c]) total++;", "        while (!q.isEmpty()) {", "            int u = q.poll();", "            sb.append((char) ('a' + u));", "            for (int v = 0; v < 26; v++) {", "                if (!before[u][v] || --indeg[v] != 0) continue;", "                q.add(v);", "            }", "        }", "        return sb.length() == total ? sb.toString() : \"\";   // 字母没出完 = 有环，字典矛盾", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 269. 火星词典（会员题）—— 图解：复刻 Solution.java 的「相邻词建边 + Kahn 拓扑排序」，拍 5 张快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { words: ['wrt', 'wrf', 'er', 'ett', 'rftt'] };
+
+function trace(input) {
+  var words = input.words;
+  var frames = [];
+  var seen = {};
+  var before = {};     // 'u' -> { v: true }，对应 before[u][v]
+  var indeg = {};
+  var sb = [];
+  var edges = [];      // 供表格展示，按发现顺序
+
+  function wordsPanel(pairIdx) {
+    var marks = {};
+    if (pairIdx != null) { marks[pairIdx - 1] = 'win'; marks[pairIdx] = 'win'; }
+    return Viz.cells(words, { title: '词典 words（黄=正在比较的相邻一对）', marks: marks });
+  }
+  function edgesPanel(newIdx) {
+    return Viz.table('偏序边：前者必须排在后者前面', edges.map(function (e, i) {
+      return { k: e[0] + ' → ' + e[1], cls: i === newIdx ? 'new' : '' };
+    }));
+  }
+  function indegPanel(hitCh) {
+    var chars = Object.keys(indeg).sort();
+    return Viz.table('入度（排在它前面的字母数）', chars.map(function (c) {
+      return { k: c, v: String(indeg[c]), cls: c === hitCh ? 'hit' : '' };
+    }), { hint: '只列出出现过的字母' });
+  }
+
+  for (var w = 0; w < words.length; w++) {
+    for (var x = 0; x < words[w].length; x++) {
+      var c = words[w][x];
+      if (!(c in indeg)) { indeg[c] = 0; seen[c] = true; }
+    }
+  }
+
+  for (var i = 1; i < words.length; i++) {
+    var a = words[i - 1], b = words[i];
+    var j = 0, len = Math.min(a.length, b.length);
+    while (j < len && a[j] === b[j]) j++;
+    if (j === len) {
+      if (a.length > b.length) return { frames: frames, result: '' };   // 前缀矛盾
+      continue;
+    }
+    var u = a[j], v = b[j];
+    if (!(u in indeg)) indeg[u] = 0;
+    if (!(v in indeg)) indeg[v] = 0;
+    if (!before[u]) before[u] = {};
+    if (!before[u][v]) { before[u][v] = true; indeg[v]++; edges.push([u, v]); }
+    if (edges.length === 1) {
+      frames.push(Viz.frame('if (!before[u][v]) { before[u][v] = true; }',
+        '比较 ' + a + '/' + b + '：第一对不同字符 ' + u + '→' + v + '，记一条边',
+        [wordsPanel(i), edgesPanel(0)]));
+    }
+  }
+
+  var q = [];
+  var total = 0;
+  Object.keys(indeg).sort().forEach(function (c) {
+    total++;
+    if (indeg[c] === 0) q.push(c);
+  });
+  frames.push(Viz.frame('if (seen[c] && indeg[c] == 0) q.add(c);',
+    '入度 0 的字母先入队（按 a..z 固定顺序拿，结果才可复现）',
+    [indegPanel(null), Viz.vars([{ name: '队列', v: q.length ? q.join(' ') : '（空）' }, { name: 'sb', v: '""' }])]));
+
+  while (q.length) {
+    var u2 = q.shift();
+    sb.push(u2);
+    for (var v2 = 0; v2 < 26; v2++) {
+      var ch = String.fromCharCode(97 + v2);
+      if (!(before[u2] && before[u2][ch])) continue;
+      if (--indeg[ch] === 0) q.push(ch);
+    }
+    if (sb.length === 1) {
+      frames.push(Viz.frame("sb.append((char) ('a' + u));",
+        '弹出 ' + u2 + ' 写入 sb，并把它的后继入度清零入队',
+        [indegPanel(u2), Viz.vars([{ name: '队列', v: q.join(' ') || '（空）' }, { name: 'sb', v: '"' + sb.join('') + '"' }])]));
+    }
+  }
+
+  frames.push(Viz.frame('return sb.length() == total ? sb.toString() : "";',
+    sb.length === total ? '字母全部出队：这就是一个合法的火星字典序' : '字母没出完 = 有环，返回空串',
+    [edgesPanel(null), Viz.vars([{ name: 'sb', v: '"' + sb.join('') + '"' }, { name: '字母数', v: sb.length + '/' + total }])]));
+
+  return { frames: frames, result: sb.length === total ? sb.join('') : '' };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

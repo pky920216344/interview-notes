@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>子数组的最小值之和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 351 / 1159</span>
+  <nav class="pn"><a href="0456.html">上一篇</a><a href="0149.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">907. </span>子数组的最小值之和</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 11</li><li class="algo">单调栈</li><li class="aux">数学</li><li class="tag">栈</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">贡献法 + 单调栈：每个元素当「最小值」时数出左右可选起终点数，贡献 = 值 × 左 × 右，求和取模。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>不枚举子数组，改算<strong>每个元素的贡献</strong>：以 <code>arr[i]</code> 为最小值的子数组个数 = 左可选起点数 × 右可选终点数。</li><li>单调栈一次求出两侧边界：弹栈时，右边界 = 当前下标 <code>i</code>（右边第一个<strong>严格更小</strong>），左边界 = 新栈顶（左边第一个<strong>≤ 它</strong>的）。</li><li>一侧严格一侧非严格，重复值不会把同一子数组算两次（平局归左边的元素）。</li><li><code>i == n</code> 时补哨兵 <code>0</code> 清空栈；贡献可能到 3e4×3e4×3e4，用 <code>long</code> 乘再取模 <code>1e9+7</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> sumSubarrayMins(<span class="k">int</span>[] arr) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = arr.length;</span><span class="ln"><span class="no">4</span>        <span class="k">long</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] stack = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> top = -<span class="n">1</span>;</span><span class="ln"><span class="no">7</span>        <span class="c">// i == n 时补一个比谁都小的哨兵 0，把栈里剩下的元素全部结算掉</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt;= n; i++) {</span><span class="ln"><span class="no">9</span>            <span class="k">int</span> cur = i == n ? <span class="n">0</span> : arr[i];</span><span class="ln"><span class="no">10</span>            <span class="c">// cur 更小：栈顶元素「当最小值」的子数组已经到头，弹栈结算</span></span><span class="ln"><span class="no">11</span>            <span class="k">while</span> (top &gt;= <span class="n">0</span> &amp;&amp; cur &lt; arr[stack[top]]) {</span><span class="ln"><span class="no">12</span>                <span class="k">int</span> mid = stack[top--];</span><span class="ln"><span class="no">13</span>                <span class="c">// 左边界 = 新栈顶（≤ arr[mid]），右边界 = i（&lt; arr[mid]）：一侧非严格一侧严格，不重不漏</span></span><span class="ln"><span class="no">14</span>                <span class="k">int</span> left = top &lt; <span class="n">0</span> ? -<span class="n">1</span> : stack[top];</span><span class="ln"><span class="no">15</span>                <span class="c">// 以 arr[mid] 为最小值：左可选 mid-left 种起点 × 右可选 i-mid 种终点</span></span><span class="ln"><span class="no">16</span>                <span class="k">long</span> cnt = (<span class="k">long</span>) (mid - left) * (i - mid);</span><span class="ln"><span class="no">17</span>                ans = (ans + arr[mid] * cnt) % <span class="n">1_000_000_007L</span>;</span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>            stack[++top] = i;</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> (<span class="k">int</span>) ans;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个整数数组 <code>arr</code>，找到 <code>min(b)</code> 的总和，其中 <code>b</code> 的范围为 <code>arr</code> 的每个（连续）子数组。</p>
+
+<p>由于答案可能很大，因此<strong> 返回答案模 <code>10^9 + 7</code></strong> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [3,1,2,4]
+<strong>输出：</strong>17
+<strong>解释：
+</strong>子数组为[3]，[1]，[2]，[4]，[3,1]，[1,2]，[2,4]，[3,1,2]，[1,2,4]，[3,1,2,4]。 
+最小值为 3，1，2，4，1，1，2，1，1，1，和为 17。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [11,81,94,43,3]
+<strong>输出：</strong>444
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= arr.length <= 3 * 10<sup>4</sup></code></li>
+	<li><code>1 <= arr[i] <= 3 * 10<sup>4</sup></code></li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int sumSubarrayMins(int[] arr) {", "        int n = arr.length;", "        long ans = 0;", "        int[] stack = new int[n + 1];", "        int top = -1;", "        // i == n 时补一个比谁都小的哨兵 0，把栈里剩下的元素全部结算掉", "        for (int i = 0; i <= n; i++) {", "            int cur = i == n ? 0 : arr[i];", "            // cur 更小：栈顶元素「当最小值」的子数组已经到头，弹栈结算", "            while (top >= 0 && cur < arr[stack[top]]) {", "                int mid = stack[top--];", "                // 左边界 = 新栈顶（≤ arr[mid]），右边界 = i（< arr[mid]）：一侧非严格一侧严格，不重不漏", "                int left = top < 0 ? -1 : stack[top];", "                // 以 arr[mid] 为最小值：左可选 mid-left 种起点 × 右可选 i-mid 种终点", "                long cnt = (long) (mid - left) * (i - mid);", "                ans = (ans + arr[mid] * cnt) % 1_000_000_007L;", "            }", "            stack[++top] = i;", "        }", "        return (int) ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 907. 子数组的最小值之和 —— 图解：复刻 Solution.java 的「单调栈 + 贡献法」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [3, 1, 2, 4] };
+
+function trace(input) {
+  var arr = input.arr, n = arr.length;
+  var frames = [];
+  var stack = [];   // 下标，从底到顶对应值严格递增
+  var ans = 0;
+  var pops = 0;
+  var fired = { mid: false, add: false, sentinel: false, left: false };
+
+  // 数组面板：mid 是正在结算的元素，[left+1, i-1] 是它当最小值的整段
+  function arrPanel(mid, left, i) {
+    var marks = {};
+    if (mid != null && left != null) {
+      for (var k = left + 1; k < i; k++) marks[k] = 'win';
+      marks[mid] = 'cur';
+    }
+    var pointers = i < n ? [{ at: i, label: 'i', cls: 'p-cur' }] : [];
+    return Viz.cells(arr, { title: '数组 arr（亮格 = 以 mid 为最小值的子数组范围）', marks: marks, pointers: pointers });
+  }
+  function stackPanel() {
+    var pointers = stack.length ? [{ at: stack.length - 1, label: '栈顶', cls: 'p-tail' }] : [];
+    return Viz.cells(stack.map(function (idx) { return arr[idx]; }),
+      { title: '栈（存下标，值从底到顶递增）', pointers: pointers });
+  }
+  function varsPanel(info) {
+    var items = [];
+    if (info) {
+      items.push({ name: '值', v: info.v });
+      items.push({ name: '左可选', v: info.l, cls: 'chg' });
+      items.push({ name: '右可选', v: info.r, cls: 'chg' });
+      items.push({ name: '贡献', v: info.c, cls: 'chg' });
+    }
+    items.push({ name: 'ans', v: ans });
+    return Viz.vars(items);
+  }
+
+  for (var i = 0; i <= n; i++) {
+    var cur = i === n ? 0 : arr[i];
+    if (i === n && !fired.sentinel) {
+      fired.sentinel = true;
+      frames.push(Viz.frame('int cur = i == n ? 0 : arr[i];',
+        '扫到末尾：补一个比谁都小的哨兵 0，把栈里剩下的全部结算',
+        [arrPanel(null, null, i), stackPanel(), varsPanel(null)]));
+    }
+    while (stack.length && cur < arr[stack[stack.length - 1]]) {
+      var mid = stack.pop();
+      var left = stack.length ? stack[stack.length - 1] : -1;
+      var l = mid - left, r = i - mid;
+      pops++;
+      if (!fired.mid) {
+        fired.mid = true;
+        frames.push(Viz.frame('int mid = stack[top--];',
+          '来了更小的 ' + cur + '：栈顶 ' + arr[mid] + ' 当最小值到头，弹栈结算',
+          [arrPanel(mid, left, i), stackPanel(), varsPanel({ v: arr[mid], l: l, r: r, c: arr[mid] * l * r })]));
+      } else if (!fired.left && pops === 2) {
+        fired.left = true;
+        frames.push(Viz.frame('int left = top < 0 ? -1 : stack[top];',
+          arr[mid] + ' 的左边界 = 新栈顶 ' + (left < 0 ? '空' : arr[left]) + '：贡献 ' + arr[mid] + '×' + l + '×' + r,
+          [arrPanel(mid, left, i), stackPanel(), varsPanel({ v: arr[mid], l: l, r: r, c: arr[mid] * l * r })]));
+      }
+      ans = (ans + arr[mid] * l * r) % 1000000007;
+      if (!fired.add) {
+        fired.add = true;
+        frames.push(Viz.frame('ans = (ans + arr[mid] * cnt) % 1_000_000_007L;',
+          '贡献 = 值 × 左可选 × 右可选 = ' + arr[mid] + '×' + l + '×' + r + ' = ' + (arr[mid] * l * r) + '，累加进 ans',
+          [arrPanel(mid, left, i), stackPanel(), varsPanel({ v: arr[mid], l: l, r: r, c: arr[mid] * l * r })]));
+      }
+    }
+    stack.push(i);
+  }
+
+  frames.push(Viz.frame('return (int) ans;',
+    '每块贡献相加取模 1e9+7 = ' + ans + '：没有子数组被数重或漏掉',
+    [arrPanel(null, null, n), stackPanel(), varsPanel(null)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

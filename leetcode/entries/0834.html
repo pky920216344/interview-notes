@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>树中距离之和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 818 / 1159</span>
+  <nav class="pn"><a href="0847.html">上一篇</a><a href="offer-64.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">834. </span>树中距离之和</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">动态规划</li><li class="aux">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">图</li><li class="tag">动态规划</li><li class="tag">dp-on-trees</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">换根 DP：先一遍 DFS 自底向上算出每结点的子树大小和子树内距离和，再一遍 DFS 自顶向下换根，每个孩子 O(1) 推出新答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>第一次 DFS（后序）：<code>sz[u]</code> 是子树大小；<code>down[u] += down[v] + sz[v]</code>——v 子树里每个点到 u 都比到 v 远一步。</li><li>以 0 为根时 <code>ans[0] = down[0]</code>，其余结点一开始还没有答案。</li><li>第二次 DFS（前序）换根：<code>ans[v] = ans[u] - sz[v] + (n - sz[v])</code>——离开 v 子树的 <code>n - sz[v]</code> 个点各远一步，子树里 <code>sz[v]</code> 个点各近一步。</li><li>无向树用邻接表 + 记父结点防回头。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt;[] g;</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">int</span>[] sz, down, ans;</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">int</span> n;</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="k">int</span>[] sumOfDistancesInTree(<span class="k">int</span> n, <span class="k">int</span>[][] edges) {</span><span class="ln"><span class="no">9</span>        <span class="k">this</span>.n = n;</span><span class="ln"><span class="no">10</span>        g = <span class="k">new</span> <span class="t">List</span>[n];</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) g[i] = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span>[] e : edges) {</span><span class="ln"><span class="no">13</span>            g[e[<span class="n">0</span>]].add(e[<span class="n">1</span>]);</span><span class="ln"><span class="no">14</span>            g[e[<span class="n">1</span>]].add(e[<span class="n">0</span>]);</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        sz = <span class="k">new</span> <span class="k">int</span>[n];     <span class="c">// 子树大小</span></span><span class="ln"><span class="no">17</span>        down = <span class="k">new</span> <span class="k">int</span>[n];   <span class="c">// 子树内各点到 u 的距离和</span></span><span class="ln"><span class="no">18</span>        ans = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">19</span>        dfs1(<span class="n">0</span>, -<span class="n">1</span>);</span><span class="ln"><span class="no">20</span>        ans[<span class="n">0</span>] = down[<span class="n">0</span>];    <span class="c">// 以 0 为根，答案就是子树距离和</span></span><span class="ln"><span class="no">21</span>        dfs2(<span class="n">0</span>, -<span class="n">1</span>);</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span> </span><span class="ln"><span class="no">25</span>    <span class="k">private</span> <span class="k">void</span> dfs1(<span class="k">int</span> u, <span class="k">int</span> fa) {</span><span class="ln"><span class="no">26</span>        sz[u] = <span class="n">1</span>;</span><span class="ln"><span class="no">27</span>        <span class="k">for</span> (<span class="k">int</span> v : g[u]) {</span><span class="ln"><span class="no">28</span>            <span class="k">if</span> (v == fa) <span class="k">continue</span>;</span><span class="ln"><span class="no">29</span>            dfs1(v, u);</span><span class="ln"><span class="no">30</span>            sz[u] += sz[v];</span><span class="ln"><span class="no">31</span>            down[u] += down[v] + sz[v];   <span class="c">// v 子树整体离 u 比离 v 远一步</span></span><span class="ln"><span class="no">32</span>        }</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span> </span><span class="ln"><span class="no">35</span>    <span class="k">private</span> <span class="k">void</span> dfs2(<span class="k">int</span> u, <span class="k">int</span> fa) {</span><span class="ln"><span class="no">36</span>        <span class="k">for</span> (<span class="k">int</span> v : g[u]) {</span><span class="ln"><span class="no">37</span>            <span class="k">if</span> (v == fa) <span class="k">continue</span>;</span><span class="ln"><span class="no">38</span>            ans[v] = ans[u] - sz[v] + (n - sz[v]);   <span class="c">// 换根到 v：子树内各近一步，其余各远一步</span></span><span class="ln"><span class="no">39</span>            dfs2(v, u);</span><span class="ln"><span class="no">40</span>        }</span><span class="ln"><span class="no">41</span>    }</span><span class="ln"><span class="no">42</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个无向、连通的树。树中有 <code>n</code> 个标记为 <code>0...n-1</code> 的节点以及 <code>n-1</code>&nbsp;条边&nbsp;。</p>
+
+<p>给定整数 <code>n</code> 和数组&nbsp;<code>edges</code>&nbsp;，&nbsp;<code>edges[i] = [a<sub>i</sub>, b<sub>i</sub>]</code>表示树中的节点&nbsp;<code>a<sub>i</sub></code>&nbsp;和&nbsp;<code>b<sub>i</sub></code>&nbsp;之间有一条边。</p>
+
+<p>返回长度为 <code>n</code> 的数组&nbsp;<code>answer</code>&nbsp;，其中&nbsp;<code>answer[i]</code>&nbsp;是树中第 <code>i</code> 个节点与所有其他节点之间的距离之和。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<p><img src="../assets/img/23736ec661b1.jpg" /></p>
+
+<pre>
+<strong>输入: </strong>n = 6, edges = [[0,1],[0,2],[2,3],[2,4],[2,5]]
+<strong>输出: </strong>[8,12,6,10,10,10]
+<strong>解释: </strong>树如图所示。
+我们可以计算出 dist(0,1) + dist(0,2) + dist(0,3) + dist(0,4) + dist(0,5) 
+也就是 1 + 1 + 2 + 2 + 2 = 8。 因此，answer[0] = 8，以此类推。
+</pre>
+
+<p><strong>示例 2:</strong></p>
+<img alt="" src="../assets/img/1d221f3d840f.jpg" />
+<pre>
+<strong>输入:</strong> n = 1, edges = []
+<strong>输出:</strong> [0]
+</pre>
+
+<p><strong>示例 3:</strong></p>
+<img alt="" src="../assets/img/4d557367393e.jpg" />
+<pre>
+<strong>输入:</strong> n = 2, edges = [[1,0]]
+<strong>输出:</strong> [1,1]
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 3 * 10<sup>4</sup></code></li>
+	<li><code>edges.length == n - 1</code></li>
+	<li><code>edges[i].length == 2</code></li>
+	<li><code>0 &lt;= a<sub>i</sub>, b<sub>i</sub>&nbsp;&lt; n</code></li>
+	<li><code>a<sub>i</sub>&nbsp;!= b<sub>i</sub></code></li>
+	<li>给定的输入保证为有效的树</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private List<Integer>[] g;", "    private int[] sz, down, ans;", "    private int n;", "", "    public int[] sumOfDistancesInTree(int n, int[][] edges) {", "        this.n = n;", "        g = new List[n];", "        for (int i = 0; i < n; i++) g[i] = new ArrayList<>();", "        for (int[] e : edges) {", "            g[e[0]].add(e[1]);", "            g[e[1]].add(e[0]);", "        }", "        sz = new int[n];     // 子树大小", "        down = new int[n];   // 子树内各点到 u 的距离和", "        ans = new int[n];", "        dfs1(0, -1);", "        ans[0] = down[0];    // 以 0 为根，答案就是子树距离和", "        dfs2(0, -1);", "        return ans;", "    }", "", "    private void dfs1(int u, int fa) {", "        sz[u] = 1;", "        for (int v : g[u]) {", "            if (v == fa) continue;", "            dfs1(v, u);", "            sz[u] += sz[v];", "            down[u] += down[v] + sz[v];   // v 子树整体离 u 比离 v 远一步", "        }", "    }", "", "    private void dfs2(int u, int fa) {", "        for (int v : g[u]) {", "            if (v == fa) continue;", "            ans[v] = ans[u] - sz[v] + (n - sz[v]);   // 换根到 v：子树内各近一步，其余各远一步", "            dfs2(v, u);", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 834. 树中距离之和 —— 图解：复刻 Solution.java 的两次 DFS（子树汇总 + 换根），5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 一般树画不进二叉树面板；只有能编码成二叉层序（每结点 ≤2 孩子）时画树，否则用表格。
+
+var STORY_INPUT = { n: 5, edges: [[0, 1], [0, 2], [2, 3], [2, 4]] };
+
+function trace(input) {
+  var n = input.n;
+  var edges = input.edges;
+  var frames = [];
+  var DOWN = 'down[u] += down[v] + sz[v];';
+  var ROOT = 'ans[0] = down[0];';
+  var REROOT = 'ans[v] = ans[u] - sz[v] + (n - sz[v]);';
+  var RET = 'return ans;';
+
+  var adj = [];
+  for (var i = 0; i < n; i++) adj.push([]);
+  edges.forEach(function (e) {
+    adj[e[0]].push(e[1]);
+    adj[e[1]].push(e[0]);
+  });
+
+  // 尝试编码成二叉层序（每个结点至多 2 个孩子才行）
+  var binaryOK = true;
+  var slot = { 0: 0 };   // 层序下标 -> 结点号
+  var q = [{ u: 0, idx: 0, fa: -1 }];
+  while (q.length && binaryOK) {
+    var t = q.shift();
+    var kids = adj[t.u].filter(function (v) { return v !== t.fa; });
+    if (kids.length > 2) { binaryOK = false; break; }
+    kids.forEach(function (k, j) {
+      var idx = 2 * t.idx + 1 + j;
+      slot[idx] = k;
+      q.push({ u: k, idx: idx, fa: t.u });
+    });
+  }
+  var level = null, idxOf = null;
+  if (binaryOK) {
+    var maxIdx = 0;
+    for (var key in slot) maxIdx = Math.max(maxIdx, Number(key));
+    level = [];
+    idxOf = {};
+    for (i = 0; i <= maxIdx; i++) level.push(slot[i] === undefined ? null : slot[i]);
+    for (i = 0; i <= maxIdx; i++) if (slot[i] !== undefined) idxOf[slot[i]] = i;
+  }
+
+  var sz = [], down = [], ans = [];
+  for (i = 0; i < n; i++) { sz.push(0); down.push(0); ans.push(0); }
+
+  // —— 跑一遍算法，在关键时刻把整个状态快照下来 ——
+  var events = [];
+  var d1Taken = false, rrTaken = 0;
+
+  function dfs1(u, fa) {
+    sz[u] = 1;
+    adj[u].forEach(function (v) {
+      if (v === fa) return;
+      dfs1(v, u);
+      sz[u] += sz[v];
+      down[u] += down[v] + sz[v];
+    });
+    var kids2 = adj[u].filter(function (v) { return v !== fa; });
+    if (!d1Taken && kids2.length >= 2) {
+      d1Taken = true;
+      events.push({ at: DOWN, u: u, sz: sz.slice(), down: down.slice(), ans: ans.slice() });
+    }
+  }
+  dfs1(0, -1);
+  ans[0] = down[0];
+  events.push({ at: ROOT, sz: sz.slice(), down: down.slice(), ans: ans.slice() });
+
+  function dfs2(u, fa) {
+    adj[u].forEach(function (v) {
+      if (v === fa) return;
+      ans[v] = ans[u] - sz[v] + (n - sz[v]);
+      if (rrTaken < 2) {
+        rrTaken++;
+        events.push({ at: REROOT, v: v, fa: u, sz: sz.slice(), down: down.slice(), ans: ans.slice() });
+      }
+      dfs2(v, u);
+    });
+  }
+  dfs2(0, -1);
+  events.push({ at: RET, sz: sz.slice(), down: down.slice(), ans: ans.slice() });
+
+  // —— 渲染 ——
+  function treePanel(ev, curNode, showDown) {
+    var marks = {}, labels = [];
+    if (curNode != null) marks[idxOf[curNode]] = 'cur';
+    for (var u = 0; u < n; u++) {
+      var lab = 'sz=' + ev.sz[u];
+      if (showDown && ev.down[u] > 0) lab = (u === curNode ? 'sz=' + ev.sz[u] + ' · down=' + ev.down[u] : lab);
+      if (ev.at !== 'DOWN' || ev.ans[u] > 0) lab += (lab ? ' ' : '') + 'ans=' + ev.ans[u];
+      labels.push({ at: idxOf[u], label: lab, cls: u === curNode ? 'cur' : '' });
+    }
+    return Viz.tree(level, { title: '树（以 0 为根）', marks: marks, labels: labels });
+  }
+  function tablePanel(ev, curNode) {
+    var rows = [];
+    for (var u = 0; u < n; u++) {
+      rows.push({
+        k: '结点 ' + u,
+        v: 'sz=' + ev.sz[u] + ' down=' + ev.down[u] + ' ans=' + (ev.at === 'DOWN' && ev.ans[u] === 0 ? '—' : ev.ans[u]),
+        cls: u === curNode ? 'hit' : ''
+      });
+    }
+    return Viz.table('每结点的 sz / down / ans', rows);
+  }
+  function push(ev, key, curNode, vars) {
+    var body = binaryOK ? treePanel(ev, curNode, ev.at === 'DOWN') : tablePanel(ev, curNode);
+    frames.push(Viz.frame(ev.at, key, [body, Viz.vars(vars)]));
+  }
+
+  events.forEach(function (ev) {
+    if (ev.at === DOWN) {
+      push(ev, '自底向上：结点 ' + ev.u + ' 汇总完，sz=' + ev.sz[ev.u] + '、子树内距离和 down=' + ev.down[ev.u],
+        ev.u, [{ name: 'u', v: String(ev.u) }, { name: 'down[' + ev.u + ']', v: String(ev.down[ev.u]) }]);
+    } else if (ev.at === ROOT) {
+      push(ev, '以 0 为根先得出 ans[0] = down[0] = ' + ev.ans[0] + '（其余还没换根）',
+        0, [{ name: 'ans[0]', v: String(ev.ans[0]), cls: 'done' }]);
+    } else if (ev.at === REROOT) {
+      push(ev, '根挪到 ' + ev.v + '：子树里 ' + ev.sz[ev.v] + ' 个点各近一步，其余 ' + (n - ev.sz[ev.v]) + ' 个点各远一步',
+        ev.v, [
+        { name: 'ans[' + ev.fa + ']', v: String(ev.ans[ev.fa]) },
+        { name: 'ans[' + ev.v + ']', v: ev.ans[ev.v] + ' = ' + ev.ans[ev.fa] + ' − ' + ev.sz[ev.v] + ' + ' + (n - ev.sz[ev.v]), cls: 'done' }
+      ]);
+    } else {
+      var finMarks = {}, finLabels = [];
+      for (var u = 0; u < n; u++) {
+        if (binaryOK) { finMarks[idxOf[u]] = 'done'; finLabels.push({ at: idxOf[u], label: 'ans=' + ev.ans[u], cls: 'done' }); }
+        else finMarks[u] = 'done';
+      }
+      frames.push(Viz.frame(RET, '两遍 DFS 结束：所有结点的距离和都算好了', binaryOK
+        ? [Viz.tree(level, { title: '树（以 0 为根）', marks: finMarks, labels: finLabels }), Viz.vars([{ name: 'ans', v: JSON.stringify(ev.ans), cls: 'done' }])]
+        : [tablePanel(ev, -1), Viz.vars([{ name: 'ans', v: JSON.stringify(ev.ans), cls: 'done' }])]));
+    }
+  });
+
+  return { frames: frames, result: ans.slice() };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

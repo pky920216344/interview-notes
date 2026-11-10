@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>在圆内随机生成点 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 643 / 1159</span>
+  <nav class="pn"><a href="0406.html">上一篇</a><a href="0654.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">478. </span>在圆内随机生成点</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">数学</li><li class="tag">几何</li><li class="tag">数学</li><li class="tag">拒绝采样</li><li class="tag">随机化</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">拒绝采样：在外接正方形 [−r,r]² 上均匀取点，落在圆外就重取；正方形密度均匀，留下的点在圆内也均匀。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>用 <code>Math.random()</code> 取 <code>u, v ∈ [−1,1)</code>，得到正方形上的均匀点。</li><li><code>u² + v² ≤ 1</code> 才算圆内（圆周也算），否则重取；接受率 <code>π/4</code>，均摊常数次。</li><li>命中后映射回圆内坐标：<code>x = xc + r·u</code>，<code>y = yc + r·v</code>。</li><li>不能用「半径 × 随机角度」：角度均匀时点会向圆心聚集，不均匀。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1) 均摊（每轮接受率 π/4），空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">double</span> radius, xc, yc;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">Solution</span>(<span class="k">double</span> radius, <span class="k">double</span> x_center, <span class="k">double</span> y_center) {</span><span class="ln"><span class="no">5</span>        <span class="k">this</span>.radius = radius;</span><span class="ln"><span class="no">6</span>        <span class="k">this</span>.xc = x_center;</span><span class="ln"><span class="no">7</span>        <span class="k">this</span>.yc = y_center;</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">public</span> <span class="k">double</span>[] randPoint() {</span><span class="ln"><span class="no">11</span>        <span class="c">// 拒绝采样：在外接正方形 [−r,r]² 上均匀取点，落在圆外就重取（圆周也算圆内）</span></span><span class="ln"><span class="no">12</span>        <span class="k">while</span> (<span class="k">true</span>) {</span><span class="ln"><span class="no">13</span>            <span class="k">double</span> u = <span class="t">Math</span>.random() * <span class="n">2</span> - <span class="n">1</span>, v = <span class="t">Math</span>.random() * <span class="n">2</span> - <span class="n">1</span>;</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (u * u + v * v &lt;= <span class="n">1</span>) <span class="k">return</span> toWorld(u, v);</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="c">// 本地验证用：给定候选 (u,v) 序列，返回第一个落在圆内的候选映射成的点</span></span><span class="ln"><span class="no">19</span>    <span class="k">double</span>[] firstHit(<span class="k">double</span>[] uv) {</span><span class="ln"><span class="no">20</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i + <span class="n">1</span> &lt; uv.length; i += <span class="n">2</span>) {</span><span class="ln"><span class="no">21</span>            <span class="k">double</span> u = uv[i], v = uv[i + <span class="n">1</span>];</span><span class="ln"><span class="no">22</span>            <span class="k">if</span> (inside(u, v)) <span class="k">return</span> toWorld(u, v);</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> toWorld(<span class="n">0</span>, <span class="n">0</span>);   <span class="c">// 全被拒时兜底返回圆心（圆心必在圆内）</span></span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span> </span><span class="ln"><span class="no">27</span>    <span class="k">private</span> <span class="k">boolean</span> inside(<span class="k">double</span> u, <span class="k">double</span> v) {</span><span class="ln"><span class="no">28</span>        <span class="k">return</span> u * u + v * v &lt;= <span class="n">1</span>;</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span> </span><span class="ln"><span class="no">31</span>    <span class="k">private</span> <span class="k">double</span>[] toWorld(<span class="k">double</span> u, <span class="k">double</span> v) {</span><span class="ln"><span class="no">32</span>        <span class="c">// 正方形里的相对坐标 (u,v) 放大 r 倍再平移到圆心</span></span><span class="ln"><span class="no">33</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">double</span>[]{xc + radius * u, yc + radius * v};</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定圆的半径和圆心的位置，实现函数 <code>randPoint</code> ，在圆中产生均匀随机点。</p>
+
+<p>实现&nbsp;<code>Solution</code>&nbsp;类:</p>
+
+<ul>
+	<li><code>Solution(double radius, double x_center, double y_center)</code>&nbsp;用圆的半径&nbsp;<code>radius</code>&nbsp;和圆心的位置<code> (x_center, y_center)</code> 初始化对象</li>
+	<li><code>randPoint()</code>&nbsp;返回圆内的一个随机点。圆周上的一点被认为在圆内。答案作为数组返回 <code>[x, y]</code> 。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入: 
+</strong>["Solution","randPoint","randPoint","randPoint"]
+[[1.0, 0.0, 0.0], [], [], []]
+<strong>输出: </strong>[null, [-0.02493, -0.38077], [0.82314, 0.38945], [0.36572, 0.17248]]
+<strong>解释:</strong>
+Solution solution = new Solution(1.0, 0.0, 0.0);
+solution.randPoint ();//返回[-0.02493，-0.38077]
+solution.randPoint ();//返回[0.82314,0.38945]
+solution.randPoint ();//返回[0.36572,0.17248]</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;&nbsp;radius &lt;= 10<sup>8</sup></code></li>
+	<li><code>-10<sup>7</sup>&nbsp;&lt;= x_center, y_center &lt;= 10<sup>7</sup></code></li>
+	<li><code>randPoint</code> 最多被调用&nbsp;<code>3 * 10<sup>4</sup></code>&nbsp;次</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private final double radius, xc, yc;", "", "    public Solution(double radius, double x_center, double y_center) {", "        this.radius = radius;", "        this.xc = x_center;", "        this.yc = y_center;", "    }", "", "    public double[] randPoint() {", "        // 拒绝采样：在外接正方形 [−r,r]² 上均匀取点，落在圆外就重取（圆周也算圆内）", "        while (true) {", "            double u = Math.random() * 2 - 1, v = Math.random() * 2 - 1;", "            if (u * u + v * v <= 1) return toWorld(u, v);", "        }", "    }", "", "    // 本地验证用：给定候选 (u,v) 序列，返回第一个落在圆内的候选映射成的点", "    double[] firstHit(double[] uv) {", "        for (int i = 0; i + 1 < uv.length; i += 2) {", "            double u = uv[i], v = uv[i + 1];", "            if (inside(u, v)) return toWorld(u, v);", "        }", "        return toWorld(0, 0);   // 全被拒时兜底返回圆心（圆心必在圆内）", "    }", "", "    private boolean inside(double u, double v) {", "        return u * u + v * v <= 1;", "    }", "", "    private double[] toWorld(double u, double v) {", "        // 正方形里的相对坐标 (u,v) 放大 r 倍再平移到圆心", "        return new double[]{xc + radius * u, yc + radius * v};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 478. 在圆内随机生成点 —— 图解：复刻 Solution.java 的「拒绝采样」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { radius: 1, x: 0, y: 0, uv: [0.9, 0.8, -0.6, -0.75, 0, 0] };
+
+function trace(input) {
+  var r = input.radius, xc = input.x, yc = input.y;
+  var cands = [];
+  for (var i = 0; i + 1 < input.uv.length; i += 2) cands.push([input.uv[i], input.uv[i + 1]]);
+  var frames = [];
+
+  var WHILE = 'while (true) {';
+  var ACCEPT = 'if (u * u + v * v <= 1) return toWorld(u, v);';
+  var MAP = 'return new double[]{xc + radius * u, yc + radius * v};';
+
+  function fmt(v) {
+    var s = String(v);
+    return s.length > 9 ? s.slice(0, 7) + '…' : s;
+  }
+  // 候选序列：bad = 被拒，done = 被采用
+  function candPanel(upto, mark) {
+    var marks = {};
+    for (var j = 0; j < cands.length; j++) {
+      if (j < upto) marks[j] = 'dim';
+      else if (j === upto && mark) marks[j] = mark;
+    }
+    return Viz.cells(cands.map(function (c) { return '(' + fmt(c[0]) + ',' + fmt(c[1]) + ')'; }),
+      { title: '正方形里的候选点 (u,v)，依次试', marks: marks, hideIndex: true });
+  }
+  function varsPanel(u, v, s2, verdict, out) {
+    var items = [];
+    if (u != null) {
+      items.push({ name: '当前候选 (u, v)', v: '(' + fmt(u) + ', ' + fmt(v) + ')', cls: 'cur' });
+      items.push({ name: 'u² + v²', v: fmt(s2) });
+      items.push({ name: '≤ 1（圆内）？', v: verdict, cls: verdict === '是' ? '' : 'bad' });
+    }
+    if (out) items.push({ name: '输出点', v: '(' + fmt(out[0]) + ', ' + fmt(out[1]) + ')', cls: 'done' });
+    return Viz.vars(items);
+  }
+  function snap(at, key, upto, mark, u, v, s2, verdict, out) {
+    frames.push(Viz.frame(at, key, [candPanel(upto, mark), varsPanel(u, v, s2, verdict, out)]));
+  }
+
+  snap(WHILE, '在外接正方形 [−r,r]² 均匀撒候选，圆外就重取：撒点密度才均匀', -1, null, null, null, null, '', null);
+
+  var ans = null;
+  for (var j = 0; j < cands.length && ans === null; j++) {
+    var u = cands[j][0], v = cands[j][1];
+    var s2 = Math.round((u * u + v * v) * 1e6) / 1e6;   // 只用于展示
+    var raw = u * u + v * v;
+    if (raw <= 1) {
+      ans = [xc + r * u, yc + r * v];
+      snap(ACCEPT, '候选 ' + (j + 1) + '：u²+v² = ' + fmt(s2) + ' ≤ 1，在圆内，采用', j, 'done', u, v, s2, '是', null);
+      snap(MAP, '放大 r 倍、平移到圆心：返回 (' + fmt(ans[0]) + ', ' + fmt(ans[1]) + ')', j + 1, null, u, v, s2, '是', ans);
+    } else {
+      snap(ACCEPT, '候选 ' + (j + 1) + '：u²+v² = ' + fmt(s2) + ' > 1，圆外，拒绝重取', j, 'bad', u, v, s2, '否', null);
+    }
+  }
+  if (ans === null) {
+    ans = [xc, yc];   // 与 Java 的兜底一致：全被拒时返回圆心
+    snap(MAP, '候选全被拒：兜底返回圆心', cands.length, null, null, null, null, '', ans);
+  }
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>满足条件的子序列数目 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 682 / 1159</span>
+  <nav class="pn"><a href="0750.html">上一篇</a><a href="1334.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1498. </span>满足条件的子序列数目</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">双指针</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">二分查找</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">排序后首尾双指针：最小值 nums[l] 配得上「不超过 r」的任何最大值，中间元素任选，一次贡献 2^(r−l) 个。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>排序后枚举「子序列的最小值」：以 <code>nums[l]</code> 为最小值的合法子序列，最大值只要落在 <code>r</code> 以内即可（<code>r</code> 是最后一个满足 <code>nums[l]+nums[r] ≤ target</code> 的位置），中间元素任选，共 <code>2^(r-l)</code> 个。</li><li>双指针各走单向：<code>nums[l]+nums[r] ≤ target</code> 就结算并 <code>l++</code>，否则 <code>r--</code>；<code>r</code> 只减不增，每个子序列恰在最小元素处被数一次。</li><li><code>2^(r-l)</code> 先打表取模，答案对 <code>10^9+7</code> 取模累加。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">static</span> <span class="k">final</span> <span class="k">int</span> MOD = <span class="n">1_000_000_007</span>;</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="k">int</span> numSubseq(<span class="k">int</span>[] nums, <span class="k">int</span> target) {</span><span class="ln"><span class="no">7</span>        <span class="t">Arrays</span>.sort(nums);</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">9</span>        <span class="c">// pow2[i] = 2^i mod p：最小值定了之后，中间元素任选</span></span><span class="ln"><span class="no">10</span>        <span class="k">int</span>[] pow2 = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">11</span>        pow2[<span class="n">0</span>] = <span class="n">1</span>;</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; n; i++) pow2[i] = pow2[i - <span class="n">1</span>] * <span class="n">2</span> % MOD;</span><span class="ln"><span class="no">13</span>        <span class="k">int</span> ans = <span class="n">0</span>, l = <span class="n">0</span>, r = n - <span class="n">1</span>;</span><span class="ln"><span class="no">14</span>        <span class="k">while</span> (l &lt;= r) {</span><span class="ln"><span class="no">15</span>            <span class="c">// 最小值固定为 nums[l]：最大值只要不超 r，共 2^(r-l) 个子序列</span></span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (nums[l] + nums[r] &lt;= target) {</span><span class="ln"><span class="no">17</span>                ans = (ans + pow2[r - l]) % MOD;</span><span class="ln"><span class="no">18</span>                l++;</span><span class="ln"><span class="no">19</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">20</span>                r--;</span><span class="ln"><span class="no">21</span>            }</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> 和一个整数 <code>target</code> 。</p>
+
+<p>请你统计并返回 <code>nums</code> 中能满足其最小元素与最大元素的 <strong>和</strong> 小于或等于 <code>target</code> 的 <strong>非空</strong> 子序列的数目。</p>
+
+<p>由于答案可能很大，请将结果对<meta charset="UTF-8" />&nbsp;<code>10<sup>9</sup>&nbsp;+ 7</code>&nbsp;取余后返回。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [3,5,6,7], target = 9
+<strong>输出：</strong>4
+<strong>解释：</strong>有 4 个子序列满足该条件。
+[3] -&gt; 最小元素 + 最大元素 &lt;= target (3 + 3 &lt;= 9)
+[3,5] -&gt; (3 + 5 &lt;= 9)
+[3,5,6] -&gt; (3 + 6 &lt;= 9)
+[3,6] -&gt; (3 + 6 &lt;= 9)
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [3,3,6,8], target = 10
+<strong>输出：</strong>6
+<strong>解释：</strong>有 6 个子序列满足该条件。（nums 中可以有重复数字）
+[3] , [3] , [3,3], [3,6] , [3,6] , [3,3,6]</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [2,3,3,4,6,7], target = 12
+<strong>输出：</strong>61
+<strong>解释：</strong>共有 63 个非空子序列，其中 2 个不满足条件（[6,7], [7]）
+有效序列总数为（63 - 2 = 61）
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>1 &lt;= nums[i] &lt;= 10<sup>6</sup></code></li>
+	<li><code>1 &lt;= target &lt;= 10<sup>6</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    static final int MOD = 1_000_000_007;", "", "    public int numSubseq(int[] nums, int target) {", "        Arrays.sort(nums);", "        int n = nums.length;", "        // pow2[i] = 2^i mod p：最小值定了之后，中间元素任选", "        int[] pow2 = new int[n];", "        pow2[0] = 1;", "        for (int i = 1; i < n; i++) pow2[i] = pow2[i - 1] * 2 % MOD;", "        int ans = 0, l = 0, r = n - 1;", "        while (l <= r) {", "            // 最小值固定为 nums[l]：最大值只要不超 r，共 2^(r-l) 个子序列", "            if (nums[l] + nums[r] <= target) {", "                ans = (ans + pow2[r - l]) % MOD;", "                l++;", "            } else {", "                r--;", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1498. 满足条件的子序列数目 —— 图解：复刻 Solution.java 的「排序 + 首尾双指针 + 2^(r-l)」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [2, 3, 3, 4, 6, 7], target: 12 };
+
+function trace(input) {
+  var a = input.nums.slice().sort(function (x, y) { return x - y; });
+  var n = a.length, target = input.target;
+  var frames = [];
+  var MOD = 1000000007;
+
+  // 与 Java 相同的 2 的幂表
+  var pow2 = [1];
+  for (var i = 1; i < n; i++) pow2.push(pow2[i - 1] * 2 % MOD);
+
+  function cellsPanel(o) {
+    var marks = {}, i;
+    for (i = 0; i < n; i++) {
+      if (o.done) { if (i >= o.done[0] && i <= o.done[1]) marks[i] = 'done'; }
+      else if (i >= o.l && i <= o.r) marks[i] = 'win';
+      else if (i < o.l) marks[i] = 'dim';
+    }
+    var pointers = o.ptr ? [
+      { at: o.l, label: 'l 最小值', cls: 'p-left' },
+      { at: o.r, label: 'r 最大值', cls: 'p-right' }
+    ] : [];
+    var range = o.ptr ? { from: o.l, to: o.r, label: '中间任选' } : null;
+    return Viz.cells(a, { title: '排序后的 nums', marks: marks, pointers: pointers, range: range });
+  }
+  function varsPanel(o) {
+    var items = [{ name: 'ans（累计个数）', v: o.ans, cls: o.added != null ? 'chg' : '' }];
+    if (o.added != null) items.push({ name: '本次贡献', v: '+2^' + o.exp + '=' + o.added, cls: 'new' });
+    return Viz.vars(items);
+  }
+  function snap(at, key, cells, vars) { frames.push(Viz.frame(at, key, [cellsPanel(cells), varsPanel(vars)])); }
+
+  var ans = 0, l = 0, r = n - 1;
+  var shrank = false;
+  if (n > 0) snap('int ans = 0, l = 0, r = n - 1;',
+    '排序后首尾双指针：l 定最小值，r 是最大值上限', { l: l, r: r, ptr: true }, { ans: 0 });
+
+  while (l <= r) {
+    if (a[l] + a[r] <= target) {
+      var add = pow2[r - l];
+      ans = (ans + add) % MOD;
+      if (l === 0) snap('ans = (ans + pow2[r - l]) % MOD;',
+        '最小 ' + a[l] + ' 配最大 ' + a[r] + '：中间 ' + (r - l) + ' 个任选，贡献 2^' + (r - l) + '=' + add,
+        { l: l, r: r, ptr: true }, { ans: ans, added: add, exp: r - l });
+      if (l === 3) snap('ans = (ans + pow2[r - l]) % MOD;',
+        '最小 ' + a[l] + ' 也行：再贡献 2^' + (r - l) + '=' + add + '，共 ' + ans,
+        { l: l, r: r, ptr: true }, { ans: ans, added: add, exp: r - l });
+      if (l === r) snap('ans = (ans + pow2[r - l]) % MOD;',
+        '自己配自己 ' + a[l] + '+' + a[r] + '=' + (2 * a[l]) + '：贡献 2^0=1，收尾',
+        { l: l, r: r, ptr: true }, { ans: ans, added: add, exp: 0 });
+      l++;
+    } else {
+      if (!shrank) {
+        shrank = true;
+        snap('r--;', a[l] + '+' + a[r] + '=' + (a[l] + a[r]) + ' 超 target：最大值缩一格',
+          { l: l, r: r, ptr: true }, { ans: ans });
+      }
+      r--;
+    }
+  }
+  if (n > 0) snap('return ans;', '扫完：以每个元素为最小值的方案数加总 = ' + ans, { done: [0, n - 1] }, { ans: ans });
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最长重复子串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 200 / 1159</span>
+  <nav class="pn"><a href="0528.html">上一篇</a><a href="0344.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1044. </span>最长重复子串</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 24</li><li class="algo">二分查找</li><li class="aux">哈希表</li><li class="tag">字符串</li><li class="tag">二分查找</li><li class="tag">后缀数组</li><li class="tag">suffix-tree</li><li class="tag">滑动窗口</li><li class="tag">哈希函数</li><li class="tag">滚动哈希</li><li class="tag">boyer-moore-string-search-algorithm</li><li class="tag">z-algorithm</li><li class="tag">suffix-automaton</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">二分重复子串的长度 + 滚动哈希（Rabin-Karp）：预处理前缀哈希后每个窗口 O(1)，双哈希让碰撞几乎不可能。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>长度有单调性：长度 <code>L</code> 有重复 ⇒ <code>L−1</code> 也有（取它前缀即可），所以<strong>二分长度</strong>，对每个候选长度查一遍。</li><li>查法：所有长度为 <code>L</code> 的窗口算哈希放进哈希表，撞上即存在重复；用<strong>双哈希</strong>（两组模数同时相同才算撞上）防碰撞。</li><li>预处理前缀哈希 <code>h</code> 和 base 幂 <code>p</code>：窗口 <code>[i, i+L)</code> 的哈希 = <code>h[i+L] − h[i]·p[L]</code>，减出负数先补模数再取模。</li><li>撞上的两条记录里，先出现的那条起点就是答案子串的起点。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">long</span> BASE = <span class="n">131L</span>, MOD1 = <span class="n">1_000_000_007L</span>, MOD2 = <span class="n">998_244_353L</span>;</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="t">String</span> longestDupSubstring(<span class="t">String</span> s) {</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">8</span>        <span class="c">// 预处理前缀哈希和 base 幂：任意窗口的哈希都能 O(1) 拼出来</span></span><span class="ln"><span class="no">9</span>        <span class="k">long</span>[] h1 = <span class="k">new</span> <span class="k">long</span>[n + <span class="n">1</span>], h2 = <span class="k">new</span> <span class="k">long</span>[n + <span class="n">1</span>], p1 = <span class="k">new</span> <span class="k">long</span>[n + <span class="n">1</span>], p2 = <span class="k">new</span> <span class="k">long</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">10</span>        p1[<span class="n">0</span>] = p2[<span class="n">0</span>] = <span class="n">1</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">12</span>            h1[i + <span class="n">1</span>] = (h1[i] * BASE + s.charAt(i)) % MOD1;</span><span class="ln"><span class="no">13</span>            h2[i + <span class="n">1</span>] = (h2[i] * BASE + s.charAt(i)) % MOD2;</span><span class="ln"><span class="no">14</span>            p1[i + <span class="n">1</span>] = p1[i] * BASE % MOD1;</span><span class="ln"><span class="no">15</span>            p2[i + <span class="n">1</span>] = p2[i] * BASE % MOD2;</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="c">// 二分答案：最大的 L 使得存在出现两次的长度 L 子串</span></span><span class="ln"><span class="no">18</span>        <span class="k">int</span> lo = <span class="n">1</span>, hi = n - <span class="n">1</span>, best = <span class="n">0</span>, start = -<span class="n">1</span>;</span><span class="ln"><span class="no">19</span>        <span class="k">while</span> (lo &lt;= hi) {</span><span class="ln"><span class="no">20</span>            <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">21</span>            <span class="k">int</span> at = find(s, h1, h2, p1, p2, mid);</span><span class="ln"><span class="no">22</span>            <span class="k">if</span> (at &gt;= <span class="n">0</span>) {</span><span class="ln"><span class="no">23</span>                best = mid;</span><span class="ln"><span class="no">24</span>                start = at;</span><span class="ln"><span class="no">25</span>                lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">26</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">27</span>                hi = mid - <span class="n">1</span>;</span><span class="ln"><span class="no">28</span>            }</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> best == <span class="n">0</span> ? <span class="s">""</span> : s.substring(start, start + best);</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span> </span><span class="ln"><span class="no">33</span>    <span class="c">// 找长度 len 的重复子串：窗口哈希第一次撞上已有记录，就返回先出现的那个起点</span></span><span class="ln"><span class="no">34</span>    <span class="k">private</span> <span class="k">int</span> find(<span class="t">String</span> s, <span class="k">long</span>[] h1, <span class="k">long</span>[] h2, <span class="k">long</span>[] p1, <span class="k">long</span>[] p2, <span class="k">int</span> len) {</span><span class="ln"><span class="no">35</span>        <span class="t">Map</span>&lt;<span class="t">Long</span>, <span class="t">Integer</span>&gt; seen = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">36</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i + len &lt;= s.length(); i++) {</span><span class="ln"><span class="no">37</span>            <span class="c">// 减掉窗口左侧的高位贡献，得到 [i, i+len) 这段的哈希；减出负数先补模数</span></span><span class="ln"><span class="no">38</span>            <span class="k">long</span> k1 = (h1[i + len] - h1[i] * p1[len] % MOD1 + MOD1) % MOD1;</span><span class="ln"><span class="no">39</span>            <span class="k">long</span> k2 = (h2[i + len] - h2[i] * p2[len] % MOD2 + MOD2) % MOD2;</span><span class="ln"><span class="no">40</span>            <span class="t">Integer</span> prev = seen.putIfAbsent(k1 * MOD2 + k2, i);</span><span class="ln"><span class="no">41</span>            <span class="k">if</span> (prev != <span class="k">null</span>) <span class="k">return</span> prev;</span><span class="ln"><span class="no">42</span>        }</span><span class="ln"><span class="no">43</span>        <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">44</span>    }</span><span class="ln"><span class="no">45</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串 <code>s</code> ，考虑其所有 <em>重复子串</em> ：即&nbsp;<code>s</code> 的（连续）子串，在 <code>s</code> 中出现 2 次或更多次。这些出现之间可能存在重叠。</p>
+
+<p>返回 <strong>任意一个</strong> 可能具有最长长度的重复子串。如果 <code>s</code> 不含重复子串，那么答案为 <code>""</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "banana"
+<strong>输出：</strong>"ana"
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "abcd"
+<strong>输出：</strong>""
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= s.length &lt;= 3 * 10<sup>4</sup></code></li>
+	<li><code>s</code> 由小写英文字母组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private static final long BASE = 131L, MOD1 = 1_000_000_007L, MOD2 = 998_244_353L;", "", "    public String longestDupSubstring(String s) {", "        int n = s.length();", "        // 预处理前缀哈希和 base 幂：任意窗口的哈希都能 O(1) 拼出来", "        long[] h1 = new long[n + 1], h2 = new long[n + 1], p1 = new long[n + 1], p2 = new long[n + 1];", "        p1[0] = p2[0] = 1;", "        for (int i = 0; i < n; i++) {", "            h1[i + 1] = (h1[i] * BASE + s.charAt(i)) % MOD1;", "            h2[i + 1] = (h2[i] * BASE + s.charAt(i)) % MOD2;", "            p1[i + 1] = p1[i] * BASE % MOD1;", "            p2[i + 1] = p2[i] * BASE % MOD2;", "        }", "        // 二分答案：最大的 L 使得存在出现两次的长度 L 子串", "        int lo = 1, hi = n - 1, best = 0, start = -1;", "        while (lo <= hi) {", "            int mid = (lo + hi) >>> 1;", "            int at = find(s, h1, h2, p1, p2, mid);", "            if (at >= 0) {", "                best = mid;", "                start = at;", "                lo = mid + 1;", "            } else {", "                hi = mid - 1;", "            }", "        }", "        return best == 0 ? \"\" : s.substring(start, start + best);", "    }", "", "    // 找长度 len 的重复子串：窗口哈希第一次撞上已有记录，就返回先出现的那个起点", "    private int find(String s, long[] h1, long[] h2, long[] p1, long[] p2, int len) {", "        Map<Long, Integer> seen = new HashMap<>();", "        for (int i = 0; i + len <= s.length(); i++) {", "            // 减掉窗口左侧的高位贡献，得到 [i, i+len) 这段的哈希；减出负数先补模数", "            long k1 = (h1[i + len] - h1[i] * p1[len] % MOD1 + MOD1) % MOD1;", "            long k2 = (h2[i + len] - h2[i] * p2[len] % MOD2 + MOD2) % MOD2;", "            Integer prev = seen.putIfAbsent(k1 * MOD2 + k2, i);", "            if (prev != null) return prev;", "        }", "        return -1;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1044. 最长重复子串 —— 图解：复刻 Solution.java 的「二分长度 + 滚动哈希」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 哈希运算用 BigInt 精确复刻 Java long 的取模算术，保证与 Java 完全同一套哈希值。
+
+var STORY_INPUT = { s: 'banana' };
+
+function trace(input) {
+  var s = input.s, n = s.length;
+  var BASE = 131n, MOD1 = 1000000007n, MOD2 = 998244353n;
+  var frames = [];
+
+  var h1 = [0n], h2 = [0n], p1 = [1n], p2 = [1n];
+  for (var i = 0; i < n; i++) {
+    var c = BigInt(s.charCodeAt(i));
+    h1.push((h1[i] * BASE + c) % MOD1);
+    h2.push((h2[i] * BASE + c) % MOD2);
+    p1.push(p1[i] * BASE % MOD1);
+    p2.push(p2[i] * BASE % MOD2);
+  }
+
+  function strPanel(o) {
+    var marks = {};
+    if (o && o.win) for (var w = o.win[0]; w < o.win[1]; w++) marks[w] = 'win';
+    if (o && o.cur) for (var u = o.cur[0]; u < o.cur[1]; u++) marks[u] = 'cur';
+    if (o && o.done) for (var d = o.done[0]; d < o.done[1]; d++) marks[d] = 'done';
+    return Viz.cells(s.split(''), { title: 's', marks: marks });
+  }
+  function hashPanel(rows) {
+    return Viz.table('长度为 L 的窗口哈希（k1=模 MOD1，k2=模 MOD2）', rows, { hint: '两个模数都相同才算撞上' });
+  }
+  function varsPanel(extra) {
+    return Viz.vars(extra || []);
+  }
+
+  // 某个长度的 find：返回 { hit, prev, rows }；rows 是撞上之前进表的窗口
+  function find(len) {
+    var seen = {}, rows = [], hit = -1, prev = -1;
+    for (var i = 0; i + len <= n; i++) {
+      var k1 = (h1[i + len] - h1[i] * p1[len] % MOD1 + MOD1) % MOD1;
+      var k2 = (h2[i + len] - h2[i] * p2[len] % MOD2 + MOD2) % MOD2;
+      var key = k1 + ',' + k2;
+      if (key in seen) { hit = i; prev = seen[key]; break; }
+      seen[key] = i;
+      rows.push({ k: s.slice(i, i + len), v: k1 + ' / ' + k2, cls: '' });
+    }
+    if (hit >= 0) rows.push({ k: s.slice(hit, hit + len), v: (function (i) {
+      var a = (h1[i + len] - h1[i] * p1[len] % MOD1 + MOD1) % MOD1;
+      var b = (h2[i + len] - h2[i] * p2[len] % MOD2 + MOD2) % MOD2;
+      return a + ' / ' + b;
+    })(hit), cls: 'hit' });
+    return { hit: hit, prev: prev, rows: rows };
+  }
+
+  var best = 0, start = -1;
+  var lo = 1, hi = n - 1;
+  var midShown = false, hitShown = false, failShown = false;
+  while (lo <= hi) {
+    var mid = (lo + hi) >> 1;
+    if (!midShown) {
+      midShown = true;
+      frames.push(Viz.frame('int mid = (lo + hi) >>> 1;',
+        '二分猜长度：先试 mid=' + mid + '，查有没有重复的 ' + mid + ' 长子串',
+        [strPanel({}), varsPanel([{ name: 'lo', v: lo }, { name: 'hi', v: hi }, { name: 'mid', v: mid }])]));
+    }
+    var res = find(mid);
+    if (res.hit >= 0) {
+      if (!hitShown) {
+        hitShown = true;
+        frames.push(Viz.frame('Integer prev = seen.putIfAbsent(k1 * MOD2 + k2, i);',
+          '窗口 ' + s.slice(res.hit, res.hit + mid) + ' 的哈希在 i=' + res.prev + ' 已进过表：撞上了，长度 ' + mid + ' 可行',
+          [strPanel({ win: [res.prev, res.prev + mid], cur: [res.hit, res.hit + mid] }), hashPanel(res.rows),
+            varsPanel([{ name: 'L', v: mid }, { name: '结论', v: '可行，lo 右移', cls: 'chg' }])]));
+      }
+      best = mid;
+      start = res.hit;
+      lo = mid + 1;
+    } else {
+      if (!failShown) {
+        failShown = true;
+        frames.push(Viz.frame('return -1;',
+          '长度 ' + mid + ' 的 ' + res.rows.length + ' 个窗口哈希互不相同：不可行，hi 收缩',
+          [strPanel({}), hashPanel(res.rows), varsPanel([{ name: 'L', v: mid }, { name: '结论', v: '不可行，hi 左移', cls: 'bad' }])]));
+      }
+      hi = mid - 1;
+    }
+  }
+
+  frames.push(Viz.frame('return best == 0 ? "" : s.substring(start, start + best);',
+    best === 0 ? '没有重复子串，返回空串' : '最长重复子串 = ' + s.slice(start, start + best) + '（长 ' + best + '）',
+    [strPanel({ done: best > 0 ? [start, start + best] : null }),
+      varsPanel([{ name: 'best', v: best, cls: best > 0 ? 'chg' : '' }, { name: 'start', v: start }])]));
+
+  return { frames: frames, result: best === 0 ? '' : s.slice(start, start + best) };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

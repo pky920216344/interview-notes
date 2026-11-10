@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>不同的子序列 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 514 / 1159</span>
+  <nav class="pn"><a href="offer-67.html">上一篇</a><a href="0341.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">940. </span>不同的子序列 II</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 4</li><li class="algo">动态规划</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">end[c] 记以字符 c 结尾的子序列数；扫到 c 先加 total+1 个新的，再扣掉上次以 c 结尾的重复部分。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>end[c]</code>：以字符 <code>c</code> 结尾的不同子序列个数；<code>total</code>：当前不同非空子序列总数。</li><li>扫到 <code>c</code>：已有每个子序列（含空串，共 <code>total + 1</code> 个）接上 <code>c</code> 都成新子序列，记 <code>add = total + 1</code>。</li><li>但「上次以 <code>c</code> 结尾」的那批上次已经生成过，必须扣 <code>end[c]</code>：<code>total += add − end[c]</code>，再把 <code>end[c]</code> 更新为 <code>add</code>。</li><li>结果可能为负先 <code>+ MOD</code> 再取模；全程 <code>long</code> 防溢出，只加法不乘法。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(26)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> distinctSubseqII(<span class="t">String</span> s) {</span><span class="ln"><span class="no">3</span>        <span class="k">long</span>[] end = <span class="k">new</span> <span class="k">long</span>[<span class="n">26</span>];   <span class="c">// end[c]：以字符 c 结尾的不同子序列个数</span></span><span class="ln"><span class="no">4</span>        <span class="k">long</span> total = <span class="n">0</span>, MOD = <span class="n">1_000_000_007</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) {</span><span class="ln"><span class="no">6</span>            <span class="k">int</span> c = s.charAt(i) - <span class="s">'a'</span>;</span><span class="ln"><span class="no">7</span>            <span class="k">long</span> add = total + <span class="n">1</span>;    <span class="c">// 把 c 接到所有已有子序列（含空串）后面</span></span><span class="ln"><span class="no">8</span>            <span class="c">// 上次以 c 结尾的子序列这次又生成了一遍，扣掉；先 +MOD 防负</span></span><span class="ln"><span class="no">9</span>            total = (total + add - end[c] + MOD) % MOD;</span><span class="ln"><span class="no">10</span>            end[c] = add;</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="k">return</span> (<span class="k">int</span>) total;</span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个字符串 <code>s</code>，计算 <code>s</code> 的 <strong>不同非空子序列</strong> 的个数。因为结果可能很大，所以返回答案需要对<strong><code>10^9 + 7</code> 取余</strong> 。</p>
+
+<p>字符串的 <strong>子序列</strong> 是经由原字符串删除一些（也可能不删除）字符但不改变剩余字符相对位置的一个新字符串。</p>
+
+<ul>
+	<li>例如，<code>"ace"</code> 是 <code>"<em><strong>a</strong></em>b<em><strong>c</strong></em>d<em><strong>e</strong></em>"</code> 的一个子序列，但 <code>"aec"</code> 不是。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "abc"
+<strong>输出：</strong>7
+<strong>解释：</strong>7 个不同的子序列分别是 "a", "b", "c", "ab", "ac", "bc", 以及 "abc"。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "aba"
+<strong>输出：</strong>6
+<strong>解释：</strong>6 个不同的子序列分别是 "a", "b", "ab", "ba", "aa" 以及 "aba"。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "aaa"
+<strong>输出：</strong>3
+<strong>解释：</strong>3 个不同的子序列分别是 "a", "aa" 以及 "aaa"。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 2000</code></li>
+	<li><code>s</code> 仅由小写英文字母组成</li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int distinctSubseqII(String s) {", "        long[] end = new long[26];   // end[c]：以字符 c 结尾的不同子序列个数", "        long total = 0, MOD = 1_000_000_007;", "        for (int i = 0; i < s.length(); i++) {", "            int c = s.charAt(i) - 'a';", "            long add = total + 1;    // 把 c 接到所有已有子序列（含空串）后面", "            // 上次以 c 结尾的子序列这次又生成了一遍，扣掉；先 +MOD 防负", "            total = (total + add - end[c] + MOD) % MOD;", "            end[c] = add;", "        }", "        return (int) total;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 940. 不同的子序列 II —— 图解：end[c] 扣重复，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'aba' };
+
+function trace(input) {
+  var s = input.s;
+  var MOD = 1000000007;
+  var frames = [];
+  var INIT = 'long[] end = new long[26];';
+  var ADDL = 'long add = total + 1;';
+  var UPD = 'total = (total + add - end[c] + MOD) % MOD;';
+  var RET = 'return (int) total;';
+
+  var end = {};    // 字符 -> 以它结尾的不同子序列数（对应 Java 的 end[c]）
+  var order = [];  // 出现过的字符，按首次出现顺序
+  var total = 0;
+
+  function tablePanel(curCh) {
+    var rows = order.map(function (ch) {
+      return { k: '以「' + ch + '」结尾', v: String(end[ch]), cls: ch === curCh ? 'hit' : '' };
+    });
+    return Viz.table('end[c]：以 c 结尾的不同子序列数', rows, { hint: '（没出现过就是 0）' });
+  }
+  function varsPanel(add, sub) {
+    var items = [{ name: 'total', v: String(total) }];
+    if (add != null) items.push({ name: 'add（新增）', v: String(add) });
+    if (sub != null) items.push({ name: '扣掉重复', v: String(sub) });
+    return Viz.vars(items);
+  }
+
+  // 真跑一遍算法，记下每个字符的快照
+  var snaps = [];
+  for (var i = 0; i < s.length; i++) {
+    var c = s.charAt(i);
+    if (!(c in end)) { end[c] = 0; order.push(c); }
+    var add = (total + 1) % MOD;
+    var dup = end[c];
+    total = ((total + add - dup) % MOD + MOD) % MOD;
+    end[c] = add;
+    snaps.push({ c: c, add: add, dup: dup, total: total });
+  }
+
+  frames.push(Viz.frame(INIT, 'end[c]：以 c 结尾的子序列数，初始全 0，total = 0',
+    [tablePanel(null), varsPanel(null, null)]));
+  if (snaps.length) {
+    var first = snaps[0];
+    frames.push(Viz.frame(ADDL, '读「' + first.c + '」：已有子序列接上它，共新增 ' + first.add + ' 个（含它单独一个）',
+      [tablePanel(first.c), varsPanel(first.add, first.dup)]));
+    var mid = null;
+    for (i = 1; i < snaps.length; i++) if (snaps[i].c !== first.c) { mid = snaps[i]; break; }
+    if (mid === null && snaps.length > 1) mid = snaps[1];
+    if (mid) {
+      frames.push(Viz.frame(ADDL, '读「' + mid.c + '」：又新增 ' + mid.add + ' 个，total = ' + mid.total,
+        [tablePanel(mid.c), varsPanel(mid.add, mid.dup)]));
+    }
+    var last = snaps[snaps.length - 1];
+    if (last !== first && last !== mid) {
+      frames.push(Viz.frame(UPD, '读「' + last.c + '」：新增 ' + last.add + ' 个，扣掉上次以「' + last.c + '」结尾的 ' + last.dup + ' 个',
+        [tablePanel(last.c), varsPanel(last.add, last.dup)]));
+    }
+  }
+  frames.push(Viz.frame(RET, '扫完：s 共有 ' + total + ' 个不同非空子序列',
+    [tablePanel(null), varsPanel(null, null)]));
+
+  return { frames: frames, result: total };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

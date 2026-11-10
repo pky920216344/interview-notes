@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>两数相除 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 303 / 1159</span>
+  <nav class="pn"><a href="offer-35.html">上一篇</a><a href="0628.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">29. </span>两数相除</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 13</li><li class="algo">位运算</li><li class="tag">位运算</li><li class="tag">数学</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">全部转成负数后用倍增减：每次减掉「除数的 2^k 倍」，商一次加 2^k；不能用乘除取余。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><strong>特判</strong>：<code>MIN / -1 = +2^31</code> 会溢出，直接返回 <code>MAX_VALUE</code>；除数是 <code>±1</code> 时商就是被除数本身（或取反），提前返回，防止后面 <code>cnt</code> 翻到 <code>2^31</code>。</li><li><strong>统一转负</strong>：负数域比正数域多 1，取 <code>abs</code> 反而会溢出；符号用异或记下来，最后再翻回去。</li><li><strong>倍增</strong>：<code>tmp</code> 从除数开始不停翻倍（<code>cnt</code> 同步翻），翻到再翻一次就大过被除数为止；减掉这一大块，商加 <code>cnt</code>。用 <code>tmp &gt;= dividend - tmp</code> 做减法比较，避免 <code>tmp + tmp</code> 溢出。</li><li>商向零截断 = 对绝对值向下取整，天然成立。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> divide(<span class="k">int</span> dividend, <span class="k">int</span> divisor) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 唯一会溢出的商：-2^31 / -1 = +2^31，按题意返回 int 最大值</span></span><span class="ln"><span class="no">4</span>        <span class="k">if</span> (dividend == <span class="t">Integer</span>.MIN_VALUE &amp;&amp; divisor == -<span class="n">1</span>) <span class="k">return</span> <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">5</span>        <span class="c">// 除数为 ±1：商就是被除数（取反），提前返回防溢出</span></span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (divisor == <span class="n">1</span>) <span class="k">return</span> dividend;</span><span class="ln"><span class="no">7</span>        <span class="k">if</span> (divisor == -<span class="n">1</span>) <span class="k">return</span> -dividend;</span><span class="ln"><span class="no">8</span>        <span class="c">// 统一转成负数再算：负数域比正数域大 1，取 abs 反而会溢出</span></span><span class="ln"><span class="no">9</span>        <span class="k">boolean</span> neg = (dividend &lt; <span class="n">0</span>) != (divisor &lt; <span class="n">0</span>);</span><span class="ln"><span class="no">10</span>        <span class="k">if</span> (dividend &gt; <span class="n">0</span>) dividend = -dividend;</span><span class="ln"><span class="no">11</span>        <span class="k">if</span> (divisor &gt; <span class="n">0</span>) divisor = -divisor;</span><span class="ln"><span class="no">12</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">13</span>        <span class="c">// 倍增：一次减掉「除数的 2^k 倍」，商一次加上 2^k</span></span><span class="ln"><span class="no">14</span>        <span class="k">while</span> (dividend &lt;= divisor) {</span><span class="ln"><span class="no">15</span>            <span class="k">int</span> tmp = divisor, cnt = <span class="n">1</span>;</span><span class="ln"><span class="no">16</span>            <span class="c">// 减法比较防溢出：等价于「翻倍后仍不超过被除数」</span></span><span class="ln"><span class="no">17</span>            <span class="k">while</span> (tmp &gt;= dividend - tmp) {</span><span class="ln"><span class="no">18</span>                tmp += tmp;</span><span class="ln"><span class="no">19</span>                cnt += cnt;</span><span class="ln"><span class="no">20</span>            }</span><span class="ln"><span class="no">21</span>            dividend -= tmp;</span><span class="ln"><span class="no">22</span>            ans += cnt;</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> neg ? -ans : ans;</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你两个整数，被除数&nbsp;<code>dividend</code>&nbsp;和除数&nbsp;<code>divisor</code>。将两数相除，要求 <strong>不使用</strong> 乘法、除法和取余运算。</p>
+
+<p>整数除法应该向零截断，也就是截去（<code>truncate</code>）其小数部分。例如，<code>8.345</code> 将被截断为 <code>8</code> ，<code>-2.7335</code> 将被截断至 <code>-2</code> 。</p>
+
+<p>返回被除数&nbsp;<code>dividend</code>&nbsp;除以除数&nbsp;<code>divisor</code>&nbsp;得到的 <strong>商</strong> 。</p>
+
+<p><strong>注意：</strong>假设我们的环境只能存储 <strong>32 位</strong> 有符号整数，其数值范围是 <code>[−2<sup>31</sup>,&nbsp; 2<sup>31&nbsp;</sup>− 1]</code> 。本题中，如果商 <strong>严格大于</strong> <code>2<sup>31&nbsp;</sup>− 1</code> ，则返回 <code>2<sup>31&nbsp;</sup>− 1</code> ；如果商 <strong>严格小于</strong> <code>-2<sup>31</sup></code> ，则返回 <code>-2<sup>31</sup></code><sup> </sup>。</p>
+
+
+
+<p><strong>示例&nbsp;1:</strong></p>
+
+<pre>
+<strong>输入:</strong> dividend = 10, divisor = 3
+<strong>输出:</strong> 3
+<strong>解释: </strong>10/3 = 3.33333.. ，向零截断后得到 3 。</pre>
+
+<p><strong>示例&nbsp;2:</strong></p>
+
+<pre>
+<strong>输入:</strong> dividend = 7, divisor = -3
+<strong>输出:</strong> -2
+<strong>解释:</strong> 7/-3 = -2.33333.. ，向零截断后得到 -2 。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>-2<sup>31</sup> &lt;= dividend, divisor &lt;= 2<sup>31</sup> - 1</code></li>
+	<li><code>divisor != 0</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int divide(int dividend, int divisor) {", "        // 唯一会溢出的商：-2^31 / -1 = +2^31，按题意返回 int 最大值", "        if (dividend == Integer.MIN_VALUE && divisor == -1) return Integer.MAX_VALUE;", "        // 除数为 ±1：商就是被除数（取反），提前返回防溢出", "        if (divisor == 1) return dividend;", "        if (divisor == -1) return -dividend;", "        // 统一转成负数再算：负数域比正数域大 1，取 abs 反而会溢出", "        boolean neg = (dividend < 0) != (divisor < 0);", "        if (dividend > 0) dividend = -dividend;", "        if (divisor > 0) divisor = -divisor;", "        int ans = 0;", "        // 倍增：一次减掉「除数的 2^k 倍」，商一次加上 2^k", "        while (dividend <= divisor) {", "            int tmp = divisor, cnt = 1;", "            // 减法比较防溢出：等价于「翻倍后仍不超过被除数」", "            while (tmp >= dividend - tmp) {", "                tmp += tmp;", "                cnt += cnt;", "            }", "            dividend -= tmp;", "            ans += cnt;", "        }", "        return neg ? -ans : ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 29. 两数相除 —— 图解：复刻 Solution.java 的「转负 + 倍增减」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { dividend: 10, divisor: 3 };
+
+function trace(input) {
+  var frames = [];
+  var NEG = 'if (dividend > 0) dividend = -dividend;';
+  var DBL = 'cnt += cnt;';
+  var SUB = 'dividend -= tmp;';
+  var RET = 'return neg ? -ans : ans;';
+
+  var dividend = input.dividend, divisor = input.divisor;
+
+  // 与 Solution 相同的三个特判
+  if (dividend === -2147483648 && divisor === -1) return { frames: [], result: 2147483647 };
+  if (divisor === 1) return { frames: [], result: dividend };
+  if (divisor === -1) return { frames: [], result: -dividend };
+
+  var orig = dividend;
+  var neg = (dividend < 0) !== (divisor < 0);
+  if (dividend > 0) dividend = -dividend;
+  if (divisor > 0) divisor = -divisor;
+
+  var total = -dividend;            // 被除数的绝对值
+  var showStrip = total >= 1 && total <= 60;
+  var firedDbl = false, firedSub = 0;
+
+  // 格子条：一共 total 格，前 total-余量 格已经被减掉
+  function stripPanel() {
+    if (!showStrip) return null;
+    var marks = {};
+    var gone = total + dividend;    // 已减掉的格数（dividend 是剩下的负数）
+    for (var k = 0; k < total; k++) marks[k] = k < gone ? 'dim' : 'win';
+    return Viz.cells(new Array(total).fill(1), { title: '被除数 ' + total + '（灰色 = 已减掉）', marks: marks, hideIndex: true });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+  function push(at, key, vars) {
+    var panels = [];
+    var s = stripPanel();
+    if (s) panels.push(s);
+    panels.push(varsPanel(vars));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  push(NEG, '统一转成负数算：' + orig + ' → ' + dividend + '，' + divisor + ' → ' + divisor,
+    [{ name: 'dividend', v: dividend, cls: 'chg' }, { name: 'divisor', v: divisor, cls: 'chg' },
+     { name: 'neg（最后定符号用）', v: neg }]);
+
+  var ans = 0;
+  while (dividend <= divisor) {
+    var tmp = divisor, cnt = 1;
+    while (tmp >= dividend - tmp) {
+      tmp += tmp;
+      cnt += cnt;
+      if (!firedDbl) {
+        firedDbl = true;
+        push(DBL, '倍增：tmp=' + tmp + '（除数的 ' + cnt + ' 倍），一次能减掉一大块',
+          [{ name: 'tmp（能减的块）', v: tmp, cls: 'chg' }, { name: 'cnt（对应商）', v: cnt, cls: 'chg' },
+           { name: 'ans', v: ans }]);
+      }
+    }
+    dividend -= tmp;
+    ans += cnt;
+    firedSub++;
+    if (firedSub <= 2) {
+      push(SUB, '减掉 ' + tmp + '（= 除数 × ' + cnt + '），商 +' + cnt + '=' + ans + '，被除数还剩 ' + dividend,
+        [{ name: '减掉的块', v: tmp }, { name: 'cnt', v: cnt },
+         { name: 'ans', v: ans, cls: 'chg' }, { name: 'dividend 剩', v: dividend, cls: 'chg' }]);
+    }
+  }
+
+  var out = neg ? -ans : ans;
+  push(RET, '剩下的不够再减一次除数，停；按符号返回 ' + out,
+    [{ name: 'ans', v: ans }, { name: 'neg', v: neg }, { name: '返回', v: out, cls: 'chg' }]);
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

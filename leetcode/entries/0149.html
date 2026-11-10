@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>直线上最多的点数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 352 / 1159</span>
+  <nav class="pn"><a href="0907.html">上一篇</a><a href="0429.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">149. </span>直线上最多的点数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 11</li><li class="algo">数学</li><li class="aux">哈希表</li><li class="tag">几何</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">数学</li><li class="tag">greatest-common-divisor</li><li class="tag">euclidean-algorithm</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">每个点当锚点：其余点相对它的方向 (dx,dy) 约分成最简分数并统一符号后计数，同方向最多者 + 锚点即答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>两点定一线：固定锚点后，同一直线上的点相对锚点的 <strong>(dx, dy) 方向相同</strong>——按方向计数即可，不用算斜率浮点。</li><li>方向约分：除以 <code>gcd(|dx|,|dy|)</code>，再统一符号（<code>dx&gt;0</code>，<code>dx==0</code> 时 <code>dy&gt;0</code>），同一直线只留一种写法；编码成 long 当哈希键。</li><li>只看 <code>j &gt; i</code> 的点：最长线在「线上下标最小的锚点」处取到全局最大；重合点 <code>dup</code> 对每个方向都 +1。</li><li>答案 = <code>best + dup + 1</code>（锚点自己）；单点答案为 1。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> maxPoints(<span class="k">int</span>[][] points) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = points.length, ans = <span class="n">1</span>;</span><span class="ln"><span class="no">6</span>        <span class="c">// 每个点当锚点：同一直线上的点相对锚点的方向（最简分数 dx:dy）相同</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">8</span>            <span class="t">Map</span>&lt;<span class="t">Long</span>, <span class="t">Integer</span>&gt; cnt = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>            <span class="k">int</span> dup = <span class="n">0</span>, best = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> j = i + <span class="n">1</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">11</span>                <span class="k">int</span> dx = points[j][<span class="n">0</span>] - points[i][<span class="n">0</span>], dy = points[j][<span class="n">1</span>] - points[i][<span class="n">1</span>];</span><span class="ln"><span class="no">12</span>                <span class="k">if</span> (dx == <span class="n">0</span> &amp;&amp; dy == <span class="n">0</span>) { dup++; <span class="k">continue</span>; }   <span class="c">// 重合点跟哪个方向都算同线</span></span><span class="ln"><span class="no">13</span>                <span class="k">int</span> g = gcd(<span class="t">Math</span>.abs(dx), <span class="t">Math</span>.abs(dy));</span><span class="ln"><span class="no">14</span>                dx /= g; dy /= g;</span><span class="ln"><span class="no">15</span>                <span class="c">// 符号归一：dx&gt;0；dx==0 时统一 dy&gt;0，同一直线只留一种写法</span></span><span class="ln"><span class="no">16</span>                <span class="k">if</span> (dx &lt; <span class="n">0</span> || (dx == <span class="n">0</span> &amp;&amp; dy &lt; <span class="n">0</span>)) { dx = -dx; dy = -dy; }</span><span class="ln"><span class="no">17</span>                <span class="k">long</span> key = (<span class="k">long</span>) dy * <span class="n">20001</span> + dx;   <span class="c">// |dx|,|dy| ≤ 2e4，编码成唯一 long</span></span><span class="ln"><span class="no">18</span>                <span class="k">int</span> c = cnt.merge(key, <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">19</span>                best = <span class="t">Math</span>.max(best, c);</span><span class="ln"><span class="no">20</span>            }</span><span class="ln"><span class="no">21</span>            <span class="c">// 锚点自己 + 重合点 + 最多同方向的点数</span></span><span class="ln"><span class="no">22</span>            ans = <span class="t">Math</span>.max(ans, best + dup + <span class="n">1</span>);</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span> </span><span class="ln"><span class="no">27</span>    <span class="k">private</span> <span class="k">int</span> gcd(<span class="k">int</span> a, <span class="k">int</span> b) { <span class="k">return</span> b == <span class="n">0</span> ? a : gcd(b, a % b); }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个数组 <code>points</code> ，其中 <code>points[i] = [x<sub>i</sub>, y<sub>i</sub>]</code> 表示 <strong>X-Y</strong> 平面上的一个点。求最多有多少个点在同一条直线上。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/f2f9fe06da67.jpg" style="width: 300px; height: 294px;" />
+<pre>
+<strong>输入：</strong>points = [[1,1],[2,2],[3,3]]
+<strong>输出：</strong>3
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/21cc4c3913e5.jpg" style="width: 300px; height: 294px;" />
+<pre>
+<strong>输入：</strong>points = [[1,1],[3,2],[5,3],[4,1],[2,3],[1,4]]
+<strong>输出：</strong>4
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= points.length <= 300</code></li>
+	<li><code>points[i].length == 2</code></li>
+	<li><code>-10<sup>4</sup> <= x<sub>i</sub>, y<sub>i</sub> <= 10<sup>4</sup></code></li>
+	<li><code>points</code> 中的所有点 <strong>互不相同</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int maxPoints(int[][] points) {", "        int n = points.length, ans = 1;", "        // 每个点当锚点：同一直线上的点相对锚点的方向（最简分数 dx:dy）相同", "        for (int i = 0; i < n; i++) {", "            Map<Long, Integer> cnt = new HashMap<>();", "            int dup = 0, best = 0;", "            for (int j = i + 1; j < n; j++) {", "                int dx = points[j][0] - points[i][0], dy = points[j][1] - points[i][1];", "                if (dx == 0 && dy == 0) { dup++; continue; }   // 重合点跟哪个方向都算同线", "                int g = gcd(Math.abs(dx), Math.abs(dy));", "                dx /= g; dy /= g;", "                // 符号归一：dx>0；dx==0 时统一 dy>0，同一直线只留一种写法", "                if (dx < 0 || (dx == 0 && dy < 0)) { dx = -dx; dy = -dy; }", "                long key = (long) dy * 20001 + dx;   // |dx|,|dy| ≤ 2e4，编码成唯一 long", "                int c = cnt.merge(key, 1, Integer::sum);", "                best = Math.max(best, c);", "            }", "            // 锚点自己 + 重合点 + 最多同方向的点数", "            ans = Math.max(ans, best + dup + 1);", "        }", "        return ans;", "    }", "", "    private int gcd(int a, int b) { return b == 0 ? a : gcd(b, a % b); }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 149. 直线上最多的点数 —— 图解：复刻 Solution.java 的「锚点 + 方向约分计数」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { points: [[1, 1], [2, 2], [3, 3], [1, 2]] };
+
+function trace(input) {
+  var points = input.points, n = points.length;
+  var frames = [];
+  var fired = { dxdy: false, sign: false, dup: false, best: false };
+
+  function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+  function dirOf(j, i) {   // 点 j 相对锚点 i 的方向：约分成最简分数并统一符号
+    var dx = points[j][0] - points[i][0], dy = points[j][1] - points[i][1];
+    var g = gcd(Math.abs(dx), Math.abs(dy));
+    dx /= g; dy /= g;
+    if (dx < 0 || (dx === 0 && dy < 0)) { dx = -dx; dy = -dy; }
+    return dx + '/' + dy;
+  }
+
+  // 把点画在小坐标格上：行 = y 从大到小，列 = x 从小到大，四周留一圈空白
+  var xmin = 1e9, xmax = -1e9, ymin = 1e9, ymax = -1e9;
+  for (var p = 0; p < n; p++) {
+    xmin = Math.min(xmin, points[p][0]); xmax = Math.max(xmax, points[p][0]);
+    ymin = Math.min(ymin, points[p][1]); ymax = Math.max(ymax, points[p][1]);
+  }
+  var x0 = xmin - 1, x1 = xmax + 1, y0 = ymin - 1, y1 = ymax + 1;
+  var colLabels = [], rowLabels = [];
+  for (var x = x0; x <= x1; x++) colLabels.push(String(x));
+  for (var y = y1; y >= y0; y--) rowLabels.push(String(y));
+  function cellOf(pt) { return (y1 - pt[1]) + ',' + (pt[0] - x0); }
+
+  function gridPanel(marks) {
+    var rows = [];
+    for (var yy = y1; yy >= y0; yy--) {
+      var row = [];
+      for (var xx = x0; xx <= x1; xx++) row.push('·');
+      rows.push(row);
+    }
+    for (var k = 0; k < n; k++) rows[y1 - points[k][1]][points[k][0] - x0] = String(k);
+    return Viz.grid(rows, {
+      title: '坐标格（数字 = 点的下标）', marks: marks || {},
+      rowLabels: rowLabels, colLabels: colLabels, corner: 'y＼x'
+    });
+  }
+  function cntPanel(cnt, order, hitKey, newKey) {
+    return Viz.table('方向 (dx/dy) → 点数', order.map(function (key) {
+      return { k: key, v: String(cnt[key]), cls: key === hitKey ? 'hit' : (key === newKey ? 'new' : '') };
+    }), { hint: '（约分并统一符号后的方向）' });
+  }
+  function varsPanel(best, emph) {
+    var items = [];
+    if (best != null) items.push({ name: 'best', v: best, cls: emph ? 'chg' : '' });
+    items.push({ name: 'ans', v: ans });
+    return Viz.vars(items);
+  }
+
+  var ans = 1;
+  for (var i = 0; i < n; i++) {
+    var cnt = {}, order = {}, mates = {};
+    var dup = 0, best = 0, bestKey = null;
+    for (var j = i + 1; j < n; j++) {
+      var dx = points[j][0] - points[i][0], dy = points[j][1] - points[i][1];
+      if (dx === 0 && dy === 0) { dup++; continue; }
+      if (!fired.dxdy) {
+        fired.dxdy = true;
+        var mk = {};
+        mk[cellOf(points[i])] = 'cur';
+        mk[cellOf(points[j])] = 'win';
+        frames.push(Viz.frame('int dx = points[j][0] - points[i][0], dy = points[j][1] - points[i][1];',
+          '锚定第 ' + i + ' 个点：每个后续点相对它的 (dx, dy) 决定是否同线',
+          [gridPanel(mk), varsPanel(null)]));
+      }
+      if (!fired.sign) {
+        fired.sign = true;
+        var mk2 = {};
+        mk2[cellOf(points[i])] = 'cur';
+        mk2[cellOf(points[j])] = 'win';
+        frames.push(Viz.frame('if (dx < 0 || (dx == 0 && dy < 0)) { dx = -dx; dy = -dy; }',
+          '约分成最简分数并统一符号（dx>0）：同一直线的方向写法才唯一',
+          [gridPanel(mk2), cntPanel(cnt, [], null, null)]));
+      }
+      var key = dirOf(j, i);
+      if (cnt[key] === undefined) { cnt[key] = 0; order[key] = true; mates[key] = []; }
+      cnt[key]++;
+      mates[key].push(j);
+      if (cnt[key] > best) { best = cnt[key]; bestKey = key; }
+      if (best >= 2 && !fired.dup) {
+        fired.dup = true;
+        var mk3 = {};
+        mk3[cellOf(points[i])] = 'cur';
+        for (var m = 0; m < mates[bestKey].length; m++) {
+          mk3[cellOf(points[mates[bestKey][m]])] = m === mates[bestKey].length - 1 ? 'new' : 'hit';
+        }
+        frames.push(Viz.frame('int c = cnt.merge(key, 1, Integer::sum);',
+          '(' + points[j][0] + ',' + points[j][1] + ') 约出同一方向 ' + bestKey + '：同方向已凑到 ' + best + ' 个',
+          [gridPanel(mk3), cntPanel(cnt, Object.keys(order), bestKey, bestKey), varsPanel(best, '')]));
+      }
+    }
+    ans = Math.max(ans, best + dup + 1);
+    if (!fired.best && best > 0) {
+      fired.best = true;
+      var mk4 = {};
+      mk4[cellOf(points[i])] = 'cur';
+      for (var m2 = 0; m2 < mates[bestKey].length; m2++) mk4[cellOf(points[mates[bestKey][m2]])] = 'win';
+      frames.push(Viz.frame('ans = Math.max(ans, best + dup + 1);',
+        '锚点 1 + 重合 ' + dup + ' + 同方向 ' + best + ' = ' + (best + dup + 1) + ' 点共线，刷新答案',
+        [gridPanel(mk4), cntPanel(cnt, Object.keys(order), bestKey, null), varsPanel(best, 'best')]));
+    }
+  }
+
+  // 收尾：重新扫一遍，把第一条正好凑满 ans 的直线标成 done
+  var bestMarks = {};
+  outer:
+  for (var i2 = 0; i2 < n; i2++) {
+    var c2 = {};
+    for (var j2 = i2 + 1; j2 < n; j2++) {
+      var key2 = dirOf(j2, i2);
+      c2[key2] = (c2[key2] || 0) + 1;
+      if (c2[key2] + 1 === ans) {
+        bestMarks[cellOf(points[i2])] = 'cur';
+        bestMarks[cellOf(points[j2])] = 'done';
+        for (var k3 = j2 + 1; k3 < n; k3++) {
+          if (k3 !== i2 && dirOf(k3, i2) === key2) bestMarks[cellOf(points[k3])] = 'done';
+        }
+        break outer;
+      }
+    }
+  }
+  frames.push(Viz.frame('return ans;',
+    n <= 1 ? '只有一个点：答案 1' : '每个点都当过锚点：最多 ' + ans + ' 个点共线',
+    [gridPanel(bestMarks), varsPanel(null)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

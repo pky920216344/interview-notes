@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>手撕堆排序 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 102 / 1159</span>
+  <nav class="pn"><a href="0739.html">上一篇</a><a href="0468.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">补充题6. </span>手撕堆排序</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 64</li><li class="algo">堆</li><li class="tag">数组</li><li class="tag">分治</li><li class="tag">桶排序</li><li class="tag">计数排序</li><li class="tag">基数排序</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="tag">归并排序</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">数组当完全二叉树：先建大顶堆，再每轮把堆顶换到堆尾并缩小堆，下滤新堆顶，尾部从右到左依次放好最大值。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>下标 <code>i</code> 的孩子是 <code>2i+1</code>、<code>2i+2</code>，不用真的建树。</li><li><strong>建堆</strong>：叶子天然是堆，从最后一个非叶结点 <code>n/2 - 1</code> 往前逐个下滤，整体 O(n)。</li><li><strong>下滤</strong>：和<strong>较大的那个孩子</strong>比，比它小就交换、继续往下；升序所以用大顶堆。</li><li><strong>排序</strong>：堆顶是剩余部分最大值，与堆尾交换后堆缩小一格，再对下标 0 下滤；重复 n-1 轮。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span>[] sortArray(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">4</span>        <span class="c">// 自底向上建大顶堆：从最后一个非叶结点往前逐个下滤</span></span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = n / <span class="n">2</span> - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) siftDown(nums, i, n);</span><span class="ln"><span class="no">6</span>        <span class="c">// 每轮把堆顶（剩余部分的最大值）换到堆尾，堆缩小一格，再下滤新堆顶</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> end = n - <span class="n">1</span>; end &gt; <span class="n">0</span>; end--) {</span><span class="ln"><span class="no">8</span>            <span class="k">int</span> tmp = nums[<span class="n">0</span>];</span><span class="ln"><span class="no">9</span>            nums[<span class="n">0</span>] = nums[end];</span><span class="ln"><span class="no">10</span>            nums[end] = tmp;</span><span class="ln"><span class="no">11</span>            siftDown(nums, <span class="n">0</span>, end);</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> nums;</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="c">// 堆大小为 size 时，把 a[pos] 下滤到正确位置：和较大的孩子比，小了就换下去</span></span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="k">void</span> siftDown(<span class="k">int</span>[] a, <span class="k">int</span> pos, <span class="k">int</span> size) {</span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (<span class="k">true</span>) {</span><span class="ln"><span class="no">19</span>            <span class="k">int</span> child = pos * <span class="n">2</span> + <span class="n">1</span>;</span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (child &gt;= size) <span class="k">return</span>;            <span class="c">// 没有孩子，已经到位</span></span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (child + <span class="n">1</span> &lt; size &amp;&amp; a[child + <span class="n">1</span>] &gt; a[child]) child++;   <span class="c">// 挑较大的孩子</span></span><span class="ln"><span class="no">22</span>            <span class="k">if</span> (a[pos] &gt;= a[child]) <span class="k">return</span>;       <span class="c">// 不比孩子小，堆性质成立</span></span><span class="ln"><span class="no">23</span>            <span class="k">int</span> tmp = a[pos];</span><span class="ln"><span class="no">24</span>            a[pos] = a[child];</span><span class="ln"><span class="no">25</span>            a[child] = tmp;</span><span class="ln"><span class="no">26</span>            pos = child;</span><span class="ln"><span class="no">27</span>        }</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组&nbsp;<code>nums</code>，请你将该数组升序排列。</p>
+
+<p>你必须在 <strong>不使用任何内置函数</strong> 的情况下解决问题，时间复杂度为 <code>O(nlog(n))</code>，并且空间复杂度尽可能小。</p>
+
+
+
+<ol>
+</ol>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [5,2,3,1]
+<strong>输出：</strong>[1,2,3,5]
+<strong>解释：</strong>数组排序后，某些数字的位置没有改变（例如，2 和 3），而其他数字的位置发生了改变（例如，1 和 5）。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [5,1,1,2,0,0]
+<strong>输出：</strong>[0,0,1,1,2,5]
+<strong>解释：</strong>请注意，nums 的值不一定唯一。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 5 * 10<sup>4</sup></code></li>
+	<li><code>-5 * 10<sup>4</sup> &lt;= nums[i] &lt;= 5 * 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int[] sortArray(int[] nums) {", "        int n = nums.length;", "        // 自底向上建大顶堆：从最后一个非叶结点往前逐个下滤", "        for (int i = n / 2 - 1; i >= 0; i--) siftDown(nums, i, n);", "        // 每轮把堆顶（剩余部分的最大值）换到堆尾，堆缩小一格，再下滤新堆顶", "        for (int end = n - 1; end > 0; end--) {", "            int tmp = nums[0];", "            nums[0] = nums[end];", "            nums[end] = tmp;", "            siftDown(nums, 0, end);", "        }", "        return nums;", "    }", "", "    // 堆大小为 size 时，把 a[pos] 下滤到正确位置：和较大的孩子比，小了就换下去", "    private void siftDown(int[] a, int pos, int size) {", "        while (true) {", "            int child = pos * 2 + 1;", "            if (child >= size) return;            // 没有孩子，已经到位", "            if (child + 1 < size && a[child + 1] > a[child]) child++;   // 挑较大的孩子", "            if (a[pos] >= a[child]) return;       // 不比孩子小，堆性质成立", "            int tmp = a[pos];", "            a[pos] = a[child];", "            a[child] = tmp;", "            pos = child;", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 补充题6 手撕堆排序（912 排序数组）—— 图解：复刻 Solution.java 的「建大顶堆 + 堆顶换堆尾下滤」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [5, 2, 7, 1, 6, 3] };
+
+function trace(input) {
+  var a = input.nums.slice();
+  var n = a.length;
+  var frames = [];
+  var shown = { build: false, swap: false, sift: false };
+
+  var BUILD = 'for (int i = n / 2 - 1; i >= 0; i--) siftDown(nums, i, n);';
+  var SWAP = 'nums[end] = tmp;';
+  var SIFT = 'pos = child;';
+
+  // 数组面板：下标 ≥ end 的都归位了；pos 当前、child 待比较的孩子
+  function cellsPanel(title, end, marks, extra) {
+    var m = {};
+    for (var i = end; i < n; i++) m[i] = 'done';
+    if (marks) for (var k in marks) m[k] = marks[k];
+    return Viz.cells(a.slice(), { title: title, marks: m, pointers: (extra || []).pointers || [] });
+  }
+  // 堆面板：数组本身就是层序
+  function treePanel(marks) {
+    return Viz.tree(a.slice(), { title: '大顶堆（i 的孩子是 2i+1、2i+2）', marks: marks || {} });
+  }
+
+  if (n === 0) return { frames: frames, result: [] };
+
+  // 建堆：从最后一个非叶结点往前下滤
+  for (var i = (n >> 1) - 1; i >= 0; i--) sift(i, n, null);
+  if (!shown.build) {
+    shown.build = true;
+    frames.push(Viz.frame(BUILD, '建堆完成：数组成了大顶堆，堆顶 ' + a[0] + ' 是最大值',
+      [treePanel({ 0: 'cur' }), cellsPanel('建好的大顶堆', n, null, null)]));
+  }
+
+  // 排序：堆顶换到堆尾，堆缩小一格，再下滤新堆顶
+  for (var end = n - 1; end > 0; end--) {
+    var top = a[0];
+    a[0] = a[end];
+    a[end] = top;
+    if (!shown.swap) {
+      shown.swap = true;
+      var m = {};
+      m[0] = 'cur';
+      m[end] = 'new';
+      frames.push(Viz.frame(SWAP, '堆顶 ' + top + ' 换到堆尾：最大值归位，堆缩小到 [0,' + (end - 1) + ']',
+        [cellsPanel('第一轮换完（青 = 刚归位）', end, m, null)]));
+    }
+    sift(0, end, end);
+  }
+
+  frames.push(Viz.frame('return nums;', '每轮都把最大值沉到尾部：整个数组升序排好',
+    [cellsPanel('排好序', n, null, null)]));
+
+  return { frames: frames, result: a };
+
+  // 下滤：和较大的孩子比，小了就换下去；expEnd 非 null 时才拍下滤帧
+  function sift(pos, size, expEnd) {
+    while (true) {
+      var child = pos * 2 + 1;
+      if (child >= size) return;
+      if (child + 1 < size && a[child + 1] > a[child]) child++;
+      if (a[pos] >= a[child]) return;
+      if (expEnd != null && !shown.sift && pos === 0) {
+        shown.sift = true;
+        frames.push(Viz.frame(SIFT, '新堆顶 ' + a[pos] + ' 比较大的孩子 ' + a[child] + ' 小：换下去，继续往下比',
+          [cellsPanel('下滤中的堆', expEnd, { pos: 'cur', child: 'hit' }, null), treePanel((function () { var m = {}; m[pos] = 'cur'; m[child] = 'hit'; return m; })())]));
+      }
+      var tmp = a[pos];
+      a[pos] = a[child];
+      a[child] = tmp;
+      pos = child;
+    }
+  }
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

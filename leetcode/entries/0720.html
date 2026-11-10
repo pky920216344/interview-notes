@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>词典中最长的单词 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 976 / 1159</span>
+  <nav class="pn"><a href="1029.html">上一篇</a><a href="0590.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">720. </span>词典中最长的单词</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 1</li><li class="algo">哈希表</li><li class="tag">字典树</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">字典序升序排序 + 哈希集合：逐词检查「去掉尾字符的前缀已建成」，接得上就入集合并挑战答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>字典序升序保证每个词的前缀都排在它前面，逐词扫一遍时前缀一定先入集合。</li><li>词能入选 ⟺ 长度为 1，或去掉尾字符的前缀已在集合里（链上前缀也必然都建成了）。</li><li>只在「严格更长」时更新答案：同长时先出现的字典序更小，天然取到最小者。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·L log n)（L 为词长），空间复杂度 O(n·L)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> longestWord(<span class="t">String</span>[] words) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 字典序升序：单词的每个前缀都排在它前面，逐个检查时前缀一定先入集合</span></span><span class="ln"><span class="no">6</span>        <span class="t">Arrays</span>.sort(words);</span><span class="ln"><span class="no">7</span>        <span class="t">Set</span>&lt;<span class="t">String</span>&gt; built = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="t">String</span> ans = <span class="s">""</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="t">String</span> w : words) {</span><span class="ln"><span class="no">10</span>            <span class="c">// 长度 1 的词可以直接开始；更长的必须去掉尾字符后已经建成</span></span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (w.length() == <span class="n">1</span> || built.contains(w.substring(<span class="n">0</span>, w.length() - <span class="n">1</span>))) {</span><span class="ln"><span class="no">12</span>                built.add(w);</span><span class="ln"><span class="no">13</span>                <span class="c">// 只在更长时更新：同长里先出现的字典序更小</span></span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (w.length() &gt; ans.length()) ans = w;</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给出一个字符串数组&nbsp;<code>words</code> 组成的一本英语词典。返回能够通过&nbsp;<code>words</code>&nbsp;中其它单词逐步添加一个字母来构造得到的&nbsp;<code>words</code> 中最长的单词。</p>
+
+<p>若其中有多个可行的答案，则返回答案中字典序最小的单词。若无答案，则返回空字符串。</p>
+
+<p>请注意，单词应该从左到右构建，每个额外的字符都添加到前一个单词的结尾。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>words = ["w","wo","wor","worl", "world"]
+<strong>输出：</strong>"world"
+<strong>解释：</strong> 单词"world"可由"w", "wo", "wor", 和 "worl"逐步添加一个字母组成。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>words = ["a", "banana", "app", "appl", "ap", "apply", "apple"]
+<strong>输出：</strong>"apple"
+<strong>解释：</strong>"apply" 和 "apple" 都能由词典中的单词组成。但是 "apple" 的字典序小于 "apply" 
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= words.length &lt;= 1000</code></li>
+	<li><code>1 &lt;= words[i].length &lt;= 30</code></li>
+	<li>所有输入的字符串&nbsp;<code>words[i]</code>&nbsp;都只包含小写字母。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String longestWord(String[] words) {", "        // 字典序升序：单词的每个前缀都排在它前面，逐个检查时前缀一定先入集合", "        Arrays.sort(words);", "        Set<String> built = new HashSet<>();", "        String ans = \"\";", "        for (String w : words) {", "            // 长度 1 的词可以直接开始；更长的必须去掉尾字符后已经建成", "            if (w.length() == 1 || built.contains(w.substring(0, w.length() - 1))) {", "                built.add(w);", "                // 只在更长时更新：同长里先出现的字典序更小", "                if (w.length() > ans.length()) ans = w;", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 720. 词典中最长的单词 —— 图解：字典序排序后逐词检查「去尾前缀已建成」，接得上就入链。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { words: ['a', 'banana', 'app', 'appl', 'ap', 'apply', 'apple'] };
+
+function trace(input) {
+  var words = input.words.slice().sort();
+  var n = words.length;
+  var frames = [];
+  var built = new Array(n).fill(false);   // 已确认能逐步构造的词
+
+  // 先跑一遍拿最终答案，图解里「更新答案」那一帧拍在长度第一次追平最终答案的时刻
+  var finalAns = '';
+  words.forEach(function (w, i) {
+    if (w.length === 1 || hasPrev(w.slice(0, -1), i, true)) {
+      built[i] = true;
+      if (w.length > finalAns.length) finalAns = w;
+    }
+  });
+
+  built = new Array(n).fill(false);
+  var ans = '';
+  var firedStart = false, firedRoot = false, firedChain = false, firedAns = false;
+
+  function hasPrev(p, i, probe) {
+    for (var k = 0; k < i; k++) if (words[k] === p && (probe || built[k])) return true;
+    return false;
+  }
+
+  function wordsPanel(i, ptr) {
+    var marks = {};
+    for (var k = 0; k < n; k++) {
+      if (ptr && k === i) marks[k] = 'cur';
+      else if (k < i) marks[k] = built[k] ? 'win' : 'dim';
+    }
+    var pointers = ptr && n ? [{ at: Math.min(i, n - 1), label: 'w', cls: 'p-cur' }] : [];
+    return Viz.cells(words, { title: 'words（已按字典序升序）', marks: marks, pointers: pointers });
+  }
+
+  function varsPanel() {
+    return Viz.vars([
+      { name: 'ans', v: ans === '' ? '（暂无）' : ans, cls: 'chg' },
+      { name: '已建成的词数', v: built.filter(Boolean).length }
+    ]);
+  }
+
+  var CHECK = 'if (w.length() == 1 || built.contains(w.substring(0, w.length() - 1))) {';
+
+  for (var i = 0; i < n; i++) {
+    var w = words[i];
+    var ok = w.length === 1 || hasPrev(w.slice(0, -1), i, false);
+    if (!firedStart && i === 0) {
+      firedStart = true;
+      frames.push(Viz.frame('Arrays.sort(words);', '排序后逐词检查：前缀一定排在它前面', [wordsPanel(i, true), varsPanel()]));
+    }
+    if (ok) {
+      built[i] = true;
+      if (!firedRoot && w.length === 1) {
+        firedRoot = true;
+        frames.push(Viz.frame('built.add(w);', '「' + w + '」长度 1，可以直接当起点', [wordsPanel(i, true), varsPanel()]));
+      } else if (!firedChain && w.length > 1) {
+        firedChain = true;
+        frames.push(Viz.frame(CHECK, '「' + w + '」的前缀「' + w.slice(0, -1) + '」已建成，接得上', [wordsPanel(i, true), varsPanel()]));
+      }
+      if (w.length > ans.length) {
+        var was = ans;
+        ans = w;
+        if (!firedAns && w.length === finalAns.length) {
+          firedAns = true;
+          frames.push(Viz.frame('if (w.length() > ans.length()) ans = w;',
+            '「' + w + '」比「' + (was || '空') + '」长，更新答案', [wordsPanel(i, true), varsPanel()]));
+        }
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return ans;', ans === '' ? '一个都接不上：返回空串' : '扫完：最长的可构造单词是「' + ans + '」',
+    [wordsPanel(n, false), varsPanel()]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

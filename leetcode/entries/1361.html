@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>验证二叉树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1076 / 1159</span>
+  <nav class="pn"><a href="0677.html">上一篇</a><a href="offer-30.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1361. </span>验证二叉树</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">并查集</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">图</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">三道闸门：每个结点入度 ≤ 1、并查集连边不成环、恰有 n−1 条边；三者同时成立必是一棵二叉树。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>二叉树 = 恰 n−1 条边 + 无环 + 每结点至多一个父亲；孩子数 ≤ 2 由左右两个槽位天然保证。</li><li>有环必不连通（n−1 条边下），所以「无环 + n−1 条边」就自动推出连通、唯一根，不必再单独数根。</li><li>并查集逐条边合并，<code>find(i) == find(c)</code> 说明成环（自环也会在此被抓到）；入度超 1 先抓。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n α(n))，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">int</span>[] fa;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> validateBinaryTreeNodes(<span class="k">int</span> n, <span class="k">int</span>[] leftChild, <span class="k">int</span>[] rightChild) {</span><span class="ln"><span class="no">5</span>        fa = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) fa[i] = i;</span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] indeg = <span class="k">new</span> <span class="k">int</span>[n];   <span class="c">// 每个结点被几个父亲指到</span></span><span class="ln"><span class="no">8</span>        <span class="k">int</span> edges = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">10</span>            <span class="k">int</span>[] kids = {leftChild[i], rightChild[i]};</span><span class="ln"><span class="no">11</span>            <span class="k">for</span> (<span class="k">int</span> c : kids) {</span><span class="ln"><span class="no">12</span>                <span class="k">if</span> (c &lt; <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">13</span>                <span class="c">// 一个结点被两个父亲指到，必不是二叉树</span></span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (++indeg[c] &gt; <span class="n">1</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">15</span>                <span class="c">// 两端已经连通还连边，说明出现环（含自环）</span></span><span class="ln"><span class="no">16</span>                <span class="k">if</span> (find(i) == find(c)) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">17</span>                fa[find(i)] = find(c);</span><span class="ln"><span class="no">18</span>                edges++;</span><span class="ln"><span class="no">19</span>            }</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="c">// n 个结点、恰 n−1 条边且无环，就自动连通成一棵树</span></span><span class="ln"><span class="no">22</span>        <span class="k">return</span> edges == n - <span class="n">1</span>;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span> </span><span class="ln"><span class="no">25</span>    <span class="c">// 并查集查找（路径减半）</span></span><span class="ln"><span class="no">26</span>    <span class="k">private</span> <span class="k">int</span> find(<span class="k">int</span> x) {</span><span class="ln"><span class="no">27</span>        <span class="k">while</span> (fa[x] != x) x = fa[x] = fa[fa[x]];</span><span class="ln"><span class="no">28</span>        <span class="k">return</span> x;</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>二叉树上有 <code>n</code>&nbsp;个节点，按从&nbsp;<code>0</code>&nbsp;到 <code>n - 1</code>&nbsp;编号，其中节点&nbsp;<code>i</code>&nbsp;的两个子节点分别是&nbsp;<code>leftChild[i]</code>&nbsp;和&nbsp;<code>rightChild[i]</code>。</p>
+
+<p>只有 <strong>所有</strong> 节点能够形成且 <strong>只</strong> 形成 <strong>一颗</strong>&nbsp;有效的二叉树时，返回&nbsp;<code>true</code>；否则返回 <code>false</code>。</p>
+
+<p>如果节点&nbsp;<code>i</code>&nbsp;没有左子节点，那么&nbsp;<code>leftChild[i]</code>&nbsp;就等于&nbsp;<code>-1</code>。右子节点也符合该规则。</p>
+
+<p>注意：节点没有值，本问题中仅仅使用节点编号。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/bde3655cad2e.png" style="height: 287px; width: 195px;" /></strong></p>
+
+<pre>
+<strong>输入：</strong>n = 4, leftChild = [1,-1,3,-1], rightChild = [2,-1,-1,-1]
+<strong>输出：</strong>true
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/9887a3dcb19e.png" style="height: 272px; width: 183px;" /></strong></p>
+
+<pre>
+<strong>输入：</strong>n = 4, leftChild = [1,-1,3,-1], rightChild = [2,3,-1,-1]
+<strong>输出：</strong>false
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/6152c687ce14.png" style="height: 174px; width: 82px;" /></strong></p>
+
+<pre>
+<strong>输入：</strong>n = 2, leftChild = [1,0], rightChild = [-1,-1]
+<strong>输出：</strong>false
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == leftChild.length == rightChild.length</code></li>
+	<li><code>1 &lt;= n &lt;= 10<sup>4</sup></code></li>
+	<li><code>-1 &lt;= leftChild[i], rightChild[i] &lt;= n - 1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private int[] fa;", "", "    public boolean validateBinaryTreeNodes(int n, int[] leftChild, int[] rightChild) {", "        fa = new int[n];", "        for (int i = 0; i < n; i++) fa[i] = i;", "        int[] indeg = new int[n];   // 每个结点被几个父亲指到", "        int edges = 0;", "        for (int i = 0; i < n; i++) {", "            int[] kids = {leftChild[i], rightChild[i]};", "            for (int c : kids) {", "                if (c < 0) continue;", "                // 一个结点被两个父亲指到，必不是二叉树", "                if (++indeg[c] > 1) return false;", "                // 两端已经连通还连边，说明出现环（含自环）", "                if (find(i) == find(c)) return false;", "                fa[find(i)] = find(c);", "                edges++;", "            }", "        }", "        // n 个结点、恰 n−1 条边且无环，就自动连通成一棵树", "        return edges == n - 1;", "    }", "", "    // 并查集查找（路径减半）", "    private int find(int x) {", "        while (fa[x] != x) x = fa[x] = fa[fa[x]];", "        return x;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1361. 验证二叉树 —— 图解：复刻 Solution.java 的「入度 + 并查集 + 边数」三重检查，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 4, leftChild: [1, -1, 3, -1], rightChild: [2, 3, -1, -1] };
+
+function trace(input) {
+  var n = input.n, l = input.leftChild, r = input.rightChild;
+  var frames = [];
+  var IN = 'if (++indeg[c] > 1) return false;';
+  var CYC = 'if (find(i) == find(c)) return false;';
+  var RET = 'return edges == n - 1;';
+
+  var indeg = [], parent = [];   // parent：并查集合并后的代表（展示连通情况）
+  for (var i = 0; i < n; i++) { indeg.push(0); parent.push(i); }
+  function find(x) { while (parent[x] !== x) x = parent[x] = parent[parent[x]]; return x; }
+
+  function nodePanel(cur, bad) {
+    var rows = [];
+    for (var k = 0; k < n; k++) {
+      rows.push({ k: '结点 ' + k, v: '入度 ' + indeg[k] + '，孩子 l=' + l[k] + ' r=' + r[k],
+        cls: k === bad ? 'bad' : (k === cur ? 'cur' : '') });
+    }
+    return Viz.table('结点：入度（被几个父亲指到）与孩子', rows);
+  }
+  function varsPanel(edges, msg) {
+    var items = [{ name: 'edges（已连边）', v: edges }];
+    if (msg) items.push({ name: '结论', v: msg, cls: 'bad' });
+    return Viz.vars(items);
+  }
+  function snap(at, key, cur, bad, edges, msg) {
+    frames.push(Viz.frame(at, key, [nodePanel(cur, bad), varsPanel(edges, msg)]));
+  }
+
+  var edges = 0, failed = false, shots = { first: false, cycle: false };
+  for (i = 0; i < n && !failed; i++) {
+    var kids = [l[i], r[i]];
+    for (var j = 0; j < 2 && !failed; j++) {
+      var c = kids[j];
+      if (c < 0) continue;
+      indeg[c]++;
+      if (!shots.first) {
+        shots.first = true;
+        snap(IN, '逐条边处理：' + i + '→' + c + ' 连上，结点 ' + c + ' 的入度记 1', c, -1, edges + 1, '');
+      }
+      if (indeg[c] > 1) {
+        failed = true;
+        snap(IN, '结点 ' + c + ' 被第 2 个父亲指到：入度超 1，判假', c, c, edges, '入度 > 1');
+        break;
+      }
+      if (find(i) === find(c)) {
+        failed = true;
+        if (!shots.cycle) {
+          shots.cycle = true;
+          snap(CYC, i + ' 和 ' + c + ' 已连通再连边：成环，判假', c, c, edges, '出现环');
+        }
+        break;
+      }
+      parent[find(i)] = find(c);
+      edges++;
+      if (edges === 2 && !failed) snap(CYC, '边 ' + i + '→' + c + ' 合并进同一连通块，暂无环', c, -1, edges, '');
+    }
+  }
+
+  if (!failed) {
+    snap(RET, '全部边处理完：' + edges + (edges === n - 1 ? ' = n−1 条边且无环 → 真' : ' ≠ n−1 → 假'), -1, -1, edges,
+      edges === n - 1 ? '' : '边数不对');
+  }
+  return { frames: frames, result: !failed && edges === n - 1 };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

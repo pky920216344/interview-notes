@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字符串的排列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 241 / 1159</span>
+  <nav class="pn"><a href="0037.html">上一篇</a><a href="0556.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">567. </span>字符串的排列</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 20</li><li class="algo">滑动窗口</li><li class="aux">哈希表</li><li class="tag">哈希表</li><li class="tag">双指针</li><li class="tag">字符串</li><li class="tag">滑动窗口</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">定长滑窗：s2 上维护长度为 s1 的窗口，两个 26 计数数组每滑一格比一次，相等即找到。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>need</code> 数 s1 的 26 个字母计数，<code>win</code> 数 s2 上长度为 m 的窗口；计数相等 ⇔ 窗口是 s1 的排列。</li><li>先数第一个窗口并比较，相等直接返回 true。</li><li>每滑一格只改两处：右端字母 <code>win++</code>、左端字母 <code>win--</code>，再 <code>Arrays.equals</code> 比一次。</li><li>不用 diff 变量优化也够快：26 格比较是常数，O(26·n)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(26·n)，空间复杂度 O(26)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> checkInclusion(<span class="t">String</span> s1, <span class="t">String</span> s2) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> m = s1.length(), n = s2.length();</span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (m &gt; n) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] need = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>], win = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {          <span class="c">// 数 s1 全部字母 + s2 第一个窗口</span></span><span class="ln"><span class="no">9</span>            need[s1.charAt(i) - <span class="s">'a'</span>]++;</span><span class="ln"><span class="no">10</span>            win[s2.charAt(i) - <span class="s">'a'</span>]++;</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (<span class="t">Arrays</span>.equals(need, win)) <span class="k">return</span> <span class="k">true</span>;   <span class="c">// 先比第一个窗口</span></span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> i = m; i &lt; n; i++) {          <span class="c">// 窗口每次向右滑一格</span></span><span class="ln"><span class="no">14</span>            win[s2.charAt(i) - <span class="s">'a'</span>]++;         <span class="c">// 右端新字母进窗</span></span><span class="ln"><span class="no">15</span>            win[s2.charAt(i - m) - <span class="s">'a'</span>]--;     <span class="c">// 左端旧字母出窗</span></span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (<span class="t">Arrays</span>.equals(need, win)) <span class="k">return</span> <span class="k">true</span>;   <span class="c">// 每滑一格都比一次</span></span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> <span class="k">false</span>;   <span class="c">// 滑完也没有计数一致的窗口</span></span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你两个字符串&nbsp;<code>s1</code>&nbsp;和&nbsp;<code>s2</code> ，写一个函数来判断 <code>s2</code> 是否包含 <code>s1</code>的 <span>排列</span>。如果是，返回 <code>true</code> ；否则，返回 <code>false</code> 。</p>
+
+<p>换句话说，<code>s1</code> 的排列之一是 <code>s2</code> 的 <strong>子串</strong> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s1 = "ab" s2 = "eidbaooo"
+<strong>输出：</strong>true
+<strong>解释：</strong>s2 包含 s1 的排列之一 ("ba").
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s1= "ab" s2 = "eidboaoo"
+<strong>输出：</strong>false
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s1.length, s2.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>s1</code> 和 <code>s2</code> 仅包含小写字母</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean checkInclusion(String s1, String s2) {", "        int m = s1.length(), n = s2.length();", "        if (m > n) return false;", "        int[] need = new int[26], win = new int[26];", "        for (int i = 0; i < m; i++) {          // 数 s1 全部字母 + s2 第一个窗口", "            need[s1.charAt(i) - 'a']++;", "            win[s2.charAt(i) - 'a']++;", "        }", "        if (Arrays.equals(need, win)) return true;   // 先比第一个窗口", "        for (int i = m; i < n; i++) {          // 窗口每次向右滑一格", "            win[s2.charAt(i) - 'a']++;         // 右端新字母进窗", "            win[s2.charAt(i - m) - 'a']--;     // 左端旧字母出窗", "            if (Arrays.equals(need, win)) return true;   // 每滑一格都比一次", "        }", "        return false;   // 滑完也没有计数一致的窗口", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 567. 字符串的排列 —— 图解：复刻 Solution.java 的「定长滑窗计数」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s1: 'ab', s2: 'eidbaooo' };
+
+function trace(input) {
+  var s1 = input.s1, s2 = input.s2;
+  var m = s1.length, n = s2.length;
+  var frames = [];
+  var need = {}, win = {}, order = [];   // order：字母首次出现的顺序，表格才稳定
+
+  function touch(ch) {
+    if (!(ch in need)) need[ch] = 0;
+    if (!(ch in win)) win[ch] = 0;
+    if (order.indexOf(ch) < 0) order.push(ch);
+  }
+  function bump(ch, d) { touch(ch); win[ch] += d; }
+  function equal() {
+    for (var i = 0; i < order.length; i++) if (need[order[i]] !== win[order[i]]) return false;
+    return true;
+  }
+  var sh = function (ch) { return ch === ' ' ? '␣' : ch; };
+
+  // s2 面板：o.i 是当前窗口右端（null 表示还没开始），窗口 [i-m+1, i]
+  function strPanel(o) {
+    var marks = {};
+    var i;
+    if (o.i != null) {
+      for (i = 0; i < n; i++) if (i < o.i - m + 1) marks[i] = 'dim';
+      if (o.inNew) marks[o.i] = 'new';
+      if (o.outDim && o.i - m >= 0) marks[o.i - m] = 'dim';
+    }
+    if (o.cur != null) marks[o.cur] = 'cur';
+    var ok = o.i != null && o.i >= 0 && o.i < n;
+    var pointers = ok ? [{ at: o.i, label: 'i', cls: 'p-right' }] : [];
+    var range = ok && o.i - m + 1 >= 0
+      ? { from: o.i - m + 1, to: o.i, label: '窗口「' + s2.slice(o.i - m + 1, o.i + 1) + '」' }
+      : null;
+    return Viz.cells(s2.split('').map(sh), { title: 's2（长度 m = ' + m + ' 的窗口）', marks: marks, pointers: pointers, range: range });
+  }
+
+  // 计数对比表：每行一个字母，v = need / win
+  function tablePanel(hitCh, allDone) {
+    var rows = order.map(function (ch) {
+      var eq = need[ch] === win[ch];
+      return {
+        k: sh(ch),
+        v: 'need ' + need[ch] + ' · win ' + win[ch] + (eq ? ' ✓' : ' ✗'),
+        cls: allDone ? 'done' : (ch === hitCh ? 'chg' : '')
+      };
+    });
+    return Viz.table('need（s1）对比 win（窗口）', rows, { hint: '全部行打勾 ⇔ 窗口是 s1 的排列' });
+  }
+
+  // s1 比 s2 还长时不可能包含，直接无解
+  if (m > n) {
+    frames.push(Viz.frame('if (m > n) return false;',
+      's1 比 s2 还长，s2 不可能包含它的排列 → false',
+      [strPanel({}), tablePanel(null, false)]));
+    return { frames: frames, result: false };
+  }
+
+  // 帧 1：开局
+  frames.push(Viz.frame('int[] need = new int[26], win = new int[26];',
+    'need 数 s1「' + s1 + '」的字母，win 数 s2 当前窗口的字母；两个 26 格计数表一致才算找到',
+    [strPanel({}), tablePanel(null, false)]));
+
+  // 数 s1 + s2 的第一个窗口
+  for (var i = 0; i < m; i++) {
+    touch(s1[i]); need[s1[i]]++;
+    bump(s2[i], 1);
+  }
+  var found = equal();
+  frames.push(Viz.frame('if (Arrays.equals(need, win)) return true;   // 先比第一个窗口',
+    found ? '第一个窗口「' + s2.slice(0, m) + '」计数就一致 → true'
+          : '第一个窗口「' + s2.slice(0, m) + '」计数和 s1 不一致（✗ 的行），开始滑窗',
+    [strPanel({ i: m - 1 }), tablePanel(null, found)]));
+
+  if (!found) {
+    for (i = m; i < n && !found; i++) {
+      var inCh = s2[i], outCh = s2[i - m];
+      bump(inCh, 1);
+      bump(outCh, -1);
+      if (i === m) {
+        frames.push(Viz.frame("win[s2.charAt(i - m) - 'a']--;",
+          '滑一格：右端「' + sh(inCh) + '」进、左端「' + sh(outCh) + '」出，各改一处计数 → 窗口「' + s2.slice(i - m + 1, i + 1) + '」',
+          [strPanel({ i: i, inNew: true, outDim: true }), tablePanel(inCh, false)]));
+      }
+      found = equal();
+      if (found) {
+        frames.push(Viz.frame('if (Arrays.equals(need, win)) return true;   // 每滑一格都比一次',
+          '窗口「' + s2.slice(i - m + 1, i + 1) + '」的计数和 s1 完全一致 → true，它是 s1 的排列',
+          [strPanel({ i: i }), tablePanel(null, true)]));
+      }
+    }
+  }
+  if (!found) {
+    frames.push(Viz.frame('// 滑完也没有计数一致的窗口',
+      '滑完全部窗口也没有计数一致的 → false',
+      [strPanel({ i: n - 1 }), tablePanel(null, false)]));
+  }
+
+  return { frames: frames, result: found };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>单词搜索 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 104 / 1159</span>
+  <nav class="pn"><a href="0468.html">上一篇</a><a href="0153.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">79. </span>单词搜索</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 61</li><li class="algo">回溯</li><li class="aux">深度优先搜索/递归</li><li class="tag">深度优先搜索</li><li class="tag">数组</li><li class="tag">字符串</li><li class="tag">回溯</li><li class="tag">矩阵</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">每个格子试作起点做 DFS；进格前把字符改成 # 当 visited，四方向递归，回溯时恢复原字符。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dfs(i, j, k)</code> 表示「从 (i,j) 接着匹配 <code>word[k..]</code>」；外层每个格子都试作起点，找到就提前停。</li><li>越界或 <code>board[i][j] != word[k]</code> 立即剪掉；<code>k</code> 走到最后一位且匹配，返回 <code>true</code>。</li><li><strong>原地标记</strong>：递归前 <code>board[i][j] = '#'</code>，天然挡住本路径重复踩格；返回前<strong>必须恢复</strong>，否则挡住别的路径。</li><li>已走过的格子的 <code>#</code> 让四方向只剩最多 3 个新分支，复杂度是 3^L 而非 4^L。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m·n·3^L)，空间复杂度 O(L)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> exist(<span class="k">char</span>[][] board, <span class="t">String</span> word) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = board.length, n = board[<span class="n">0</span>].length;</span><span class="ln"><span class="no">4</span>        <span class="k">boolean</span> found = <span class="k">false</span>;</span><span class="ln"><span class="no">5</span>        <span class="c">// 每个格子都试作起点；一旦找到就提前收工</span></span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m &amp;&amp; !found; i++) {</span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n &amp;&amp; !found; j++) {</span><span class="ln"><span class="no">8</span>                found = dfs(board, word, i, j, <span class="n">0</span>);</span><span class="ln"><span class="no">9</span>            }</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="k">return</span> found;</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="c">// 从 (i,j) 出发，接着匹配 word[k..]</span></span><span class="ln"><span class="no">15</span>    <span class="k">private</span> <span class="k">boolean</span> dfs(<span class="k">char</span>[][] board, <span class="t">String</span> word, <span class="k">int</span> i, <span class="k">int</span> j, <span class="k">int</span> k) {</span><span class="ln"><span class="no">16</span>        <span class="k">if</span> (i &lt; <span class="n">0</span> || i &gt;= board.length || j &lt; <span class="n">0</span> || j &gt;= board[<span class="n">0</span>].length) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">17</span>        <span class="c">// 字符对不上，剪掉</span></span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (board[i][j] != word.charAt(k)) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">19</span>        <span class="k">if</span> (k == word.length() - <span class="n">1</span>) <span class="k">return</span> <span class="k">true</span>;   <span class="c">// 最后一个字符也对上了</span></span><span class="ln"><span class="no">20</span>        <span class="k">char</span> keep = board[i][j];</span><span class="ln"><span class="no">21</span>        board[i][j] = <span class="s">'#'</span>;    <span class="c">// 原地标记：这条路径不再踩这格</span></span><span class="ln"><span class="no">22</span>        <span class="k">boolean</span> hit = dfs(board, word, i - <span class="n">1</span>, j, k + <span class="n">1</span>) || dfs(board, word, i + <span class="n">1</span>, j, k + <span class="n">1</span>)</span><span class="ln"><span class="no">23</span>                || dfs(board, word, i, j - <span class="n">1</span>, k + <span class="n">1</span>) || dfs(board, word, i, j + <span class="n">1</span>, k + <span class="n">1</span>);</span><span class="ln"><span class="no">24</span>        board[i][j] = keep;   <span class="c">// 回溯：恢复这格，别的路径还能用</span></span><span class="ln"><span class="no">25</span>        <span class="k">return</span> hit;</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个&nbsp;<code>m x n</code> 二维字符网格&nbsp;<code>board</code> 和一个字符串单词&nbsp;<code>word</code> 。如果&nbsp;<code>word</code> 存在于网格中，返回 <code>true</code> ；否则，返回 <code>false</code> 。</p>
+
+<p>单词必须按照字母顺序，通过相邻的单元格内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母不允许被重复使用。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/b863d1b2795e.jpg" style="width: 322px; height: 242px;" />
+<pre>
+<strong>输入：</strong>board = [['A','B','C','E'],['S','F','C','S'],['A','D','E','E']], word = "ABCCED"
+<strong>输出：</strong>true
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/9e91a0f312f1.jpg" style="width: 322px; height: 242px;" />
+<pre>
+<strong>输入：</strong>board = [['A','B','C','E'],['S','F','C','S'],['A','D','E','E']], word = "SEE"
+<strong>输出：</strong>true
+</pre>
+
+<p><strong>示例 3：</strong></p>
+<img alt="" src="../assets/img/79910d16c5cf.jpg" style="width: 322px; height: 242px;" />
+<pre>
+<strong>输入：</strong>board = [['A','B','C','E'],['S','F','C','S'],['A','D','E','E']], word = "ABCB"
+<strong>输出：</strong>false
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == board.length</code></li>
+	<li><code>n = board[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 6</code></li>
+	<li><code>1 &lt;= word.length &lt;= 15</code></li>
+	<li><code>board</code> 和 <code>word</code> 仅由大小写英文字母组成</li>
+</ul>
+
+
+
+<p><strong>进阶：</strong>你可以使用搜索剪枝的技术来优化解决方案，使其在 <code>board</code> 更大的情况下可以更快解决问题？</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean exist(char[][] board, String word) {", "        int m = board.length, n = board[0].length;", "        boolean found = false;", "        // 每个格子都试作起点；一旦找到就提前收工", "        for (int i = 0; i < m && !found; i++) {", "            for (int j = 0; j < n && !found; j++) {", "                found = dfs(board, word, i, j, 0);", "            }", "        }", "        return found;", "    }", "", "    // 从 (i,j) 出发，接着匹配 word[k..]", "    private boolean dfs(char[][] board, String word, int i, int j, int k) {", "        if (i < 0 || i >= board.length || j < 0 || j >= board[0].length) return false;", "        // 字符对不上，剪掉", "        if (board[i][j] != word.charAt(k)) return false;", "        if (k == word.length() - 1) return true;   // 最后一个字符也对上了", "        char keep = board[i][j];", "        board[i][j] = '#';    // 原地标记：这条路径不再踩这格", "        boolean hit = dfs(board, word, i - 1, j, k + 1) || dfs(board, word, i + 1, j, k + 1)", "                || dfs(board, word, i, j - 1, k + 1) || dfs(board, word, i, j + 1, k + 1);", "        board[i][j] = keep;   // 回溯：恢复这格，别的路径还能用", "        return hit;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 79. 单词搜索 —— 图解：复刻 Solution.java 的「原地标记 DFS 回溯」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { board: ['ABCE', 'SFCS', 'ADEE'], word: 'SEE' };
+
+function trace(input) {
+  var board = input.board.map(function (row) { return row.split(''); });
+  var word = input.word;
+  var m = board.length, nn = board[0].length;
+  var frames = [];
+  var path = [];                        // 当前路径上的 (i,j)，和 Java 的 '#' 标记一一对应
+  var shown = { start: false, mark: false, restore1: false, restore2: false, done: false };
+  var restores = 0;
+  var found = false;
+
+  var START = 'found = dfs(board, word, i, j, 0);';
+  var MARK = "board[i][j] = '#';";
+  var RESTORE = 'board[i][j] = keep;';
+  var TRUE = 'return true;';
+  var FOUND = 'return found;';
+
+  // 棋盘：路径上的格标 win，当前格 cur，刚标记的 # 标 new，刚恢复的标 chg
+  function gridPanel(title, cur, fresh, done) {
+    var marks = {};
+    path.forEach(function (p) { marks[p[0] + ',' + p[1]] = 'win'; });
+    if (cur) marks[cur[0] + ',' + cur[1]] = 'cur';
+    if (fresh) marks[fresh[0] + ',' + fresh[1]] = fresh[2];
+    if (done) path.forEach(function (p) { marks[p[0] + ',' + p[1]] = 'done'; });
+    return Viz.grid(board.map(function (row) { return row.slice(); }), { title: title, marks: marks });
+  }
+  function wordPanel(k, done) {
+    var marks = {};
+    for (var i = 0; i < word.length; i++) marks[i] = i < k || done ? 'win' : '';
+    if (!done && k < word.length) marks[k] = 'cur';
+    return Viz.cells(word.split(''), { title: 'word：正在匹配第 k 位', marks: marks });
+  }
+  function snap(at, key, cur, fresh, done) {
+    frames.push(Viz.frame(at, key, [gridPanel(title(), cur, fresh, done), wordPanel(path.length, done)]));
+  }
+  function title() { return found ? '棋盘（金 = 找到的路径）' : '棋盘（黄 = 当前路径，# = 已占用）'; }
+
+  for (var i = 0; i < m && !found; i++) {
+    for (var j = 0; j < nn && !found; j++) {
+      found = dfs(i, j, 0);
+    }
+  }
+  if (!found) {
+    var marks = {};
+    for (var r = 0; r < m; r++) for (var c = 0; c < nn; c++) marks[r + ',' + c] = 'dim';
+    frames.push(Viz.frame(FOUND, '所有起点都试完了也没有完整路径：返回 false',
+      [Viz.grid(board.map(function (row) { return row.slice(); }), { title: '棋盘（全部试过、已恢复）', marks: marks }),
+       wordPanel(word.length, false)]));
+  }
+  return { frames: frames, result: found };
+
+  function dfs(i, j, k) {
+    if (i < 0 || i >= m || j < 0 || j >= nn) return false;
+    if (board[i][j] !== word[k]) return false;
+    if (k === word.length - 1) {
+      path.push([i, j]);
+      if (!shown.done) {
+        shown.done = true;
+        snap(TRUE, '最后一个字符也对上了：' + word + ' 找到了', null, null, true);
+      }
+      path.pop();
+      return true;
+    }
+    if (k === 0 && !shown.start) {
+      shown.start = true;
+      path.push([i, j]);
+      snap(START, '每个格子都试作起点：走到 (' + i + ',' + j + ') 的 ' + word[0] + ' 才对上 word[0]', [i, j], null, false);
+      path.pop();
+    }
+    var keep = board[i][j];
+    board[i][j] = '#';
+    path.push([i, j]);
+    if (!shown.mark) {
+      shown.mark = true;
+      snap(MARK, '对上了就先改成 #：这条路径不能再踩这格', null, [i, j, 'new'], false);
+    }
+    var hit = dfs(i - 1, j, k + 1) || dfs(i + 1, j, k + 1) || dfs(i, j - 1, k + 1) || dfs(i, j + 1, k + 1);
+    path.pop();
+    board[i][j] = keep;
+    restores++;
+    if (restores === 1 && !shown.restore1) {
+      shown.restore1 = true;
+      snap(RESTORE, '(' + i + ',' + j + ') 四邻都接不上：恢复成 ' + keep + '，这条岔路放弃', null, [i, j, 'chg'], false);
+    } else if (restores === 2 && !shown.restore2) {
+      shown.restore2 = true;
+      snap(RESTORE, '上一层也接不上：逐层恢复 #，回到能换路的分叉点', null, [i, j, 'chg'], false);
+    }
+    return hit;
+  }
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

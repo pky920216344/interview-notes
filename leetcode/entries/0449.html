@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>序列化和反序列化二叉搜索树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 500 / 1159</span>
+  <nav class="pn"><a href="0404.html">上一篇</a><a href="1353.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">449. </span>序列化和反序列化二叉搜索树</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">设计</li><li class="tag">二叉搜索树</li><li class="tag">字符串</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">只存前序遍历的值；反序列化时带着上下界递归，值越界就说明它属于别的子树，还给上层。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>BST 前序 = 「根 + 左子树 + 右子树」，且左子树值全小于根、右子树全大于根——所以<strong>不用存 null 占位</strong>，中序由大小关系唯一推出。</li><li>反序列化 <code>de(lo, hi)</code>：读队头的值 <code>v</code>，若 <code>v</code> 超出 <code>[lo, hi]</code> 就返回 null（<strong>不消耗</strong>这个值）；否则建结点，左子树范围 <code>[lo, v]</code>、右子树 <code>[v, hi]</code>。</li><li>越界「还给上层」是关键：<code>1</code> 的右边界是 3，读到 8 时拒绝，8 一路回到根的右子树才被收下。</li><li>比「前序 + null 标记」的通用法省一半字符；范围用 <code>long</code> 防溢出。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Codec</span> {</span><span class="ln"><span class="no">4</span> </span><span class="ln"><span class="no">5</span>    <span class="c">// Encodes a tree to a single string.</span></span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="t">String</span> serialize(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">7</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">8</span>        ser(root, sb);</span><span class="ln"><span class="no">9</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">10</span>    }</span><span class="ln"><span class="no">11</span> </span><span class="ln"><span class="no">12</span>    <span class="c">// 只存前序：BST 的中序可由大小关系推出来，不用存 null 占位</span></span><span class="ln"><span class="no">13</span>    <span class="k">private</span> <span class="k">void</span> ser(<span class="t">TreeNode</span> cur, <span class="t">StringBuilder</span> sb) {</span><span class="ln"><span class="no">14</span>        <span class="k">if</span> (cur == <span class="k">null</span>) <span class="k">return</span>;</span><span class="ln"><span class="no">15</span>        sb.append(cur.val).append(<span class="s">' '</span>);</span><span class="ln"><span class="no">16</span>        ser(cur.left, sb);</span><span class="ln"><span class="no">17</span>        ser(cur.right, sb);</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span> </span><span class="ln"><span class="no">20</span>    <span class="c">// Decodes your encoded data to tree.</span></span><span class="ln"><span class="no">21</span>    <span class="k">public</span> <span class="t">TreeNode</span> deserialize(<span class="t">String</span> data) {</span><span class="ln"><span class="no">22</span>        <span class="k">if</span> (data.isEmpty()) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">23</span>        <span class="t">ArrayDeque</span>&lt;<span class="t">String</span>&gt; tok = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;(<span class="t">List</span>.of(data.split(<span class="s">" "</span>)));</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> de(tok, <span class="t">Long</span>.MIN_VALUE, <span class="t">Long</span>.MAX_VALUE);</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span> </span><span class="ln"><span class="no">27</span>    <span class="c">// [lo, hi] 是当前子树允许的取值范围：越界的值不属于这棵子树，要留给上层</span></span><span class="ln"><span class="no">28</span>    <span class="k">private</span> <span class="t">TreeNode</span> de(<span class="t">ArrayDeque</span>&lt;<span class="t">String</span>&gt; tok, <span class="k">long</span> lo, <span class="k">long</span> hi) {</span><span class="ln"><span class="no">29</span>        <span class="k">if</span> (tok.isEmpty()) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">30</span>        <span class="k">long</span> v = <span class="t">Long</span>.parseLong(tok.peek());</span><span class="ln"><span class="no">31</span>        <span class="k">if</span> (v &lt; lo || v &gt; hi) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">32</span>        tok.poll();</span><span class="ln"><span class="no">33</span>        <span class="t">TreeNode</span> cur = <span class="k">new</span> <span class="t">TreeNode</span>((<span class="k">int</span>) v);</span><span class="ln"><span class="no">34</span>        cur.left = de(tok, lo, v);</span><span class="ln"><span class="no">35</span>        cur.right = de(tok, v, hi);</span><span class="ln"><span class="no">36</span>        <span class="k">return</span> cur;</span><span class="ln"><span class="no">37</span>    }</span><span class="ln"><span class="no">38</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>序列化是将数据结构或对象转换为一系列位的过程，以便它可以存储在文件或内存缓冲区中，或通过网络连接链路传输，以便稍后在同一个或另一个计算机环境中重建。</p>
+
+<p>设计一个算法来序列化和反序列化<strong> 二叉搜索树</strong> 。 对序列化/反序列化算法的工作方式没有限制。 您只需确保二叉搜索树可以序列化为字符串，并且可以将该字符串反序列化为最初的二叉搜索树。</p>
+
+<p><strong>编码的字符串应尽可能紧凑。</strong></p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [2,1,3]
+<strong>输出：</strong>[2,1,3]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = []
+<strong>输出：</strong>[]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中节点数范围是 <code>[0, 10<sup>4</sup>]</code></li>
+	<li><code>0 &lt;= Node.val &lt;= 10<sup>4</sup></code></li>
+	<li>题目数据 <strong>保证</strong> 输入的树是一棵二叉搜索树。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Codec {", "", "    // Encodes a tree to a single string.", "    public String serialize(TreeNode root) {", "        StringBuilder sb = new StringBuilder();", "        ser(root, sb);", "        return sb.toString();", "    }", "", "    // 只存前序：BST 的中序可由大小关系推出来，不用存 null 占位", "    private void ser(TreeNode cur, StringBuilder sb) {", "        if (cur == null) return;", "        sb.append(cur.val).append(' ');", "        ser(cur.left, sb);", "        ser(cur.right, sb);", "    }", "", "    // Decodes your encoded data to tree.", "    public TreeNode deserialize(String data) {", "        if (data.isEmpty()) return null;", "        ArrayDeque<String> tok = new ArrayDeque<>(List.of(data.split(\" \")));", "        return de(tok, Long.MIN_VALUE, Long.MAX_VALUE);", "    }", "", "    // [lo, hi] 是当前子树允许的取值范围：越界的值不属于这棵子树，要留给上层", "    private TreeNode de(ArrayDeque<String> tok, long lo, long hi) {", "        if (tok.isEmpty()) return null;", "        long v = Long.parseLong(tok.peek());", "        if (v < lo || v > hi) return null;", "        tok.poll();", "        TreeNode cur = new TreeNode((int) v);", "        cur.left = de(tok, lo, v);", "        cur.right = de(tok, v, hi);", "        return cur;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 449 序列化和反序列化二叉搜索树 —— 图解：只存前序，反序列化用上下界把值分给正确的子树。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [5, 3, 8, 1, null, 7, 9] };
+
+function trace(input) {
+  var arr = input.root || [];
+  var frames = [];
+
+  // 建原树（层序数组 → 二叉树）
+  function build() {
+    if (!arr.length || arr[0] == null) return null;
+    var root = { val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var nd = q.shift();
+      if (i < arr.length) { if (arr[i] != null) { nd.left = { val: arr[i], left: null, right: null }; q.push(nd.left); } i++; }
+      if (i < arr.length) { if (arr[i] != null) { nd.right = { val: arr[i], left: null, right: null }; q.push(nd.right); } i++; }
+    }
+    return root;
+  }
+  var root = build();
+
+  // 任意（可能只建了一半的）树 → 力扣层序数组 + 结点 → 下标
+  // 力扣层序：每个非空结点出队时占两个槽位（左/右，缺就是 null），空结点不占槽位
+  function toLevel(node) {
+    var out = [], indexOf = new Map();
+    if (node) {
+      var q = [node];
+      indexOf.set(node, 0);
+      out.push(node.val);
+      while (q.length) {
+        var cur = q.shift();
+        [cur.left, cur.right].forEach(function (child) {
+          if (child) { indexOf.set(child, out.length); out.push(child.val); q.push(child); }
+          else out.push(null);
+        });
+      }
+      while (out.length && out[out.length - 1] === null) out.pop();
+    }
+    return { arr: out, indexOf: indexOf };
+  }
+
+  // 前序序列化（与 Solution.ser 一致）
+  var tokens = [];
+  function ser(node) {
+    if (!node) return;
+    tokens.push(node.val);
+    ser(node.left);
+    ser(node.right);
+  }
+  ser(root);
+
+  var SEREND = 'return sb.toString();';
+  var DSTART = 'return de(tok, Long.MIN_VALUE, Long.MAX_VALUE);';
+  var REJECT = 'if (v < lo || v > hi) return null;';
+  var ACCEPT = 'TreeNode cur = new TreeNode((int) v);';
+  var DEND = 'return cur;';
+
+  function fmt(x) { return x === -Infinity ? '−∞' : (x === Infinity ? '+∞' : x); }
+  function head(list, k) { return list.slice(0, k).join(' ') + (list.length > k ? ' …' : ''); }
+
+  function treePanel(tree, markIdx) {
+    var marks = {};
+    if (markIdx != null) marks[markIdx] = 'new';
+    return Viz.tree(tree, { title: '已重建的部分', marks: marks });
+  }
+  function varsPanel(rows) { return Viz.vars(rows); }
+
+  var tokensPanel = Viz.cells(tokens.map(String), { title: '序列化结果（前序）', marks: (function () { var m = {}; for (var i = 0; i < tokens.length; i++) m[i] = 'done'; return m; })() });
+  if (frames.length < 5) {
+    frames.push(Viz.frame(SEREND, '前序序列化完：只存值 ' + head(tokens, 6) + '，中序靠大小关系推，不存 null',
+      [Viz.tree(toLevel(root).arr, { title: '原树', marks: {} }), tokensPanel]));
+  }
+
+  // 反序列化（与 Solution.de 一致），顺手拍帧
+  var pos = 0;
+  var started = false, rejectedOnce = false, acceptedEight = false;
+  var rebuilt = null;
+
+  function de(lo, hi) {
+    if (pos >= tokens.length) return null;
+    var v = tokens[pos];
+    if (v < lo || v > hi) {
+      if (!rejectedOnce && frames.length < 5) {
+        var lvl = toLevel(rebuilt);
+        frames.push(Viz.frame(REJECT, '读到 ' + v + '：超出子树范围 (' + fmt(lo) + ', ' + fmt(hi) + ')——不属于这里，还给上层',
+          [treePanel(lvl.arr, null),
+           varsPanel([{ name: '读到 v', v: v, cls: 'bad' },
+                      { name: '当前范围 [lo, hi]', v: '[' + fmt(lo) + ', ' + fmt(hi) + ']' },
+                      { name: '已读 / 共', v: pos + ' / ' + tokens.length }])]));
+        rejectedOnce = true;
+      }
+      return null;
+    }
+    pos++;
+    var node = { val: v, left: null, right: null };
+    if (!rebuilt) rebuilt = node;
+    if (!started && frames.length < 5) {
+      var lvl0 = toLevel(rebuilt);
+      frames.push(Viz.frame(DSTART, '反序列化：从左往右读，' + v + ' 范围不限先当根，之后每个值按范围找位置',
+        [treePanel(lvl0.arr, lvl0.indexOf.get(node)),
+         varsPanel([{ name: '已读 / 共', v: pos + ' / ' + tokens.length }])]));
+      started = true;
+    }
+    if (v === 8 && lo === 5 && !acceptedEight && frames.length < 5) {
+      var lvl2 = toLevel(rebuilt);
+      frames.push(Viz.frame(ACCEPT, '8 在 1 的范围里被拒后，回到根的右子树（范围到 +∞）被收下',
+        [treePanel(lvl2.arr, lvl2.indexOf.get(node)),
+         varsPanel([{ name: '刚收下 v', v: v, cls: 'new' },
+                    { name: '它的范围 [lo, hi]', v: '[' + fmt(lo) + ', ' + fmt(hi) + ']' },
+                    { name: '已读 / 共', v: pos + ' / ' + tokens.length }])]));
+      acceptedEight = true;
+    }
+    node.left = de(lo, v);
+    node.right = de(v, hi);
+    return node;
+  }
+
+  var back = de(-Infinity, Infinity);
+
+  var finalLvl = toLevel(back);
+  if (frames.length < 6) {
+    frames.push(Viz.frame(DEND, '重建完成：与原树一致，前序 ' + head(tokens, 6) + ' → 中序有序',
+      [Viz.tree(finalLvl.arr, { title: '重建出的树', marks: (function () { var m = {}; for (var i = 0; i < finalLvl.arr.length; i++) if (finalLvl.arr[i] !== null) m[i] = 'done'; return m; })() })]));
+  }
+
+  return { frames: frames, result: finalLvl.arr };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

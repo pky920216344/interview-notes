@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最长重复子数组 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 94 / 1159</span>
+  <nav class="pn"><a href="0112.html">上一篇</a><a href="0207.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">718. </span>最长重复子数组</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 71</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">动态规划</li><li class="tag">滑动窗口</li><li class="tag">哈希函数</li><li class="tag">滚动哈希</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">dp[i][j] = 以 A[i-1]、B[j-1] 结尾的最长公共后缀：相等 = 左上 + 1，不等归零。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i][j]</code> 表示<strong>同时以 <code>nums1[i-1]</code>、<code>nums2[j-1]</code> 结尾</strong>的公共子数组长度，是「后缀」长度，所以不等时必须归零。</li><li>相等时 <code>dp[i][j] = dp[i-1][j-1] + 1</code>（左上角 + 1），过程中顺手取最大值就是答案。</li><li>Java 只滚动一行并<strong>倒序扫</strong>，保证 <code>dp[j-1]</code> 读到的还是上一行的值，空间 O(n)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> findLength(<span class="k">int</span>[] nums1, <span class="k">int</span>[] nums2) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = nums2.length;</span><span class="ln"><span class="no">4</span>        <span class="c">// dp[j]：以两数组当前元素结尾的公共子数组长度（滚动一行）</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= nums1.length; i++) {</span><span class="ln"><span class="no">8</span>            <span class="c">// 倒着扫，dp[j-1] 读到的还是上一行的值（左上角）</span></span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> j = n; j &gt;= <span class="n">1</span>; j--) {</span><span class="ln"><span class="no">10</span>                <span class="k">if</span> (nums1[i - <span class="n">1</span>] == nums2[j - <span class="n">1</span>]) {</span><span class="ln"><span class="no">11</span>                    dp[j] = dp[j - <span class="n">1</span>] + <span class="n">1</span>;</span><span class="ln"><span class="no">12</span>                    ans = <span class="t">Math</span>.max(ans, dp[j]);</span><span class="ln"><span class="no">13</span>                } <span class="k">else</span> {</span><span class="ln"><span class="no">14</span>                    dp[j] = <span class="n">0</span>;</span><span class="ln"><span class="no">15</span>                }</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给两个整数数组&nbsp;<code>nums1</code>&nbsp;和&nbsp;<code>nums2</code>&nbsp;，返回 <em>两个数组中 <strong>公共的</strong> 、长度最长的子数组的长度&nbsp;</em>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums1 = [1,2,3,2,1], nums2 = [3,2,1,4,7]
+<strong>输出：</strong>3
+<strong>解释：</strong>长度最长的公共子数组是 [3,2,1] 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums1 = [0,0,0,0,0], nums2 = [0,0,0,0,0]
+<strong>输出：</strong>5
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums1.length, nums2.length &lt;= 1000</code></li>
+	<li><code>0 &lt;= nums1[i], nums2[i] &lt;= 100</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int findLength(int[] nums1, int[] nums2) {", "        int n = nums2.length;", "        // dp[j]：以两数组当前元素结尾的公共子数组长度（滚动一行）", "        int[] dp = new int[n + 1];", "        int ans = 0;", "        for (int i = 1; i <= nums1.length; i++) {", "            // 倒着扫，dp[j-1] 读到的还是上一行的值（左上角）", "            for (int j = n; j >= 1; j--) {", "                if (nums1[i - 1] == nums2[j - 1]) {", "                    dp[j] = dp[j - 1] + 1;", "                    ans = Math.max(ans, dp[j]);", "                } else {", "                    dp[j] = 0;", "                }", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 718. 最长重复子数组 —— 图解：画完整 dp 二维表（Java 滚动一行，值相同），在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums1: [1, 2, 3, 2, 1], nums2: [3, 2, 1, 4, 7] };
+
+function trace(input) {
+  var A = input.nums1, B = input.nums2;
+  var m = A.length, n = B.length;
+  var frames = [];
+
+  // dp[i][j]：以 nums1[i-1]、nums2[j-1] 结尾的公共子数组长度（Java 只滚动一行）
+  var dp = [];
+  for (var r = 0; r <= m; r++) dp.push(new Array(n + 1).fill(0));
+  var ans = 0, bestI = 0, bestJ = 0;
+  var sawMismatch = false, sawTwo = false;
+
+  function gridPanel(marks) {
+    return Viz.grid(dp, {
+      title: 'dp[i][j]：以 nums1[i-1]、nums2[j-1] 结尾的公共长度',
+      rowLabels: ['·'].concat(A.map(String)),
+      colLabels: ['·'].concat(B.map(String)),
+      corner: 'i＼j', marks: marks
+    });
+  }
+  function varsPanel(cls) {
+    return Viz.vars([{ name: 'ans', v: ans, cls: cls || '' }]);
+  }
+  // arr 里下标 [from, to] 标 cls，其余 dim
+  function markRange(arr, from, to, cls) {
+    var m2 = {};
+    for (var q = 0; q < arr.length; q++) m2[q] = q >= from && q <= to ? cls : 'dim';
+    return m2;
+  }
+
+  var initMarks = {};
+  for (var c = 0; c <= n; c++) initMarks['0,' + c] = 'win';
+  for (var r2 = 0; r2 <= m; r2++) initMarks[r2 + ',0'] = 'win';
+  frames.push(Viz.frame('int[] dp = new int[n + 1];',
+    '开局：dp 全 0，第 0 行/列（结尾为空）恒为 0', [gridPanel(initMarks)]));
+
+  for (var i = 1; i <= m; i++) {
+    for (var j = 1; j <= n; j++) {
+      if (A[i - 1] === B[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+        if (dp[i][j] === 2 && !sawTwo) {
+          sawTwo = true;
+          var mk = {};
+          mk[i + ',' + j] = 'new';
+          mk[(i - 1) + ',' + (j - 1)] = 'hit';
+          frames.push(Viz.frame('dp[j] = dp[j - 1] + 1;',
+            '相等：左上角 ' + dp[i - 1][j - 1] + ' + 1 = ' + dp[i][j] + '，公共段接长',
+            [gridPanel(mk), varsPanel('chg')]));
+        }
+        if (dp[i][j] > ans) { ans = dp[i][j]; bestI = i; bestJ = j; }
+      } else {
+        dp[i][j] = 0;
+        if (!sawMismatch) {
+          sawMismatch = true;
+          var mm = {};
+          mm[i + ',' + j] = 'bad';
+          frames.push(Viz.frame('dp[j] = 0;',
+            '不等就归零：nums1[' + (i - 1) + ']=' + A[i - 1] + ' ≠ nums2[' + (j - 1) + ']=' + B[j - 1] + '，后缀断了',
+            [gridPanel(mm)]));
+        }
+      }
+    }
+  }
+
+  if (ans > 0) {
+    var chain = {};
+    for (var t = 0; t < ans; t++) chain[(bestI - t) + ',' + (bestJ - t)] = 'done';
+    frames.push(Viz.frame('ans = Math.max(ans, dp[j]);',
+      '最长在 dp[' + bestI + '][' + bestJ + '] = ' + ans + '：对角线一路 +1',
+      [gridPanel(chain), varsPanel('')]));
+    var cellsA = Viz.cells(A, { title: 'nums1', marks: markRange(A, bestI - ans, bestI - 1, 'done') });
+    var cellsB = Viz.cells(B, { title: 'nums2', marks: markRange(B, bestJ - ans, bestJ - 1, 'done') });
+    frames.push(Viz.frame('return ans;',
+      '返回 ' + ans + '：最长公共段 [' + A.slice(bestI - ans, bestI).join(',') + ']',
+      [gridPanel(chain), varsPanel('done'), cellsA, cellsB]));
+  } else {
+    frames.push(Viz.frame('return ans;',
+      '没有公共子数组，返回 0',
+      [gridPanel({})]));
+  }
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

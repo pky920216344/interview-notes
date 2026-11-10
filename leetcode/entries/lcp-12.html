@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>小张刷题计划 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 877 / 1159</span>
+  <nav class="pn"><a href="1093.html">上一篇</a><a href="0371.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">LCP 12. </span>小张刷题计划</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">二分查找</li><li class="aux">贪心</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">二分最忙一天的耗时 T，贪心 check：逐题装进当天，超了就求助删当天最耗时的一道（每天一次），删完还超就开新的一天。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>答案单调：<code>T</code> 越大越容易在 <code>m</code> 天内排完，可二分 <code>T ∈ [0, Σtime]</code>。</li><li>check 贪心装天：<code>sum</code> 超过 <code>T</code> 且当天还没用过求助时，删掉<strong>当天最耗时</strong>的一道（可能正是当前题），<code>sum</code> 必然回到不超。</li><li>求助已用还超就开新的一天；新的一天第一题就超 <code>T</code>，就求助它自己，代价归 0。</li><li>求助永远删当天最大值是最优的：这样当天能装下更多题，不会更差。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log Σtime)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> minTime(<span class="k">int</span>[] time, <span class="k">int</span> m) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 二分「最忙那天的耗时 T」：T 越大越容易在 m 天内排完，可行域单调</span></span><span class="ln"><span class="no">4</span>        <span class="k">long</span> lo = <span class="n">0</span>, hi = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> t : time) hi += t;</span><span class="ln"><span class="no">6</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">7</span>            <span class="k">long</span> mid = (lo + hi) / <span class="n">2</span>;</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (check(time, m, mid)) hi = mid;</span><span class="ln"><span class="no">9</span>            <span class="k">else</span> lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="k">return</span> (<span class="k">int</span>) lo;</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="c">// 贪心装天：超时就求助删掉当天最耗时的题（每天最多一次）；还超就开新的一天</span></span><span class="ln"><span class="no">15</span>    <span class="k">private</span> <span class="k">boolean</span> check(<span class="k">int</span>[] time, <span class="k">int</span> m, <span class="k">long</span> T) {</span><span class="ln"><span class="no">16</span>        <span class="k">int</span> days = <span class="n">1</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">long</span> sum = <span class="n">0</span>;      <span class="c">// 当天求助之后还要做的总时间</span></span><span class="ln"><span class="no">18</span>        <span class="k">int</span> max = <span class="n">0</span>;       <span class="c">// 当天最耗时的一道题</span></span><span class="ln"><span class="no">19</span>        <span class="k">boolean</span> helped = <span class="k">false</span>;</span><span class="ln"><span class="no">20</span>        <span class="k">for</span> (<span class="k">int</span> t : time) {</span><span class="ln"><span class="no">21</span>            max = <span class="t">Math</span>.max(max, t);</span><span class="ln"><span class="no">22</span>            sum += t;</span><span class="ln"><span class="no">23</span>            <span class="k">if</span> (sum &gt; T) {</span><span class="ln"><span class="no">24</span>                <span class="k">if</span> (!helped) {</span><span class="ln"><span class="no">25</span>                    helped = <span class="k">true</span>;</span><span class="ln"><span class="no">26</span>                    sum -= max;   <span class="c">// 求助删掉当天最大的一道（可能正是 t），必然回到不超</span></span><span class="ln"><span class="no">27</span>                } <span class="k">else</span> {</span><span class="ln"><span class="no">28</span>                    days++;</span><span class="ln"><span class="no">29</span>                    sum = t;</span><span class="ln"><span class="no">30</span>                    max = t;</span><span class="ln"><span class="no">31</span>                    helped = <span class="k">false</span>;</span><span class="ln"><span class="no">32</span>                    <span class="k">if</span> (sum &gt; T) {   <span class="c">// 新的一天第一题就超：求助它自己，代价归 0</span></span><span class="ln"><span class="no">33</span>                        helped = <span class="k">true</span>;</span><span class="ln"><span class="no">34</span>                        sum = <span class="n">0</span>;</span><span class="ln"><span class="no">35</span>                    }</span><span class="ln"><span class="no">36</span>                }</span><span class="ln"><span class="no">37</span>            }</span><span class="ln"><span class="no">38</span>        }</span><span class="ln"><span class="no">39</span>        <span class="k">return</span> days &lt;= m;</span><span class="ln"><span class="no">40</span>    }</span><span class="ln"><span class="no">41</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>为了提高自己的代码能力，小张制定了 <code>LeetCode</code> 刷题计划，他选中了 <code>LeetCode</code> 题库中的 <code>n</code> 道题，编号从 <code>0</code> 到 <code>n-1</code>，并计划在 <code>m</code> 天内<strong>按照题目编号顺序</strong>刷完所有的题目（注意，小张不能用多天完成同一题）。</p>
+
+<p>在小张刷题计划中，小张需要用 <code>time[i]</code> 的时间完成编号 <code>i</code> 的题目。此外，小张还可以使用场外求助功能，通过询问他的好朋友小杨题目的解法，可以省去该题的做题时间。为了防止&ldquo;小张刷题计划&rdquo;变成&ldquo;小杨刷题计划&rdquo;，小张每天最多使用一次求助。</p>
+
+<p>我们定义 <code>m</code> 天中做题时间最多的一天耗时为 <code>T</code>（小杨完成的题目不计入做题总时间）。请你帮小张求出最小的 <code>T</code>是多少。</p>
+
+<p><strong>示例 1：</strong></p>
+
+<blockquote>
+<p>输入：<code>time = [1,2,3,3], m = 2</code></p>
+
+<p>输出：<code>3</code></p>
+
+<p>解释：第一天小张完成前三题，其中第三题找小杨帮忙；第二天完成第四题，并且找小杨帮忙。这样做题时间最多的一天花费了 3 的时间，并且这个值是最小的。</p>
+</blockquote>
+
+<p><strong>示例 2：</strong></p>
+
+<blockquote>
+<p>输入：<code>time = [999,999,999], m = 4</code></p>
+
+<p>输出：<code>0</code></p>
+
+<p>解释：在前三天中，小张每天求助小杨一次，这样他可以在三天内完成所有的题目并不花任何时间。</p>
+</blockquote>
+
+
+
+<p><strong>限制：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= time.length &lt;= 10^5</code></li>
+	<li><code>1 &lt;= time[i] &lt;= 10000</code></li>
+	<li><code>1 &lt;= m &lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int minTime(int[] time, int m) {", "        // 二分「最忙那天的耗时 T」：T 越大越容易在 m 天内排完，可行域单调", "        long lo = 0, hi = 0;", "        for (int t : time) hi += t;", "        while (lo < hi) {", "            long mid = (lo + hi) / 2;", "            if (check(time, m, mid)) hi = mid;", "            else lo = mid + 1;", "        }", "        return (int) lo;", "    }", "", "    // 贪心装天：超时就求助删掉当天最耗时的题（每天最多一次）；还超就开新的一天", "    private boolean check(int[] time, int m, long T) {", "        int days = 1;", "        long sum = 0;      // 当天求助之后还要做的总时间", "        int max = 0;       // 当天最耗时的一道题", "        boolean helped = false;", "        for (int t : time) {", "            max = Math.max(max, t);", "            sum += t;", "            if (sum > T) {", "                if (!helped) {", "                    helped = true;", "                    sum -= max;   // 求助删掉当天最大的一道（可能正是 t），必然回到不超", "                } else {", "                    days++;", "                    sum = t;", "                    max = t;", "                    helped = false;", "                    if (sum > T) {   // 新的一天第一题就超：求助它自己，代价归 0", "                        helped = true;", "                        sum = 0;", "                    }", "                }", "            }", "        }", "        return days <= m;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// LCP 12. 小张刷题计划 —— 图解：复刻 Solution.java 的「二分 T + 贪心装天」，在关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { time: [1, 2, 3, 3], m: 2 };
+
+function trace(input) {
+  var time = input.time, m = input.m;
+  var frames = [];
+  var BIN = 'while (lo < hi) {';
+  var HELP = 'sum -= max;   // 求助删掉当天最大的一道（可能正是 t），必然回到不超';
+  var NEWDAY = 'days++;';
+  var RET = 'return (int) lo;';
+
+  // 复刻 check：逐题装天，记录每一题分到哪天、求助/开新天的事件
+  function checkRun(T) {
+    var days = 1, sum = 0, max = 0, maxIdx = -1, helped = false;
+    var dayOf = [], events = [];
+    for (var i = 0; i < time.length; i++) {
+      var t = time[i];
+      if (t > max) { max = t; maxIdx = i; }
+      sum += t;
+      dayOf[i] = days;
+      if (sum > T) {
+        if (!helped) {
+          helped = true;
+          sum -= max;
+          events.push({ kind: 'help', i: i, helpedIdx: maxIdx, days: days, sum: sum, T: T, dayOf: dayOf.slice() });
+        } else {
+          days++;
+          sum = t; max = t; maxIdx = i; helped = false;
+          dayOf[i] = days;
+          if (sum > T) { helped = true; sum = 0; }
+          events.push({ kind: 'newday', i: i, days: days, sum: sum, T: T, dayOf: dayOf.slice() });
+        }
+      }
+    }
+    return { ok: days <= m, days: days, events: events };
+  }
+
+  var lo = 0, hi = 0, i2;
+  for (i2 = 0; i2 < time.length; i2++) hi += time[i2];
+  var calls = [];
+  while (lo < hi) {
+    var mid = Math.floor((lo + hi) / 2);   // Java 的 long 整除
+    var run = checkRun(mid);
+    calls.push({ mid: mid, run: run, ok: run.ok });
+    if (run.ok) hi = mid; else lo = mid + 1;
+  }
+
+  function cellsPanel(ev, label) {
+    var marks = {}, range = null;
+    if (ev) {
+      var d = ev.days, from = -1;
+      for (var k = 0; k < time.length; k++) {
+        if (ev.dayOf[k] < d) marks[k] = 'dim';
+        else if (ev.dayOf[k] === d) { marks[k] = 'win'; if (from < 0) from = k; }
+      }
+      if (ev.kind === 'help') marks[ev.helpedIdx] = 'bad';
+      marks[ev.i] = ev.kind === 'help' ? 'bad' : 'cur';
+      if (ev.helpedIdx !== ev.i && ev.kind === 'help') marks[ev.i] = 'cur';
+      if (from >= 0) range = { from: from, to: ev.i, label: '第 ' + d + ' 天' };
+    }
+    return Viz.cells(time.slice(), { title: 'time（按顺序装进各天）', marks: marks, range: range });
+  }
+  function varsPanel(ev) {
+    return Viz.vars([
+      { name: '试探的 T', v: ev ? ev.T : '—' },
+      { name: '已用天数 days', v: ev ? ev.days : 0, cls: 'chg' },
+      { name: '当天 sum（求助后）', v: ev ? ev.sum : '—' }
+    ]);
+  }
+
+  frames.push(Viz.frame(BIN, '二分「最忙一天的耗时」T：lo=0，hi=' + hi + '（总时间）', [
+    Viz.cells(time.slice(), { title: 'time（必须按顺序刷）', marks: {} }),
+    Viz.vars([{ name: 'lo', v: 0 }, { name: 'hi', v: hi }])
+  ]));
+
+  var helpEv = null, failNewday = null, anyNewday = null, ci;
+  for (ci = 0; ci < calls.length; ci++) {
+    var es = calls[ci].run.events, ei;
+    for (ei = 0; ei < es.length; ei++) {
+      if (!helpEv && es[ei].kind === 'help') helpEv = es[ei];
+      if (es[ei].kind === 'newday') {
+        anyNewday = es[ei];
+        if (!calls[ci].ok) failNewday = es[ei];
+      }
+    }
+  }
+  if (helpEv) {
+    frames.push(Viz.frame(HELP, 'check(' + helpEv.T + ')：当天超了，求助删掉当天最耗时的题（红），当天继续装', [cellsPanel(helpEv), varsPanel(helpEv)]));
+  }
+  var nd = failNewday || anyNewday;
+  if (nd) {
+    var verdict = failNewday ? '仍装不下就开新的一天；天数超出 m 就不可行' : '当天装不下且求助用完：开新的一天';
+    frames.push(Viz.frame(NEWDAY, 'check(' + nd.T + ')：' + verdict, [cellsPanel(nd), varsPanel(nd)]));
+  }
+
+  frames.push(Viz.frame(RET, '夹出最小可行的 T = ' + lo + '（最忙那天就这么多时间）', [
+    Viz.cells(time.slice(), { title: 'time（按顺序刷）', marks: {} }),
+    Viz.vars([{ name: '答案 T', v: lo, cls: 'done' }])
+  ]));
+
+  return { frames: frames, result: lo };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>下一个更大元素 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 215 / 1159</span>
+  <nav class="pn"><a href="0443.html">上一篇</a><a href="mianshi-17-14.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">503. </span>下一个更大元素 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 22</li><li class="algo">单调栈</li><li class="tag">栈</li><li class="tag">数组</li><li class="tag">单调栈</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">单调递减栈 + 倒着走两圈：i 从 2n-1 到 0 取模，先备好「未来的一圈」，第一圈时栈顶就是右边第一个更大的值。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>栈存<strong>下标</strong>，对应的值从栈底到栈顶递减；<code>i</code> 从 <code>2n-1</code> 倒着走到 0，<code>i % n</code> 取模实现循环。</li><li>每步先把栈里值 <code>≤ x</code> 的全弹掉（它们不可能再当任何位置的答案，<strong>相等也不行</strong>），再取栈顶作答案，最后把当前下标进栈。</li><li>只有第一圈（<code>i &lt; n</code>）写答案；第二圈只是提前把「右边可能的元素」备进栈。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] nextGreaterElements(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] ans = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">7</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();   <span class="c">// 存下标，值从栈底到栈顶递减</span></span><span class="ln"><span class="no">8</span>        <span class="c">// 倒着走两圈：i%n 取模，先把「未来的一圈」备进栈</span></span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">2</span> * n - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">10</span>            <span class="k">int</span> x = nums[i % n];</span><span class="ln"><span class="no">11</span>            <span class="c">// 栈里值 ≤ x 的下标当不了任何人的答案，弹掉</span></span><span class="ln"><span class="no">12</span>            <span class="k">while</span> (!stack.isEmpty() &amp;&amp; nums[stack.peek()] &lt;= x) stack.pop();</span><span class="ln"><span class="no">13</span>            <span class="c">// 第一圈才写答案：栈顶就是 x 右边第一个更大的值</span></span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (i &lt; n) ans[i] = stack.isEmpty() ? -<span class="n">1</span> : nums[stack.peek()];</span><span class="ln"><span class="no">15</span>            stack.push(i % n);</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个循环数组&nbsp;<code>nums</code>&nbsp;（&nbsp;<code>nums[nums.length - 1]</code>&nbsp;的下一个元素是&nbsp;<code>nums[0]</code>&nbsp;），返回&nbsp;<em><code>nums</code>&nbsp;中每个元素的 <strong>下一个更大元素</strong></em> 。</p>
+
+<p>数字 <code>x</code>&nbsp;的 <strong>下一个更大的元素</strong> 是按数组遍历顺序，这个数字之后的第一个比它更大的数，这意味着你应该循环地搜索它的下一个更大的数。如果不存在，则输出 <code>-1</code>&nbsp;。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> nums = [1,2,1]
+<strong>输出:</strong> [2,-1,2]
+<strong>解释:</strong> 第一个 1 的下一个更大的数是 2；
+数字 2 找不到下一个更大的数； 
+第二个 1 的下一个最大的数需要循环搜索，结果也是 2。
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> nums = [1,2,3,4,3]
+<strong>输出:</strong> [2,3,4,-1,4]
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>-10<sup>9</sup>&nbsp;&lt;= nums[i] &lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] nextGreaterElements(int[] nums) {", "        int n = nums.length;", "        int[] ans = new int[n];", "        Deque<Integer> stack = new ArrayDeque<>();   // 存下标，值从栈底到栈顶递减", "        // 倒着走两圈：i%n 取模，先把「未来的一圈」备进栈", "        for (int i = 2 * n - 1; i >= 0; i--) {", "            int x = nums[i % n];", "            // 栈里值 ≤ x 的下标当不了任何人的答案，弹掉", "            while (!stack.isEmpty() && nums[stack.peek()] <= x) stack.pop();", "            // 第一圈才写答案：栈顶就是 x 右边第一个更大的值", "            if (i < n) ans[i] = stack.isEmpty() ? -1 : nums[stack.peek()];", "            stack.push(i % n);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 503. 下一个更大元素 II —— 图解：复刻 Solution.java 的「倒着走两圈 + 单调递减栈」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 2, 3, 4, 3] };
+
+function trace(input) {
+  var nums = input.nums;
+  var n = nums.length;
+  var ans = new Array(n);
+  var stack = [];          // 存下标；展示时画的是对应的值，从栈底到栈顶递减
+  var answered = new Array(n);
+  var frames = [];
+  var shot = { start: false, pop: false, set: false };
+
+  var MOD = 'int x = nums[i % n];';
+  var POP = 'while (!stack.isEmpty() && nums[stack.peek()] <= x) stack.pop();';
+  var SET = 'if (i < n) ans[i] = stack.isEmpty() ? -1 : nums[stack.peek()];';
+
+  function numsPanel(cur, curCls) {
+    var marks = {};
+    for (var k = 0; k < n; k++) if (answered[k]) marks[k] = 'done';
+    if (cur != null && curCls) marks[cur] = curCls;
+    var pointers = cur != null ? [{ at: cur, label: 'i%n', cls: 'p-right' }] : [];
+    return Viz.cells(nums.map(String), { title: '循环数组 nums', marks: marks, pointers: pointers });
+  }
+  function stackPanel(dying) {
+    var marks = {};
+    stack.forEach(function (idx, pos) { if (dying && dying[idx]) marks[pos] = 'bad'; });
+    var pointers = stack.length ? [{ at: stack.length - 1, label: '栈顶', cls: 'p-tail' }] : [];
+    return Viz.cells(stack.map(function (idx) { return nums[idx]; }),
+      { title: '栈（存下标，值从底到顶递减）', marks: marks, pointers: pointers });
+  }
+  function varsPanel(i, idx, x) {
+    return Viz.vars([
+      { name: 'i', v: i, cls: '' },
+      { name: 'i%n', v: idx, cls: 'chg' },
+      { name: 'x', v: x, cls: '' }
+    ]);
+  }
+  function snap(at, key, cur, curCls, dying, i, idx, x) {
+    frames.push(Viz.frame(at, key, [numsPanel(cur, curCls), stackPanel(dying), varsPanel(i, idx, x)]));
+  }
+
+  for (var i = 2 * n - 1; i >= 0; i--) {
+    var idx = i % n;
+    var x = nums[idx];
+    if (!shot.start) {
+      shot.start = true;
+      snap(MOD, 'i 从 2n-1 倒着走、i%n 取模：先把「未来的一圈」备进栈', idx, 'cur', null, i, idx, x);
+    }
+    if (!stack.length || nums[stack[stack.length - 1]] > x) {
+      // 栈顶 > x：不用弹
+    } else if (!shot.pop) {
+      shot.pop = true;
+      var dying = {};
+      stack.forEach(function (q) { if (nums[q] <= x) dying[q] = 1; });
+      snap(POP, 'x=' + x + '：栈顶 ≤ x 的全弹掉，它们等不到更大的了', idx, 'cur', dying, i, idx, x);
+    }
+    while (stack.length && nums[stack[stack.length - 1]] <= x) stack.pop();
+    if (i < n) {
+      ans[i] = stack.length ? nums[stack[stack.length - 1]] : -1;
+      answered[i] = true;
+      if (!shot.set) {
+        shot.set = true;
+        snap(SET, stack.length
+          ? 'i=' + i + '：栈顶 ' + nums[stack[stack.length - 1]] + ' 就是右边第一个更大的 → ans[' + i + ']'
+          : 'i=' + i + '：栈空，右边（含绕圈）没有更大的 → ans[' + i + ']=-1',
+          idx, 'new', null, i, idx, x);
+      }
+    }
+    stack.push(idx);
+  }
+
+  var done = {};
+  for (var k = 0; k < n; k++) done[k] = 'done';
+  frames.push(Viz.frame('return ans;', '扫完：每个位置都拿到右边第一个更大的值（没有就是 -1）',
+    [Viz.cells(ans.map(String), { title: '答案 ans', marks: done }),
+     Viz.cells(nums.map(String), { title: '循环数组 nums', marks: {} })]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

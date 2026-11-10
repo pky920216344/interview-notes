@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>O(1) 时间插入、删除和获取随机元素 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 224 / 1159</span>
+  <nav class="pn"><a href="offer-03.html">上一篇</a><a href="1444.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">380. </span>O(1) 时间插入、删除和获取随机元素</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 21</li><li class="algo">设计</li><li class="aux">哈希表</li><li class="tag">设计</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">数学</li><li class="tag">随机化</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">哈希表记「值→下标」+ 数组存值；删除时把末尾元素搬到被删位置补位，插入、删除、随机都是 O(1)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>getRandom</code> 要等概率 O(1)，只有「数组 + 随机下标」做得到，所以主体是数组；哈希表 <code>pos</code> 负责 O(1) 定位。</li><li><code>insert</code>：<code>pos</code> 里没有才追加到数组末尾，并记 <code>pos[val] = size-1</code>。</li><li><code>remove</code>：把末尾元素搬到被删位置（<code>vals[i] = last</code>、<code>pos[last] = i</code>），再删末尾、<code>pos</code> 移除被删值——数组保持紧凑，不用整体挪动。删的就是末尾元素时，这几步天然正确。</li><li><code>getRandom</code>：<code>vals.get(rnd.nextInt(size))</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1)（均摊），空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">RandomizedSet</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 数组存元素、哈希表记「值 → 下标」；删除靠末尾元素补位，两个结构都 O(1)</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; pos = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; vals = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Random</span> rnd = <span class="k">new</span> <span class="t">Random</span>();</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="k">public</span> <span class="t">RandomizedSet</span>() {</span><span class="ln"><span class="no">10</span>    }</span><span class="ln"><span class="no">11</span> </span><span class="ln"><span class="no">12</span>    <span class="k">public</span> <span class="k">boolean</span> insert(<span class="k">int</span> val) {</span><span class="ln"><span class="no">13</span>        <span class="k">if</span> (pos.containsKey(val)) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">14</span>        pos.put(val, vals.size());</span><span class="ln"><span class="no">15</span>        vals.add(val);</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    <span class="k">public</span> <span class="k">boolean</span> remove(<span class="k">int</span> val) {</span><span class="ln"><span class="no">20</span>        <span class="t">Integer</span> i = pos.get(val);</span><span class="ln"><span class="no">21</span>        <span class="k">if</span> (i == <span class="k">null</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">22</span>        <span class="c">// 末尾元素搬到被删位置补位，数组不用整体移动</span></span><span class="ln"><span class="no">23</span>        <span class="k">int</span> last = vals.get(vals.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">24</span>        vals.set(i, last);</span><span class="ln"><span class="no">25</span>        pos.put(last, i);</span><span class="ln"><span class="no">26</span>        vals.remove(vals.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">27</span>        pos.remove(val);</span><span class="ln"><span class="no">28</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span> </span><span class="ln"><span class="no">31</span>    <span class="k">public</span> <span class="k">int</span> getRandom() {</span><span class="ln"><span class="no">32</span>        <span class="k">return</span> vals.get(rnd.nextInt(vals.size()));</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>实现<code>RandomizedSet</code> 类：</p>
+
+<div class="original__bRMd">
+<div>
+<ul>
+	<li><code>RandomizedSet()</code> 初始化 <code>RandomizedSet</code> 对象</li>
+	<li><code>bool insert(int val)</code> 当元素 <code>val</code> 不存在时，向集合中插入该项，并返回 <code>true</code> ；否则，返回 <code>false</code> 。</li>
+	<li><code>bool remove(int val)</code> 当元素 <code>val</code> 存在时，从集合中移除该项，并返回 <code>true</code> ；否则，返回 <code>false</code> 。</li>
+	<li><code>int getRandom()</code> 随机返回现有集合中的一项（测试用例保证调用此方法时集合中至少存在一个元素）。每个元素应该有 <strong>相同的概率</strong> 被返回。</li>
+</ul>
+
+<p>你必须实现类的所有函数，并满足每个函数的 <strong>平均</strong> 时间复杂度为 <code>O(1)</code> 。</p>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入</strong>
+["RandomizedSet", "insert", "remove", "insert", "getRandom", "remove", "insert", "getRandom"]
+[[], [1], [2], [2], [], [1], [2], []]
+<strong>输出</strong>
+[null, true, false, true, 2, true, false, 2]
+
+<strong>解释</strong>
+RandomizedSet randomizedSet = new RandomizedSet();
+randomizedSet.insert(1); // 向集合中插入 1 。返回 true 表示 1 被成功地插入。
+randomizedSet.remove(2); // 返回 false ，表示集合中不存在 2 。
+randomizedSet.insert(2); // 向集合中插入 2 。返回 true 。集合现在包含 [1,2] 。
+randomizedSet.getRandom(); // getRandom 应随机返回 1 或 2 。
+randomizedSet.remove(1); // 从集合中移除 1 ，返回 true 。集合现在包含 [2] 。
+randomizedSet.insert(2); // 2 已在集合中，所以返回 false 。
+randomizedSet.getRandom(); // 由于 2 是集合中唯一的数字，getRandom 总是返回 2 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>-2<sup>31</sup> &lt;= val &lt;= 2<sup>31</sup> - 1</code></li>
+	<li>最多调用 <code>insert</code>、<code>remove</code> 和 <code>getRandom</code> 函数 <code>2 *&nbsp;</code><code>10<sup>5</sup></code> 次</li>
+	<li>在调用 <code>getRandom</code> 方法时，数据结构中 <strong>至少存在一个</strong> 元素。</li>
+</ul>
+</div>
+</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class RandomizedSet {", "    // 数组存元素、哈希表记「值 → 下标」；删除靠末尾元素补位，两个结构都 O(1)", "    private final Map<Integer, Integer> pos = new HashMap<>();", "    private final List<Integer> vals = new ArrayList<>();", "    private final Random rnd = new Random();", "", "    public RandomizedSet() {", "    }", "", "    public boolean insert(int val) {", "        if (pos.containsKey(val)) return false;", "        pos.put(val, vals.size());", "        vals.add(val);", "        return true;", "    }", "", "    public boolean remove(int val) {", "        Integer i = pos.get(val);", "        if (i == null) return false;", "        // 末尾元素搬到被删位置补位，数组不用整体移动", "        int last = vals.get(vals.size() - 1);", "        vals.set(i, last);", "        pos.put(last, i);", "        vals.remove(vals.size() - 1);", "        pos.remove(val);", "        return true;", "    }", "", "    public int getRandom() {", "        return vals.get(rnd.nextInt(vals.size()));", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 380. O(1) 时间插入、删除和获取随机元素 —— 图解：复刻 Solution.java 的「哈希表 + 数组」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// getRandom 的随机选择两边各自独立，不进对拍结果（out 只含 insert/remove 的布尔值）。
+
+var STORY_INPUT = { ops: [['insert', 1], ['insert', 2], ['remove', 1], ['getRandom'], ['insert', 2]] };
+
+function trace(input) {
+  var vals = [];    // 数组存元素
+  var pos = {};     // pos：值 → 数组下标
+  var frames = [], out = [];
+
+  var ADD = 'pos.put(val, vals.size());';
+  var SET = 'vals.set(i, last);';
+  var RM = 'pos.remove(val);';
+  var GET = 'return vals.get(rnd.nextInt(vals.size()));';
+  var HAS = 'if (pos.containsKey(val)) return false;';
+
+  function valsPanel(marks, ptrs) {
+    return Viz.cells(vals.slice(), { title: 'vals 数组（紧凑存放）', marks: marks || {}, pointers: ptrs || [] });
+  }
+  function posPanel(hitKey) {
+    var keys = Object.keys(pos).map(Number).sort(function (a, b) { return a - b; });
+    var rows = keys.map(function (k) { return { k: String(k), v: String(pos[k]), cls: k === hitKey ? 'hit' : '' }; });
+    return Viz.table('pos：值 → 下标', rows);
+  }
+
+  input.ops.forEach(function (op, idx) {
+    if (op[0] === 'insert') {
+      var v = op[1];
+      if (Object.prototype.hasOwnProperty.call(pos, v)) {
+        out.push(false);
+        if (idx === 4) {
+          frames.push(Viz.frame(HAS, 'insert(' + v + ')：pos 里已经有它，返回 false', [valsPanel(), posPanel(v)]));
+        }
+        return;
+      }
+      pos[v] = vals.length;
+      vals.push(v);
+      out.push(true);
+      if (idx === 1) {
+        frames.push(Viz.frame(ADD, 'insert：追加到数组末尾，pos 记下标，两个结构都 O(1)',
+          [valsPanel({}, [{ at: vals.length - 1, label: '末尾', cls: 'p-tail' }]), posPanel()]));
+      }
+    } else if (op[0] === 'remove') {
+      var rv = op[1];
+      if (!Object.prototype.hasOwnProperty.call(pos, rv)) { out.push(false); return; }
+      var i = pos[rv];
+      var last = vals[vals.length - 1];
+      if (idx === 2) {
+        var mk = {};
+        mk[i] = 'bad';
+        var ptrs = [{ at: vals.length - 1, label: 'last=' + last, cls: 'p-tail' }];
+        frames.push(Viz.frame(SET, 'remove(' + rv + ')：把末尾的 ' + last + ' 搬到 ' + i + ' 号位补缺，避免整体挪动',
+          [valsPanel(mk, ptrs), posPanel(rv)]));
+      }
+      vals[i] = last;
+      pos[last] = i;
+      vals.pop();
+      delete pos[rv];
+      out.push(true);
+      if (idx === 2) {
+        var mk2 = {};
+        mk2[i] = 'new';
+        frames.push(Viz.frame(RM, '补位后数组仍紧凑：' + last + ' 现在在下标 ' + i, [valsPanel(mk2), posPanel()]));
+      }
+    } else {
+      if (!vals.length) return;
+      var pick = vals[Math.floor(Math.random() * vals.length)];
+      if (idx === 3) {
+        frames.push(Viz.frame(GET, 'getRandom：数组随机下标直接取，天然等概率，这次抽到 ' + pick,
+          [valsPanel({}, [{ at: vals.indexOf(pick), label: '抽中', cls: 'p-cur' }]), posPanel()]));
+      }
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

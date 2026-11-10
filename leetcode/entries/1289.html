@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>下降路径最小和  II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 960 / 1159</span>
+  <nav class="pn"><a href="0576.html">上一篇</a><a href="1301.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1289. </span>下降路径最小和  II</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">逐行 DP，但上一行只留三样东西：最小值、次小值、最小值所在列；本列撞上最小值就退用次小，O(n²) 免建全表。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>常规转移要「上一行除 j 外的最小值」，逐格扫是 O(n³)；只记 <strong>最小 + 次小</strong> 即可 O(n²)。</li><li>若上一行最小值不在本列 → 直接用；恰好在本列 → 用次小值（次小值必然覆盖其余所有列）。</li><li>第一行没有约束（<code>fcol = -1</code>，永远不撞列），从全 0 的虚拟状态起步。</li><li>每行扫完就地更新 <code>fmin / smin / fcol</code>，负数、并列最小值都天然正确。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> minFallingPathSum(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = grid.length;</span><span class="ln"><span class="no">4</span>        <span class="c">// 上一行的最小值 fmin、次小值 smin、最小值所在列 fcol（-1 表示还没有上一行）</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span> fmin = <span class="n">0</span>, smin = <span class="n">0</span>, fcol = -<span class="n">1</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span>[] row : grid) {</span><span class="ln"><span class="no">7</span>            <span class="k">int</span> gmin = <span class="t">Integer</span>.MAX_VALUE, gsmin = <span class="t">Integer</span>.MAX_VALUE, gcol = -<span class="n">1</span>;</span><span class="ln"><span class="no">8</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">9</span>                <span class="c">// 斜降不能同列：上一行的最小值恰好在本列时，只能退而用次小值</span></span><span class="ln"><span class="no">10</span>                <span class="k">int</span> pre = j == fcol ? smin : fmin;</span><span class="ln"><span class="no">11</span>                <span class="k">int</span> cur = pre + row[j];</span><span class="ln"><span class="no">12</span>                <span class="k">if</span> (cur &lt; gmin) { gsmin = gmin; gmin = cur; gcol = j; }</span><span class="ln"><span class="no">13</span>                <span class="k">else</span> <span class="k">if</span> (cur &lt; gsmin) gsmin = cur;</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>            fmin = gmin; smin = gsmin; fcol = gcol;</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> fmin;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个&nbsp;<code>n x n</code> 整数矩阵&nbsp;<code>grid</code>&nbsp;，请你返回 <strong>非零偏移下降路径</strong> 数字和的最小值。</p>
+
+<p><strong>非零偏移下降路径</strong> 定义为：从&nbsp;<code>grid</code> 数组中的每一行选择一个数字，且按顺序选出来的数字中，相邻数字不在原数组的同一列。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/d1dfa5d9de02.jpg" style="width: 244px; height: 245px;" /></p>
+
+<pre>
+<strong>输入：</strong>grid = [[1,2,3],[4,5,6],[7,8,9]]
+<strong>输出：</strong>13
+<strong>解释：</strong>
+所有非零偏移下降路径包括：
+[1,5,9], [1,5,7], [1,6,7], [1,6,8],
+[2,4,8], [2,4,9], [2,6,7], [2,6,8],
+[3,4,8], [3,4,9], [3,5,7], [3,5,9]
+下降路径中数字和最小的是&nbsp;[1,5,7] ，所以答案是&nbsp;13 。
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>grid = [[7]]
+<strong>输出：</strong>7
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == grid.length == grid[i].length</code></li>
+	<li><code>1 &lt;= n &lt;= 200</code></li>
+	<li><code>-99 &lt;= grid[i][j] &lt;= 99</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int minFallingPathSum(int[][] grid) {", "        int n = grid.length;", "        // 上一行的最小值 fmin、次小值 smin、最小值所在列 fcol（-1 表示还没有上一行）", "        int fmin = 0, smin = 0, fcol = -1;", "        for (int[] row : grid) {", "            int gmin = Integer.MAX_VALUE, gsmin = Integer.MAX_VALUE, gcol = -1;", "            for (int j = 0; j < n; j++) {", "                // 斜降不能同列：上一行的最小值恰好在本列时，只能退而用次小值", "                int pre = j == fcol ? smin : fmin;", "                int cur = pre + row[j];", "                if (cur < gmin) { gsmin = gmin; gmin = cur; gcol = j; }", "                else if (cur < gsmin) gsmin = cur;", "            }", "            fmin = gmin; smin = gsmin; fcol = gcol;", "        }", "        return fmin;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1289. 下降路径最小和 II —— 图解：复刻 Solution.java 的「上一行只记最小值和次小值」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[1, 2, 3], [4, 5, 6], [7, 8, 9]] };
+
+function trace(input) {
+  var grid = input.grid;
+  var n = grid.length;
+  var fmin = 0, smin = 0, fcol = -1;   // 上一行：最小值、次小值、最小值所在列
+  var frames = [];
+
+  function gridPanel(marks) {
+    return Viz.grid(grid.map(function (row) { return row.map(String); }),
+      { title: 'grid（bad=上一行最小所在列，cur=正在算的格子，hit=本行最小）', marks: marks || {} });
+  }
+  function varsPanel(extra) {
+    var items = [
+      { name: 'fmin 上一行最小', v: String(fmin) },
+      { name: 'smin 上一行次小', v: String(smin) },
+      { name: 'fcol 最小所在列', v: String(fcol) }
+    ];
+    if (extra) items = items.concat(extra);
+    return Viz.vars(items);
+  }
+  function snap(at, key, marks, extra) {
+    frames.push(Viz.frame(at, key, [gridPanel(marks), varsPanel(extra)]));
+  }
+
+  for (var i = 0; i < n; i++) {
+    var gmin = Infinity, gsmin = Infinity, gcol = -1;
+    for (var j = 0; j < n; j++) {
+      if (i === 1 && j === fcol) {
+        // 关键一步：上一行的最小值恰好撞在本列，只能退而用次小值
+        var m = {};
+        m['0,' + fcol] = 'bad';
+        m['1,' + j] = 'cur';
+        snap('int pre = j == fcol ? smin : fmin;',
+          '上一行最小恰在本列 ' + fcol + '：只能退用次小 ' + smin, m,
+          [{ name: 'pre 取谁', v: 'smin = ' + smin }, { name: 'cur', v: String(smin + grid[1][j]) }]);
+      }
+      var pre = j === fcol ? smin : fmin;
+      var cur = pre + grid[i][j];
+      if (cur < gmin) { gsmin = gmin; gmin = cur; gcol = j; }
+      else if (cur < gsmin) gsmin = cur;
+    }
+    fmin = gmin; smin = gsmin; fcol = gcol;
+    if (i <= 1) {
+      var m = {};
+      m[i + ',' + fcol] = i === 0 ? 'hit' : 'new';
+      snap('fmin = gmin; smin = gsmin; fcol = gcol;',
+        i === 0 ? '第一行没有约束：记下最小 ' + fmin + '（列 ' + fcol + '）、次小 ' + smin
+                : '第二行算完：新的最小 ' + fmin + '（列 ' + fcol + '）、次小 ' + smin, m, null);
+    }
+  }
+
+  var mf = {};
+  mf[(n - 1) + ',' + fcol] = 'done';
+  snap('return fmin;', '最后一行的最小值 ' + fmin + ' 就是答案', mf,
+    [{ name: '答案', v: String(fmin) }]);
+
+  return { frames: frames, result: fmin };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

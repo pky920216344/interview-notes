@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>设计一个支持增量操作的栈 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 685 / 1159</span>
+  <nav class="pn"><a href="0666.html">上一篇</a><a href="0888.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1381. </span>设计一个支持增量操作的栈</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">栈</li><li class="aux">设计</li><li class="tag">栈</li><li class="tag">设计</li><li class="tag">数组</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">数组栈 + 懒标记：increment 只在最底 min(k, 个数) 个里最深那个下标记一笔增量，弹出时才结算并下传。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>add[i]</code> 表示「弹出下标 <code>i</code> 的元素时要补上的增量」；<code>increment(k, val)</code> 只写 <code>add[min(k, 个数)-1]</code> 一处，不做逐个加。</li><li><code>pop</code> 先结算 <code>stack[top] + add[top]</code>；上面的增量同样盖住下面的元素，所以把 <code>add[top]</code> 下传给 <code>add[top-1]</code> 再清零。</li><li>栈满丢弃 <code>push</code>，空栈 <code>pop</code> 返回 <code>-1</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 三个操作均 O(1)，空间复杂度 O(maxSize)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">CustomStack</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span>[] stack;</span><span class="ln"><span class="no">3</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span>[] add;   <span class="c">// 懒标记：弹出下标 i 的元素时要补上的增量</span></span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span> top = -<span class="n">1</span>;</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="t">CustomStack</span>(<span class="k">int</span> maxSize) {</span><span class="ln"><span class="no">7</span>        stack = <span class="k">new</span> <span class="k">int</span>[maxSize];</span><span class="ln"><span class="no">8</span>        add = <span class="k">new</span> <span class="k">int</span>[maxSize];</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="k">void</span> push(<span class="k">int</span> x) {</span><span class="ln"><span class="no">12</span>        <span class="c">// 满了就丢弃这次 push</span></span><span class="ln"><span class="no">13</span>        <span class="k">if</span> (top + <span class="n">1</span> &lt; stack.length) stack[++top] = x;</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="k">public</span> <span class="k">int</span> pop() {</span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (top &lt; <span class="n">0</span>) <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">18</span>        <span class="k">int</span> v = stack[top] + add[top];</span><span class="ln"><span class="no">19</span>        <span class="k">if</span> (top &gt; <span class="n">0</span>) add[top - <span class="n">1</span>] += add[top];   <span class="c">// 这笔增量同样盖住下面的元素，下传</span></span><span class="ln"><span class="no">20</span>        add[top] = <span class="n">0</span>;</span><span class="ln"><span class="no">21</span>        top--;</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> v;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span> </span><span class="ln"><span class="no">25</span>    <span class="k">public</span> <span class="k">void</span> increment(<span class="k">int</span> k, <span class="k">int</span> val) {</span><span class="ln"><span class="no">26</span>        <span class="c">// 只影响最底 min(k, 个数) 个：把增量记在它们中最深那个的下标上</span></span><span class="ln"><span class="no">27</span>        <span class="k">if</span> (top &gt;= <span class="n">0</span>) add[<span class="t">Math</span>.min(k, top + <span class="n">1</span>) - <span class="n">1</span>] += val;</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>请你设计一个支持对其元素进行增量操作的栈。</p>
+
+<p>实现自定义栈类 <code>CustomStack</code> ：</p>
+
+<ul>
+	<li><code>CustomStack(int maxSize)</code>：用 <code>maxSize</code> 初始化对象，<code>maxSize</code> 是栈中最多能容纳的元素数量。</li>
+	<li><code>void push(int x)</code>：如果栈还未增长到 <code>maxSize</code> ，就将 <code>x</code> 添加到栈顶。</li>
+	<li><code>int pop()</code>：弹出栈顶元素，并返回栈顶的值，或栈为空时返回 <strong>-1</strong> 。</li>
+	<li><code>void inc(int k, int val)</code>：栈底的 <code>k</code> 个元素的值都增加 <code>val</code> 。如果栈中元素总数小于 <code>k</code> ，则栈中的所有元素都增加 <code>val</code> 。</li>
+</ul>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+["CustomStack","push","push","pop","push","push","push","increment","increment","pop","pop","pop","pop"]
+[[3],[1],[2],[],[2],[3],[4],[5,100],[2,100],[],[],[],[]]
+<strong>输出：</strong>
+[null,null,null,2,null,null,null,null,null,103,202,201,-1]
+<strong>解释：</strong>
+CustomStack stk = new CustomStack(3); // 栈是空的 []
+stk.push(1);                          // 栈变为 [1]
+stk.push(2);                          // 栈变为 [1, 2]
+stk.pop();                            // 返回 2 --&gt; 返回栈顶值 2，栈变为 [1]
+stk.push(2);                          // 栈变为 [1, 2]
+stk.push(3);                          // 栈变为 [1, 2, 3]
+stk.push(4);                          // 栈仍然是 [1, 2, 3]，不能添加其他元素使栈大小变为 4
+stk.increment(5, 100);                // 栈变为 [101, 102, 103]
+stk.increment(2, 100);                // 栈变为 [201, 202, 103]
+stk.pop();                            // 返回 103 --&gt; 返回栈顶值 103，栈变为 [201, 202]
+stk.pop();                            // 返回 202 --&gt; 返回栈顶值 202，栈变为 [201]
+stk.pop();                            // 返回 201 --&gt; 返回栈顶值 201，栈变为 []
+stk.pop();                            // 返回 -1 --&gt; 栈为空，返回 -1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= maxSize, x, k &lt;= 1000</code></li>
+	<li><code>0 &lt;= val &lt;= 100</code></li>
+	<li>每种方法 <code>increment</code>，<code>push</code> 以及 <code>pop</code> 分别最多调用 <code>1000</code> 次</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class CustomStack {", "    private final int[] stack;", "    private final int[] add;   // 懒标记：弹出下标 i 的元素时要补上的增量", "    private int top = -1;", "", "    public CustomStack(int maxSize) {", "        stack = new int[maxSize];", "        add = new int[maxSize];", "    }", "", "    public void push(int x) {", "        // 满了就丢弃这次 push", "        if (top + 1 < stack.length) stack[++top] = x;", "    }", "", "    public int pop() {", "        if (top < 0) return -1;", "        int v = stack[top] + add[top];", "        if (top > 0) add[top - 1] += add[top];   // 这笔增量同样盖住下面的元素，下传", "        add[top] = 0;", "        top--;", "        return v;", "    }", "", "    public void increment(int k, int val) {", "        // 只影响最底 min(k, 个数) 个：把增量记在它们中最深那个的下标上", "        if (top >= 0) add[Math.min(k, top + 1) - 1] += val;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1381. 设计一个支持增量操作的栈 —— 图解：复刻 Solution.java 的「数组栈 + 懒标记」，6 张关键帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  maxSize: 3,
+  ops: [['push', 1], ['push', 2], ['push', 3], ['inc', 2, 100], ['inc', 1, 5], ['pop'], ['pop'], ['pop'], ['pop']]
+};
+
+function trace(input) {
+  var cap = input.maxSize;
+  var stack = [], add = [], out = [];
+  var frames = [];
+  var top = -1;
+
+  // 栈内容和 add 数组上下对齐着画；hit = 刚弹出/刚记标记的格子，new = 刚被写入
+  function stackPanel(o) {
+    var marks = {};
+    if (o.hit != null && o.hit < stack.length) marks[o.hit] = 'hit';
+    if (o.newAt != null && o.newAt < stack.length) marks[o.newAt] = 'new';
+    return Viz.cells(stack, { title: 'stack（top 在右）', marks: marks });
+  }
+  function addPanel(o) {
+    var marks = {};
+    if (o.hit != null && o.hit < add.length) marks[o.hit] = 'hit';
+    if (o.newAt != null && o.newAt < add.length) marks[o.newAt] = 'new';
+    return Viz.cells(add, { title: 'add 懒标记（弹出时才结算）', marks: marks });
+  }
+  function snap(at, key, o) { frames.push(Viz.frame(at, key, [stackPanel(o), addPanel(o)])); }
+
+  input.ops.forEach(function (op, i) {
+    if (op[0] === 'push') {
+      if (top + 1 < cap) { top++; stack[top] = op[1]; add[top] = 0; }
+      if (i === 2 && stack.length === 3) snap('if (top + 1 < stack.length) stack[++top] = x;',
+        '三个都入栈：数组当栈用，add 同步清零', { newAt: top });
+    } else if (op[0] === 'inc') {
+      if (top >= 0) add[Math.min(op[1], top + 1) - 1] += op[2];
+      if (i === 3 && stack.length === 3) snap('if (top >= 0) add[Math.min(k, top + 1) - 1] += val;',
+        'increment(2,100)：只盖最底 2 个，100 记在下标 1', { newAt: 1 });
+      if (i === 4 && stack.length === 3) snap('if (top >= 0) add[Math.min(k, top + 1) - 1] += val;',
+        'increment(1,5)：只盖最底 1 个，5 记在下标 0', { newAt: 0 });
+    } else {
+      if (top < 0) { out.push(-1); return; }
+      var v = stack[top] + add[top];
+      if (top > 0) add[top - 1] += add[top];
+      add[top] = 0;
+      top--;
+      out.push(v);
+      if (out.length === 1 && stack.length === 3) snap('int v = stack[top] + add[top];',
+        '弹出 ' + v + '：它下标上的 add 是 0，不用补增量', { hit: 2 });
+      if (out.length === 2 && stack.length === 3) snap('if (top > 0) add[top - 1] += add[top];',
+        '弹出 ' + v + '：吃到下标 1 的 100；add 下传给下标 0', { hit: 1, newAt: 0 });
+      if (out.length === 3 && stack.length === 3) snap('if (top > 0) add[top - 1] += add[top];',
+        '弹出 ' + v + '：下标 0 已累计 100+5=105', { hit: 0 });
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

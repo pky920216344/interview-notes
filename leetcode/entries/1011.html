@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>在 D 天内送达包裹的能力 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 407 / 1159</span>
+  <nav class="pn"><a href="0325.html">上一篇</a><a href="0424.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1011. </span>在 D 天内送达包裹的能力</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 7</li><li class="algo">二分查找</li><li class="aux">贪心</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">二分答案：载重 cap 越大所需天数越少（单调），二分「能在 days 天送完的最小 cap」，check 用按序贪心装箱。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>答案有单调性：cap 越大越容易在限期内送完 → 在 <code>[max(weights), sum(weights)]</code> 上二分 cap。</li><li><code>check(cap)</code>：按给定顺序装，装不下就另起一天（贪心不亏：让每天尽量满），数出天数与 <code>days</code> 比。</li><li><code>mid</code> 可行就 <code>hi = mid</code>（可能还有更小的可行），不可行就 <code>lo = mid + 1</code>；<code>lo == hi</code> 即答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log(总重))，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> shipWithinDays(<span class="k">int</span>[] weights, <span class="k">int</span> days) {</span><span class="ln"><span class="no">3</span>        <span class="k">long</span> lo = <span class="n">0</span>, hi = <span class="n">0</span>;                       <span class="c">// 答案范围：[最大包裹, 总重]</span></span><span class="ln"><span class="no">4</span>        <span class="k">for</span> (<span class="k">int</span> w : weights) { lo = <span class="t">Math</span>.max(lo, w); hi += w; }</span><span class="ln"><span class="no">5</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">6</span>            <span class="k">long</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (fits(weights, days, mid)) hi = mid;    <span class="c">// 装得下 → 试试更小的</span></span><span class="ln"><span class="no">8</span>            <span class="k">else</span> lo = mid + <span class="n">1</span>;                          <span class="c">// 装不下 → 只能更大</span></span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="k">return</span> (<span class="k">int</span>) lo;</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="c">// 载重 cap 时按序贪心装：装不下就另起一天，天数 ≤ days 就可行</span></span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="k">boolean</span> fits(<span class="k">int</span>[] weights, <span class="k">int</span> days, <span class="k">long</span> cap) {</span><span class="ln"><span class="no">15</span>        <span class="k">int</span> used = <span class="n">1</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">long</span> load = <span class="n">0</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">for</span> (<span class="k">int</span> w : weights) {</span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (load + w &gt; cap) { used++; load = w; }   <span class="c">// 装不下 → 新的一天</span></span><span class="ln"><span class="no">19</span>            <span class="k">else</span> load += w;</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> used &lt;= days;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>传送带上的包裹必须在 <code>days</code> 天内从一个港口运送到另一个港口。</p>
+
+<p>传送带上的第 <code>i</code>&nbsp;个包裹的重量为&nbsp;<code>weights[i]</code>。每一天，我们都会按给出重量（<code>weights</code>）的顺序往传送带上装载包裹。我们装载的重量不会超过船的最大运载重量。</p>
+
+<p>返回能在 <code>days</code> 天内将传送带上的所有包裹送达的船的最低运载能力。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>weights = [1,2,3,4,5,6,7,8,9,10], days = 5
+<strong>输出：</strong>15
+<strong>解释：</strong>
+船舶最低载重 15 就能够在 5 天内送达所有包裹，如下所示：
+第 1 天：1, 2, 3, 4, 5
+第 2 天：6, 7
+第 3 天：8
+第 4 天：9
+第 5 天：10
+
+请注意，货物必须按照给定的顺序装运，因此使用载重能力为 14 的船舶并将包装分成 (2, 3, 4, 5), (1, 6, 7), (8), (9), (10) 是不允许的。 
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>weights = [3,2,2,4,1,4], days = 3
+<strong>输出：</strong>6
+<strong>解释：</strong>
+船舶最低载重 6 就能够在 3 天内送达所有包裹，如下所示：
+第 1 天：3, 2
+第 2 天：2, 4
+第 3 天：1, 4
+</pre>
+
+<p><strong class="example">示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>weights = [1,2,3,1,1], days = 4
+<strong>输出：</strong>3
+<strong>解释：</strong>
+第 1 天：1
+第 2 天：2
+第 3 天：3
+第 4 天：1, 1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= days &lt;= weights.length &lt;= 5 * 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= weights[i] &lt;= 500</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int shipWithinDays(int[] weights, int days) {", "        long lo = 0, hi = 0;                       // 答案范围：[最大包裹, 总重]", "        for (int w : weights) { lo = Math.max(lo, w); hi += w; }", "        while (lo < hi) {", "            long mid = (lo + hi) >>> 1;", "            if (fits(weights, days, mid)) hi = mid;    // 装得下 → 试试更小的", "            else lo = mid + 1;                          // 装不下 → 只能更大", "        }", "        return (int) lo;", "    }", "", "    // 载重 cap 时按序贪心装：装不下就另起一天，天数 ≤ days 就可行", "    private boolean fits(int[] weights, int days, long cap) {", "        int used = 1;", "        long load = 0;", "        for (int w : weights) {", "            if (load + w > cap) { used++; load = w; }   // 装不下 → 新的一天", "            else load += w;", "        }", "        return used <= days;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1011. 在 D 天内送达包裹的能力 —— 图解：复刻 Solution.java 的「二分载重 + 贪心装箱 check」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { weights: [3, 2, 2, 4, 1, 4], days: 3 };
+
+function trace(input) {
+  var weights = input.weights, days = input.days;
+  var frames = [];
+  var shown = {};
+  var lo = 0, hi = 0;
+  for (var i = 0; i < weights.length; i++) { lo = Math.max(lo, weights[i]); hi += weights[i]; }
+
+  function varsPanel(extra) {
+    var items = [{ name: 'lo（下界）', v: lo }, { name: 'hi（上界）', v: hi }];
+    return Viz.vars(extra ? items.concat(extra) : items);
+  }
+  // 按 cap 贪心装箱：dayOf[i] = 第 i 个包裹装在第几天（0 起始），颜色轮换区分各天
+  function segPanel(cap, dayOf) {
+    var clsByDay = ['win', 'new', 'cur', 'hit', 'done'];
+    var marks = {};
+    for (var i = 0; i < weights.length; i++) marks[i] = clsByDay[dayOf[i] % clsByDay.length];
+    return Viz.cells(weights, { title: 'weights（按序装船），cap = ' + cap + '，颜色 = 第几天', marks: marks, hideIndex: true });
+  }
+  function fits(cap) {
+    var used = 1, load = 0, dayOf = [];
+    for (var i = 0; i < weights.length; i++) {
+      if (load + weights[i] > cap) { used++; load = weights[i]; }
+      else load += weights[i];
+      dayOf.push(used - 1);
+    }
+    return { used: used, dayOf: dayOf };
+  }
+
+  frames.push(Viz.frame('lo = Math.max(lo, w); hi += w;',
+    '二分载重：下界 = 最大包裹 ' + lo + '（再小连最重的都装不下），上界 = 总重 ' + hi + '（一天全装完）',
+    [Viz.cells(weights, { title: 'weights（必须按给定顺序装船）', hideIndex: true }), varsPanel(null)]));
+
+  while (lo < hi) {
+    var mid = Math.floor((lo + hi) / 2);
+    var r = fits(mid);
+    if (r.used <= days) {
+      hi = mid;
+      if (!shown.ok) {
+        shown.ok = true;
+        frames.push(Viz.frame('if (fits(weights, days, mid)) hi = mid;',
+          'cap=' + mid + ' 时贪心装只要 ' + r.used + ' 天 ≤ ' + days + '：可行，hi 收到 ' + mid,
+          [segPanel(mid, r.dayOf), varsPanel([{ name: 'mid', v: mid }, { name: '需要天数', v: r.used, cls: 'win' }])]));
+      }
+    } else {
+      lo = mid + 1;
+      if (!shown.bad) {
+        shown.bad = true;
+        frames.push(Viz.frame('else lo = mid + 1;',
+          'cap=' + mid + ' 要装 ' + r.used + ' 天 > ' + days + '：不可行，lo 跳到 ' + lo,
+          [segPanel(mid, r.dayOf), varsPanel([{ name: 'mid', v: mid }, { name: '需要天数', v: r.used, cls: 'bad' }])]));
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return (int) lo;',
+    'lo == hi = ' + lo + '：能在 ' + days + ' 天内送完的最小载重就是它',
+    [varsPanel([{ name: '答案', v: lo, cls: 'done' }])]));
+  return { frames: frames, result: lo };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>节点与其祖先之间的最大差值 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 533 / 1159</span>
+  <nav class="pn"><a href="1195.html">上一篇</a><a href="0292.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1026. </span>节点与其祖先之间的最大差值</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">DFS 自上而下给每个结点传「路径上的最大值 mx 和最小值 mn」，每个结点用它们与自己作差，取全局最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>祖先-后代差值的最大值，一定等于「某条根到结点路径的极值 vs 该结点」——不用枚举祖先对。</li><li>递归参数带 <code>(mx, mn)</code>：进入结点先更新 <code>mx = max(mx, v)</code>、<code>mn = min(mn, v)</code>。</li><li>每个结点处取 <code>max(mx − v, v − mn)</code> 更新答案；孩子继承更新后的 <code>(mx, mn)</code>。</li><li>根从 <code>(root.val, root.val)</code> 起步；<code>ans</code> 在多次调用间要重置（成员变量写法）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">int</span> ans;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> maxAncestorDiff(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">5</span>        ans = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        dfs(root, root.val, root.val);   <span class="c">// 自根向下传「路径上见过的最大/最小值」</span></span><span class="ln"><span class="no">7</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="t">TreeNode</span> node, <span class="k">int</span> mx, <span class="k">int</span> mn) {</span><span class="ln"><span class="no">11</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span>;</span><span class="ln"><span class="no">12</span>        mx = <span class="t">Math</span>.max(mx, node.val);     <span class="c">// 当前路径的最大、最小值</span></span><span class="ln"><span class="no">13</span>        mn = <span class="t">Math</span>.min(mn, node.val);</span><span class="ln"><span class="no">14</span>        ans = <span class="t">Math</span>.max(ans, <span class="t">Math</span>.max(mx - node.val, node.val - mn));</span><span class="ln"><span class="no">15</span>        dfs(node.left, mx, mn);          <span class="c">// 最大的差一定出现在「路径极值 vs 本结点」</span></span><span class="ln"><span class="no">16</span>        dfs(node.right, mx, mn);</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定二叉树的根节点 <code>root</code>，找出存在于 <strong>不同</strong> 节点 <code>A</code> 和 <code>B</code> 之间的最大值 <code>V</code>，其中 <code>V = |A.val - B.val|</code>，且 <code>A</code> 是 <code>B</code> 的祖先。</p>
+
+<p>（如果 A 的任何子节点之一为 B，或者 A 的任何子节点是 B 的祖先，那么我们认为 A 是 B 的祖先）</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/ba8a3e4e2d96.jpg" style="width: 400px; height: 390px;" /></p>
+
+<pre>
+<strong>输入：</strong>root = [8,3,10,1,6,null,14,null,null,4,7,13]
+<strong>输出：</strong>7
+<strong>解释： </strong>
+我们有大量的节点与其祖先的差值，其中一些如下：
+|8 - 3| = 5
+|3 - 7| = 4
+|8 - 1| = 7
+|10 - 13| = 3
+在所有可能的差值中，最大值 7 由 |8 - 1| = 7 得出。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/5c1bbbafd444.jpg" style="width: 250px; height: 349px;" />
+<pre>
+<strong>输入：</strong>root = [1,null,2,null,0,3]
+<strong>输出：</strong>3
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中的节点数在 <code>2</code> 到 <code>5000</code> 之间。</li>
+	<li><code>0 <= Node.val <= 10<sup>5</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private int ans;", "", "    public int maxAncestorDiff(TreeNode root) {", "        ans = 0;", "        dfs(root, root.val, root.val);   // 自根向下传「路径上见过的最大/最小值」", "        return ans;", "    }", "", "    private void dfs(TreeNode node, int mx, int mn) {", "        if (node == null) return;", "        mx = Math.max(mx, node.val);     // 当前路径的最大、最小值", "        mn = Math.min(mn, node.val);", "        ans = Math.max(ans, Math.max(mx - node.val, node.val - mn));", "        dfs(node.left, mx, mn);          // 最大的差一定出现在「路径极值 vs 本结点」", "        dfs(node.right, mx, mn);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1026. 节点与其祖先之间的最大差值 —— 图解：复刻 Solution.java 的「自上而下传 (mx, mn)」，拍 4 张快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [8, 3, 10, 1, 6, null, 14] };
+
+function trace(input) {
+  var frames = [];
+
+  // 力扣层序数组 -> 结点；idx 是层序下标，marks/labels 靠它定位
+  function build(arr) {
+    if (!arr.length || arr[0] === null) return null;
+    var root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var p = q.shift();
+      if (i < arr.length) { if (arr[i] !== null) { p.left = { idx: i, val: arr[i], left: null, right: null }; q.push(p.left); } i++; }
+      if (i < arr.length) { if (arr[i] !== null) { p.right = { idx: i, val: arr[i], left: null, right: null }; q.push(p.right); } i++; }
+    }
+    return root;
+  }
+
+  var root = build(input.root);
+  var ans = 0;
+  var path = [];   // 当前递归路径（根到现在的链），元素是结点
+
+  function treePanel() {
+    var marks = {}, labels = [];
+    path.forEach(function (nd, i) {
+      marks[nd.idx] = i === path.length - 1 ? 'cur' : 'win';
+      labels.push({ at: nd.idx, label: 'mx=' + nd.mx + ' mn=' + nd.mn, cls: i === path.length - 1 ? 'p-cur' : 'p-prev' });
+    });
+    return Viz.tree(input.root, { title: '二叉树（黄=当前路径，标签是路径上的 mx/mn）', marks: marks, labels: labels });
+  }
+
+  function dfs(node, mx, mn) {
+    if (!node) return;
+    var nmx = Math.max(mx, node.val), nmn = Math.min(mn, node.val);
+    var diff = Math.max(nmx - node.val, node.val - nmn);
+    var updated = diff > ans;
+    if (updated) ans = diff;
+    node.mx = nmx; node.mn = nmn;
+    path.push(node);
+
+    if (node === root) {
+      frames.push(Viz.frame('dfs(root, root.val, root.val);',
+        '根出发：路径极值 mx=mn=' + root.val + '，往下传给子树', [treePanel(), Viz.vars([{ name: 'ans', v: String(ans) }])]));
+    }
+    if (node.val === 1) {   // 故事树里 |8-1|=7 的那一步，最关键
+      frames.push(Viz.frame('ans = Math.max(ans, Math.max(mx - node.val, node.val - mn));',
+        '走到 1：路径见过 {8,3,1}，|8−1|=7 刷新 ans', [treePanel(), Viz.vars([{ name: 'mx', v: String(nmx) }, { name: 'mn', v: String(nmn) }, { name: 'ans', v: String(ans) }])]));
+    }
+    if (node.val === 6) {
+      frames.push(Viz.frame('dfs(node.left, mx, mn);',
+        '走到 6：路径极值 {8,3}，|8−6|=2 顶不掉 7', [treePanel(), Viz.vars([{ name: 'mx', v: String(nmx) }, { name: 'mn', v: String(nmn) }, { name: 'ans', v: String(ans) }])]));
+    }
+
+    dfs(node.left, nmx, nmn);
+    dfs(node.right, nmx, nmn);
+    path.pop();
+  }
+
+  dfs(root, root.val, root.val);
+  frames.push(Viz.frame('return ans;', '整棵树扫完：祖先与后代的最大差值 = ' + ans,
+    [Viz.tree(input.root, { title: '二叉树', marks: {} }), Viz.vars([{ name: 'ans', v: String(ans) }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>划分为k个相等的子集 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 320 / 1159</span>
+  <nav class="pn"><a href="offer-50.html">上一篇</a><a href="0452.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">698. </span>划分为k个相等的子集</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 12</li><li class="algo">回溯</li><li class="tag">位运算</li><li class="tag">记忆化</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">回溯</li><li class="tag">位掩码</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">记忆化回溯：数字从大到小依次试放 k 个桶；剩余相同的桶只试一个，空桶失败就整支剪掉。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>total % k != 0</code> 直接 false；<code>target = total / k</code>，每个桶都要恰好凑到 target。</li><li><code>Arrays.sort</code> 后<strong>从大到小</strong>放：大数先定位置，失败得早、剪得狠。</li><li>两个剪枝：剩余相同的桶效果一样，<code>tried</code> 去重只试一个；放进空桶失败则其余空桶等价，<code>break</code>。</li><li>所有数都放下（每步都没超 target）即 true；某个数哪儿都放不下就回溯。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(k^n)（剪枝后远小），空间复杂度 O(n+k)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> canPartitionKSubsets(<span class="k">int</span>[] nums, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> total = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) total += x;</span><span class="ln"><span class="no">7</span>        <span class="c">// 每桶目标 total/k；除不尽直接无解</span></span><span class="ln"><span class="no">8</span>        <span class="k">if</span> (total % k != <span class="n">0</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">int</span> target = total / k;</span><span class="ln"><span class="no">10</span>        <span class="t">Arrays</span>.sort(nums);</span><span class="ln"><span class="no">11</span>        <span class="k">return</span> dfs(nums, nums.length - <span class="n">1</span>, <span class="k">new</span> <span class="k">int</span>[k], target);</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="c">// 把 nums[idx] 及更小的数依次放进桶里，任何桶都不许超过 target</span></span><span class="ln"><span class="no">15</span>    <span class="k">private</span> <span class="k">boolean</span> dfs(<span class="k">int</span>[] nums, <span class="k">int</span> idx, <span class="k">int</span>[] buckets, <span class="k">int</span> target) {</span><span class="ln"><span class="no">16</span>        <span class="k">if</span> (idx &lt; <span class="n">0</span>) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> x = nums[idx];</span><span class="ln"><span class="no">18</span>        <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; tried = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">19</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; buckets.length; i++) {</span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (buckets[i] + x &gt; target) <span class="k">continue</span>;</span><span class="ln"><span class="no">21</span>            <span class="c">// 剩余相同的桶效果一样，试一个就够</span></span><span class="ln"><span class="no">22</span>            <span class="k">if</span> (!tried.add(buckets[i])) <span class="k">continue</span>;</span><span class="ln"><span class="no">23</span>            buckets[i] += x;</span><span class="ln"><span class="no">24</span>            <span class="k">if</span> (dfs(nums, idx - <span class="n">1</span>, buckets, target)) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">25</span>            buckets[i] -= x;</span><span class="ln"><span class="no">26</span>            <span class="c">// 空桶都放不下：其余空桶等价，整支剪掉</span></span><span class="ln"><span class="no">27</span>            <span class="k">if</span> (buckets[i] == <span class="n">0</span>) <span class="k">break</span>;</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> <span class="k">false</span>;   <span class="c">// 所有桶都试不通</span></span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个整数数组&nbsp;&nbsp;<code>nums</code> 和一个正整数 <code>k</code>，找出是否有可能把这个数组分成 <code>k</code> 个非空子集，其总和都相等。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong> nums = [4, 3, 2, 3, 5, 2, 1], k = 4
+<strong>输出：</strong> True
+<strong>说明：</strong> 有可能将其分成 4 个子集（5），（1,4），（2,3），（2,3）等于总和。</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> nums = [1,2,3,4], k = 3
+<strong>输出:</strong> false</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= k &lt;= len(nums) &lt;= 16</code></li>
+	<li><code>0 &lt; nums[i] &lt; 10000</code></li>
+	<li>每个元素的频率在 <code>[1,4]</code> 范围内</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean canPartitionKSubsets(int[] nums, int k) {", "        int total = 0;", "        for (int x : nums) total += x;", "        // 每桶目标 total/k；除不尽直接无解", "        if (total % k != 0) return false;", "        int target = total / k;", "        Arrays.sort(nums);", "        return dfs(nums, nums.length - 1, new int[k], target);", "    }", "", "    // 把 nums[idx] 及更小的数依次放进桶里，任何桶都不许超过 target", "    private boolean dfs(int[] nums, int idx, int[] buckets, int target) {", "        if (idx < 0) return true;", "        int x = nums[idx];", "        Set<Integer> tried = new HashSet<>();", "        for (int i = 0; i < buckets.length; i++) {", "            if (buckets[i] + x > target) continue;", "            // 剩余相同的桶效果一样，试一个就够", "            if (!tried.add(buckets[i])) continue;", "            buckets[i] += x;", "            if (dfs(nums, idx - 1, buckets, target)) return true;", "            buckets[i] -= x;", "            // 空桶都放不下：其余空桶等价，整支剪掉", "            if (buckets[i] == 0) break;", "        }", "        return false;   // 所有桶都试不通", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 698. 划分为k个相等的子集 —— 图解：复刻 Solution.java 的「从大到小试放 k 个桶」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [4, 3, 2, 3, 5, 2, 1], k: 4 };
+
+function trace(input) {
+  var nums = input.nums.slice().sort(function (a, b) { return a - b; });   // 升序，从右往左取大的
+  var k = input.k;
+  var total = 0, i0;
+  for (i0 = 0; i0 < nums.length; i0++) total += nums[i0];
+  if (total % k !== 0) return { frames: [], result: false };
+  var target = total / k;
+  var buckets = [];
+  for (i0 = 0; i0 < k; i0++) buckets[i0] = 0;
+  var frames = [];
+
+  var START = 'return dfs(nums, nums.length - 1, new int[k], target);';
+  var PUT = 'buckets[i] += x;';
+  var SUC = 'if (dfs(nums, idx - 1, buckets, target)) return true;';
+  var FAIL = 'return false;   // 所有桶都试不通';
+
+  var placed = 0;   // 当前已放好的数字个数
+  var shot = { full: false, fill: false, done: false };
+
+  function numsPanel(idx) {
+    var marks = {};
+    for (var j = nums.length - 1; j > idx; j--) marks[j] = 'win';
+    if (idx >= 0 && idx < nums.length) marks[idx] = 'cur';
+    return Viz.cells(nums, { title: '排序后从大到小放（蓝 = 已放好）', marks: marks,
+      pointers: idx >= 0 ? [{ at: idx, label: 'idx', cls: 'p-cur' }] : [] });
+  }
+
+  function bucketsPanel(fresh) {
+    var marks = {};
+    if (fresh != null) marks[fresh] = 'new';
+    return Viz.cells(buckets.map(String), { title: 'k 个桶（每个要凑到 ' + target + '）', marks: marks });
+  }
+
+  function varsPanel() {
+    return Viz.vars([{ name: 'target（每桶目标和）', v: String(target), cls: '' }]);
+  }
+
+  frames.push(Viz.frame(START, '开局：总和 ' + total + '，每桶目标 ' + target + '，从最大的数开始放',
+    [numsPanel(nums.length - 1), bucketsPanel(null), varsPanel()]));
+
+  function dfs(idx) {
+    if (idx < 0) return true;
+    var x = nums[idx];
+    var tried = {};
+    for (var i = 0; i < k; i++) {
+      if (buckets[i] + x > target) continue;
+      if (tried[buckets[i]]) continue;
+      tried[buckets[i]] = true;
+      buckets[i] += x;
+      placed++;
+      // 每个桶都非空了：大数先各占一桶，接下来开始往里凑
+      if (!shot.full && buckets.every(function (b) { return b > 0; })) {
+        shot.full = true;
+        frames.push(Viz.frame(PUT, '大数先各占一个空桶：接下来专往已有桶里凑',
+          [numsPanel(idx), bucketsPanel(i), varsPanel()]));
+      }
+      // 桶原本非空、被这个数正好凑满：优先填满而不是新开桶
+      if (!shot.fill && buckets[i] === target && buckets[i] - x > 0) {
+        shot.fill = true;
+        frames.push(Viz.frame(PUT, x + ' 补进已有 ' + (buckets[i] - x) + ' 的桶：正好凑满 ' + target,
+          [numsPanel(idx), bucketsPanel(i), varsPanel()]));
+      }
+      var ok = dfs(idx - 1);
+      if (ok) {
+        if (!shot.done) {
+          shot.done = true;
+          frames.push(Viz.frame(SUC, '最后一个数也放下了：每个桶都恰好 ' + target + ' → true',
+            [numsPanel(idx), bucketsPanel(null), varsPanel()]));
+        }
+        return true;
+      }
+      buckets[i] -= x;
+      placed--;
+      if (buckets[i] === 0) break;
+    }
+    return false;
+  }
+
+  var result = dfs(nums.length - 1);
+
+  if (!shot.done) {
+    frames.push(Viz.frame(FAIL, '所有放法都试过了：凑不出 k 个和为 ' + target + ' 的子集 → false',
+      [numsPanel(-1), bucketsPanel(null), varsPanel()]));
+  }
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

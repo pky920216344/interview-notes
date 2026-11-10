@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>完美矩形 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 612 / 1159</span>
+  <nav class="pn"><a href="0314.html">上一篇</a><a href="0490.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">391. </span>完美矩形</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">哈希表</li><li class="tag">几何</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">数学</li><li class="tag">扫描线</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">两个条件缺一不可：所有矩形面积和 == 包住全体的大矩形面积；顶点做奇偶计数后，出现奇数次的恰好是大矩形四个角。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>面积和用 <code>long</code> 累加（坐标 ±1e5，面积最大 4×10¹⁰ 会爆 <code>int</code>）。</li><li>每个矩形的 4 个顶点往集合里做「有则删、无则加」：内部接缝上的顶点必成对出现被抵消。</li><li>扫完后集合应恰好剩 4 个元素，且就是大矩形的 4 个角；否则有 T 形接缝或错位。</li><li>只查面积会被「重叠和空洞互相抵消」骗过，只查顶点会被面积不齐骗过，所以两个条件都要验。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> isRectangleCover(<span class="k">int</span>[][] rectangles) {</span><span class="ln"><span class="no">5</span>        <span class="k">long</span> area = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> minX = <span class="t">Integer</span>.MAX_VALUE, minY = <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> maxX = <span class="t">Integer</span>.MIN_VALUE, maxY = <span class="t">Integer</span>.MIN_VALUE;</span><span class="ln"><span class="no">8</span>        <span class="t">Set</span>&lt;<span class="t">Long</span>&gt; odd = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span>[] r : rectangles) {</span><span class="ln"><span class="no">10</span>            area += (<span class="k">long</span>) (r[<span class="n">2</span>] - r[<span class="n">0</span>]) * (r[<span class="n">3</span>] - r[<span class="n">1</span>]);</span><span class="ln"><span class="no">11</span>            minX = <span class="t">Math</span>.min(minX, r[<span class="n">0</span>]);</span><span class="ln"><span class="no">12</span>            minY = <span class="t">Math</span>.min(minY, r[<span class="n">1</span>]);</span><span class="ln"><span class="no">13</span>            maxX = <span class="t">Math</span>.max(maxX, r[<span class="n">2</span>]);</span><span class="ln"><span class="no">14</span>            maxY = <span class="t">Math</span>.max(maxY, r[<span class="n">3</span>]);</span><span class="ln"><span class="no">15</span>            <span class="c">// 每个矩形的 4 个顶点做奇偶计数：出现偶数次就抵消移出</span></span><span class="ln"><span class="no">16</span>            toggle(odd, r[<span class="n">0</span>], r[<span class="n">1</span>]);</span><span class="ln"><span class="no">17</span>            toggle(odd, r[<span class="n">0</span>], r[<span class="n">3</span>]);</span><span class="ln"><span class="no">18</span>            toggle(odd, r[<span class="n">2</span>], r[<span class="n">1</span>]);</span><span class="ln"><span class="no">19</span>            toggle(odd, r[<span class="n">2</span>], r[<span class="n">3</span>]);</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="c">// 面积对不上：必有重叠（多算）或空洞（少算）</span></span><span class="ln"><span class="no">22</span>        <span class="k">if</span> (area != (<span class="k">long</span>) (maxX - minX) * (maxY - minY)) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">23</span>        <span class="c">// 奇数次顶点必须恰好是大矩形的四个角，内部接缝上的顶点都成对抵消</span></span><span class="ln"><span class="no">24</span>        <span class="k">if</span> (odd.size() != <span class="n">4</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> odd.contains(key(minX, minY)) &amp;&amp; odd.contains(key(minX, maxY))</span><span class="ln"><span class="no">26</span>                &amp;&amp; odd.contains(key(maxX, minY)) &amp;&amp; odd.contains(key(maxX, maxY));</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span> </span><span class="ln"><span class="no">29</span>    <span class="c">// 坐标平移到非负后拼成一个 long，作为顶点的唯一键</span></span><span class="ln"><span class="no">30</span>    <span class="k">private</span> <span class="k">long</span> key(<span class="k">int</span> x, <span class="k">int</span> y) {</span><span class="ln"><span class="no">31</span>        <span class="k">return</span> ((<span class="k">long</span>) (x + <span class="n">100000</span>) &lt;&lt; <span class="n">18</span>) | (y + <span class="n">100000</span>);</span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span> </span><span class="ln"><span class="no">34</span>    <span class="k">private</span> <span class="k">void</span> toggle(<span class="t">Set</span>&lt;<span class="t">Long</span>&gt; odd, <span class="k">int</span> x, <span class="k">int</span> y) {</span><span class="ln"><span class="no">35</span>        <span class="k">if</span> (!odd.add(key(x, y))) odd.remove(key(x, y));</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个数组 <code>rectangles</code> ，其中 <code>rectangles[i] = [x<sub>i</sub>, y<sub>i</sub>, a<sub>i</sub>, b<sub>i</sub>]</code> 表示一个坐标轴平行的矩形。这个矩形的左下顶点是 <code>(x<sub>i</sub>, y<sub>i</sub>)</code> ，右上顶点是 <code>(a<sub>i</sub>, b<sub>i</sub>)</code> 。</p>
+
+<p>如果所有矩形一起精确覆盖了某个矩形区域，则返回 <code>true</code> ；否则，返回 <code>false</code> 。</p>
+&nbsp;
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/6ebcb33708da.jpg" style="height: 294px; width: 300px;" />
+<pre>
+<strong>输入：</strong>rectangles = [[1,1,3,3],[3,1,4,2],[3,2,4,4],[1,3,2,4],[2,3,3,4]]
+<strong>输出：</strong>true
+<strong>解释：</strong>5 个矩形一起可以精确地覆盖一个矩形区域。 
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/8348c33063ed.jpg" style="height: 294px; width: 300px;" />
+<pre>
+<strong>输入：</strong>rectangles = [[1,1,2,3],[1,3,2,4],[3,1,4,2],[3,2,4,4]]
+<strong>输出：</strong>false
+<strong>解释：</strong>两个矩形之间有间隔，无法覆盖成一个矩形。</pre>
+
+<p><strong>示例 3：</strong></p>
+<img alt="" src="../assets/img/cc2cb37dcf5b.jpg" style="height: 294px; width: 300px;" />
+<pre>
+<strong>输入：</strong>rectangles = [[1,1,3,3],[3,1,4,2],[1,3,2,4],[2,2,4,4]]
+<strong>输出：</strong>false
+<strong>解释：</strong>因为中间有相交区域，虽然形成了矩形，但不是精确覆盖。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= rectangles.length &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>rectangles[i].length == 4</code></li>
+	<li><code>-10<sup>5</sup> &lt;= x<sub>i</sub> &lt; a<sub>i</sub> &lt;= 10<sup>5</sup></code></li>
+	<li><code>-10<sup>5</sup> &lt;= y<sub>i</sub> &lt; b<sub>i</sub> &lt;= 10<sup>5</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean isRectangleCover(int[][] rectangles) {", "        long area = 0;", "        int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;", "        int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;", "        Set<Long> odd = new HashSet<>();", "        for (int[] r : rectangles) {", "            area += (long) (r[2] - r[0]) * (r[3] - r[1]);", "            minX = Math.min(minX, r[0]);", "            minY = Math.min(minY, r[1]);", "            maxX = Math.max(maxX, r[2]);", "            maxY = Math.max(maxY, r[3]);", "            // 每个矩形的 4 个顶点做奇偶计数：出现偶数次就抵消移出", "            toggle(odd, r[0], r[1]);", "            toggle(odd, r[0], r[3]);", "            toggle(odd, r[2], r[1]);", "            toggle(odd, r[2], r[3]);", "        }", "        // 面积对不上：必有重叠（多算）或空洞（少算）", "        if (area != (long) (maxX - minX) * (maxY - minY)) return false;", "        // 奇数次顶点必须恰好是大矩形的四个角，内部接缝上的顶点都成对抵消", "        if (odd.size() != 4) return false;", "        return odd.contains(key(minX, minY)) && odd.contains(key(minX, maxY))", "                && odd.contains(key(maxX, minY)) && odd.contains(key(maxX, maxY));", "    }", "", "    // 坐标平移到非负后拼成一个 long，作为顶点的唯一键", "    private long key(int x, int y) {", "        return ((long) (x + 100000) << 18) | (y + 100000);", "    }", "", "    private void toggle(Set<Long> odd, int x, int y) {", "        if (!odd.add(key(x, y))) odd.remove(key(x, y));", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 391. 完美矩形 —— 图解：面积和要等于大矩形，顶点两两抵消后只剩四个角。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { rectangles: [[1, 1, 3, 3], [3, 1, 4, 2], [3, 2, 4, 4], [1, 3, 2, 4], [2, 3, 3, 4]] };
+
+function trace(input) {
+  var rects = input.rectangles;
+  var frames = [];
+  var area = 0;
+  var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  var odd = {};   // 顶点键 → 出现奇数次
+  var key = function (x, y) { return (x + 100000) * 262144 + (y + 100000); };
+
+  var TOG = 'toggle(odd, r[2], r[3]);';
+  var AREA = 'if (area != (long) (maxX - minX) * (maxY - minY)) return false;';
+  var ODD = 'if (odd.size() != 4) return false;';
+  var FIN = 'return odd.contains(key(minX, minY)) && odd.contains(key(minX, maxY))';
+
+  // 覆盖计数网格：每行是 y 从高到低的一条单位带
+  function gridPanel(upto) {
+    var rows = [], marks = {};
+    for (var y = maxY - 1; y >= minY; y--) {
+      var row = [];
+      for (var x = minX; x < maxX; x++) {
+        var cnt = 0;
+        for (var i = 0; i < upto; i++) {
+          var r = rects[i];
+          if (r[0] <= x && x + 1 <= r[2] && r[1] <= y && y + 1 <= r[3]) cnt++;
+        }
+        row.push(cnt === 0 ? '' : String(cnt));
+        if (cnt === 1) marks[(maxY - 1 - y) + ',' + (x - minX)] = 'win';
+        else if (cnt >= 2) marks[(maxY - 1 - y) + ',' + (x - minX)] = 'bad';
+      }
+      rows.push(row);
+    }
+    return Viz.grid(rows, {
+      title: '单位格覆盖数（bad = 被盖两次以上）',
+      marks: marks,
+      rowLabels: rows.map(function (_, i) { return 'y=' + (maxY - 1 - i); }),
+      colLabels: rows.length ? rows[0].map(function (_, c) { return 'x=' + (minX + c); }) : null
+    });
+  }
+
+  function varsPanel(extra) {
+    var items = [
+      { name: '面积和', v: area, cls: '' },
+      { name: '大矩形面积', v: (maxX - minX) * (maxY - minY), cls: '' }
+    ];
+    if (extra) items.push(extra);
+    return Viz.vars(items);
+  }
+
+  function cornerPanel() {
+    var rows = Object.keys(odd).map(function (k) {
+      var x = Math.floor(k / 262144) - 100000, y = k % 262144 - 100000;
+      var atCorner = (x === minX || x === maxX) && (y === minY || y === maxY);
+      return { k: '(' + x + ', ' + y + ')', v: '奇数次', cls: atCorner ? 'done' : '' };
+    });
+    return Viz.table('出现奇数次的顶点', rows, { hint: rows.length ? '' : '（没有）' });
+  }
+
+  var stop = Math.min(2, rects.length);
+  for (var i = 0; i < stop; i++) {
+    var r = rects[i];
+    area += (r[2] - r[0]) * (r[3] - r[1]);
+    minX = Math.min(minX, r[0]); minY = Math.min(minY, r[1]);
+    maxX = Math.max(maxX, r[2]); maxY = Math.max(maxY, r[3]);
+    [[r[0], r[1]], [r[0], r[3]], [r[2], r[1]], [r[2], r[3]]].forEach(function (p) {
+      var k = key(p[0], p[1]);
+      if (odd[k]) delete odd[k];
+      else odd[k] = true;
+    });
+  }
+  frames.push(Viz.frame(TOG, '逐个矩形：累加面积、扩张边界，4 个顶点做奇偶计数（已处理 ' + stop + ' 个）',
+    [gridPanel(stop), varsPanel(null)]));
+
+  for (var j = stop; j < rects.length; j++) {
+    var r2 = rects[j];
+    area += (r2[2] - r2[0]) * (r2[3] - r2[1]);
+    minX = Math.min(minX, r2[0]); minY = Math.min(minY, r2[1]);
+    maxX = Math.max(maxX, r2[2]); maxY = Math.max(maxY, r2[3]);
+    [[r2[0], r2[1]], [r2[0], r2[3]], [r2[2], r2[1]], [r2[2], r2[3]]].forEach(function (p) {
+      var k = key(p[0], p[1]);
+      if (odd[k]) delete odd[k];
+      else odd[k] = true;
+    });
+  }
+
+  var areaOk = area === (maxX - minX) * (maxY - minY);
+  frames.push(Viz.frame(AREA, '面积和 ' + area + (areaOk ? ' == ' : ' ≠ ') + '大矩形面积 ' + (maxX - minX) * (maxY - minY)
+      + (areaOk ? '：没有重叠也没有空洞' : '：必有重叠或多洞'),
+    [gridPanel(rects.length), varsPanel({ name: '面积对上了', v: areaOk ? '是' : '否', cls: areaOk ? 'done' : 'bad' })]));
+
+  var nOdd = Object.keys(odd).length;
+  var c1 = odd[key(minX, minY)], c2 = odd[key(minX, maxY)], c3 = odd[key(maxX, minY)], c4 = odd[key(maxX, maxY)];
+  var cornersOk = nOdd === 4 && c1 && c2 && c3 && c4;
+  frames.push(Viz.frame(ODD, '出现奇数次的顶点恰好 ' + nOdd + ' 个' + (cornersOk ? '，正是大矩形四角' : '，不等于四角'),
+    [cornerPanel(), varsPanel({ name: '奇数次顶点数', v: nOdd, cls: cornersOk ? 'done' : 'bad' })]));
+
+  frames.push(Viz.frame(FIN, areaOk && cornersOk ? '两个条件都满足：精确覆盖一个大矩形'
+      : '有条件不满足：不是完美矩形',
+    [cornerPanel(), varsPanel({ name: '结果', v: areaOk && cornersOk ? 'true' : 'false', cls: areaOk && cornersOk ? 'done' : 'bad' })]));
+
+  return { frames: frames, result: areaOk && cornersOk };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

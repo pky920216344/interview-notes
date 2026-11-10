@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>基本计算器 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 97 / 1159</span>
+  <nav class="pn"><a href="0083.html">上一篇</a><a href="0283.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">227. </span>基本计算器 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 69</li><li class="algo">栈</li><li class="tag">栈</li><li class="tag">数学</li><li class="tag">字符串</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">一个栈存已定号的项：读到下一个运算符（或末尾）时上一个才生效——+ 压栈、- 压负数、乘除当场和栈顶结算。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>num</code> 逐位拼出完整数字；空格不是数字也不在四个运算符里，自然被跳过。</li><li><code>op</code> 存「上一个运算符」，开局视为 <code>'+'</code>；读到新的 <code>+-*/</code> 或扫到末尾（<code>i == n-1</code>，末尾是空格也触发）时，<code>op</code> 才对刚读完的 <code>num</code> 生效。</li><li>生效规则：<code>+</code> 压 <code>num</code>，<code>-</code> 压 <code>-num</code>；<code>*</code> <code>/</code> 弹栈顶算完压回——乘除的优先级就这样被「当场结算」。</li><li>最后栈里只剩加号连接的项，直接求和。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> calculate(<span class="t">String</span> s) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 栈里存「已定号的项」：+ 压正数、- 压负数，乘除和栈顶先算完再压回</span></span><span class="ln"><span class="no">6</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> num = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">char</span> op = <span class="s">'+'</span>;                       <span class="c">// 上一个运算符，开局当作 '+'</span></span><span class="ln"><span class="no">9</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">11</span>            <span class="k">char</span> c = s.charAt(i);</span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (c &gt;= <span class="s">'0'</span> &amp;&amp; c &lt;= <span class="s">'9'</span>) {</span><span class="ln"><span class="no">13</span>                num = num * <span class="n">10</span> + (c - <span class="s">'0'</span>);  <span class="c">// 完整读多位数字</span></span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (c == <span class="s">'+'</span> || c == <span class="s">'-'</span> || c == <span class="s">'*'</span> || c == <span class="s">'/'</span> || i == n - <span class="n">1</span>) {</span><span class="ln"><span class="no">16</span>                <span class="c">// 碰到下一个运算符（或扫到末尾），上一个运算符才生效</span></span><span class="ln"><span class="no">17</span>                <span class="k">switch</span> (op) {</span><span class="ln"><span class="no">18</span>                    <span class="k">case</span> <span class="s">'+'</span>: stack.push(num); <span class="k">break</span>;</span><span class="ln"><span class="no">19</span>                    <span class="k">case</span> <span class="s">'-'</span>: stack.push(-num); <span class="k">break</span>;</span><span class="ln"><span class="no">20</span>                    <span class="k">case</span> <span class="s">'*'</span>: stack.push(stack.pop() * num); <span class="k">break</span>;</span><span class="ln"><span class="no">21</span>                    <span class="k">case</span> <span class="s">'/'</span>: stack.push(stack.pop() / num); <span class="k">break</span>;</span><span class="ln"><span class="no">22</span>                }</span><span class="ln"><span class="no">23</span>                op = c;</span><span class="ln"><span class="no">24</span>                num = <span class="n">0</span>;</span><span class="ln"><span class="no">25</span>            }</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        <span class="c">// 栈里全是加号连接的项，求和即可</span></span><span class="ln"><span class="no">28</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">29</span>        <span class="k">for</span> (<span class="k">int</span> v : stack) ans += v;</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串表达式 <code>s</code> ，请你实现一个基本计算器来计算并返回它的值。</p>
+
+<p>整数除法仅保留整数部分。</p>
+
+<p>你可以假设给定的表达式总是有效的。所有中间结果将在&nbsp;<code>[-2<sup>31</sup>, 2<sup>31</sup>&nbsp;- 1]</code> 的范围内。</p>
+
+<p><strong>注意：</strong>不允许使用任何将字符串作为数学表达式计算的内置函数，比如 <code>eval()</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "3+2*2"
+<strong>输出：</strong>7
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = " 3/2 "
+<strong>输出：</strong>1
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = " 3+5 / 2 "
+<strong>输出：</strong>5
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 3 * 10<sup>5</sup></code></li>
+	<li><code>s</code> 由整数和算符 <code>('+', '-', '*', '/')</code> 组成，中间由一些空格隔开</li>
+	<li><code>s</code> 表示一个有效表达式</li>
+	<li>表达式中的所有整数都是非负整数，且在范围 <code>[0, 2<sup>31</sup> - 1]</code> 内</li>
+	<li>题目数据 <strong>保证</strong> 答案是一个 <strong>32-bit 整数</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int calculate(String s) {", "        // 栈里存「已定号的项」：+ 压正数、- 压负数，乘除和栈顶先算完再压回", "        Deque<Integer> stack = new ArrayDeque<>();", "        int num = 0;", "        char op = '+';                       // 上一个运算符，开局当作 '+'", "        int n = s.length();", "        for (int i = 0; i < n; i++) {", "            char c = s.charAt(i);", "            if (c >= '0' && c <= '9') {", "                num = num * 10 + (c - '0');  // 完整读多位数字", "            }", "            if (c == '+' || c == '-' || c == '*' || c == '/' || i == n - 1) {", "                // 碰到下一个运算符（或扫到末尾），上一个运算符才生效", "                switch (op) {", "                    case '+': stack.push(num); break;", "                    case '-': stack.push(-num); break;", "                    case '*': stack.push(stack.pop() * num); break;", "                    case '/': stack.push(stack.pop() / num); break;", "                }", "                op = c;", "                num = 0;", "            }", "        }", "        // 栈里全是加号连接的项，求和即可", "        int ans = 0;", "        for (int v : stack) ans += v;", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 227. 基本计算器 II —— 图解：复刻 Solution.java 的「一个栈 + 记住上一个运算符」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: '3+2*2' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+  var stack = [];
+  var num = 0;
+  var op = '+';
+  var landCount = 0;
+
+  function idiv(x, y) { return Math.trunc(x / y); }   // Java 整数除法：向零取整
+
+  function exprPanel(i) {
+    var marks = {};
+    for (var k = 0; k < n; k++) marks[k] = k < i ? 'dim' : '';
+    if (i < n) marks[i] = 'cur';
+    var pointers = i < n ? [{ at: i, label: 'i', cls: 'p-cur' }] : [];
+    return Viz.cells(s.split(''), { title: '表达式 s', marks: marks, pointers: pointers });
+  }
+  function stackPanel(hi, cls) {
+    var marks = {};
+    if (hi != null && stack.length) marks[hi] = cls || 'cur';
+    var pointers = stack.length ? [{ at: stack.length - 1, label: 'top', cls: 'p-mid' }] : [];
+    return Viz.cells(stack.slice(), { title: '栈 stack（存已定号的项）', marks: marks, pointers: pointers });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: 'num', v: num, cls: num !== 0 ? 'chg' : '' },
+      { name: 'op（上一个运算符）', v: "'" + op + "'", cls: 'hit' }
+    ]);
+  }
+  function snap(at, key, i, hi, cls) {
+    frames.push(Viz.frame(at, key, [exprPanel(i), stackPanel(hi, cls), varsPanel()]));
+  }
+
+  snap("char op = '+';", '开局：op 先记成 +（第一个数之前相当于 +）', 0, null);
+
+  for (var i = 0; i < n; i++) {
+    var c = s[i];
+    if (c >= '0' && c <= '9') {
+      num = num * 10 + (c.charCodeAt(0) - 48);
+    }
+    if (c === '+' || c === '-' || c === '*' || c === '/' || i === n - 1) {
+      landCount++;
+      var prevOp = op;
+      var before = stack.length ? stack[stack.length - 1] : null;
+      var landed;
+      if (prevOp === '+') { stack.push(num); landed = num + ' 入栈'; }
+      else if (prevOp === '-') { stack.push(-num); landed = '-' + num + '（负数）入栈'; }
+      else if (prevOp === '*') { stack.pop(); stack.push(before * num); landed = '栈顶 ' + before + ' × ' + num + ' = ' + (before * num) + ' 压回'; }
+      else { stack.pop(); stack.push(idiv(before, num)); landed = '栈顶 ' + before + ' ÷ ' + num + ' = ' + idiv(before, num) + ' 压回'; }
+      var isOpChar = c === '+' || c === '-' || c === '*' || c === '/';
+      var where = isOpChar ? '读到 ' + c : '扫到末尾';
+      op = c;
+      num = 0;
+      if (landCount === 1) {
+        snap("case '+': stack.push(num); break;",
+          where + '：上一个 op（' + prevOp + '）生效，' + landed + '；op 换成 ' + c,
+          i, stack.length - 1, 'new');
+      } else if (landCount === 2 && prevOp === '+') {
+        snap("case '+': stack.push(num); break;",
+          where + '：还是先落上一个 op（+），' + landed + '；op 记住 ' + c + ' 待命',
+          i, stack.length - 1, 'new');
+      } else if (landCount === 3 && prevOp === '*') {
+        snap('stack.push(stack.pop() * num); break;',
+          where + '：' + prevOp + ' 这才生效，' + landed,
+          i, stack.length - 1, 'chg');
+      }
+    }
+  }
+
+  var ans = 0;
+  for (var k = 0; k < stack.length; k++) ans += stack[k];
+  var doneMarks = {};
+  for (var q = 0; q < stack.length; q++) doneMarks[q] = 'done';
+  var pointers = stack.length ? [{ at: stack.length - 1, label: 'top', cls: 'p-mid' }] : [];
+  frames.push(Viz.frame("for (int v : stack) ans += v;",
+    stack.length <= 4
+      ? '栈里就是已定号的项：' + stack.join(' + ') + ' = ' + ans
+      : '栈里 ' + stack.length + ' 个已定号的项，全部加起来 = ' + ans,
+    [exprPanel(n), Viz.cells(stack.slice(), { title: '栈 stack（存已定号的项）', marks: doneMarks, pointers: pointers }),
+      Viz.vars([{ name: 'ans', v: ans, cls: 'done' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

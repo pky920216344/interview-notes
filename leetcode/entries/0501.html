@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉搜索树中的众数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 785 / 1159</span>
+  <nav class="pn"><a href="mianshi-17-07.html">上一篇</a><a href="offer-14-ii.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">501. </span>二叉搜索树中的众数</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 2</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉搜索树</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">中序遍历一遍：BST 中序值有序、相同值连续出现，数当前值的连续个数，频次超过历史最大就清空众数表，并列就追加。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>中序遍历 BST 得到升序序列，众数统计退化成「数连续相同值」，不用哈希表。</li><li>维护 <code>curVal/curCnt</code>（当前值及其连续个数）、<code>maxCnt</code>（历史最大频次）、<code>modes</code>（众数列表）。</li><li><code>curCnt &gt; maxCnt</code>：说明发现更高频的值，<code>modes</code> 里旧的全不对，清空后从当前值重新开始记。</li><li><code>curCnt == maxCnt</code>：与最大并列，当前值进列表；一遍下来列表里就是全部众数，无需第二次扫描。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)（递归栈；不计输出）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span> curVal, curCnt, maxCnt;</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; modes = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="k">int</span>[] findMode(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">8</span>        dfs(root);</span><span class="ln"><span class="no">9</span>        <span class="k">int</span>[] out = <span class="k">new</span> <span class="k">int</span>[modes.size()];</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; out.length; i++) out[i] = modes.get(i);</span><span class="ln"><span class="no">11</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="c">// 中序遍历：BST 的中序值有序，相同的值一定连续出现</span></span><span class="ln"><span class="no">15</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">16</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span>;</span><span class="ln"><span class="no">17</span>        dfs(node.left);</span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (node.val == curVal) curCnt++; <span class="k">else</span> { curVal = node.val; curCnt = <span class="n">1</span>; }</span><span class="ln"><span class="no">19</span>        <span class="k">if</span> (curCnt &gt; maxCnt) { maxCnt = curCnt; modes.clear(); }   <span class="c">// 冒出更高频：清空重来</span></span><span class="ln"><span class="no">20</span>        <span class="k">if</span> (curCnt == maxCnt) modes.add(node.val);</span><span class="ln"><span class="no">21</span>        dfs(node.right);</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个含重复值的二叉搜索树（BST）的根节点 <code>root</code> ，找出并返回 BST 中的所有 <a href="https://baike.baidu.com/item/%E4%BC%97%E6%95%B0/44796" target="_blank">众数</a>（即，出现频率最高的元素）。</p>
+
+<p>如果树中有不止一个众数，可以按 <strong>任意顺序</strong> 返回。</p>
+
+<p>假定 BST 满足如下定义：</p>
+
+<ul>
+	<li>结点左子树中所含节点的值 <strong>小于等于</strong> 当前节点的值</li>
+	<li>结点右子树中所含节点的值 <strong>大于等于</strong> 当前节点的值</li>
+	<li>左子树和右子树都是二叉搜索树</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/cdd07a6ad7e4.jpg" style="width: 142px; height: 222px;" />
+<pre>
+<strong>输入：</strong>root = [1,null,2,2]
+<strong>输出：</strong>[2]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [0]
+<strong>输出：</strong>[0]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中节点的数目在范围 <code>[1, 10<sup>4</sup>]</code> 内</li>
+	<li><code>-10<sup>5</sup> &lt;= Node.val &lt;= 10<sup>5</sup></code></li>
+</ul>
+
+
+
+<p><strong>进阶：</strong>你可以不使用额外的空间吗？（假设由递归产生的隐式调用栈的开销不被计算在内）</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private int curVal, curCnt, maxCnt;", "    private final List<Integer> modes = new ArrayList<>();", "", "    public int[] findMode(TreeNode root) {", "        dfs(root);", "        int[] out = new int[modes.size()];", "        for (int i = 0; i < out.length; i++) out[i] = modes.get(i);", "        return out;", "    }", "", "    // 中序遍历：BST 的中序值有序，相同的值一定连续出现", "    private void dfs(TreeNode node) {", "        if (node == null) return;", "        dfs(node.left);", "        if (node.val == curVal) curCnt++; else { curVal = node.val; curCnt = 1; }", "        if (curCnt > maxCnt) { maxCnt = curCnt; modes.clear(); }   // 冒出更高频：清空重来", "        if (curCnt == maxCnt) modes.add(node.val);", "        dfs(node.right);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 501. 二叉搜索树中的众数 —— 图解：复刻 Solution.java 的中序一遍法，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, null, 2, 2] };
+
+function trace(input) {
+  var frames = [];
+  var VISIT = 'if (curCnt > maxCnt) { maxCnt = curCnt; modes.clear(); }';
+  var RET = 'return out;';
+
+  // 力扣层序数组 -> 结点；idx 是层序下标，marks 靠它定位
+  function build(arr) {
+    if (!arr.length || arr[0] === null) return null;
+    var root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var n = q.shift();
+      if (i < arr.length) { if (arr[i] !== null) { n.left = { idx: i, val: arr[i], left: null, right: null }; q.push(n.left); } i++; }
+      if (i < arr.length) { if (arr[i] !== null) { n.right = { idx: i, val: arr[i], left: null, right: null }; q.push(n.right); } i++; }
+    }
+    return root;
+  }
+
+  var root = build(input.root);
+  var visited = {};          // 已访问结点的层序下标
+  var modes = [];            // 当前的众数列表
+  var curVal = null, curCnt = 0, maxCnt = 0;
+  var visitIdx = 0;
+
+  function snap(key, idx, justCleared) {
+    var marks = {};
+    Object.keys(visited).forEach(function (k) { marks[k] = 'done'; });
+    if (idx != null) marks[idx] = 'cur';
+    var outMarks = {};
+    if (modes.length) outMarks[modes.length - 1] = 'new';
+    frames.push(Viz.frame(VISIT, key, [
+      Viz.tree(input.root, { title: 'BST（黄 = 刚访问，绿 = 已访问，中序从左到右）', marks: marks }),
+      Viz.cells(modes, { title: 'modes（当前众数列表）', marks: outMarks }),
+      Viz.vars([
+        { name: 'curVal / curCnt', v: curVal + ' × ' + curCnt },
+        { name: 'maxCnt（历史最大频次）', v: maxCnt }
+      ])
+    ]));
+  }
+
+  function dfs(node) {
+    if (node === null) return;
+    dfs(node.left);
+    var justCleared = false;
+    if (node.val === curVal) curCnt++;
+    else { curVal = node.val; curCnt = 1; }
+    if (curCnt > maxCnt) { maxCnt = curCnt; modes.length = 0; justCleared = true; }
+    if (curCnt === maxCnt) modes.push(node.val);
+    visited[node.idx] = true;
+    if (visitIdx < 3) {
+      var verb = justCleared ? '，频次超过历史最大，清空列表后记入'
+        : (modes.length > 1 ? '，与最大并列，也记入众数' : '，暂列众数');
+      snap('访问 ' + curVal + '：连续计数 ' + curCnt + verb, node.idx, justCleared);
+    }
+    visitIdx++;
+    dfs(node.right);
+  }
+
+  dfs(root);
+
+  var shown = JSON.stringify(modes);
+  if (shown.length > 40) shown = shown.slice(0, 40) + '…';
+  frames.push(Viz.frame(RET, modes.length ? '遍历完：众数是 ' + shown : '空树：没有众数', [
+    Viz.tree(input.root, { title: 'BST（绿 = 全部访问完）', marks: visited }),
+    Viz.cells(modes, { title: 'modes（最终众数）', marks: modes.map(function () { return 'done'; }) })
+  ]));
+
+  return { frames: frames, result: modes.slice() };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

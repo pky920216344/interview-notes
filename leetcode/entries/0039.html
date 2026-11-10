@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>组合总和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 70 / 1159</span>
+  <nav class="pn"><a href="0695.html">上一篇</a><a href="0104.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">39. </span>组合总和</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 96</li><li class="algo">回溯</li><li class="tag">数组</li><li class="tag">回溯</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">回溯：候选排序后从 start 起试每个数，同一个数可重复选所以递归传 i；剩余为 0 记录，候选超剩余就剪枝。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先排序：候选从小到大，一旦 <code>candidates[i] &gt; remain</code>，后面的只会更大，直接 <code>break</code> 剪掉整枝。</li><li><code>dfs(remain, start)</code>：<code>remain</code> 减到 0 就把 <code>path</code> 存进答案；否则从 <code>start</code> 起试每个候选。</li><li>选了 <code>candidates[i]</code> 后递归传 <code>i</code>（不是 <code>i + 1</code>），同一个数才能重复选；<code>start</code> 保证组合不重不漏。</li><li>每层递归返回后 <code>path</code> 撤销最后一个数（回溯），换下一个候选继续。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(候选数^(target/最小值))，空间复杂度 O(target)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span>[] candidates;</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; path = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; combinationSum(<span class="k">int</span>[] candidates, <span class="k">int</span> target) {</span><span class="ln"><span class="no">9</span>        <span class="k">this</span>.candidates = candidates;</span><span class="ln"><span class="no">10</span>        <span class="c">// 每次调用先清空，防上次的结果残留</span></span><span class="ln"><span class="no">11</span>        ans.clear();</span><span class="ln"><span class="no">12</span>        path.clear();</span><span class="ln"><span class="no">13</span>        <span class="c">// 排序：小数在前，剩余不够时才能提前剪枝</span></span><span class="ln"><span class="no">14</span>        <span class="t">Arrays</span>.sort(candidates);</span><span class="ln"><span class="no">15</span>        dfs(target, <span class="n">0</span>);</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    <span class="c">// remain：还差多少；start：只能从 start 起往后挑</span></span><span class="ln"><span class="no">20</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span> remain, <span class="k">int</span> start) {</span><span class="ln"><span class="no">21</span>        <span class="k">if</span> (remain == <span class="n">0</span>) {</span><span class="ln"><span class="no">22</span>            <span class="c">// 凑够了：把当前组合存进答案</span></span><span class="ln"><span class="no">23</span>            ans.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(path));</span><span class="ln"><span class="no">24</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="k">for</span> (<span class="k">int</span> i = start; i &lt; candidates.length; i++) {</span><span class="ln"><span class="no">27</span>            <span class="c">// 剩余比候选小，后面只会更大，整枝剪掉</span></span><span class="ln"><span class="no">28</span>            <span class="k">if</span> (candidates[i] &gt; remain) <span class="k">break</span>;</span><span class="ln"><span class="no">29</span>            path.add(candidates[i]);</span><span class="ln"><span class="no">30</span>            <span class="c">// 传 i 不加 1：同一个数可以接着选</span></span><span class="ln"><span class="no">31</span>            dfs(remain - candidates[i], i);</span><span class="ln"><span class="no">32</span>            <span class="c">// 回溯：撤销刚才的选择</span></span><span class="ln"><span class="no">33</span>            path.remove(path.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">34</span>        }</span><span class="ln"><span class="no">35</span>    }</span><span class="ln"><span class="no">36</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个 <strong>无重复元素</strong> 的整数数组&nbsp;<code>candidates</code> 和一个目标整数&nbsp;<code>target</code>&nbsp;，找出&nbsp;<code>candidates</code>&nbsp;中可以使数字和为目标数&nbsp;<code>target</code> 的 所有<em>&nbsp;</em><strong>不同组合</strong> ，并以列表形式返回。你可以按 <strong>任意顺序</strong> 返回这些组合。</p>
+
+<p><code>candidates</code> 中的 <strong>同一个</strong> 数字可以 <strong>无限制重复被选取</strong> 。如果至少一个数字的被选数量不同，则两种组合是不同的。&nbsp;</p>
+
+<p>对于给定的输入，保证和为&nbsp;<code>target</code> 的不同组合数少于 <code>150</code> 个。</p>
+
+
+
+<p><strong>示例&nbsp;1：</strong></p>
+
+<pre>
+<strong>输入：</strong>candidates = [2,3,6,7], target = 7
+<strong>输出：</strong>[[2,2,3],[7]]
+<strong>解释：</strong>
+2 和 3 可以形成一组候选，2 + 2 + 3 = 7 。注意 2 可以使用多次。
+7 也是一个候选， 7 = 7 。
+仅有这两种组合。</pre>
+
+<p><strong>示例&nbsp;2：</strong></p>
+
+<pre>
+<strong>输入: </strong>candidates = [2,3,5], target = 8
+<strong>输出: </strong>[[2,2,2,2],[2,3,3],[3,5]]</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入: </strong>candidates = [2], target = 1
+<strong>输出: </strong>[]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= candidates.length &lt;= 30</code></li>
+	<li><code>2 &lt;= candidates[i] &lt;= 40</code></li>
+	<li><code>candidates</code> 的所有元素 <strong>互不相同</strong></li>
+	<li><code>1 &lt;= target &lt;= 40</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private int[] candidates;", "    private final List<List<Integer>> ans = new ArrayList<>();", "    private final List<Integer> path = new ArrayList<>();", "", "    public List<List<Integer>> combinationSum(int[] candidates, int target) {", "        this.candidates = candidates;", "        // 每次调用先清空，防上次的结果残留", "        ans.clear();", "        path.clear();", "        // 排序：小数在前，剩余不够时才能提前剪枝", "        Arrays.sort(candidates);", "        dfs(target, 0);", "        return ans;", "    }", "", "    // remain：还差多少；start：只能从 start 起往后挑", "    private void dfs(int remain, int start) {", "        if (remain == 0) {", "            // 凑够了：把当前组合存进答案", "            ans.add(new ArrayList<>(path));", "            return;", "        }", "        for (int i = start; i < candidates.length; i++) {", "            // 剩余比候选小，后面只会更大，整枝剪掉", "            if (candidates[i] > remain) break;", "            path.add(candidates[i]);", "            // 传 i 不加 1：同一个数可以接着选", "            dfs(remain - candidates[i], i);", "            // 回溯：撤销刚才的选择", "            path.remove(path.size() - 1);", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 39. 组合总和 —— 图解：复刻 Solution.java 的「排序 + start 起回溯（可重复选）」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { candidates: [2, 3, 6, 7], target: 7 };
+
+function trace(input) {
+  var candidates = input.candidates.slice().sort(function (a, b) { return a - b; });
+  var target = input.target;
+  var ans = [];
+  var path = [];
+  var frames = [];
+  var snapped = { reuse: false, prune: false, found: false };
+
+  function sum() {
+    var s = 0;
+    for (var k = 0; k < path.length; k++) s += path[k];
+    return s;
+  }
+
+  // 候选面板：指针 i 是当前试的候选；range 标出从 start 起可选的范围
+  function candPanel(i, start) {
+    var range = null;
+    if (start != null && start < candidates.length) {
+      range = { from: start, to: candidates.length - 1, label: 'start=' + start + ' 起可选' };
+    }
+    return Viz.cells(candidates, {
+      title: '候选 candidates（已排序）',
+      pointers: i == null ? [] : [{ at: i, label: 'i', cls: 'p-cur' }],
+      range: range
+    });
+  }
+
+  function pathPanel(marks) {
+    return Viz.cells(path, { title: '当前组合 path（和 ' + sum() + '）', hideIndex: true, marks: marks || {} });
+  }
+
+  function varsPanel(chg) {
+    return Viz.vars([{ name: 'remain', v: target - sum(), cls: chg ? 'chg' : '' }]);
+  }
+
+  function ansPanel(marks) {
+    return Viz.cells(ans.map(function (a) { return a.join('+'); }),
+      { title: 'ans：和为 ' + target + ' 的全部组合', hideIndex: true, marks: marks || {} });
+  }
+
+  function snap(at, key, panels) {
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  // 开局
+  snap('Arrays.sort(candidates);',
+    '开局：候选排序，从 start=0 起试，remain = ' + target,
+    [candPanel(null, null), pathPanel(), varsPanel(false)]);
+
+  // 和 Java 的 dfs 完全一致：remain 剩多少，start 起往后挑
+  function dfs(remain, start) {
+    if (remain === 0) {
+      ans.push(path.slice());
+      if (!snapped.found) {
+        snapped.found = true;
+        var am = {};
+        am[ans.length - 1] = 'new';
+        var pm = {};
+        for (var k = 0; k < path.length; k++) pm[k] = 'done';
+        snap('ans.add(new ArrayList<>(path));',
+          '剩余 = 0：path 凑成一组答案，存进 ans 再回溯',
+          [pathPanel(pm), ansPanel(am), varsPanel(true)]);
+      }
+      return;
+    }
+    for (var i = start; i < candidates.length; i++) {
+      if (candidates[i] > remain) {
+        if (!snapped.prune) {
+          snapped.prune = true;
+          snap('if (candidates[i] > remain) break;',
+            '剩余 ' + remain + ' < 候选 ' + candidates[i] + '：后面更大，整枝剪掉',
+            [candPanel(i, start), pathPanel(), varsPanel(false)]);
+        }
+        break;
+      }
+      path.push(candidates[i]);
+      if (!snapped.reuse && path.length >= 2 && path[path.length - 1] === path[path.length - 2]) {
+        snapped.reuse = true;
+        var rm = {};
+        rm[path.length - 1] = 'new';
+        snap('dfs(remain - candidates[i], i);',
+          '又选同一个 ' + candidates[i] + '：递归传 i 不加 1，同一个数可重复选',
+          [candPanel(i, start), pathPanel(rm), varsPanel(false)]);
+      }
+      dfs(remain - candidates[i], i);
+      path.pop();
+    }
+  }
+
+  dfs(target, 0);
+
+  // 防御性规范化：组合内已升序，整体按字典序排（与 Java 导出的 out 一致）
+  ans.sort(function (a, b) {
+    var n = Math.min(a.length, b.length);
+    for (var k = 0; k < n; k++) if (a[k] !== b[k]) return a[k] - b[k];
+    return a.length - b.length;
+  });
+
+  var dm = {};
+  for (var k = 0; k < ans.length; k++) dm[k] = 'done';
+  snap('return ans;',
+    '扫完：ans 共 ' + ans.length + ' 组，每组的和都是 ' + target,
+    [ansPanel(dm)]);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

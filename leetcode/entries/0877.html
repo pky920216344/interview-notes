@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>石子游戏 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 447 / 1159</span>
+  <nav class="pn"><a href="0376.html">上一篇</a><a href="0365.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">877. </span>石子游戏</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 6</li><li class="algo">动态规划</li><li class="tag">极小化极大</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">动态规划</li><li class="tag">博弈</li><li class="tag">zero-sum-game</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">区间 DP 求「先手最大净胜分」：dp[i][j] = max(拿左 − 剩余区间对手净胜，拿右 − 剩余区间对手净胜)，答案是全区间净胜分 &gt; 0。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>定义 <code>dp[i][j]</code>：<code>[i, j]</code> 这段里<strong>当前先手</strong>比对手多拿的最大颗数；「净胜分」把两人的最优一起算清。</li><li>转移：拿左端得 <code>piles[i]</code>，之后对手在 <code>[i+1, j]</code> 净胜 <code>dp[i+1][j]</code>，所以净胜 <code>piles[i] − dp[i+1][j]</code>；拿右端同理，取 max。</li><li>用一维滚动：按区间长度 <code>d</code> 从小到大算，<code>dp[i]</code> 存 <code>[i, i+d]</code> 的值；读 <code>dp[i+1]</code>（更长的左缩区间）和 <code>dp[i]</code>（旧的短区间），顺序保证都是上一轮的值。</li><li>答案就是 <code>dp[0] &gt; 0</code>。本题总石子数为奇数、堆数为偶数时先手必胜（数学结论），DP 是通用写法。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n)（滚动一维）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> stoneGame(<span class="k">int</span>[] piles) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = piles.length;</span><span class="ln"><span class="no">4</span>        <span class="c">// dp[i] 滚动优化：dp[i] 现在存的是区间 [i, i+d] 里先手能拿到的最大净胜分</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] dp = piles.clone();   <span class="c">// d = 0：区间只剩一堆，先手净胜 piles[i]</span></span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> d = <span class="n">1</span>; d &lt; n; d++) {</span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i + d &lt; n; i++) {</span><span class="ln"><span class="no">8</span>                <span class="c">// 拿左端：得 piles[i]，之后对手在 [i+1, i+d] 净胜 dp[i+1]</span></span><span class="ln"><span class="no">9</span>                <span class="c">// 拿右端：得 piles[i+d]，之后对手在 [i, i+d-1] 净胜 dp[i]</span></span><span class="ln"><span class="no">10</span>                dp[i] = <span class="t">Math</span>.max(piles[i] - dp[i + <span class="n">1</span>], piles[i + d] - dp[i]);</span><span class="ln"><span class="no">11</span>            }</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> dp[<span class="n">0</span>] &gt; <span class="n">0</span>;   <span class="c">// 先手（Alice）净胜分为正即赢</span></span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>Alice 和 Bob 用几堆石子在做游戏。一共有偶数堆石子，<strong>排成一行</strong>；每堆都有 <strong>正</strong> 整数颗石子，数目为 <code>piles[i]</code>&nbsp;。</p>
+
+<p>游戏以谁手中的石子最多来决出胜负。石子的 <strong>总数</strong> 是 <strong>奇数</strong> ，所以没有平局。</p>
+
+<p>Alice 和 Bob 轮流进行，<strong>Alice 先开始</strong> 。 每回合，玩家从行的 <strong>开始</strong> 或 <strong>结束</strong> 处取走整堆石头。 这种情况一直持续到没有更多的石子堆为止，此时手中 <strong>石子最多</strong> 的玩家 <strong>获胜</strong> 。</p>
+
+<p>假设 Alice 和 Bob 都发挥出最佳水平，当 Alice 赢得比赛时返回&nbsp;<code>true</code>&nbsp;，当 Bob 赢得比赛时返回&nbsp;<code>false</code>&nbsp;。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>piles = [5,3,4,5]
+<strong>输出：</strong>true
+<strong>解释：</strong>
+Alice 先开始，只能拿前 5 颗或后 5 颗石子 。
+假设他取了前 5 颗，这一行就变成了 [3,4,5] 。
+如果 Bob 拿走前 3 颗，那么剩下的是 [4,5]，Alice 拿走后 5 颗赢得 10 分。
+如果 Bob 拿走后 5 颗，那么剩下的是 [3,4]，Alice 拿走后 4 颗赢得 9 分。
+这表明，取前 5 颗石子对 Alice 来说是一个胜利的举动，所以返回 true 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>piles = [3,7,2,3]
+<strong>输出：</strong>true
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= piles.length &lt;= 500</code></li>
+	<li><code>piles.length</code> 是 <strong>偶数</strong></li>
+	<li><code>1 &lt;= piles[i] &lt;= 500</code></li>
+	<li><code>sum(piles[i])</code>&nbsp;是 <strong>奇数</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean stoneGame(int[] piles) {", "        int n = piles.length;", "        // dp[i] 滚动优化：dp[i] 现在存的是区间 [i, i+d] 里先手能拿到的最大净胜分", "        int[] dp = piles.clone();   // d = 0：区间只剩一堆，先手净胜 piles[i]", "        for (int d = 1; d < n; d++) {", "            for (int i = 0; i + d < n; i++) {", "                // 拿左端：得 piles[i]，之后对手在 [i+1, i+d] 净胜 dp[i+1]", "                // 拿右端：得 piles[i+d]，之后对手在 [i, i+d-1] 净胜 dp[i]", "                dp[i] = Math.max(piles[i] - dp[i + 1], piles[i + d] - dp[i]);", "            }", "        }", "        return dp[0] > 0;   // 先手（Alice）净胜分为正即赢", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 877. 石子游戏 —— 图解：复刻 Solution.java 的「区间 DP」（Java 是滚动一维数组，这里画成完整二维表，数值一致）。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { piles: [5, 3, 4, 5] };
+
+function trace(input) {
+  var p = input.piles, n = p.length;
+  var g = [];
+  for (var i = 0; i < n; i++) {
+    g.push([]);
+    for (var j = 0; j < n; j++) g[i].push(null);
+    g[i][i] = p[i];   // 与 Java 的 dp[i] 初始值一致：只剩一堆，先手净胜它
+  }
+  var frames = [];
+  var fired = { diag: false, first: false, last: false };
+
+  function gridPanel(marks) {
+    var rows = [], rl = [], cl = [];
+    for (var r = 0; r < n; r++) {
+      var row = [];
+      for (var c = 0; c < n; c++) row.push(g[r][c] === null ? '' : String(g[r][c]));
+      rows.push(row);
+      rl.push('i=' + r);
+      cl.push('j=' + c);
+    }
+    return Viz.grid(rows, { title: 'dp[i][j]：区间 [i,j] 先手最大净胜分', marks: marks || {}, rowLabels: rl, colLabels: cl, corner: 'i\\j' });
+  }
+
+  function snap(at, key, marks) {
+    if (frames.length >= 6) return;
+    frames.push(Viz.frame(at, key, [gridPanel(marks)]));
+  }
+
+  if (!fired.diag && n > 0) {
+    fired.diag = true;
+    var md = {};
+    for (var k = 0; k < n; k++) md[k + ',' + k] = 'done';
+    snap('int[] dp = piles.clone();', '开局：只剩一堆时先手净胜它，dp[i][i] = piles[i]', md);
+  }
+
+  // 与 Java 同一条递推，只是把滚动数组还原成完整二维表
+  for (var d = 1; d < n; d++) {
+    for (i = 0; i + d < n; i++) {
+      var j = i + d;
+      g[i][j] = Math.max(p[i] - g[i + 1][j], p[j] - g[i][j - 1]);
+      var mk = {};
+      for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (g[r][c] !== null) mk[r + ',' + c] = 'win';
+      mk[i + ',' + j] = 'new';
+      if (!fired.first) {
+        fired.first = true;
+        snap('dp[i] = Math.max(piles[i] - dp[i + 1], piles[i + d] - dp[i]);',
+          '只剩两堆 [' + p[i] + ',' + p[j] + ']：拿左得 ' + p[i] + '−' + g[i + 1][j] + '，拿右得 ' + p[j] + '−' + g[i][j - 1] + '，取大 = ' + g[i][j], mk);
+      } else if (j === n - 1 && i === 0 && !fired.last) {
+        fired.last = true;
+        snap('dp[i] = Math.max(piles[i] - dp[i + 1], piles[i + d] - dp[i]);',
+          '扩到全长 [0,' + (n - 1) + ']：拿左 ' + p[i] + '−dp[1][' + (n - 1) + '] 或拿右 ' + p[j] + '−dp[0][' + (n - 2) + ']，取大 = ' + g[0][n - 1], mk);
+      }
+    }
+  }
+
+  var mf = {};
+  mf['0,' + (n - 1)] = 'done';
+  snap('return dp[0] > 0;', 'dp[0][' + (n - 1) + '] = ' + g[0][n - 1] + ' > 0：Alice 净胜 ' + g[0][n - 1] + '，赢', mf);
+  return { frames: frames, result: g[0][n - 1] > 0 };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

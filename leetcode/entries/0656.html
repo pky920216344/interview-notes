@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>成本最小路径 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1024 / 1159</span>
+  <nav class="pn"><a href="0436.html">上一篇</a><a href="1584.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">656. </span>成本最小路径</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">倒序 DP：dp[i] = 从 i 到末尾的最小花费（坑为不可达）；重建时在并列花费里选下标最小的下一跳，即字典序最小路径。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i] = a[i] + min(dp[i+1..i+b])</code>，从右往左算；<code>a[i] = -1</code> 或所有下一跳都不可达则 <code>dp[i] = ∞</code>。</li><li>转移时 <code>j</code> 从小到大扫、<strong>严格小于</strong>才更新：并列花费自动留下标最小的一跳，重建出来的就是字典序最小路径。</li><li>重建从 0 沿 <code>next</code> 走到 <code>n−1</code>，输出 1 起始下标；<code>dp[0] = ∞</code> 说明走不通，返回空。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·b)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; cheapestJump(<span class="k">int</span>[] a, <span class="k">int</span> b) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = a.length, INF = <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[n];      <span class="c">// dp[i]：从 i 走到末尾的最小总花费，不可达为 INF</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] next = <span class="k">new</span> <span class="k">int</span>[n];    <span class="c">// 最优路线里 i 的下一跳</span></span><span class="ln"><span class="no">8</span>        dp[n - <span class="n">1</span>] = a[n - <span class="n">1</span>] &lt; <span class="n">0</span> ? INF : a[n - <span class="n">1</span>];</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = n - <span class="n">2</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">10</span>            dp[i] = INF;</span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (a[i] &lt; <span class="n">0</span>) <span class="k">continue</span>;   <span class="c">// -1 是坑，落不上去</span></span><span class="ln"><span class="no">12</span>            <span class="c">// j 从小到大扫、严格小于才更新 → 并列花费自动留下标最小的一跳（字典序最小）</span></span><span class="ln"><span class="no">13</span>            <span class="k">for</span> (<span class="k">int</span> j = i + <span class="n">1</span>; j &lt;= <span class="t">Math</span>.min(n - <span class="n">1</span>, i + b); j++)</span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (dp[j] &lt; dp[i]) { dp[i] = dp[j]; next[i] = j; }</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (dp[i] &lt; INF) dp[i] += a[i];</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; path = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (dp[<span class="n">0</span>] &lt; INF)</span><span class="ln"><span class="no">19</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; ; i = next[i]) {</span><span class="ln"><span class="no">20</span>                path.add(i + <span class="n">1</span>);      <span class="c">// 题目要 1 起始的下标</span></span><span class="ln"><span class="no">21</span>                <span class="k">if</span> (i == n - <span class="n">1</span>) <span class="k">break</span>;</span><span class="ln"><span class="no">22</span>            }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> path;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> cheapestJump(int[] a, int b) {", "        int n = a.length, INF = Integer.MAX_VALUE;", "        int[] dp = new int[n];      // dp[i]：从 i 走到末尾的最小总花费，不可达为 INF", "        int[] next = new int[n];    // 最优路线里 i 的下一跳", "        dp[n - 1] = a[n - 1] < 0 ? INF : a[n - 1];", "        for (int i = n - 2; i >= 0; i--) {", "            dp[i] = INF;", "            if (a[i] < 0) continue;   // -1 是坑，落不上去", "            // j 从小到大扫、严格小于才更新 → 并列花费自动留下标最小的一跳（字典序最小）", "            for (int j = i + 1; j <= Math.min(n - 1, i + b); j++)", "                if (dp[j] < dp[i]) { dp[i] = dp[j]; next[i] = j; }", "            if (dp[i] < INF) dp[i] += a[i];", "        }", "        List<Integer> path = new ArrayList<>();", "        if (dp[0] < INF)", "            for (int i = 0; ; i = next[i]) {", "                path.add(i + 1);      // 题目要 1 起始的下标", "                if (i == n - 1) break;", "            }", "        return path;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 656（会员题）成本最小路径 —— 图解：复刻 Solution.java 的倒序 DP + 字典序重建，拍 5 张快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { a: [1, 2, 4, -1, 2], b: 2 };
+
+function trace(input) {
+  var a = input.a, b = input.b, n = a.length;
+  var INF = 1000000000;
+  var frames = [];
+
+  function dpPanel(marks) {
+    var m = {}, items = [];
+    for (var i = 0; i < n; i++) {
+      m[i] = (marks && marks[i]) || (dp[i] >= INF ? 'dim' : 'win');
+      items.push(dp[i] >= INF ? '∞' : String(dp[i]));
+    }
+    return Viz.cells(items, { title: 'dp[i]：从 i 到末尾的最小花费', marks: m });
+  }
+
+  function varsPanel(items) { return Viz.vars(items); }
+
+  var dp = [], next = [];
+  for (var i = 0; i < n; i++) { dp.push(0); next.push(-1); }
+  dp[n - 1] = a[n - 1] < 0 ? INF : a[n - 1];
+
+  var small = n <= 12;
+  if (small) frames.push(Viz.frame('dp[n - 1] = a[n - 1] < 0 ? INF : a[n - 1];',
+    '从终点倒着算：dp[' + (n - 1) + ']=' + (dp[n - 1] >= INF ? '∞' : dp[n - 1]) + '（终点自付）',
+    [dpPanel((function () { var o = {}; o[n - 1] = 'new'; return o; })()),
+     varsPanel([{ name: 'a[' + (n - 1) + ']', v: a[n - 1] < 0 ? '坑' : String(a[n - 1]), cls: '' }])]));
+
+  for (i = n - 2; i >= 0; i--) {
+    dp[i] = INF;
+    if (a[i] < 0) continue;
+    for (var j = i + 1; j <= Math.min(n - 1, i + b); j++)
+      if (dp[j] < dp[i]) { dp[i] = dp[j]; next[i] = j; }
+    if (dp[i] < INF) dp[i] += a[i];
+    if (small && (i === 2 || i === 0)) {
+      var mk = {};
+      mk[i] = 'cur';
+      if (next[i] >= 0) mk[next[i]] = 'new';
+      frames.push(Viz.frame('if (dp[j] < dp[i]) { dp[i] = dp[j]; next[i] = j; }',
+        dp[i] >= INF ? 'dp[' + i + ']：够得着的下一跳全是坑，不可达'
+                     : 'dp[' + i + ']：下一跳选 ' + next[i] + '，共 ' + a[i] + '+' + (dp[i] - a[i]) + '=' + dp[i],
+        [dpPanel(mk), varsPanel([{ name: 'dp[' + i + ']', v: dp[i] >= INF ? '∞' : String(dp[i]), cls: 'cur' },
+          { name: 'next[' + i + ']', v: next[i] < 0 ? '—' : String(next[i]), cls: 'new' }])]));
+    }
+  }
+
+  var path = [];
+  if (dp[0] < INF) {
+    for (i = 0; ; i = next[i]) {
+      path.push(i + 1);
+      if (small && i === 0 && n > 1) frames.push(Viz.frame('path.add(i + 1);',
+        '从 0 出发沿 next 跳：下一站 ' + next[0] + '（下标从 1 起输出）',
+        [dpPanel((function () { var o = {}; o[0] = 'cur'; if (next[0] >= 0) o[next[0]] = 'new'; return o; })()),
+         varsPanel([{ name: '已走', v: path.join('→'), cls: 'cur' }])]));
+      if (i === n - 1) break;
+    }
+  }
+
+  if (small) frames.push(Viz.frame('return path;',
+    path.length ? '最省路线：' + path.join('→') + '，总花费 ' + dp[0] : '无路可走：空路径',
+    [dpPanel({}), varsPanel([{ name: 'path', v: '[' + path.join(',') + ']', cls: 'done' }])]));
+
+  return { frames: frames, result: path };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

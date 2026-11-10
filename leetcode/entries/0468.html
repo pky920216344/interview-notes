@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>验证IP地址 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 103 / 1159</span>
+  <nav class="pn"><a href="supp-06.html">上一篇</a><a href="0079.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">468. </span>验证IP地址</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 62</li><li class="algo">模拟</li><li class="tag">字符串</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">先按分隔符分流：有 . 按 IPv4 查、有 : 按 IPv6 查；split 后逐段校验位数、字符集、前导零和数值范围。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>分流：含 <code>.</code> 走 IPv4 校验，含 <code>:</code> 走 IPv6 校验，两者都没有返回 <code>Neither</code>；混着用的会被段校验拦下。</li><li>IPv4：<code>split("\\.", -1)</code> 必须切成 <strong>4 段</strong>；每段 1~3 位纯数字、无前导零（<code>01</code> 不合法）、数值 ≤ 255。</li><li>IPv6：<code>split(":", -1)</code> 必须切成 <strong>8 段</strong>；每段 1~4 位十六进制字符（0-9、a-f、A-F），前导零允许。</li><li><code>split</code> 的 <code>-1</code> 保留空段：<code>1..1.1</code>、<code>1:2::3</code> 这类靠空段检查拦住。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">String</span> validIPAddress(<span class="t">String</span> queryIP) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 先按分隔符分流：有 '.' 走 IPv4，有 ':' 走 IPv6，两者都没有直接否</span></span><span class="ln"><span class="no">4</span>        <span class="k">if</span> (queryIP.indexOf(<span class="s">'.'</span>) &gt;= <span class="n">0</span>) <span class="k">return</span> isIPv4(queryIP) ? <span class="s">"IPv4"</span> : <span class="s">"Neither"</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">if</span> (queryIP.indexOf(<span class="s">':'</span>) &gt;= <span class="n">0</span>) <span class="k">return</span> isIPv6(queryIP) ? <span class="s">"IPv6"</span> : <span class="s">"Neither"</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">return</span> <span class="s">"Neither"</span>;</span><span class="ln"><span class="no">7</span>    }</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="k">private</span> <span class="k">boolean</span> isIPv4(<span class="t">String</span> s) {</span><span class="ln"><span class="no">10</span>        <span class="c">// split 用 -1：末尾的空段也保留，"1.1.1." 才不会被误判</span></span><span class="ln"><span class="no">11</span>        <span class="t">String</span>[] seg = s.split(<span class="s">"\\."</span>, -<span class="n">1</span>);</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (seg.length != <span class="n">4</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="t">String</span> p : seg) {</span><span class="ln"><span class="no">14</span>            <span class="c">// 每段 1~3 位纯数字</span></span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (p.isEmpty() || p.length() &gt; <span class="n">3</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">16</span>            <span class="k">for</span> (<span class="k">char</span> c : p.toCharArray()) {</span><span class="ln"><span class="no">17</span>                <span class="k">if</span> (c &lt; <span class="s">'0'</span> || c &gt; <span class="s">'9'</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>            <span class="c">// 有前导零（如 01）不合法</span></span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (p.length() &gt; <span class="n">1</span> &amp;&amp; p.charAt(<span class="n">0</span>) == <span class="s">'0'</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (<span class="t">Integer</span>.parseInt(p) &gt; <span class="n">255</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span> </span><span class="ln"><span class="no">26</span>    <span class="k">private</span> <span class="k">boolean</span> isIPv6(<span class="t">String</span> s) {</span><span class="ln"><span class="no">27</span>        <span class="c">// 8 段，每段 1~4 位十六进制字符；IPv6 允许前导零</span></span><span class="ln"><span class="no">28</span>        <span class="t">String</span>[] seg = s.split(<span class="s">":"</span>, -<span class="n">1</span>);</span><span class="ln"><span class="no">29</span>        <span class="k">if</span> (seg.length != <span class="n">8</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">30</span>        <span class="k">for</span> (<span class="t">String</span> p : seg) {</span><span class="ln"><span class="no">31</span>            <span class="k">if</span> (p.isEmpty() || p.length() &gt; <span class="n">4</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">32</span>            <span class="k">for</span> (<span class="k">char</span> c : p.toCharArray()) {</span><span class="ln"><span class="no">33</span>                <span class="k">boolean</span> hex = (c &gt;= <span class="s">'0'</span> &amp;&amp; c &lt;= <span class="s">'9'</span>) || (c &gt;= <span class="s">'a'</span> &amp;&amp; c &lt;= <span class="s">'f'</span>) || (c &gt;= <span class="s">'A'</span> &amp;&amp; c &lt;= <span class="s">'F'</span>);</span><span class="ln"><span class="no">34</span>                <span class="k">if</span> (!hex) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">35</span>            }</span><span class="ln"><span class="no">36</span>        }</span><span class="ln"><span class="no">37</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">38</span>    }</span><span class="ln"><span class="no">39</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个字符串&nbsp;<code>queryIP</code>。如果是有效的 IPv4 地址，返回 <code>"IPv4"</code> ；如果是有效的 IPv6 地址，返回 <code>"IPv6"</code> ；如果不是上述类型的 IP 地址，返回 <code>"Neither"</code> 。</p>
+
+<p><strong>有效的IPv4地址</strong> 是 <code>“x1.x2.x3.x4”</code> 形式的IP地址。 其中&nbsp;<code>0 &lt;= x<sub>i</sub>&nbsp;&lt;= 255</code>&nbsp;且&nbsp;<code>x<sub>i</sub></code>&nbsp;<strong>不能包含</strong> 前导零。例如:&nbsp;<code>“192.168.1.1”</code>&nbsp;、 <code>“192.168.1.0”</code> 为有效IPv4地址， <code>“192.168.01.1”</code> 为无效IPv4地址; <code>“192.168.1.00”</code> 、 <code>“192.168@1.1”</code> 为无效IPv4地址。</p>
+
+<p><strong>一个有效的IPv6地址&nbsp;</strong>是一个格式为<code>“x1:x2:x3:x4:x5:x6:x7:x8”</code> 的IP地址，其中:</p>
+
+<ul>
+	<li><code>1 &lt;= x<sub>i</sub>.length &lt;= 4</code></li>
+	<li><code>x<sub>i</sub></code>&nbsp;是一个 <strong>十六进制字符串</strong> ，可以包含数字、小写英文字母( <code>'a'</code> 到 <code>'f'</code> )和大写英文字母( <code>'A'</code> 到 <code>'F'</code> )。</li>
+	<li>在&nbsp;<code>x<sub>i</sub></code>&nbsp;中允许前导零。</li>
+</ul>
+
+<p>例如 <code>"2001:0db8:85a3:0000:0000:8a2e:0370:7334"</code> 和 <code>"2001:db8:85a3:0:0:8A2E:0370:7334"</code> 是有效的 IPv6 地址，而 <code>"2001:0db8:85a3::8A2E:037j:7334"</code> 和 <code>"02001:0db8:85a3:0000:0000:8a2e:0370:7334"</code> 是无效的 IPv6 地址。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>queryIP = "172.16.254.1"
+<strong>输出：</strong>"IPv4"
+<strong>解释：</strong>有效的 IPv4 地址，返回 "IPv4"
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>queryIP = "2001:0db8:85a3:0:0:8A2E:0370:7334"
+<strong>输出：</strong>"IPv6"
+<strong>解释：</strong>有效的 IPv6 地址，返回 "IPv6"
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>queryIP = "256.256.256.256"
+<strong>输出：</strong>"Neither"
+<strong>解释：</strong>既不是 IPv4 地址，又不是 IPv6 地址
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>queryIP</code> 仅由英文字母，数字，字符 <code>'.'</code> 和 <code>':'</code> 组成。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public String validIPAddress(String queryIP) {", "        // 先按分隔符分流：有 '.' 走 IPv4，有 ':' 走 IPv6，两者都没有直接否", "        if (queryIP.indexOf('.') >= 0) return isIPv4(queryIP) ? \"IPv4\" : \"Neither\";", "        if (queryIP.indexOf(':') >= 0) return isIPv6(queryIP) ? \"IPv6\" : \"Neither\";", "        return \"Neither\";", "    }", "", "    private boolean isIPv4(String s) {", "        // split 用 -1：末尾的空段也保留，\"1.1.1.\" 才不会被误判", "        String[] seg = s.split(\"\\\\.\", -1);", "        if (seg.length != 4) return false;", "        for (String p : seg) {", "            // 每段 1~3 位纯数字", "            if (p.isEmpty() || p.length() > 3) return false;", "            for (char c : p.toCharArray()) {", "                if (c < '0' || c > '9') return false;", "            }", "            // 有前导零（如 01）不合法", "            if (p.length() > 1 && p.charAt(0) == '0') return false;", "            if (Integer.parseInt(p) > 255) return false;", "        }", "        return true;", "    }", "", "    private boolean isIPv6(String s) {", "        // 8 段，每段 1~4 位十六进制字符；IPv6 允许前导零", "        String[] seg = s.split(\":\", -1);", "        if (seg.length != 8) return false;", "        for (String p : seg) {", "            if (p.isEmpty() || p.length() > 4) return false;", "            for (char c : p.toCharArray()) {", "                boolean hex = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');", "                if (!hex) return false;", "            }", "        }", "        return true;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 468. 验证IP地址 —— 图解：复刻 Solution.java 的「分流 + 逐段校验」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { ip: '192.168.01.1' };
+
+function trace(input) {
+  var ip = input.ip;
+  var frames = [];
+  var shown = { pass: false, zero: false, seg6: false, hex: false };
+  var lastSegs = [], lastState = [];   // 最后一次切分出的段和每段状态，给最后一帧用
+
+  var A4 = 'if (queryIP.indexOf(\'.\') >= 0) return isIPv4(queryIP) ? "IPv4" : "Neither";';
+  var A6 = 'if (queryIP.indexOf(\':\') >= 0) return isIPv6(queryIP) ? "IPv6" : "Neither";';
+  var PASS = 'if (Integer.parseInt(p) > 255) return false;';
+  var ZERO = "if (p.length() > 1 && p.charAt(0) == '0') return false;";
+  var SEG8 = 'if (seg.length != 8) return false;';
+  var HEX = 'if (!hex) return false;';
+
+  function strPanel(sep) {
+    var marks = {};
+    for (var i = 0; i < ip.length; i++) if (ip[i] === sep) marks[i] = 'win';
+    return Viz.cells(ip.split(''), { title: '待判定的字符串', marks: marks });
+  }
+  // 每段的状态：state[i] = { t: 文案, c: 高亮类 }
+  function segTable(segs, state) {
+    var rows = segs.map(function (p, i) {
+      var st = state[i] || { t: '待检查', c: '' };
+      return { k: i + '：' + (p === '' ? '（空段）' : p), v: st.t, cls: st.c };
+    });
+    return Viz.table('切出的段（状态）', rows);
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  var result = run(ip);
+  snap(ip.indexOf('.') >= 0 ? A4 : A6, '最终判定：' + result,
+    [segTable(lastSegs, lastState), Viz.vars([{ name: '返回', v: result, cls: 'done' }])]);
+  return { frames: frames, result: result };
+
+  function run(s) {
+    if (s.indexOf('.') >= 0) return isIPv4(s) ? 'IPv4' : 'Neither';
+    if (s.indexOf(':') >= 0) return isIPv6(s) ? 'IPv6' : 'Neither';
+    lastSegs = [];
+    lastState = [];
+    return 'Neither';
+  }
+
+  function isIPv4(s) {
+    var segs = s.split('.');
+    var state = segs.map(function () { return { t: '待检查', c: '' }; });
+    lastSegs = segs;
+    lastState = state;
+    snap(A4, '字符串里有 .：按 IPv4 校验（4 段，每段 0~255 且无前导零）', [strPanel('.'), segTable(segs, state)]);
+    if (segs.length !== 4) return false;
+    for (var i = 0; i < segs.length; i++) {
+      var p = segs[i];
+      state[i] = { t: '正在检查', c: 'cur' };
+      if (p.length === 0 || p.length > 3) return false;
+      for (var j = 0; j < p.length; j++) {
+        if (p[j] < '0' || p[j] > '9') return false;
+      }
+      if (p.length > 1 && p[0] === '0') {
+        state[i] = { t: '前导零 ✗', c: 'bad' };
+        if (!shown.zero) {
+          shown.zero = true;
+          snap(ZERO, '段 ' + i + ' 的「' + p + '」有前导零：IPv4 判否', [segTable(segs, state)]);
+        }
+        return false;
+      }
+      if (parseInt(p, 10) > 255) return false;
+      state[i] = { t: '通过', c: 'win' };
+      if (!shown.pass) {
+        shown.pass = true;
+        snap(PASS, '段 ' + i + ' 的「' + p + '」通过：纯数字、无前导零、≤255', [segTable(segs, state)]);
+      }
+    }
+    return true;
+  }
+
+  function isIPv6(s) {
+    var segs = s.split(':');
+    var state = segs.map(function () { return { t: '待检查', c: '' }; });
+    lastSegs = segs;
+    lastState = state;
+    snap(A6, '字符串里有 :：按 IPv6 校验（8 段，每段 1~4 位十六进制）', [strPanel(':'), segTable(segs, state)]);
+    if (segs.length !== 8) {
+      if (!shown.seg6) {
+        shown.seg6 = true;
+        snap(SEG8, '切出来是 ' + segs.length + ' 段不是 8 段：IPv6 判否', [segTable(segs, state)]);
+      }
+      return false;
+    }
+    for (var i = 0; i < segs.length; i++) {
+      var p = segs[i];
+      state[i] = { t: '正在检查', c: 'cur' };
+      if (p.length === 0 || p.length > 4) return false;
+      for (var j = 0; j < p.length; j++) {
+        var c = p[j];
+        var hex = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+        if (!hex) {
+          state[i] = { t: '含非十六进制字符 ✗', c: 'bad' };
+          if (!shown.hex) {
+            shown.hex = true;
+            snap(HEX, '段 ' + i + ' 的「' + p + '」含非十六进制字符：IPv6 判否', [segTable(segs, state)]);
+          }
+          return false;
+        }
+      }
+      state[i] = { t: '通过', c: 'win' };
+    }
+    return true;
+  }
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>多线程网络爬虫 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 900 / 1159</span>
+  <nav class="pn"><a href="0823.html">上一篇</a><a href="0246.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1242. </span>多线程网络爬虫</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">并发</li><li class="aux">广度优先搜索</li><li class="aux">哈希表</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">多线程</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">线程池并发抓取：同步去重集合 seen 保证每个 URL 只被一个线程抓，pending 计数归零触发 CountDownLatch 收工。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>共享状态就两个：<code>seen</code>（并发安全的去重集合）与 <code>pending</code>（原子计数）；<code>seen.add</code> 成功的线程负责抓这个 URL，天然做到<strong>每个 URL 恰好被抓一次</strong>。</li><li>hostname 过滤在入队前做：和 startUrl 域名不同的链接直接丢。</li><li><code>pending</code> 记「还没跑完的任务数」：子任务先加一再提交，父任务在 <code>finally</code> 里减一，减到 0 说明全部收工，<code>CountDownLatch</code> 放行主线程。</li><li>收工后返回 <code>seen</code> 里收集到的全部本站 URL。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(页面数 × 平均出链数)，空间复杂度 O(页面数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.concurrent.*;</span><span class="ln"><span class="no">3</span><span class="k">import</span> java.util.concurrent.atomic.*;</span><span class="ln"><span class="no">4</span> </span><span class="ln"><span class="no">5</span><span class="c">/**</span></span><span class="ln"><span class="no">6</span><span class="c"> * HtmlParser 由力扣提供（接口）：getUrls(url) 返回该页面上的所有链接；本地验证时定义在 Check.java 里。</span></span><span class="ln"><span class="no">7</span><span class="c"> */</span></span><span class="ln"><span class="no">8</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">9</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; crawl(<span class="t">String</span> startUrl, <span class="t">HtmlParser</span> htmlParser) {</span><span class="ln"><span class="no">10</span>        <span class="t">String</span> host = hostname(startUrl);</span><span class="ln"><span class="no">11</span>        <span class="t">Set</span>&lt;<span class="t">String</span>&gt; seen = <span class="t">ConcurrentHashMap</span>.newKeySet();   <span class="c">// 已抓的 URL：全线程共享去重</span></span><span class="ln"><span class="no">12</span>        seen.add(startUrl);</span><span class="ln"><span class="no">13</span>        <span class="t">AtomicInteger</span> pending = <span class="k">new</span> <span class="t">AtomicInteger</span>(<span class="n">1</span>);       <span class="c">// 还没跑完的抓取任务数</span></span><span class="ln"><span class="no">14</span>        <span class="t">CountDownLatch</span> allDone = <span class="k">new</span> <span class="t">CountDownLatch</span>(<span class="n">1</span>);</span><span class="ln"><span class="no">15</span>        <span class="t">ExecutorService</span> pool = <span class="t">Executors</span>.newFixedThreadPool(<span class="n">8</span>);</span><span class="ln"><span class="no">16</span> </span><span class="ln"><span class="no">17</span>        <span class="k">class</span> <span class="t">Task</span> <span class="k">implements</span> <span class="t">Runnable</span> {</span><span class="ln"><span class="no">18</span>            <span class="k">final</span> <span class="t">String</span> url;</span><span class="ln"><span class="no">19</span> </span><span class="ln"><span class="no">20</span>            <span class="t">Task</span>(<span class="t">String</span> url) { <span class="k">this</span>.url = url; }</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>            <span class="k">public</span> <span class="k">void</span> run() {</span><span class="ln"><span class="no">23</span>                <span class="k">try</span> {</span><span class="ln"><span class="no">24</span>                    <span class="k">for</span> (<span class="t">String</span> next : htmlParser.getUrls(url)) {</span><span class="ln"><span class="no">25</span>                        <span class="c">// 同 hostname 才要；seen.add 成功 = 第一个见到的线程负责抓它</span></span><span class="ln"><span class="no">26</span>                        <span class="k">if</span> (hostname(next).equals(host) &amp;&amp; seen.add(next)) {</span><span class="ln"><span class="no">27</span>                            pending.incrementAndGet();</span><span class="ln"><span class="no">28</span>                            pool.execute(<span class="k">new</span> <span class="t">Task</span>(next));</span><span class="ln"><span class="no">29</span>                        }</span><span class="ln"><span class="no">30</span>                    }</span><span class="ln"><span class="no">31</span>                } <span class="k">finally</span> {</span><span class="ln"><span class="no">32</span>                    <span class="k">if</span> (pending.decrementAndGet() == <span class="n">0</span>) allDone.countDown();   <span class="c">// 最后一个任务收工</span></span><span class="ln"><span class="no">33</span>                }</span><span class="ln"><span class="no">34</span>            }</span><span class="ln"><span class="no">35</span>        }</span><span class="ln"><span class="no">36</span> </span><span class="ln"><span class="no">37</span>        pool.execute(<span class="k">new</span> <span class="t">Task</span>(startUrl));</span><span class="ln"><span class="no">38</span>        <span class="k">try</span> {</span><span class="ln"><span class="no">39</span>            allDone.await();        <span class="c">// 等全部抓取任务结束</span></span><span class="ln"><span class="no">40</span>        } <span class="k">catch</span> (<span class="t">InterruptedException</span> e) {</span><span class="ln"><span class="no">41</span>            <span class="t">Thread</span>.currentThread().interrupt();</span><span class="ln"><span class="no">42</span>        }</span><span class="ln"><span class="no">43</span>        pool.shutdownNow();</span><span class="ln"><span class="no">44</span>        <span class="k">return</span> <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(seen);</span><span class="ln"><span class="no">45</span>    }</span><span class="ln"><span class="no">46</span> </span><span class="ln"><span class="no">47</span>    <span class="c">// hostname：scheme:// 之后到第一个 '/' 之前</span></span><span class="ln"><span class="no">48</span>    <span class="k">private</span> <span class="t">String</span> hostname(<span class="t">String</span> url) {</span><span class="ln"><span class="no">49</span>        <span class="k">int</span> start = url.indexOf(<span class="s">"://"</span>) + <span class="n">3</span>;</span><span class="ln"><span class="no">50</span>        <span class="k">int</span> end = url.indexOf(<span class="s">'/'</span>, start);</span><span class="ln"><span class="no">51</span>        <span class="k">return</span> end &lt; <span class="n">0</span> ? url.substring(start) : url.substring(start, end);</span><span class="ln"><span class="no">52</span>    }</span><span class="ln"><span class="no">53</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "import java.util.concurrent.*;", "import java.util.concurrent.atomic.*;", "", "/**", " * HtmlParser 由力扣提供（接口）：getUrls(url) 返回该页面上的所有链接；本地验证时定义在 Check.java 里。", " */", "class Solution {", "    public List<String> crawl(String startUrl, HtmlParser htmlParser) {", "        String host = hostname(startUrl);", "        Set<String> seen = ConcurrentHashMap.newKeySet();   // 已抓的 URL：全线程共享去重", "        seen.add(startUrl);", "        AtomicInteger pending = new AtomicInteger(1);       // 还没跑完的抓取任务数", "        CountDownLatch allDone = new CountDownLatch(1);", "        ExecutorService pool = Executors.newFixedThreadPool(8);", "", "        class Task implements Runnable {", "            final String url;", "", "            Task(String url) { this.url = url; }", "", "            public void run() {", "                try {", "                    for (String next : htmlParser.getUrls(url)) {", "                        // 同 hostname 才要；seen.add 成功 = 第一个见到的线程负责抓它", "                        if (hostname(next).equals(host) && seen.add(next)) {", "                            pending.incrementAndGet();", "                            pool.execute(new Task(next));", "                        }", "                    }", "                } finally {", "                    if (pending.decrementAndGet() == 0) allDone.countDown();   // 最后一个任务收工", "                }", "            }", "        }", "", "        pool.execute(new Task(startUrl));", "        try {", "            allDone.await();        // 等全部抓取任务结束", "        } catch (InterruptedException e) {", "            Thread.currentThread().interrupt();", "        }", "        pool.shutdownNow();", "        return new ArrayList<>(seen);", "    }", "", "    // hostname：scheme:// 之后到第一个 '/' 之前", "    private String hostname(String url) {", "        int start = url.indexOf(\"://\") + 3;", "        int end = url.indexOf('/', start);", "        return end < 0 ? url.substring(start) : url.substring(start, end);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1242. 多线程网页爬虫 —— 图解：BFS 复刻并发爬虫的去重与 hostname 过滤，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 说明：并发版的结果与单线程 BFS 一致（题面契约），这里用 BFS 演示抓取流程与去重/过滤。
+
+var STORY_INPUT = {
+  startUrl: 'http://a.com/p0',
+  nodes: [
+    ['http://a.com/p0', ['http://b.org/x', 'http://a.com/p1']],
+    ['http://a.com/p1', ['http://a.com/p2', 'http://b.org/y']],
+    ['http://a.com/p2', ['http://a.com/p0', 'http://a.com/p3']],
+    ['http://a.com/p3', []],
+    ['http://b.org/x', []],
+    ['http://b.org/y', []]
+  ]
+};
+
+function trace(input) {
+  var start = input.startUrl;
+  var next = {};                 // url → 页面上的链接，对应 HtmlParser
+  input.nodes.forEach(function (nd) { next[nd[0]] = nd[1]; });
+
+  function hostname(url) {
+    var s = url.indexOf('://') + 3;
+    var e = url.indexOf('/', s);
+    return e < 0 ? url.slice(s) : url.slice(s, e);
+  }
+
+  var host = hostname(start);
+  var seen = {};                 // 已抓集合（并发版是全线程共享的同步集合）
+  seen[start] = true;
+  var queue = [start];
+  var frames = [];
+  var showedNew = false, showedDup = false;
+
+  function queuePanel(marks) {
+    return Viz.cells(queue, { title: '队列：待抓取的 URL', marks: marks || {} });
+  }
+  function seenPanel(newUrl) {
+    var rows = Object.keys(seen).sort().map(function (u) {
+      return { k: u, v: '已抓', cls: u === newUrl ? 'new' : '' };
+    });
+    return Viz.table('seen：全线程共享的去重集合', rows);
+  }
+  function snap(at, key, newUrl) {
+    frames.push(Viz.frame(at, key, [queuePanel({ 0: 'cur' }), seenPanel(newUrl),
+      Viz.vars([{ name: 'hostname 限定', v: host, cls: '' }, { name: '已抓数', v: Object.keys(seen).length, cls: 'chg' }])]));
+  }
+
+  snap('pool.execute(new Task(startUrl));', '起点入队并标记：只爬同 hostname 的页面', start);
+  while (queue.length > 0) {
+    var u = queue.shift();
+    (next[u] || []).forEach(function (v) {
+      if (hostname(v) !== host) return;      // 外站：直接过滤
+      if (seen[v]) {                          // 已抓过：拦截，不重复入队
+        if (!showedDup) {
+          showedDup = true;
+          snap('if (hostname(next).equals(host) && seen.add(next)) {', '「' + v + '」已抓过：seen 拦下重复，不再入队', null);
+        }
+        return;
+      }
+      seen[v] = true;
+      queue.push(v);
+      if (!showedNew) {
+        showedNew = true;
+        snap('if (hostname(next).equals(host) && seen.add(next)) {', '发现新本站 URL → 入队；外站被 hostname 过滤', v);
+      }
+    });
+  }
+
+  var result = Object.keys(seen).sort();
+  snap('return new ArrayList<>(seen);', '队列空、没有任务在跑：返回 seen 里全部 URL', null);
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

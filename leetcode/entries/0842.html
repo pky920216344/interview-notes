@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>将数组拆分成斐波那契序列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 664 / 1159</span>
+  <nav class="pn"><a href="supp-18.html">上一篇</a><a href="1038.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">842. </span>将数组拆分成斐波那契序列</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">回溯</li><li class="tag">字符串</li><li class="tag">回溯</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">回溯：前两段自由切，之后每段必须等于前两段之和；切完整串即成功，走不通就吐段回溯。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>从左往右切段：<code>list</code> 里已有两段以上时，新段的值必须等于前两段之和，否则不用再试。</li><li>剪枝都在段长上：值比 <code>need</code> 小就再加一位（<code>continue</code>），比 <code>need</code> 大或超 <code>int</code>、或撞前导零就放弃整支（<code>break</code>）——更长的段只会更大。</li><li>用 <code>long</code> 解析段值，超过 <code>Integer.MAX_VALUE</code> 直接判死；<code>"0"</code> 只能单独成段。</li><li>切到串尾且段数 ≥ 3 就成功；否则回溯换切法。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)（每段超 int 即剪断，实际远快），空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">ArrayList</span>;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.<span class="t">List</span>;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; list;</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; splitIntoFibonacci(<span class="t">String</span> num) {</span><span class="ln"><span class="no">8</span>        list = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        <span class="k">return</span> dfs(num, <span class="n">0</span>) ? list : <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">10</span>    }</span><span class="ln"><span class="no">11</span> </span><span class="ln"><span class="no">12</span>    <span class="c">// 从 pos 切出下一段；list 已有两段以上时，这一段必须等于前两段之和</span></span><span class="ln"><span class="no">13</span>    <span class="k">private</span> <span class="k">boolean</span> dfs(<span class="t">String</span> num, <span class="k">int</span> pos) {</span><span class="ln"><span class="no">14</span>        <span class="k">if</span> (pos == num.length()) <span class="k">return</span> list.size() &gt;= <span class="n">3</span>;</span><span class="ln"><span class="no">15</span>        <span class="k">long</span> v = <span class="n">0</span>;   <span class="c">// 当前段用 long 解析，一超 int 立即判死</span></span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> end = pos + <span class="n">1</span>; end &lt;= num.length(); end++) {</span><span class="ln"><span class="no">17</span>            <span class="c">// 前导零：只有 "0" 本身合法</span></span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (num.charAt(pos) == <span class="s">'0'</span> &amp;&amp; end &gt; pos + <span class="n">1</span>) <span class="k">break</span>;</span><span class="ln"><span class="no">19</span>            v = v * <span class="n">10</span> + (num.charAt(end - <span class="n">1</span>) - <span class="s">'0'</span>);</span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (v &gt; <span class="t">Integer</span>.MAX_VALUE) <span class="k">break</span>;</span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (list.size() &gt;= <span class="n">2</span>) {</span><span class="ln"><span class="no">22</span>                <span class="k">long</span> need = (<span class="k">long</span>) list.get(list.size() - <span class="n">2</span>) + list.get(list.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">23</span>                <span class="k">if</span> (v &lt; need) <span class="k">continue</span>;   <span class="c">// 这段还太短，再加一位才可能凑到</span></span><span class="ln"><span class="no">24</span>                <span class="k">if</span> (v &gt; need) <span class="k">break</span>;      <span class="c">// 已经过头，更长的段只会更大</span></span><span class="ln"><span class="no">25</span>            }</span><span class="ln"><span class="no">26</span>            list.add((<span class="k">int</span>) v);</span><span class="ln"><span class="no">27</span>            <span class="k">if</span> (dfs(num, end)) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">28</span>            list.remove(list.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个数字字符串 <code>num</code>，比如 <code>"123456579"</code>，我们可以将它分成「斐波那契式」的序列 <code>[123, 456, 579]</code>。</p>
+
+<p>形式上，<strong>斐波那契式&nbsp;</strong>序列是一个非负整数列表 <code>f</code>，且满足：</p>
+
+<ul>
+	<li><code>0 &lt;= f[i] &lt; 2<sup>31</sup></code>&nbsp;，（也就是说，每个整数都符合 <strong>32 位</strong>&nbsp;有符号整数类型）</li>
+	<li><code>f.length &gt;= 3</code></li>
+	<li>对于所有的<code>0 &lt;= i &lt; f.length - 2</code>，都有 <code>f[i] + f[i + 1] = f[i + 2]</code></li>
+</ul>
+
+<p>另外，请注意，将字符串拆分成小块时，每个块的数字一定不要以零开头，除非这个块是数字 <code>0</code> 本身。</p>
+
+<p>返回从 <code>num</code> 拆分出来的任意一组斐波那契式的序列块，如果不能拆分则返回 <code>[]</code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>num = "1101111"
+<strong>输出：</strong>[11,0,11,11]
+<strong>解释：</strong>输出 [110,1,111] 也可以。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入: </strong>num = "112358130"
+<strong>输出: </strong>[]
+<strong>解释: </strong>无法拆分。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>"0123"
+<strong>输出：</strong>[]
+<strong>解释：</strong>每个块的数字不能以零开头，因此 "01"，"2"，"3" 不是有效答案。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= num.length &lt;= 200</code></li>
+	<li><code>num</code>&nbsp;中只含有数字</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.ArrayList;", "import java.util.List;", "", "class Solution {", "    private List<Integer> list;", "", "    public List<Integer> splitIntoFibonacci(String num) {", "        list = new ArrayList<>();", "        return dfs(num, 0) ? list : new ArrayList<>();", "    }", "", "    // 从 pos 切出下一段；list 已有两段以上时，这一段必须等于前两段之和", "    private boolean dfs(String num, int pos) {", "        if (pos == num.length()) return list.size() >= 3;", "        long v = 0;   // 当前段用 long 解析，一超 int 立即判死", "        for (int end = pos + 1; end <= num.length(); end++) {", "            // 前导零：只有 \"0\" 本身合法", "            if (num.charAt(pos) == '0' && end > pos + 1) break;", "            v = v * 10 + (num.charAt(end - 1) - '0');", "            if (v > Integer.MAX_VALUE) break;", "            if (list.size() >= 2) {", "                long need = (long) list.get(list.size() - 2) + list.get(list.size() - 1);", "                if (v < need) continue;   // 这段还太短，再加一位才可能凑到", "                if (v > need) break;      // 已经过头，更长的段只会更大", "            }", "            list.add((int) v);", "            if (dfs(num, end)) return true;", "            list.remove(list.size() - 1);", "        }", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 842 将数组拆分成斐波那契序列 —— 图解：复刻 Solution.java 的「回溯切段」，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { num: '1101111' };
+
+function trace(input) {
+  var num = input.num;
+  var n = num.length;
+  var frames = [];
+  var list = [];
+  var f2 = false, f3 = false, f4 = false, f5 = false;
+
+  function cellsPanel(pos, endPos, failed) {
+    var marks = {};
+    for (var j = 0; j < pos && j < n; j++) marks[j] = 'done';
+    if (failed) for (var k = pos; k < endPos && k < n; k++) marks[k] = 'bad';
+    var range = pos < n && endPos > pos ? { from: pos, to: endPos - 1, label: '正在试的段' } : null;
+    return Viz.cells(num.split(''), { title: '数字串 num', marks: marks, range: range });
+  }
+  function varsPanel(v, need) {
+    var items = [
+      { name: '已切段 list', v: list.length ? list.join(',') : '（空）' },
+      { name: '正在试的段值 v', v: v === null ? '—' : v },
+      { name: '应等于 need', v: need === null ? '—' : need }
+    ];
+    return Viz.vars(items);
+  }
+  function snap(at, key, pos, endPos, failed, v, need) {
+    frames.push(Viz.frame(at, key, [cellsPanel(pos, endPos, failed), varsPanel(v, need)]));
+  }
+
+  function dfs(pos) {
+    if (pos === n) return list.length >= 3;
+    var v = 0;
+    for (var end = pos + 1; end <= n; end++) {
+      if (num[pos] === '0' && end > pos + 1) break;   // 前导零
+      v = v * 10 + (+num[end - 1]);
+      if (v > 2147483647) break;
+      var need = null;
+      if (list.length >= 2) {
+        need = list[list.length - 2] + list[list.length - 1];
+        if (v < need) continue;
+        if (v > need) break;
+      }
+      list.push(v);
+      if (!f3 && list.length === 2 && list[0] === 11 && v === 0 && pos === 2) {
+        f3 = true;
+        snap('list.add((int) v);', '第一段 11、第二段 0：之后每一段都必须等于前两段之和', pos, end, false, v, need);
+      }
+      if (!f4 && list.length === 3 && list[0] === 11 && list[1] === 0 && v === need && pos === 3) {
+        f4 = true;
+        snap('list.add((int) v);', '第三段切到 11，正好等于 11+0：链式约束开始一段段锁死', pos, end, false, v, need);
+      }
+      if (dfs(end)) return true;
+      list.pop();
+      if (!f2) {
+        f2 = true;
+        snap('list.remove(list.size() - 1);', '刚切的段走不通：吐掉它回溯，回到上一个选择点换着切', pos, end, true, v, need);
+      }
+    }
+    return false;
+  }
+
+  snap('return dfs(num, 0) ? list : new ArrayList<>();', '开局：前两段随便切，后面每段都被前两段之和锁死', 0, 0, false, null, null);
+  var ok = dfs(0);
+  if (!f5) {
+    f5 = true;
+    snap('return dfs(num, 0) ? list : new ArrayList<>();',
+      ok ? '切完整串：每段都等于前两段之和，返回这一组' : '所有切法都失败，返回空数组', n, n, false, null, null);
+  }
+
+  return { frames: frames, result: ok ? list.slice() : [] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

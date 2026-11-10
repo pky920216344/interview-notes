@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>单词拆分 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 92 / 1159</span>
+  <nav class="pn"><a href="0024.html">上一篇</a><a href="0112.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">139. </span>单词拆分</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 72</li><li class="algo">动态规划</li><li class="aux">哈希表</li><li class="tag">字典树</li><li class="tag">记忆化</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="tag">brute-force-search</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">dp[i] = 前 i 个字符能否拼出：枚举拼接点 j，dp[j] 且 s[j..i) 在字典里。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i]</code> 表示<strong>前 <code>i</code> 个字符</strong>能否由字典拼出，<code>dp[0] = true</code>（空串）。</li><li>枚举最后一个词的起点 <code>j</code>：<code>dp[i] = dp[j] &amp;&amp; 字典里有 s[j..i)</code>，命中一个就 <code>break</code>。</li><li>词放进 <code>HashSet</code>，子串查询 O(1)；按<strong>字典最长词</strong>限制 <code>j ≥ i - maxLen</code>，枚举量骤减。</li><li>答案是 <code>dp[n]</code>；子串生成本身有开销，剪枝后整体近似 O(n²)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> wordBreak(<span class="t">String</span> s, <span class="t">List</span>&lt;<span class="t">String</span>&gt; wordDict) {</span><span class="ln"><span class="no">5</span>        <span class="t">Set</span>&lt;<span class="t">String</span>&gt; dict = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;(wordDict);</span><span class="ln"><span class="no">6</span>        <span class="c">// 结尾的词长不会超过字典最长词，记下来剪枝</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> maxLen = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="t">String</span> w : dict) maxLen = <span class="t">Math</span>.max(maxLen, w.length());</span><span class="ln"><span class="no">9</span>        <span class="c">// dp[i]：前 i 个字符能否拼出（dp[0] 是空串）</span></span><span class="ln"><span class="no">10</span>        <span class="k">boolean</span>[] dp = <span class="k">new</span> <span class="k">boolean</span>[s.length() + <span class="n">1</span>];</span><span class="ln"><span class="no">11</span>        dp[<span class="n">0</span>] = <span class="k">true</span>;</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= s.length(); i++) {</span><span class="ln"><span class="no">13</span>            <span class="c">// j 是上一个拼接点，词长 i-j 至多 maxLen</span></span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="t">Math</span>.max(<span class="n">0</span>, i - maxLen); j &lt; i; j++) {</span><span class="ln"><span class="no">15</span>                <span class="k">if</span> (dp[j] &amp;&amp; dict.contains(s.substring(j, i))) {</span><span class="ln"><span class="no">16</span>                    dp[i] = <span class="k">true</span>;</span><span class="ln"><span class="no">17</span>                    <span class="k">break</span>;</span><span class="ln"><span class="no">18</span>                }</span><span class="ln"><span class="no">19</span>            }</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> dp[s.length()];</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串 <code>s</code> 和一个字符串列表 <code>wordDict</code> 作为字典。如果可以利用字典中出现的一个或多个单词拼接出 <code>s</code>&nbsp;则返回 <code>true</code>。</p>
+
+<p><strong>注意：</strong>不要求字典中出现的单词全部都使用，并且字典中的单词可以重复使用。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入:</strong> s = "leetcode", wordDict = ["leet", "code"]
+<strong>输出:</strong> true
+<strong>解释:</strong> 返回 true 因为 "leetcode" 可以由 "leet" 和 "code" 拼接成。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入:</strong> s = "applepenapple", wordDict = ["apple", "pen"]
+<strong>输出:</strong> true
+<strong>解释:</strong> 返回 true 因为 "applepenapple" 可以由 "apple" "pen" "apple" 拼接成。
+&nbsp;    注意，你可以重复使用字典中的单词。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入:</strong> s = "catsandog", wordDict = ["cats", "dog", "sand", "and", "cat"]
+<strong>输出:</strong> false
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 300</code></li>
+	<li><code>1 &lt;= wordDict.length &lt;= 1000</code></li>
+	<li><code>1 &lt;= wordDict[i].length &lt;= 20</code></li>
+	<li><code>s</code> 和 <code>wordDict[i]</code> 仅由小写英文字母组成</li>
+	<li><code>wordDict</code> 中的所有字符串 <strong>互不相同</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean wordBreak(String s, List<String> wordDict) {", "        Set<String> dict = new HashSet<>(wordDict);", "        // 结尾的词长不会超过字典最长词，记下来剪枝", "        int maxLen = 0;", "        for (String w : dict) maxLen = Math.max(maxLen, w.length());", "        // dp[i]：前 i 个字符能否拼出（dp[0] 是空串）", "        boolean[] dp = new boolean[s.length() + 1];", "        dp[0] = true;", "        for (int i = 1; i <= s.length(); i++) {", "            // j 是上一个拼接点，词长 i-j 至多 maxLen", "            for (int j = Math.max(0, i - maxLen); j < i; j++) {", "                if (dp[j] && dict.contains(s.substring(j, i))) {", "                    dp[i] = true;", "                    break;", "                }", "            }", "        }", "        return dp[s.length()];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 139. 单词拆分 —— 图解：复刻 Solution.java 的 dp，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'leetcode', wordDict: ['leet', 'code'] };
+
+function trace(input) {
+  var s = input.s;
+  var dict = input.wordDict;
+  var dictSet = {};            // JS 对象当 HashSet 用
+  var maxLen = 0;
+  dict.forEach(function (w) { dictSet[w] = true; maxLen = Math.max(maxLen, w.length); });
+  var n = s.length;
+  var dp = [true];             // dp[0] = true
+  var frames = [];
+  var hits = 0;
+
+  function sPanel(range) {
+    return Viz.cells(s.split(''), { title: '字符串 s', marks: {}, range: range || null });
+  }
+  function dpPanel(marks, ptr) {
+    var items = dp.map(function (v) { return v ? '✓' : '·'; });
+    var pointers = ptr == null ? [] : [{ at: ptr, label: 'i', cls: 'p-cur' }];
+    return Viz.cells(items, { title: 'dp[i]：前 i 个字符能否拼出', marks: marks, pointers: pointers });
+  }
+  function dictPanel(hitWord) {
+    return Viz.table('字典 dict（值为词长）', dict.map(function (w) {
+      return { k: w, v: String(w.length), cls: w === hitWord ? 'hit' : '' };
+    }));
+  }
+
+  frames.push(Viz.frame('dp[0] = true;',
+    '开局：空串不用拼，dp[0] = true',
+    [sPanel(null), dpPanel({ 0: 'new' }, null)]));
+
+  for (var i = 1; i <= n; i++) {
+    var setAt = -1, word = '';
+    for (var j = Math.max(0, i - maxLen); j < i; j++) {
+      if (dp[j] && dictSet[s.substring(j, i)]) {
+        setAt = j;
+        word = s.substring(j, i);
+        break;
+      }
+    }
+    dp.push(setAt >= 0);
+    if (setAt >= 0) {
+      hits++;
+      if (hits <= 2) {
+        var m = {};
+        m[setAt] = 'hit';
+        m[i] = 'new';
+        frames.push(Viz.frame('dp[i] = true;',
+          'i=' + i + '：dp[' + setAt + '] 为 true 且子串「' + word + '」在字典 → dp[' + i + '] = true',
+          [sPanel({ from: setAt, to: i - 1, label: word }),
+           dpPanel(m, i),
+           dictPanel(word)]));
+      }
+    }
+  }
+
+  var ok = dp[n];
+  var fm = {};
+  fm[n] = ok ? 'done' : 'bad';
+  frames.push(Viz.frame('return dp[s.length()];',
+    ok ? 'dp[' + n + '] = true：整个 s 能拆出，返回 true' : 'dp[' + n + '] = false：拼不出，返回 false',
+    [sPanel(ok && n > 0 ? { from: 0, to: n - 1, label: s } : null),
+     dpPanel(fm, n)]));
+
+  return { frames: frames, result: ok };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

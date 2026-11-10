@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>丑数 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 195 / 1159</span>
+  <nav class="pn"><a href="0494.html">上一篇</a><a href="supp-09.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">264. </span>丑数 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 25</li><li class="algo">动态规划</li><li class="aux">双指针</li><li class="tag">哈希表</li><li class="tag">数学</li><li class="tag">动态规划</li><li class="tag">堆（优先队列）</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">三指针 DP：dp[i] = min(dp[p2]·2, dp[p3]·3, dp[p5]·5)，谁被选中谁前移；候选相等时几个指针一起进，同一个丑数就不会生成两次。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每个丑数都是前面某个丑数 ×2、×3 或 ×5 得来的：<code>dp</code> 存已生成的丑数，三个指针指向各自「下一个还没乘过」的位置。</li><li>三个候选取最小填进 <code>dp[i]</code>，<code>dp</code> 天然严格递增。</li><li>用 <code>==</code> 判断谁被选中：相等时几个指针一起 <code>++</code>（如 <code>6 = 2×3 = 3×2</code>），保证每个丑数只生成一次。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> nthUglyNumber(<span class="k">int</span> n) {</span><span class="ln"><span class="no">3</span>        <span class="c">// dp[i] 是第 i+1 个丑数；p2/p3/p5 指向各自「还没乘过 2/3/5」的丑数</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">5</span>        dp[<span class="n">0</span>] = <span class="n">1</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> p2 = <span class="n">0</span>, p3 = <span class="n">0</span>, p5 = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">8</span>            <span class="c">// 三个候选取最小；相同的候选指针都要前进，不然同一个丑数会出现两次</span></span><span class="ln"><span class="no">9</span>            <span class="k">int</span> c2 = dp[p2] * <span class="n">2</span>, c3 = dp[p3] * <span class="n">3</span>, c5 = dp[p5] * <span class="n">5</span>;</span><span class="ln"><span class="no">10</span>            dp[i] = <span class="t">Math</span>.min(c2, <span class="t">Math</span>.min(c3, c5));</span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (dp[i] == c2) p2++;</span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (dp[i] == c3) p3++;</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (dp[i] == c5) p5++;</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> dp[n - <span class="n">1</span>];</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数 <code>n</code> ，请你找出并返回第 <code>n</code> 个 <strong>丑数</strong> 。</p>
+
+<p><strong>丑数 </strong>就是质因子只包含&nbsp;<code>2</code>、<code>3</code> 和&nbsp;<code>5</code>&nbsp;的正整数。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 10
+<strong>输出：</strong>12
+<strong>解释：</strong>[1, 2, 3, 4, 5, 6, 8, 9, 10, 12] 是由前 10 个丑数组成的序列。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 1
+<strong>输出：</strong>1
+<strong>解释：</strong>1 通常被视为丑数。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 1690</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int nthUglyNumber(int n) {", "        // dp[i] 是第 i+1 个丑数；p2/p3/p5 指向各自「还没乘过 2/3/5」的丑数", "        int[] dp = new int[n];", "        dp[0] = 1;", "        int p2 = 0, p3 = 0, p5 = 0;", "        for (int i = 1; i < n; i++) {", "            // 三个候选取最小；相同的候选指针都要前进，不然同一个丑数会出现两次", "            int c2 = dp[p2] * 2, c3 = dp[p3] * 3, c5 = dp[p5] * 5;", "            dp[i] = Math.min(c2, Math.min(c3, c5));", "            if (dp[i] == c2) p2++;", "            if (dp[i] == c3) p3++;", "            if (dp[i] == c5) p5++;", "        }", "        return dp[n - 1];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 264. 丑数 II —— 图解：复刻 Solution.java 的三指针 DP，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 10 };
+
+function trace(input) {
+  var n = input.n;
+  var frames = [];
+  var dp = [1];
+  var p2 = 0, p3 = 0, p5 = 0;
+
+  function dpPanel(o) {
+    var marks = {};
+    var k;
+    for (k = 0; k < dp.length; k++) marks[k] = 'win';
+    if (o != null && o.fresh != null) marks[o.fresh] = 'new';
+    if (o != null && o.done) for (k = 0; k < dp.length; k++) marks[k] = 'done';
+    var pointers = [
+      { at: p2, label: 'p2', cls: 'p-slow' },
+      { at: p3, label: 'p3', cls: 'p-cur' },
+      { at: p5, label: 'p5', cls: 'p-fast' }
+    ];
+    return Viz.cells(dp, { title: 'dp：已生成的丑数（严格递增）', marks: marks, pointers: o != null && o.noPtr ? [] : pointers });
+  }
+  // 被选中的候选（值等于刚写入 dp 的值）高亮；撞车时几个候选一起高亮
+  function varsPanel(c2, c3, c5, chosen) {
+    function item(name, c) { return { name: name, v: c == null ? '—' : c, cls: c != null && c === chosen ? 'chg' : '' }; }
+    return Viz.vars([
+      { name: 'i', v: dp.length - 1 },
+      item('dp[p2]×2', c2),
+      item('dp[p3]×3', c3),
+      item('dp[p5]×5', c5)
+    ]);
+  }
+
+  if (n === 1) {
+    frames.push(Viz.frame('dp[0] = 1;', 'n=1：第 1 个丑数就是 1', [dpPanel({ done: true }), varsPanel(null, null, null, null)]));
+    return { frames: frames, result: 1 };
+  }
+  frames.push(Viz.frame('dp[0] = 1;',
+    '第 1 个丑数是 1；三个指针都指向它，候选是 ×2、×3、×5',
+    [dpPanel({}), varsPanel(null, null, null, null)]));
+
+  for (var i = 1; i < n; i++) {
+    var c2 = dp[p2] * 2, c3 = dp[p3] * 3, c5 = dp[p5] * 5;
+    dp[i] = Math.min(c2, Math.min(c3, c5));
+    if (dp[i] === c2) p2++;
+    if (dp[i] === c3) p3++;
+    if (dp[i] === c5) p5++;
+    if (i === 1) {
+      frames.push(Viz.frame('dp[i] = Math.min(c2, Math.min(c3, c5));',
+        '三个候选取最小：dp[1] = ' + dp[1] + '，只有选中它的指针前进',
+        [dpPanel({ fresh: 1 }), varsPanel(c2, c3, c5, dp[1])]));
+    }
+    if (i === 5) {
+      frames.push(Viz.frame('if (dp[i] == c3) p3++;',
+        'dp[5] = ' + dp[5] + '：×2 和 ×3 候选撞车，两个指针一起前进，6 只出现一次',
+        [dpPanel({ fresh: 5 }), varsPanel(c2, c3, c5, dp[5])]));
+    }
+  }
+
+  frames.push(Viz.frame('return dp[n - 1];',
+    '前 ' + n + ' 个丑数齐了：答案是 dp[' + (n - 1) + '] = ' + dp[n - 1],
+    [dpPanel({ done: true }), varsPanel(null, null, null, null)]));
+
+  return { frames: frames, result: dp[n - 1] };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

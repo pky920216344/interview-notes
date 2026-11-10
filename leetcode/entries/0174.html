@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>地下城游戏 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 998 / 1159</span>
+  <nav class="pn"><a href="1344.html">上一篇</a><a href="1122.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">174. </span>地下城游戏</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">反向 DP：dp[i][j] = 走进 (i,j) 前至少要带的血量 = max(1, min(右,下) − 本格值)；从公主房倒推回起点。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>正着推不行：最小血量取决于后面的路，<strong>从终点倒着推</strong>才无后效性。</li><li>定义 <code>dp[i][j]</code> 是「带着多少血<strong>走进</strong> (i,j) 才能活着走到终点」。</li><li>转移：右/下的需求取较小者，减去本格值；血量还必须 ≥ 1，所以套 <code>max(1, ·)</code>。</li><li>公主房是边界：<code>dp = max(1, 1 − dungeon)</code>；答案就是 <code>dp[0][0]</code>。</li><li>血量是「至少要多少」而不是「最多能攒多少」，方向反了答案就错。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> calculateMinimumHP(<span class="k">int</span>[][] dungeon) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = dungeon.length, n = dungeon[<span class="n">0</span>].length;</span><span class="ln"><span class="no">4</span>        <span class="c">// dp[i][j]：走进 (i,j) 前至少要有的血量；从终点倒着推</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[][] dp = <span class="k">new</span> <span class="k">int</span>[m][n];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = m - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--)</span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> j = n - <span class="n">1</span>; j &gt;= <span class="n">0</span>; j--) {</span><span class="ln"><span class="no">8</span>                <span class="k">if</span> (i == m - <span class="n">1</span> &amp;&amp; j == n - <span class="n">1</span>) dp[i][j] = need(dungeon[i][j], <span class="n">1</span>);</span><span class="ln"><span class="no">9</span>                <span class="k">else</span> {</span><span class="ln"><span class="no">10</span>                    <span class="k">int</span> nxt = <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">11</span>                    <span class="k">if</span> (i + <span class="n">1</span> &lt; m) nxt = <span class="t">Math</span>.min(nxt, dp[i + <span class="n">1</span>][j]);</span><span class="ln"><span class="no">12</span>                    <span class="k">if</span> (j + <span class="n">1</span> &lt; n) nxt = <span class="t">Math</span>.min(nxt, dp[i][j + <span class="n">1</span>]);</span><span class="ln"><span class="no">13</span>                    dp[i][j] = need(dungeon[i][j], nxt);</span><span class="ln"><span class="no">14</span>                }</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> dp[<span class="n">0</span>][<span class="n">0</span>];</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    <span class="c">// 进房后血量变 val + 携带，须 ≥ 1 且够右/下的需求：携带 = max(1, after − val)</span></span><span class="ln"><span class="no">20</span>    <span class="k">private</span> <span class="k">int</span> need(<span class="k">int</span> val, <span class="k">int</span> after) {</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> <span class="t">Math</span>.max(<span class="n">1</span>, after - val);</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">
+<p>恶魔们抓住了公主并将她关在了地下城&nbsp;<code>dungeon</code> 的 <strong>右下角</strong> 。地下城是由 <code>m x n</code> 个房间组成的二维网格。我们英勇的骑士最初被安置在 <strong>左上角</strong> 的房间里，他必须穿过地下城并通过对抗恶魔来拯救公主。</p>
+
+<p>骑士的初始健康点数为一个正整数。如果他的健康点数在某一时刻降至 0 或以下，他会立即死亡。</p>
+
+<p>有些房间由恶魔守卫，因此骑士在进入这些房间时会失去健康点数（若房间里的值为<em>负整数</em>，则表示骑士将损失健康点数）；其他房间要么是空的（房间里的值为 <em>0</em>），要么包含增加骑士健康点数的魔法球（若房间里的值为<em>正整数</em>，则表示骑士将增加健康点数）。</p>
+
+<p>为了尽快解救公主，骑士决定每次只 <strong>向右</strong> 或 <strong>向下</strong> 移动一步。</p>
+
+<p>返回确保骑士能够拯救到公主所需的最低初始健康点数。</p>
+
+<p><strong>注意：</strong>任何房间都可能对骑士的健康点数造成威胁，也可能增加骑士的健康点数，包括骑士进入的左上角房间以及公主被监禁的右下角房间。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+<img alt="" src="../assets/img/ebe4cd0b18f3.jpg" style="width: 253px; height: 253px;" />
+<pre>
+<strong>输入：</strong>dungeon = [[-2,-3,3],[-5,-10,1],[10,30,-5]]
+<strong>输出：</strong>7
+<strong>解释：</strong>如果骑士遵循最佳路径：右 -&gt; 右 -&gt; 下 -&gt; 下 ，则骑士的初始健康点数至少为 7 。</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>dungeon = [[0]]
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == dungeon.length</code></li>
+	<li><code>n == dungeon[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 200</code></li>
+	<li><code>-1000 &lt;= dungeon[i][j] &lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int calculateMinimumHP(int[][] dungeon) {", "        int m = dungeon.length, n = dungeon[0].length;", "        // dp[i][j]：走进 (i,j) 前至少要有的血量；从终点倒着推", "        int[][] dp = new int[m][n];", "        for (int i = m - 1; i >= 0; i--)", "            for (int j = n - 1; j >= 0; j--) {", "                if (i == m - 1 && j == n - 1) dp[i][j] = need(dungeon[i][j], 1);", "                else {", "                    int nxt = Integer.MAX_VALUE;", "                    if (i + 1 < m) nxt = Math.min(nxt, dp[i + 1][j]);", "                    if (j + 1 < n) nxt = Math.min(nxt, dp[i][j + 1]);", "                    dp[i][j] = need(dungeon[i][j], nxt);", "                }", "            }", "        return dp[0][0];", "    }", "", "    // 进房后血量变 val + 携带，须 ≥ 1 且够右/下的需求：携带 = max(1, after − val)", "    private int need(int val, int after) {", "        return Math.max(1, after - val);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 174. 地下城游戏 —— 图解：复刻 Solution.java 的「从终点倒推的最小血量 DP」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { dungeon: [[-2, -3, 3], [-5, -10, 1], [10, 30, -5]] };
+
+function trace(input) {
+  var d = input.dungeon;
+  var m = d.length, n = d[0].length;
+  var dp = [];
+  for (var i = 0; i < m; i++) dp.push(new Array(n).fill(null));
+  var frames = [];
+  var isStory = m === 3 && n === 3;
+
+  function dungeonPanel(marks) {
+    return Viz.grid(d.map(function (r) { return r.map(String); }), { title: 'dungeon（正数补血，负数扣血）', marks: marks || {} });
+  }
+  function dpPanel(marks) {
+    var rows = dp.map(function (r) { return r.map(function (v) { return v === null ? '?' : String(v); }); });
+    return Viz.grid(rows, { title: 'dp：走进这格前至少要带的血量', marks: marks || {} });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+  function need(val, after) { return Math.max(1, after - val); }
+
+  for (i = m - 1; i >= 0; i--)
+    for (var j = n - 1; j >= 0; j--) {
+      var after;
+      if (i === m - 1 && j === n - 1) {
+        after = 1;
+        dp[i][j] = need(d[i][j], after);
+        if (isStory) {
+          frames.push(Viz.frame('if (i == m - 1 && j == n - 1) dp[i][j] = need(dungeon[i][j], 1);',
+            '公主房 (2,2)：出房后 ≥1 血就赢，dp = max(1, 1−(−5)) = 6',
+            [dungeonPanel({ '2,2': 'cur' }), dpPanel({ '2,2': 'new' }),
+             varsPanel([{ name: 'val', v: String(d[2][2]) }, { name: 'after', v: '1' }, { name: 'dp[2][2]', v: String(dp[2][2]) }])]));
+        }
+        continue;
+      }
+      var right = i + 1 < m ? dp[i + 1][j] : null;
+      var down = j + 1 < n ? dp[i][j + 1] : null;
+      var cands = [];
+      if (right !== null) cands.push(right);
+      if (down !== null) cands.push(down);
+      after = Math.min.apply(null, cands);
+      dp[i][j] = need(d[i][j], after);
+      if (isStory && i === 2 && j === 1) {
+        frames.push(Viz.frame('dp[i][j] = need(dungeon[i][j], nxt);',
+          '(2,1) 补 30 血：dp = max(1, 6−30) = 1，带 1 血进房就够',
+          [dungeonPanel({ '2,1': 'cur' }), dpPanel({ '2,1': 'new', '2,2': 'win' }),
+           varsPanel([{ name: '右需求', v: '6' }, { name: '下需求', v: '—' }, { name: 'dp[2][1]', v: '1' }])]));
+      }
+      if (isStory && i === 1 && j === 1) {
+        frames.push(Viz.frame('dp[i][j] = need(dungeon[i][j], nxt);',
+          '(1,1) 扣 10 血、右下取小 1：dp = 1+10 = 11，最危险的房',
+          [dungeonPanel({ '1,1': 'cur' }), dpPanel({ '1,1': 'new', '2,1': 'win', '1,2': 'win' }),
+           varsPanel([{ name: '右需求', v: '1' }, { name: '下需求', v: '5' }, { name: '取小', v: '1' }, { name: 'dp[1][1]', v: '11' }])]));
+      }
+    }
+
+  frames.push(Viz.frame('return dp[0][0];',
+    '推回起点：dp[0][0] = ' + dp[0][0] + '，初始血 ≥ 7 就能救出公主',
+    [dungeonPanel({ '0,0': 'cur' }), dpPanel((function () { var mk = {}; for (var a = 0; a < m; a++) for (var b = 0; b < n; b++) mk[a + ',' + b] = 'done'; mk['0,0'] = 'cur'; return mk; })())]));
+
+  return { frames: frames, result: dp[0][0] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

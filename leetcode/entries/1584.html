@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>连接所有点的最小费用 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1025 / 1159</span>
+  <nav class="pn"><a href="0656.html">上一篇</a><a href="0730.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1584. </span>连接所有点的最小费用</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">图算法</li><li class="tag">并查集</li><li class="tag">图</li><li class="tag">数组</li><li class="tag">kruskals-algorithm</li><li class="tag">最小生成树</li><li class="tag">prims-algorithm</li><li class="tag">boruvkas-algorithm</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">Prim 最小生成树（O(n²) 版）：每轮把「离已建集合最近」的点拉进来，用新点刷新其余点到集合的距离。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dist[i]</code> = 点 <code>i</code> 到已建集合的最小曼哈顿距离；初始只有 0 号在集合里（<code>dist[0] = 0</code>）。</li><li>每轮线性扫一遍取未加入点中 <code>dist</code> 最小者 <code>u</code>，<code>total += dist[u]</code> 把它接入生成树。</li><li><code>u</code> 入集合后用它刷新其余点：<code>dist[i] = min(dist[i], |u−i|)</code>——这就是「经新点中转可能更近」。</li><li><code>n ≤ 1000</code>，稠密完全图上 O(n²) Prim 比 Kruskal（O(n² log n) 排序边）更优。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> minCostConnectPoints(<span class="k">int</span>[][] points) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = points.length;</span><span class="ln"><span class="no">6</span>        <span class="k">boolean</span>[] added = <span class="k">new</span> <span class="k">boolean</span>[n];</span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] dist = <span class="k">new</span> <span class="k">int</span>[n];   <span class="c">// 各点到「已建集合」的最小曼哈顿距离</span></span><span class="ln"><span class="no">8</span>        <span class="t">Arrays</span>.fill(dist, <span class="t">Integer</span>.MAX_VALUE);</span><span class="ln"><span class="no">9</span>        dist[<span class="n">0</span>] = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">int</span> total = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> round = <span class="n">0</span>; round &lt; n; round++) {</span><span class="ln"><span class="no">12</span>            <span class="c">// 每轮把离已建集合最近的点拉进来（Prim 选点）</span></span><span class="ln"><span class="no">13</span>            <span class="k">int</span> u = -<span class="n">1</span>;</span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++)</span><span class="ln"><span class="no">15</span>                <span class="k">if</span> (!added[i] &amp;&amp; (u == -<span class="n">1</span> || dist[i] &lt; dist[u])) u = i;</span><span class="ln"><span class="no">16</span>            added[u] = <span class="k">true</span>;</span><span class="ln"><span class="no">17</span>            total += dist[u];</span><span class="ln"><span class="no">18</span>            <span class="c">// 新点 u 进集合后，用它刷新其余点的距离</span></span><span class="ln"><span class="no">19</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++)</span><span class="ln"><span class="no">20</span>                <span class="k">if</span> (!added[i])</span><span class="ln"><span class="no">21</span>                    dist[i] = <span class="t">Math</span>.min(dist[i], md(points, u, i));</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> total;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span> </span><span class="ln"><span class="no">26</span>    <span class="k">private</span> <span class="k">int</span> md(<span class="k">int</span>[][] p, <span class="k">int</span> a, <span class="k">int</span> b) {</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> <span class="t">Math</span>.abs(p[a][<span class="n">0</span>] - p[b][<span class="n">0</span>]) + <span class="t">Math</span>.abs(p[a][<span class="n">1</span>] - p[b][<span class="n">1</span>]);</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个<code>points</code>&nbsp;数组，表示 2D 平面上的一些点，其中&nbsp;<code>points[i] = [x<sub>i</sub>, y<sub>i</sub>]</code>&nbsp;。</p>
+
+<p>连接点&nbsp;<code>[x<sub>i</sub>, y<sub>i</sub>]</code> 和点&nbsp;<code>[x<sub>j</sub>, y<sub>j</sub>]</code>&nbsp;的费用为它们之间的 <strong>曼哈顿距离</strong>&nbsp;：<code>|x<sub>i</sub> - x<sub>j</sub>| + |y<sub>i</sub> - y<sub>j</sub>|</code>&nbsp;，其中&nbsp;<code>|val|</code>&nbsp;表示&nbsp;<code>val</code>&nbsp;的绝对值。</p>
+
+<p>请你返回将所有点连接的最小总费用。只有任意两点之间 <strong>有且仅有</strong>&nbsp;一条简单路径时，才认为所有点都已连接。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/e86ca507b6e1.png" style="height:268px; width:214px; background:#e5e5e5" /></p>
+
+<pre>
+<strong>输入：</strong>points = [[0,0],[2,2],[3,10],[5,2],[7,0]]
+<strong>输出：</strong>20
+<strong>解释：
+</strong><img alt="" src="../assets/img/f1bb4993a5a6.png" style="height:268px; width:214px; background:#e5e5e5" />
+我们可以按照上图所示连接所有点得到最小总费用，总费用为 20 。
+注意到任意两个点之间只有唯一一条路径互相到达。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>points = [[3,12],[-2,5],[-4,1]]
+<strong>输出：</strong>18
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>points = [[0,0],[1,1],[1,0],[-1,1]]
+<strong>输出：</strong>4
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre>
+<strong>输入：</strong>points = [[-1000000,-1000000],[1000000,1000000]]
+<strong>输出：</strong>4000000
+</pre>
+
+<p><strong>示例 5：</strong></p>
+
+<pre>
+<strong>输入：</strong>points = [[0,0]]
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= points.length &lt;= 1000</code></li>
+	<li><code>-10<sup>6</sup>&nbsp;&lt;= x<sub>i</sub>, y<sub>i</sub> &lt;= 10<sup>6</sup></code></li>
+	<li>所有点&nbsp;<code>(x<sub>i</sub>, y<sub>i</sub>)</code>&nbsp;两两不同。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int minCostConnectPoints(int[][] points) {", "        int n = points.length;", "        boolean[] added = new boolean[n];", "        int[] dist = new int[n];   // 各点到「已建集合」的最小曼哈顿距离", "        Arrays.fill(dist, Integer.MAX_VALUE);", "        dist[0] = 0;", "        int total = 0;", "        for (int round = 0; round < n; round++) {", "            // 每轮把离已建集合最近的点拉进来（Prim 选点）", "            int u = -1;", "            for (int i = 0; i < n; i++)", "                if (!added[i] && (u == -1 || dist[i] < dist[u])) u = i;", "            added[u] = true;", "            total += dist[u];", "            // 新点 u 进集合后，用它刷新其余点的距离", "            for (int i = 0; i < n; i++)", "                if (!added[i])", "                    dist[i] = Math.min(dist[i], md(points, u, i));", "        }", "        return total;", "    }", "", "    private int md(int[][] p, int a, int b) {", "        return Math.abs(p[a][0] - p[b][0]) + Math.abs(p[a][1] - p[b][1]);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1584. 连接所有点的最小费用 —— 图解：复刻 Solution.java 的 O(n²) Prim，拍 5 张快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { points: [[0, 0], [2, 2], [3, 10], [5, 2], [7, 0]] };
+
+function trace(input) {
+  var pts = input.points, n = pts.length;
+  var frames = [];
+
+  function md(a, b) { return Math.abs(pts[a][0] - pts[b][0]) + Math.abs(pts[a][1] - pts[b][1]); }
+
+  // dist 表：每行 = 点 i；added → done，这轮选中的 → cur，这轮被刷新 → new
+  function distPanel(picked, updated) {
+    var rows = [];
+    for (var i = 0; i < n; i++) {
+      var cls = added[i] ? 'done' : '';
+      if (i === picked) cls = 'cur';
+      if (updated && updated[i]) cls = cls || 'new';
+      rows.push({ k: '点 ' + i + ' (' + pts[i][0] + ',' + pts[i][1] + ')', v: dist[i] === Infinity ? '∞' : String(dist[i]), cls: cls });
+    }
+    return Viz.table('dist[i]：点 i 到已建集合的最小距离', rows, { hint: '∞ = 还没算过' });
+  }
+
+  function varsPanel(extra) {
+    return Viz.vars([{ name: '已建点数', v: cnt + '/' + n }].concat(extra || []));
+  }
+
+  var added = [], dist = [], cnt = 0, total = 0;
+  for (var i = 0; i < n; i++) { added.push(false); dist.push(Infinity); }
+  dist[0] = 0;
+
+  var snapped = { first: false, pick: 0, refresh: false };
+  for (var round = 0; round < n; round++) {
+    var u = -1;
+    for (i = 0; i < n; i++)
+      if (!added[i] && (u === -1 || dist[i] < dist[u])) u = i;
+    added[u] = true;
+    cnt++;
+    total += dist[u];
+
+    // 关键帧：第 1 轮选点 + 之后每轮选点（最多拍 3 次选点）
+    if (n <= 8 && snapped.pick < 3) {
+      snapped.pick++;
+      frames.push(Viz.frame('if (!added[i] && (u == -1 || dist[i] < dist[u])) u = i;',
+        '第 ' + (round + 1) + ' 轮：未加入的点里 dist 最小的是 ' + u + '（距离 ' + dist[u] + '），拉进来',
+        [distPanel(u, null), varsPanel([{ name: 'total', v: String(total), cls: 'done' }])]));
+    }
+
+    var updated = {};
+    var changed = false;
+    for (i = 0; i < n; i++) {
+      if (added[i]) continue;
+      var d = md(u, i);
+      if (d < dist[i]) { dist[i] = d; updated[i] = true; changed = true; }
+    }
+    // 关键帧：第 2 轮的刷新（有更新才拍一次）
+    if (n <= 8 && round === 1 && changed && !snapped.refresh) {
+      snapped.refresh = true;
+      frames.push(Viz.frame('dist[i] = Math.min(dist[i], md(points, u, i));',
+        u + ' 进集合后刷新距离：经它中转更近的点都缩短',
+        [distPanel(-1, updated), varsPanel([{ name: 'total', v: String(total), cls: 'done' }])]));
+    }
+  }
+
+  if (n <= 8) frames.push(Viz.frame('return total;', 'n 个点全连通：最小总费用 = ' + total,
+    [distPanel(-1, null), varsPanel([{ name: 'total', v: String(total), cls: 'done' }])]));
+
+  return { frames: frames, result: total };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

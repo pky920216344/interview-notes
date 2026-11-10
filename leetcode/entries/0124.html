@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉树中的最大路径和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 35 / 1159</span>
+  <nav class="pn"><a href="0093.html">上一篇</a><a href="0082.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">124. </span>二叉树中的最大路径和</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 187</li><li class="algo">动态规划</li><li class="aux">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">动态规划</li><li class="tag">二叉树</li><li class="tag">dp-on-trees</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">后序递归返回向下的单边最大贡献（负数按 0）；经过当前结点的路径和 = 左 + 自己 + 右，全局取最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>gain(node)</code> 返回从 <code>node</code> 出发、只往下走的最大路径和；左右贡献取 <code>Math.max(0, …)</code>，为负就不走那边。</li><li>路径在 <code>node</code> 处拐弯：路径和 = <code>left + node.val + right</code>，用它更新全局 <code>best</code>，每个结点算一次。</li><li>返回给父结点只能带一边：<code>node.val + Math.max(left, right)</code>，路径不能分叉。</li><li><code>best</code> 初值取 <code>Integer.MIN_VALUE</code>：结点全是负数时，答案也是负的。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">int</span> best;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> maxPathSum(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">5</span>        best = <span class="t">Integer</span>.MIN_VALUE;</span><span class="ln"><span class="no">6</span>        gain(root);</span><span class="ln"><span class="no">7</span>        <span class="k">return</span> best;</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="c">// 返回从 node 出发、只往下走的最大路径和</span></span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">int</span> gain(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">13</span>        <span class="c">// 贡献为负就不走那一边，按 0 算</span></span><span class="ln"><span class="no">14</span>        <span class="k">int</span> left = <span class="t">Math</span>.max(<span class="n">0</span>, gain(node.left));</span><span class="ln"><span class="no">15</span>        <span class="k">int</span> right = <span class="t">Math</span>.max(<span class="n">0</span>, gain(node.right));</span><span class="ln"><span class="no">16</span>        <span class="c">// 路径在 node 处拐弯：左右两边都能用</span></span><span class="ln"><span class="no">17</span>        best = <span class="t">Math</span>.max(best, left + node.val + right);</span><span class="ln"><span class="no">18</span>        <span class="c">// 往上只能带一边，路径不能分叉</span></span><span class="ln"><span class="no">19</span>        <span class="k">return</span> node.val + <span class="t">Math</span>.max(left, right);</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>二叉树中的<strong> 路径</strong> 被定义为一条节点序列，序列中每对相邻节点之间都存在一条边。同一个节点在一条路径序列中 <strong>至多出现一次</strong> 。该路径<strong> 至少包含一个 </strong>节点，且不一定经过根节点。</p>
+
+<p><strong>路径和</strong> 是路径中各节点值的总和。</p>
+
+<p>给你一个二叉树的根节点 <code>root</code> ，返回其 <strong>最大路径和</strong> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/1f9021039fea.jpg" style="width: 322px; height: 182px;" />
+<pre>
+<strong>输入：</strong>root = [1,2,3]
+<strong>输出：</strong>6
+<strong>解释：</strong>最优路径是 2 -&gt; 1 -&gt; 3 ，路径和为 2 + 1 + 3 = 6</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/afaa6c18ff3a.jpg" />
+<pre>
+<strong>输入：</strong>root = [-10,9,20,null,null,15,7]
+<strong>输出：</strong>42
+<strong>解释：</strong>最优路径是 15 -&gt; 20 -&gt; 7 ，路径和为 15 + 20 + 7 = 42
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中节点数目范围是 <code>[1, 3 * 10<sup>4</sup>]</code></li>
+	<li><code>-1000 &lt;= Node.val &lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private int best;", "", "    public int maxPathSum(TreeNode root) {", "        best = Integer.MIN_VALUE;", "        gain(root);", "        return best;", "    }", "", "    // 返回从 node 出发、只往下走的最大路径和", "    private int gain(TreeNode node) {", "        if (node == null) return 0;", "        // 贡献为负就不走那一边，按 0 算", "        int left = Math.max(0, gain(node.left));", "        int right = Math.max(0, gain(node.right));", "        // 路径在 node 处拐弯：左右两边都能用", "        best = Math.max(best, left + node.val + right);", "        // 往上只能带一边，路径不能分叉", "        return node.val + Math.max(left, right);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 124. 二叉树中的最大路径和 —— 图解：复刻 Solution.java 的后序递归 gain()，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [-10, 9, 20, null, null, 15, -7] };
+
+function trace(input) {
+  var frames = [];
+
+  // 力扣层序数组 -> 结点；idx 是结点在数组里的下标，图解里的 marks / labels 靠它定位
+  function build(arr) {
+    if (!arr.length || arr[0] === null) return null;
+    var root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var n = q.shift();
+      if (i < arr.length) { if (arr[i] !== null) { n.left = { idx: i, val: arr[i], left: null, right: null }; q.push(n.left); } i++; }
+      if (i < arr.length) { if (arr[i] !== null) { n.right = { idx: i, val: arr[i], left: null, right: null }; q.push(n.right); } i++; }
+    }
+    return root;
+  }
+
+  var root = build(input.root);
+  var LEFT = 'int left = Math.max(0, gain(node.left));';
+  var RIGHT = 'int right = Math.max(0, gain(node.right));';
+  var BEST = 'best = Math.max(best, left + node.val + right);';
+  var RET = 'return node.val + Math.max(left, right);';
+
+  // 图解围绕后序里第一个左右孩子都有的结点讲（故事里是 20），之后再看根
+  function firstBoth(n) {
+    if (n === null) return null;
+    return firstBoth(n.left) || firstBoth(n.right) || (n.left !== null && n.right !== null ? n : null);
+  }
+  var focus = firstBoth(root);
+
+  var best = -2147483648;   // Integer.MIN_VALUE
+  var bestNode = null;      // 取得 best 的结点，最后用来画出最大路径
+  var g = {};               // 结点下标 -> gain() 的返回值
+  var used = {};            // 结点下标 -> { left, right }：两边实际采用的贡献（已经取过 max(0, …)）
+
+  function par(v) { return v < 0 ? '(' + v + ')' : String(v); }
+  // 从 n 出发一路往下，每次走贡献大的那边，两边都是 0 就停；返回经过的结点
+  function down(n) {
+    var out = [];
+    while (n !== null) {
+      out.push(n);
+      var l = n.left !== null ? Math.max(0, g[n.left.idx]) : 0;
+      var r = n.right !== null ? Math.max(0, g[n.right.idx]) : 0;
+      if (l === 0 && r === 0) break;
+      n = l >= r ? n.left : n.right;
+    }
+    return out;
+  }
+  // 经过 node 拐弯的那条路径：左边一路向下 + node + 右边一路向下
+  function pathAt(node) {
+    var u = used[node.idx];
+    return (u.left > 0 ? down(node.left) : []).concat([node], u.right > 0 ? down(node.right) : []);
+  }
+  // 把 nodes 标成 cls，cur 标成黄色
+  function marksFor(cur, nodes, cls) {
+    var m = {};
+    nodes.forEach(function (n) { m[n.idx] = cls; });
+    if (cur) m[cur.idx] = 'cur';
+    return m;
+  }
+  // 结点下方的小标签「↑x」：该结点往上返回的贡献，负数标红
+  function labelsOf(nodes) {
+    var out = [];
+    nodes.forEach(function (n) {
+      if (n !== null && n.idx in g) out.push({ at: n.idx, label: '↑' + g[n.idx], cls: g[n.idx] < 0 ? 'p-fast' : 'p-next' });
+    });
+    return out;
+  }
+  function tree(title, marks, labelNodes) {
+    return Viz.tree(input.root, { title: title, marks: marks, labels: labelsOf(labelNodes) });
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+  var T_GAIN = '二叉树（↑x = 该结点往上返回的贡献，负数标红）';
+  var T_PATH = '二叉树（黄 = 当前结点，青 = 这条路径上的结点，↑x = 往上返回的贡献）';
+
+  function gain(node) {
+    if (node === null) return 0;
+    var l = gain(node.left);
+    var left = Math.max(0, l);
+    if (node === focus && l < 0) {
+      var m1 = marksFor(node, [], 'win');
+      m1[node.left.idx] = 'bad';
+      snap(LEFT, '左孩子的贡献是 ' + l + '，为负不如不走：按 0 算',
+        [tree(T_GAIN, m1, [node.left]), Viz.vars([{ name: 'left', v: left, cls: 'chg' }])]);
+    }
+    var r = gain(node.right);
+    var right = Math.max(0, r);
+    if (node === focus && l >= 0 && r < 0) {
+      var m2 = marksFor(node, [node.left], 'win');
+      m2[node.right.idx] = 'bad';
+      snap(RIGHT, '右孩子的贡献是 ' + r + '，为负不如不走：按 0 算',
+        [tree(T_GAIN, m2, [node.left, node.right]), Viz.vars([{ name: 'left', v: left }, { name: 'right', v: right, cls: 'chg' }])]);
+    }
+    used[node.idx] = { left: left, right: right };
+
+    var sum = left + node.val + right;
+    var improved = sum > best;
+    if (improved) { best = sum; bestNode = node; }
+    if (node === focus || node === root) {
+      snap(BEST, (node === root ? '根 ' : '') + node.val + ' 处拐弯：' + par(left) + ' + ' + par(node.val) + ' + ' + par(right) + ' = ' + sum + '，' + (improved ? '刷新 best' : 'best 不变'),
+        [tree(T_PATH, marksFor(node, pathAt(node), 'win'), [node.left, node.right]),
+         Viz.vars([{ name: 'left', v: left }, { name: 'node.val', v: node.val }, { name: 'right', v: right },
+                   { name: 'left + node.val + right', v: sum, cls: 'chg' }, { name: 'best', v: best, cls: improved ? 'chg' : '' }])]);
+    }
+
+    var ret = node.val + Math.max(left, right);
+    g[node.idx] = ret;
+    if (node === focus) {
+      var side = left >= right ? node.left : node.right;
+      var kept = side !== null && Math.max(left, right) > 0 ? down(side) : [];
+      snap(RET, '往上只能带一边：' + par(node.val) + ' + max(' + left + ', ' + right + ') = ' + ret + '，交给父结点',
+        [tree(T_PATH, marksFor(node, kept, 'win'), [node.left, node.right, node]),
+         Viz.vars([{ name: 'node.val + max(left, right)', v: ret, cls: 'chg' }])]);
+    }
+    return ret;
+  }
+
+  if (root === null) return { frames: frames, result: best };
+  gain(root);
+
+  snap('return best;', '全部算完，best = ' + best + ' 就是答案（绿色是那条路径）',
+    [tree('二叉树（绿 = 最大路径）', marksFor(null, pathAt(bestNode), 'done'), []),
+     Viz.vars([{ name: 'best', v: best, cls: 'chg' }])]);
+  return { frames: frames, result: best };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

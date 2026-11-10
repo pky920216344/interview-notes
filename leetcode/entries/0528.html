@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>按权重随机选择 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 199 / 1159</span>
+  <nav class="pn"><a href="offer-27.html">上一篇</a><a href="1044.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">528. </span>按权重随机选择</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 24</li><li class="algo">前缀和/差分</li><li class="aux">二分查找</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">二分查找</li><li class="tag">前缀和</li><li class="tag">随机化</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">前缀和把权重铺成数轴：均匀抽 r ∈ [0, 总权重)，二分找第一个 &gt; r 的前缀和，落在哪段就以 w[i]/总权重 的概率选哪个下标。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>构造时算前缀和 <code>prefix</code>：下标 <code>i</code> 的权重就是数轴上 <code>[prefix[i], prefix[i+1])</code> 这一段，长度恰好是 <code>w[i]</code>。</li><li><code>pickIndex</code>：<code>rnd.nextInt(总权重)</code> 等概率抽 <code>r</code>，落进哪段就等价于按 <code>w[i] / 总权重</code> 的概率选中 <code>i</code>。</li><li>映射用二分：找<strong>第一个大于 r</strong> 的前缀和；注意 <code>lo</code> 从 1 起步（<code>prefix[0] = 0</code> 不是任何一段的右端点），返回 <code>lo - 1</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 构造 O(n)，每次 O(log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span>[] prefix;   <span class="c">// prefix[i] = 前 i 个权重之和，prefix[0] = 0</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Random</span> rnd = <span class="k">new</span> <span class="t">Random</span>();</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">Solution</span>(<span class="k">int</span>[] w) {</span><span class="ln"><span class="no">8</span>        prefix = <span class="k">new</span> <span class="k">int</span>[w.length + <span class="n">1</span>];</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; w.length; i++) prefix[i + <span class="n">1</span>] = prefix[i] + w[i];</span><span class="ln"><span class="no">10</span>    }</span><span class="ln"><span class="no">11</span> </span><span class="ln"><span class="no">12</span>    <span class="k">public</span> <span class="k">int</span> pickIndex() {</span><span class="ln"><span class="no">13</span>        <span class="c">// 在 [0, 总权重) 里均匀抽一个整数，落进哪段就选哪个下标</span></span><span class="ln"><span class="no">14</span>        <span class="k">return</span> pickAt(rnd.nextInt(prefix[prefix.length - <span class="n">1</span>]));</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span> </span><span class="ln"><span class="no">17</span>    <span class="c">// 把一次均匀抽样 r 映射到下标：二分找第一个 &gt; r 的前缀和</span></span><span class="ln"><span class="no">18</span>    <span class="k">int</span> pickAt(<span class="k">int</span> r) {</span><span class="ln"><span class="no">19</span>        <span class="k">int</span> lo = <span class="n">1</span>, hi = prefix.length - <span class="n">1</span>;</span><span class="ln"><span class="no">20</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">21</span>            <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">22</span>            <span class="k">if</span> (prefix[mid] &gt; r) hi = mid; <span class="k">else</span> lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> lo - <span class="n">1</span>;</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个 <strong>下标从 0 开始</strong> 的正整数数组&nbsp;<code>w</code> ，其中&nbsp;<code>w[i]</code> 代表第 <code>i</code> 个下标的权重。</p>
+
+<p>请你实现一个函数&nbsp;<code>pickIndex</code>&nbsp;，它可以 <strong>随机地</strong> 从范围 <code>[0, w.length - 1]</code> 内（含 <code>0</code> 和 <code>w.length - 1</code>）选出并返回一个下标。选取下标 <code>i</code>&nbsp;的 <strong>概率</strong> 为 <code>w[i] / sum(w)</code> 。</p>
+
+<ol>
+</ol>
+
+<ul>
+	<li>例如，对于 <code>w = [1, 3]</code>，挑选下标 <code>0</code> 的概率为 <code>1 / (1 + 3)&nbsp;= 0.25</code> （即，25%），而选取下标 <code>1</code> 的概率为 <code>3 / (1 + 3)&nbsp;= 0.75</code>（即，<code>75%</code>）。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+["Solution","pickIndex"]
+[[[1]],[]]
+<strong>输出：</strong>
+[null,0]
+<strong>解释：</strong>
+Solution solution = new Solution([1]);
+solution.pickIndex(); // 返回 0，因为数组中只有一个元素，所以唯一的选择是返回下标 0。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+["Solution","pickIndex","pickIndex","pickIndex","pickIndex","pickIndex"]
+[[[1,3]],[],[],[],[],[]]
+<strong>输出：</strong>
+[null,1,1,1,1,0]
+<strong>解释：</strong>
+Solution solution = new Solution([1, 3]);
+solution.pickIndex(); // 返回 1，返回下标 1，返回该下标概率为 3/4 。
+solution.pickIndex(); // 返回 1
+solution.pickIndex(); // 返回 1
+solution.pickIndex(); // 返回 1
+solution.pickIndex(); // 返回 0，返回下标 0，返回该下标概率为 1/4 。
+
+由于这是一个随机问题，允许多个答案，因此下列输出都可以被认为是正确的:
+[null,1,1,1,1,0]
+[null,1,1,1,1,1]
+[null,1,1,1,0,0]
+[null,1,1,1,0,1]
+[null,1,0,1,0,0]
+......
+诸若此类。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= w.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= w[i] &lt;= 10<sup>5</sup></code></li>
+	<li><code>pickIndex</code>&nbsp;将被调用不超过 <code>10<sup>4</sup></code>&nbsp;次</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private final int[] prefix;   // prefix[i] = 前 i 个权重之和，prefix[0] = 0", "    private final Random rnd = new Random();", "", "    public Solution(int[] w) {", "        prefix = new int[w.length + 1];", "        for (int i = 0; i < w.length; i++) prefix[i + 1] = prefix[i] + w[i];", "    }", "", "    public int pickIndex() {", "        // 在 [0, 总权重) 里均匀抽一个整数，落进哪段就选哪个下标", "        return pickAt(rnd.nextInt(prefix[prefix.length - 1]));", "    }", "", "    // 把一次均匀抽样 r 映射到下标：二分找第一个 > r 的前缀和", "    int pickAt(int r) {", "        int lo = 1, hi = prefix.length - 1;", "        while (lo < hi) {", "            int mid = (lo + hi) >>> 1;", "            if (prefix[mid] > r) hi = mid; else lo = mid + 1;", "        }", "        return lo - 1;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 528. 按权重随机选择 —— 图解：复刻 Solution.java 的「前缀和 + 二分映射」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 随机数本身不是算法：输入里的 draws 是一组已抽好的均匀整数，Solution 负责把它们映射成下标。
+
+var STORY_INPUT = { w: [1, 3], draws: [0, 2, 3] };
+
+function trace(input) {
+  var w = input.w, draws = input.draws;
+  var frames = [];
+  var prefix = [0];
+  for (var i = 0; i < w.length; i++) prefix.push(prefix[i] + w[i]);
+
+  function prefixPanel(o) {
+    var marks = {};
+    if (o && o.mid != null) marks[o.mid] = 'chg';
+    if (o && o.seg != null) marks[o.seg] = 'done';
+    return Viz.cells(prefix, { title: '前缀和 prefix[i] = 前 i 个权重之和', marks: marks, pointers: o ? o.ptrs || [] : [] });
+  }
+  function drawsPanel(doneCount) {
+    var marks = {};
+    for (var k = 0; k < doneCount; k++) marks[k] = 'dim';
+    var pointers = doneCount < draws.length ? [{ at: doneCount, label: 'r', cls: 'p-cur' }] : [];
+    return Viz.cells(draws, { title: '均匀抽样 r ∈ [0, ' + prefix[prefix.length - 1] + ')', marks: marks, pointers: pointers });
+  }
+
+  frames.push(Viz.frame('prefix[i + 1] = prefix[i] + w[i];',
+    '构造前缀和：下标 i 的权重铺成数轴上 [prefix[i], prefix[i+1]) 这一段',
+    [prefixPanel({}), drawsPanel(0)]));
+
+  var picks = [];
+  draws.forEach(function (r) {
+    var lo = 1, hi = prefix.length - 1;
+    var showed = false;
+    while (lo < hi) {
+      var mid = (lo + hi) >> 1;
+      if (!showed) {
+        showed = true;
+        frames.push(Viz.frame('if (prefix[mid] > r) hi = mid; else lo = mid + 1;',
+          '抽到 r=' + r + '：二分找第一个 > r 的前缀和（prefix[' + mid + ']=' + prefix[mid] + (prefix[mid] > r ? ' > r' : ' ≤ r') + '）',
+          [prefixPanel({
+            mid: mid,
+            ptrs: [{ at: lo, label: 'lo', cls: 'p-left' }, { at: mid, label: 'mid', cls: 'p-mid' }, { at: hi, label: 'hi', cls: 'p-right' }]
+          }), drawsPanel(picks.length)]));
+      }
+      if (prefix[mid] > r) hi = mid; else lo = mid + 1;
+    }
+    picks.push(lo - 1);
+  });
+
+  frames.push(Viz.frame('return lo - 1;',
+    '每次抽样落进一段，得到 [' + picks.join(', ') + ']：权重大的段更容易被抽中',
+    [prefixPanel({}), drawsPanel(draws.length), Viz.vars([{ name: '答案', v: '[' + picks.join(', ') + ']', cls: 'chg' }])]));
+
+  return { frames: frames, result: picks };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

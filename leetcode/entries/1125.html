@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最小的必要团队 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 846 / 1159</span>
+  <nav class="pn"><a href="0693.html">上一篇</a><a href="1185.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1125. </span>最小的必要团队</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">动态规划</li><li class="aux">位运算</li><li class="tag">位运算</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">位掩码</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">技能压成 ≤16 位掩码，dp[mask] = 覆盖 mask 的最少人数，每人倒序松弛一次；从 full 回溯出团队。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>技能只有 ≤ 16 项 → 每种「已凑齐的技能集合」是一个位掩码，共 <code>2^k</code> 个状态。</li><li><code>dp[mask]</code> = 覆盖 <code>mask</code> 的最少人数；枚举每个人 <code>p</code>，<code>dp[mask | skill[p]] = min(dp[mask | skill[p]], dp[mask] + 1)</code>。</li><li>每人<strong>倒序</strong>枚举 <code>mask</code>（<code>mask | skill[p] ≥ mask</code>），保证每人最多选一次；同时记 <code>from</code>/<code>who</code> 便于回溯。</li><li>答案从 <code>full</code> 沿 <code>from</code> 走回 <code>0</code>，途经的 <code>who</code> 倒序就是团队；题目只要任一最小团队。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m·2^k)（k = 技能数 ≤ 16），空间复杂度 O(2^k)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] smallestSufficientTeam(<span class="t">String</span>[] req_skills, <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; people) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> ns = req_skills.length, full = (<span class="n">1</span> &lt;&lt; ns) - <span class="n">1</span>, m = people.size();</span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt; id = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; ns; i++) id.put(req_skills[i], i);</span><span class="ln"><span class="no">8</span>        <span class="c">// 每个人的技能集合压成位掩码</span></span><span class="ln"><span class="no">9</span>        <span class="k">int</span>[] skill = <span class="k">new</span> <span class="k">int</span>[m];</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++)</span><span class="ln"><span class="no">11</span>            <span class="k">for</span> (<span class="t">String</span> s : people.get(i)) skill[i] |= <span class="n">1</span> &lt;&lt; id.get(s);</span><span class="ln"><span class="no">12</span>        <span class="c">// dp[mask] = 覆盖技能集 mask 的最少人数；from/who 记录转移便于回溯</span></span><span class="ln"><span class="no">13</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[<span class="n">1</span> &lt;&lt; ns], from = <span class="k">new</span> <span class="k">int</span>[<span class="n">1</span> &lt;&lt; ns], who = <span class="k">new</span> <span class="k">int</span>[<span class="n">1</span> &lt;&lt; ns];</span><span class="ln"><span class="no">14</span>        <span class="t">Arrays</span>.fill(dp, <span class="n">99</span>);</span><span class="ln"><span class="no">15</span>        dp[<span class="n">0</span>] = <span class="n">0</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> p = <span class="n">0</span>; p &lt; m; p++) {</span><span class="ln"><span class="no">17</span>            <span class="c">// 倒序枚举旧状态，保证每人最多选一次</span></span><span class="ln"><span class="no">18</span>            <span class="k">for</span> (<span class="k">int</span> mask = full; mask &gt;= <span class="n">0</span>; mask--) {</span><span class="ln"><span class="no">19</span>                <span class="k">int</span> t = mask | skill[p];</span><span class="ln"><span class="no">20</span>                <span class="k">if</span> (dp[mask] + <span class="n">1</span> &lt; dp[t]) { dp[t] = dp[mask] + <span class="n">1</span>; from[t] = mask; who[t] = p; }</span><span class="ln"><span class="no">21</span>            }</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="c">// 从 full 沿 from 走回 0，收集途经选的人</span></span><span class="ln"><span class="no">24</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; team = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">25</span>        <span class="k">for</span> (<span class="k">int</span> mask = full; mask != <span class="n">0</span>; mask = from[mask]) team.add(who[mask]);</span><span class="ln"><span class="no">26</span>        <span class="t">Collections</span>.reverse(team);</span><span class="ln"><span class="no">27</span>        <span class="k">int</span>[] out = <span class="k">new</span> <span class="k">int</span>[team.size()];</span><span class="ln"><span class="no">28</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; team.size(); i++) out[i] = team.get(i);</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>作为项目经理，你规划了一份需求的技能清单 <code>req_skills</code>，并打算从备选人员名单 <code>people</code> 中选出些人组成一个「必要团队」（ 编号为 <code>i</code> 的备选人员 <code>people[i]</code> 含有一份该备选人员掌握的技能列表）。</p>
+
+<p>所谓「必要团队」，就是在这个团队中，对于所需求的技能列表 <code>req_skills</code> 中列出的每项技能，团队中至少有一名成员已经掌握。可以用每个人的编号来表示团队中的成员：</p>
+
+<ul>
+	<li>例如，团队 <code>team = [0, 1, 3]</code> 表示掌握技能分别为 <code>people[0]</code>，<code>people[1]</code>，和 <code>people[3]</code> 的备选人员。</li>
+</ul>
+
+<p>请你返回 <strong>任一</strong> 规模最小的必要团队，团队成员用人员编号表示。你可以按 <strong>任意顺序</strong> 返回答案，题目数据保证答案存在。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>req_skills = ["java","nodejs","reactjs"], people = [["java"],["nodejs"],["nodejs","reactjs"]]
+<strong>输出：</strong>[0,2]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>req_skills = ["algorithms","math","java","reactjs","csharp","aws"], people = [["algorithms","math","java"],["algorithms","math","reactjs"],["java","csharp","aws"],["reactjs","csharp"],["csharp","math"],["aws","java"]]
+<strong>输出：</strong>[1,2]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= req_skills.length <= 16</code></li>
+	<li><code>1 <= req_skills[i].length <= 16</code></li>
+	<li><code>req_skills[i]</code> 由小写英文字母组成</li>
+	<li><code>req_skills</code> 中的所有字符串 <strong>互不相同</strong></li>
+	<li><code>1 <= people.length <= 60</code></li>
+	<li><code>0 <= people[i].length <= 16</code></li>
+	<li><code>1 <= people[i][j].length <= 16</code></li>
+	<li><code>people[i][j]</code> 由小写英文字母组成</li>
+	<li><code>people[i]</code> 中的所有字符串 <strong>互不相同</strong></li>
+	<li><code>people[i]</code> 中的每个技能是 <code>req_skills</code> 中的技能</li>
+	<li>题目数据保证「必要团队」一定存在</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] smallestSufficientTeam(String[] req_skills, List<List<String>> people) {", "        int ns = req_skills.length, full = (1 << ns) - 1, m = people.size();", "        Map<String, Integer> id = new HashMap<>();", "        for (int i = 0; i < ns; i++) id.put(req_skills[i], i);", "        // 每个人的技能集合压成位掩码", "        int[] skill = new int[m];", "        for (int i = 0; i < m; i++)", "            for (String s : people.get(i)) skill[i] |= 1 << id.get(s);", "        // dp[mask] = 覆盖技能集 mask 的最少人数；from/who 记录转移便于回溯", "        int[] dp = new int[1 << ns], from = new int[1 << ns], who = new int[1 << ns];", "        Arrays.fill(dp, 99);", "        dp[0] = 0;", "        for (int p = 0; p < m; p++) {", "            // 倒序枚举旧状态，保证每人最多选一次", "            for (int mask = full; mask >= 0; mask--) {", "                int t = mask | skill[p];", "                if (dp[mask] + 1 < dp[t]) { dp[t] = dp[mask] + 1; from[t] = mask; who[t] = p; }", "            }", "        }", "        // 从 full 沿 from 走回 0，收集途经选的人", "        List<Integer> team = new ArrayList<>();", "        for (int mask = full; mask != 0; mask = from[mask]) team.add(who[mask]);", "        Collections.reverse(team);", "        int[] out = new int[team.size()];", "        for (int i = 0; i < team.size(); i++) out[i] = team.get(i);", "        return out;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1125. 最小的必要团队 —— 图解：技能压成位掩码，倒序松弛 dp[mask]，从 full 回溯出团队。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { req_skills: ['j', 'n', 'r'], people: [['j'], ['n'], ['n', 'r']] };
+
+function trace(input) {
+  var skills = input.req_skills, people = input.people;
+  var ns = skills.length, full = (1 << ns) - 1, m = people.length;
+  var frames = [];
+  var INIT = 'dp[0] = 0;';
+  var UPD = 'if (dp[mask] + 1 < dp[t]) { dp[t] = dp[mask] + 1; from[t] = mask; who[t] = p; }';
+  var BACK = 'for (int mask = full; mask != 0; mask = from[mask]) team.add(who[mask]);';
+  var RET = 'return out;';
+
+  var id = {};
+  for (var i = 0; i < ns; i++) id[skills[i]] = i;
+  var skill = people.map(function (list) {
+    var mk = 0;
+    for (var k = 0; k < list.length; k++) mk |= (1 << id[list[k]]);
+    return mk;
+  });
+
+  function bin(x) {
+    var s = '';
+    for (var b = ns - 1; b >= 0; b--) s += (x >>> b) & 1;
+    return s;
+  }
+  function dpPanel(marks) {
+    var items = [];
+    for (var mk = 0; mk <= full; mk++) items.push(dp[mk] >= 99 ? '∞' : dp[mk]);
+    return Viz.cells(items, { title: 'dp[mask]：凑齐技能集 mask 的最少人数（mask 的二进制位 = 要哪些技能）', marks: marks || {} });
+  }
+  function personVars(p) {
+    return [
+      { name: '当前人', v: String(p) },
+      { name: '掌握技能', v: bin(skill[p]) + '（' + people[p].join(',') + '）' }
+    ];
+  }
+
+  // 与 Solution.java 相同的 DP
+  var dp = [], from = [], who = [];
+  for (var mk = 0; mk <= full; mk++) { dp[mk] = 99; from[mk] = 0; who[mk] = 0; }
+  dp[0] = 0;
+  frames.push(Viz.frame(INIT, '初始化：只有空集 dp[000] = 0，其余暂时不可达（∞）', [dpPanel({})]));
+
+  var snappedFirst = false, snappedFull = false;
+  for (var p = 0; p < m; p++) {
+    for (var mask = full; mask >= 0; mask--) {
+      var t = mask | skill[p];
+      if (dp[mask] + 1 < dp[t]) {
+        dp[t] = dp[mask] + 1;
+        from[t] = mask;
+        who[t] = p;
+        if (!snappedFirst) {
+          snappedFirst = true;
+          frames.push(Viz.frame(UPD, '每个新状态都从「旧状态 + 1 人」松弛：dp[' + bin(t) + '] = dp[' + bin(mask) + '] + 1', [
+            dpPanel((function () { var mk2 = {}; mk2[t] = 'new'; return mk2; })()),
+            Viz.vars(personVars(p))
+          ]));
+        }
+        if (t === full && !snappedFull) {
+          snappedFull = true;
+          frames.push(Viz.frame(UPD, 'dp[' + bin(t) + '] = ' + dp[t] + '：全部技能凑齐，人数 = dp[' + bin(mask) + '] + 1', [
+            dpPanel((function () { var mk2 = {}; mk2[t] = 'new'; mk2[mask] = 'cur'; return mk2; })()),
+            Viz.vars(personVars(p))
+          ]));
+        }
+      }
+    }
+  }
+
+  // 回溯
+  var team = [];
+  var path = [];
+  for (var mask2 = full; mask2 !== 0; mask2 = from[mask2]) { team.push(who[mask2]); path.push(bin(mask2)); }
+  var pathStr = path.concat([bin(0)]).join(' → ');
+  frames.push(Viz.frame(BACK, '从 full 沿 from 走回 0：途经 who 依次 ' + team.slice().reverse().join('、') + '，倒序即选人顺序', [
+    Viz.vars([{ name: '回溯路径', v: pathStr }, { name: '选的人（倒序收集）', v: '[' + team.join(',') + ']' }]),
+    dpPanel((function () { var mk2 = {}; mk2[full] = 'cur'; return mk2; })())
+  ]));
+  team.reverse();
+  var sorted = team.slice().sort(function (a, b) { return a - b; });
+  var out = sorted.slice();
+  frames.push(Viz.frame(RET, '输出任一最小团队 [' + sorted.join(',') + ']，人数 = dp[' + bin(full) + '] = ' + dp[full], [
+    dpPanel((function () { var mk2 = {}; mk2[full] = 'done'; return mk2; })()),
+    Viz.vars([{ name: '返回团队', v: '[' + sorted.join(',') + ']', cls: 'done' }])
+  ]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

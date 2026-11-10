@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>猜字谜 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 955 / 1159</span>
+  <nav class="pn"><a href="0644.html">上一篇</a><a href="0363.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1178. </span>猜字谜</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">位运算</li><li class="aux">哈希表</li><li class="tag">位运算</li><li class="tag">字典树</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">每个词压成 26 位掩码建计数表；每个谜面拆成「必含的首字母 + 其余 6 字母」，枚举其余部分的全部子集去查表。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>词的字母<strong>种类</strong>压成 <code>int</code> 掩码（重复字母无所谓），相同掩码的词在 <code>HashMap</code> 里累加计数。</li><li>谜底条件 = 含谜面首字母 + 每个字母 ∈ 谜面 → 掩码必须<strong>含 first 位且 ⊆ 谜面掩码</strong>。</li><li>把谜面掩码异或掉首字母得 <code>rest</code>（6 位）：合法掩码 = <code>s | first</code>，<code>s</code> 取 <code>rest</code> 的所有子集，共 2⁶ = 64 个。</li><li>子集枚举套路：<code>s = (s − 1) &amp; rest</code> 递减，从 <code>rest</code> 扫到 <code>0</code>（含空集），注意 <code>rest = 0</code> 时也要查一次。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(词总长 + 谜面数·2⁶)，空间复杂度 O(不同掩码数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; findNumOfValidWords(<span class="t">String</span>[] words, <span class="t">String</span>[] puzzles) {</span><span class="ln"><span class="no">5</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; cnt = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="t">String</span> w : words) {</span><span class="ln"><span class="no">7</span>            <span class="k">int</span> mask = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; w.length(); i++) mask |= <span class="n">1</span> &lt;&lt; (w.charAt(i) - <span class="s">'a'</span>);</span><span class="ln"><span class="no">9</span>            cnt.merge(mask, <span class="n">1</span>, <span class="t">Integer</span>::sum);   <span class="c">// 只关心用过的字母种类，重复字母无所谓</span></span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="t">String</span> p : puzzles) {</span><span class="ln"><span class="no">13</span>            <span class="k">int</span> mask = <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; p.length(); i++) mask |= <span class="n">1</span> &lt;&lt; (p.charAt(i) - <span class="s">'a'</span>);</span><span class="ln"><span class="no">15</span>            <span class="k">int</span> first = <span class="n">1</span> &lt;&lt; (p.charAt(<span class="n">0</span>) - <span class="s">'a'</span>);</span><span class="ln"><span class="no">16</span>            <span class="k">int</span> rest = mask ^ first;   <span class="c">// 除首字母外的 6 个字母</span></span><span class="ln"><span class="no">17</span>            <span class="k">int</span> total = <span class="n">0</span>;</span><span class="ln"><span class="no">18</span>            <span class="c">// 合法谜底 = 必含首字母 + 其余字母是 rest 的子集 → 枚举 rest 的全部子集去查表</span></span><span class="ln"><span class="no">19</span>            <span class="k">for</span> (<span class="k">int</span> s = rest; ; s = (s - <span class="n">1</span>) &amp; rest) {</span><span class="ln"><span class="no">20</span>                <span class="t">Integer</span> c = cnt.get(s | first);</span><span class="ln"><span class="no">21</span>                <span class="k">if</span> (c != <span class="k">null</span>) total += c;</span><span class="ln"><span class="no">22</span>                <span class="k">if</span> (s == <span class="n">0</span>) <span class="k">break</span>;   <span class="c">// 子集枚举套路：s−1 再与 rest，正好扫完包括空集</span></span><span class="ln"><span class="no">23</span>            }</span><span class="ln"><span class="no">24</span>            ans.add(total);</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>外国友人仿照中国字谜设计了一个英文版猜字谜小游戏，请你来猜猜看吧。</p>
+
+<p>字谜的迷面 <code>puzzle</code> 按字符串形式给出，如果一个单词 <code>word</code> 符合下面两个条件，那么它就可以算作谜底：</p>
+
+<ul>
+	<li>单词 <code>word</code> 中包含谜面 <code>puzzle</code> 的第一个字母。</li>
+	<li>单词 <code>word</code> 中的每一个字母都可以在谜面 <code>puzzle</code> 中找到。<br />
+	例如，如果字谜的谜面是 "abcdefg"，那么可以作为谜底的单词有 "faced", "cabbage", 和 "baggage"；而 "beefed"（不含字母 "a"）以及 "based"（其中的 "s" 没有出现在谜面中）都不能作为谜底。</li>
+</ul>
+
+<p>返回一个答案数组 <code>answer</code>，数组中的每个元素 <code>answer[i]</code> 是在给出的单词列表 <code>words</code> 中可以作为字谜迷面 <code>puzzles[i]</code> 所对应的谜底的单词数目。</p>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+words = ["aaaa","asas","able","ability","actt","actor","access"], 
+puzzles = ["aboveyz","abrodyz","abslute","absoryz","actresz","gaswxyz"]
+<strong>输出：</strong>[1,1,3,2,4,0]
+<strong>解释：</strong>
+1 个单词可以作为 "aboveyz" 的谜底 : "aaaa" 
+1 个单词可以作为 "abrodyz" 的谜底 : "aaaa"
+3 个单词可以作为 "abslute" 的谜底 : "aaaa", "asas", "able"
+2 个单词可以作为 "absoryz" 的谜底 : "aaaa", "asas"
+4 个单词可以作为 "actresz" 的谜底 : "aaaa", "asas", "actt", "access"
+没有单词可以作为 "gaswxyz" 的谜底，因为列表中的单词都不含字母 'g'。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= words.length <= 10^5</code></li>
+	<li><code>4 <= words[i].length <= 50</code></li>
+	<li><code>1 <= puzzles.length <= 10^4</code></li>
+	<li><code>puzzles[i].length == 7</code></li>
+	<li><code>words[i][j]</code>, <code>puzzles[i][j]</code> 都是小写英文字母。</li>
+	<li>每个 <code>puzzles[i]</code> 所包含的字符都不重复。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> findNumOfValidWords(String[] words, String[] puzzles) {", "        Map<Integer, Integer> cnt = new HashMap<>();", "        for (String w : words) {", "            int mask = 0;", "            for (int i = 0; i < w.length(); i++) mask |= 1 << (w.charAt(i) - 'a');", "            cnt.merge(mask, 1, Integer::sum);   // 只关心用过的字母种类，重复字母无所谓", "        }", "        List<Integer> ans = new ArrayList<>();", "        for (String p : puzzles) {", "            int mask = 0;", "            for (int i = 0; i < p.length(); i++) mask |= 1 << (p.charAt(i) - 'a');", "            int first = 1 << (p.charAt(0) - 'a');", "            int rest = mask ^ first;   // 除首字母外的 6 个字母", "            int total = 0;", "            // 合法谜底 = 必含首字母 + 其余字母是 rest 的子集 → 枚举 rest 的全部子集去查表", "            for (int s = rest; ; s = (s - 1) & rest) {", "                Integer c = cnt.get(s | first);", "                if (c != null) total += c;", "                if (s == 0) break;   // 子集枚举套路：s−1 再与 rest，正好扫完包括空集", "            }", "            ans.add(total);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1178. 猜字谜 —— 图解：复刻 Solution.java 的「词掩码建表 + 枚举谜面子集查表」，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { words: ['aaaa', 'asas', 'able', 'actt', 'access'], puzzles: ['aboveyz', 'abslute'] };
+
+function trace(input) {
+  var words = input.words, puzzles = input.puzzles;
+  var frames = [];
+  var cnt = {};   // 掩码 -> 词数，对应 Java 里的 HashMap
+
+  function maskOf(s) {
+    var m = 0;
+    for (var i = 0; i < s.length; i++) m |= 1 << (s.charCodeAt(i) - 97);
+    return m;
+  }
+  function letters(mask) {   // 掩码显示成字母串，例如 0b11 -> 'ab'
+    var s = '';
+    for (var i = 0; i < 26; i++) if (mask & (1 << i)) s += String.fromCharCode(97 + i);
+    return s || '∅';
+  }
+
+  for (var wi = 0; wi < words.length; wi++) {
+    var w = words[wi];
+    var mask = maskOf(w);
+    cnt[mask] = (cnt[mask] || 0) + 1;
+    if (wi === 0) {
+      var marks = {};
+      for (var k = 0; k < w.length; k++) marks[k] = 'cur';
+      frames.push(Viz.frame("for (int i = 0; i < w.length(); i++) mask |= 1 << (w.charAt(i) - 'a');",
+        '每个词压成 26 位掩码：只记用过哪些字母，重复不要紧',
+        [Viz.cells(w.split(''), { title: '词 ' + w + ' → 掩码', marks: marks }),
+         Viz.vars([{ name: 'mask', v: letters(mask) }])]));
+    }
+  }
+  var keys = Object.keys(cnt).map(Number).sort(function (a, b) { return a - b; });
+  var cntRows = keys.map(function (k) { return { k: letters(k), v: String(cnt[k]) }; });
+  frames.push(Viz.frame('cnt.merge(mask, 1, Integer::sum);',
+    '词全扫完：掩码 → 词数 的表建好了，之后只查这张表',
+    [Viz.table('cnt：掩码（字母集）→ 词数', cntRows)]));
+
+  var p = puzzles[0];
+  var pmask = maskOf(p);
+  var first = 1 << (p.charCodeAt(0) - 97);
+  var rest = pmask ^ first;
+  var pcells = p.split('');
+  var pmarks = { 0: 'cur' };
+  for (wi = 1; wi < p.length; wi++) pmarks[wi] = 'win';
+  frames.push(Viz.frame('int rest = mask ^ first;',
+    '谜面拆两半：首字母必含，其余 6 个字母只要求是它的子集',
+    [Viz.cells(pcells, { title: '谜面 ' + p, marks: pmarks }),
+     Viz.vars([{ name: 'first 必含', v: p.charAt(0) }, { name: 'rest 子集来源', v: letters(rest) }])]));
+
+  var total = 0;
+  var s = rest;
+  var firstSubset = true;
+  while (true) {
+    var c = cnt[s | first] || 0;
+    total += c;
+    if (firstSubset) {
+      firstSubset = false;
+      var rows = cntRows.map(function (r) {
+        return { k: r.k, v: r.v, cls: r.k === letters(s | first) ? 'hit' : '' };
+      });
+      frames.push(Viz.frame('if (c != null) total += c;',
+        '枚举 rest 的子集 s（从全集开始）：查 cnt[s | 首字母] = ' + c,
+        [Viz.table('cnt：掩码（字母集）→ 词数', rows),
+         Viz.vars([{ name: '当前 s', v: letters(s) }, { name: '查 s | first', v: letters(s | first) },
+                   { name: 'total', v: String(total) }])]));
+    }
+    if (s === 0) break;
+    s = (s - 1) & rest;
+  }
+  frames.push(Viz.frame('ans.add(total);',
+    '谜面 ' + p + ' 的谜底数 = ' + total + '；每个谜面都这样枚举 64 个子集',
+    [Viz.cells(p.split(''), { title: '谜面 ' + p }),
+     Viz.vars([{ name: 'total', v: String(total) }, { name: '答案数组', v: JSON.stringify(answerSoFar(total)) }])]));
+
+  function answerSoFar(t) {   // 第一个谜面的结果 + 其余谜面照算
+    var out = [t];
+    for (var i = 1; i < puzzles.length; i++) {
+      var m = maskOf(puzzles[i]);
+      var f = 1 << (puzzles[i].charCodeAt(0) - 97);
+      var r = m ^ f;
+      var sum = 0;
+      for (var ss = r; ; ss = (ss - 1) & r) {
+        sum += cnt[ss | f] || 0;
+        if (ss === 0) break;
+      }
+      out.push(sum);
+    }
+    return out;
+  }
+
+  return { frames: frames, result: answerSoFar(total) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

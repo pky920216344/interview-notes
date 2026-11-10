@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>具有所有最深节点的最小子树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1154 / 1159</span>
+  <nav class="pn"><a href="0919.html">上一篇</a><a href="0956.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">865. </span>具有所有最深节点的最小子树</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">动态规划</li><li class="aux">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">哈希表</li><li class="tag">二叉树</li><li class="tag">lowest-common-ancestor</li><li class="tag">dp-on-trees</li><li class="tag">binary-lifting</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">一次后序 DFS：每棵子树向父亲报告 (最深叶深度, 包住这些叶的最小子树根)；两侧同深就在本结点汇合，否则沿更深一侧原样上传。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>空子树报告 <code>(0, null)</code>；叶子报告 <code>(1, 自己)</code>，天然覆盖单叶情形。</li><li>左右同深 → 最深叶分居两侧，本结点是它们的汇合点，报告 <code>(深+1, 本结点)</code>。</li><li>不同深 → 答案完全在更深一侧，把那侧的子树根原样上传；根的报告就是最终答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(树高)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">TreeNode</span> subtreeWithAllDeepest(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">3</span>        <span class="k">return</span> dfs(root).node;</span><span class="ln"><span class="no">4</span>    }</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="c">// 后序 DFS：向父亲报告 (子树最深叶子的深度, 包住这些叶子的最小子树根)</span></span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="t">Res</span> dfs(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">8</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="k">new</span> <span class="t">Res</span>(<span class="n">0</span>, <span class="k">null</span>);</span><span class="ln"><span class="no">9</span>        <span class="t">Res</span> l = dfs(node.left), r = dfs(node.right);</span><span class="ln"><span class="no">10</span>        <span class="c">// 两侧同深：最深叶子分居两侧（或本结点自己就是叶），在本结点汇合</span></span><span class="ln"><span class="no">11</span>        <span class="k">if</span> (l.depth == r.depth) <span class="k">return</span> <span class="k">new</span> <span class="t">Res</span>(l.depth + <span class="n">1</span>, node);</span><span class="ln"><span class="no">12</span>        <span class="c">// 否则答案全在更深一侧，原样上传</span></span><span class="ln"><span class="no">13</span>        <span class="k">return</span> l.depth &gt; r.depth ? <span class="k">new</span> <span class="t">Res</span>(l.depth + <span class="n">1</span>, l.node) : <span class="k">new</span> <span class="t">Res</span>(r.depth + <span class="n">1</span>, r.node);</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">class</span> <span class="t">Res</span> {</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> depth;</span><span class="ln"><span class="no">18</span>        <span class="t">TreeNode</span> node;</span><span class="ln"><span class="no">19</span> </span><span class="ln"><span class="no">20</span>        <span class="t">Res</span>(<span class="k">int</span> depth, <span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">21</span>            <span class="k">this</span>.depth = depth;</span><span class="ln"><span class="no">22</span>            <span class="k">this</span>.node = node;</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个根为&nbsp;<code>root</code>&nbsp;的二叉树，每个节点的深度是 <strong>该节点到根的最短距离</strong> 。</p>
+
+<p>返回包含原始树中所有 <strong>最深节点</strong> 的 <em>最小子树</em> 。</p>
+
+<p>如果一个节点在 <strong>整个树 </strong>的任意节点之间具有最大的深度，则该节点是 <strong>最深的</strong> 。</p>
+
+<p>一个节点的 <strong>子树</strong> 是该节点加上它的所有后代的集合。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/68b64a8a0699.png" style="width: 300px;" /></p>
+
+<pre>
+<strong>输入：</strong>root = [3,5,1,6,2,0,8,null,null,7,4]
+<strong>输出：</strong>[2,7,4]
+<strong>解释：</strong>
+我们返回值为 2 的节点，在图中用黄色标记。
+在图中用蓝色标记的是树的最深的节点。
+注意，节点 5、3 和 2 包含树中最深的节点，但节点 2 的子树最小，因此我们返回它。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [1]
+<strong>输出：</strong>[1]
+<strong>解释：</strong>根节点是树中最深的节点。</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [0,1,3,null,2]
+<strong>输出：</strong>[2]
+<strong>解释：</strong>树中最深的节点为 2 ，有效子树为节点 2、1 和 0 的子树，但节点 2 的子树最小。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中节点的数量在<meta charset="UTF-8" />&nbsp;<code>[1, 500]</code>&nbsp;范围内。</li>
+	<li><code>0 &lt;= Node.val &lt;= 500</code></li>
+	<li>每个节点的值都是 <strong>独一无二</strong> 的。</li>
+</ul>
+
+
+
+<p><strong>注意：</strong>本题与力扣 1123 重复：<a href="https://leetcode.cn/problems/lowest-common-ancestor-of-deepest-leaves/" target="_blank">https://leetcode.cn/problems/lowest-common-ancestor-of-deepest-leaves</a></p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public TreeNode subtreeWithAllDeepest(TreeNode root) {", "        return dfs(root).node;", "    }", "", "    // 后序 DFS：向父亲报告 (子树最深叶子的深度, 包住这些叶子的最小子树根)", "    private Res dfs(TreeNode node) {", "        if (node == null) return new Res(0, null);", "        Res l = dfs(node.left), r = dfs(node.right);", "        // 两侧同深：最深叶子分居两侧（或本结点自己就是叶），在本结点汇合", "        if (l.depth == r.depth) return new Res(l.depth + 1, node);", "        // 否则答案全在更深一侧，原样上传", "        return l.depth > r.depth ? new Res(l.depth + 1, l.node) : new Res(r.depth + 1, r.node);", "    }", "", "    private static class Res {", "        int depth;", "        TreeNode node;", "", "        Res(int depth, TreeNode node) {", "            this.depth = depth;", "            this.node = node;", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 865. 具有所有最深节点的最小子树 —— 图解：复刻 Solution.java 的「后序 DFS 报告 (最深叶深度, 子树根)」，5 张关键帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [3, 5, 1, 6, 2, 0, 8, null, null, 7, 4] };
+
+function trace(input) {
+  var arr = input.root || [];
+  var frames = [];
+
+  // 建树：与 lib/Trees.of 同一套规则（队列紧凑式，null 不占队列位），结点带层序下标 idx
+  function build() {
+    if (!arr.length || arr[0] == null) return null;
+    var root = { val: arr[0], left: null, right: null, idx: 0 };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var nd = q.shift();
+      if (i < arr.length) { if (arr[i] != null) { nd.left = { val: arr[i], left: null, right: null, idx: i }; q.push(nd.left); } i++; }
+      if (i < arr.length) { if (arr[i] != null) { nd.right = { val: arr[i], left: null, right: null, idx: i }; q.push(nd.right); } i++; }
+    }
+    return root;
+  }
+  var root = build();
+
+  var MERGE = 'if (l.depth == r.depth) return new Res(l.depth + 1, node);';
+  var SIDE = 'return l.depth > r.depth ? new Res(l.depth + 1, l.node) : new Res(r.depth + 1, r.node);';
+
+  function treePanel(marks, labels) {
+    return Viz.tree(arr, { title: '树（标签 = 子树报告 (最深叶深度, 子树根)）', marks: marks || {}, labels: labels || [] });
+  }
+  function snap(at, key, marks, labels, vars) {
+    frames.push(Viz.frame(at, key, [treePanel(marks, labels), Viz.vars(vars || [])]));
+  }
+
+  var report = {};   // idx -> "深度,子树根下标"
+  function tag(res) {
+    return '(' + res.depth + ',' + (res.node === null ? '-' : res.node.idx) + ')';
+  }
+
+  function dfs(node) {
+    if (node === null) return { depth: 0, node: null };
+    var l = dfs(node.left), r = dfs(node.right);
+    var res;
+    var vars = [{ name: '左子树报告', v: tag(l) }, { name: '右子树报告', v: tag(r) }];
+    if (l.depth === r.depth) {
+      res = { depth: l.depth + 1, node: node };
+      if (node.idx === 4 || node.idx === 2) {
+        var m1 = {}; m1[node.idx] = 'cur';
+        snap(MERGE, '结点 ' + node.val + '：两侧同深，最深叶在本结点汇合 → 报告 ' + tag(res),
+          m1, [{ at: node.idx, label: '汇合', cls: 'new' }], vars);
+      }
+    } else {
+      res = l.depth > r.depth ? { depth: l.depth + 1, node: l.node } : { depth: r.depth + 1, node: r.node };
+      if (node.idx === 1) {
+        var m2 = {}; m2[node.idx] = 'cur';
+        snap(SIDE, '结点 ' + node.val + '：右子树更深 → 答案原样上传 ' + tag(res),
+          m2, [{ at: res.node.idx, label: '上传', cls: 'new' }], vars);
+      }
+    }
+    report[node.idx] = tag(res);
+    return res;
+  }
+
+  if (root !== null) {
+    snap('return dfs(root).node;', '开局：后序 DFS，每个结点向父亲报告 (最深叶深度, 包住这些叶的子树根)', {}, [],
+      [{ name: '约定', v: '(深度, 子树根)', cls: '' }]);
+    var res = dfs(root);
+
+    // 最终帧：答案子树整体标 done
+    var done = {}, sub = [res.node], seen = {};
+    while (sub.length) {
+      var nd = sub.pop();
+      if (nd === null || seen[nd.idx]) continue;
+      seen[nd.idx] = true;
+      done[nd.idx] = 'done';
+      sub.push(nd.left, nd.right);
+    }
+    snap('return dfs(root).node;',
+      '根的报告 = ' + tag(res) + '：答案就是标黄的最小子树（含全部最深叶）',
+      done, [{ at: res.node.idx, label: '答案', cls: 'done' }],
+      [{ name: '根的报告', v: tag(res), cls: 'done' }]);
+  }
+
+  // 与 Trees.toLevel 相同的层序序列化（末尾 null 去掉）
+  var out = [];
+  if (res && res.node) {
+    var q2 = [res.node];
+    while (q2.length) {
+      var x = q2.shift();
+      if (x === null) { out.push(null); continue; }
+      out.push(x.val);
+      q2.push(x.left);
+      q2.push(x.right);
+    }
+    while (out.length && out[out.length - 1] === null) out.pop();
+  }
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

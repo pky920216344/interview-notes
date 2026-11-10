@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>随机数索引 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 531 / 1159</span>
+  <nav class="pn"><a href="0746.html">上一篇</a><a href="1195.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">398. </span>随机数索引</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">数学</li><li class="tag">水塘抽样</li><li class="tag">哈希表</li><li class="tag">数学</li><li class="tag">随机化</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">水塘抽样：一遍扫描，第 k 次遇到 target 就以 1/k 概率把它的索引替换为答案，每个候选等概率。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>只遍历一次 <code>nums</code>，用 <code>cnt</code> 计数当前是第几次遇到 <code>target</code>。</li><li>第 <code>cnt</code> 次遇到时掷骰子：<code>rnd.nextInt(cnt) == 0</code> 即以 <code>1/cnt</code> 概率替换 <code>ans</code>。</li><li>归纳可证每个候选最终被选中的概率都是 <code>1/总次数</code>——新来的以 <code>1/cnt</code> 当选，旧答案以同概率存活。</li><li>相比「哈希表存全部索引再随机取」，省掉 O(n) 空间；这是流式数据唯一可行的写法。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n) 每次 pick，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span>[] nums;</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="t">Random</span> rnd = <span class="k">new</span> <span class="t">Random</span>();</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">Solution</span>(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">8</span>        <span class="k">this</span>.nums = nums;</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="k">int</span> pick(<span class="k">int</span> target) {</span><span class="ln"><span class="no">12</span>        <span class="k">int</span> ans = -<span class="n">1</span>, cnt = <span class="n">0</span>;   <span class="c">// cnt：到当前为止是第几次遇到 target</span></span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; nums.length; i++) {</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (nums[i] != target) <span class="k">continue</span>;</span><span class="ln"><span class="no">15</span>            cnt++;</span><span class="ln"><span class="no">16</span>            <span class="c">// 第 cnt 次遇到时以 1/cnt 概率替换答案，等概率性可归纳证明</span></span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (rnd.nextInt(cnt) == <span class="n">0</span>) ans = i;</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个可能含有 <strong>重复元素</strong> 的整数数组&nbsp;<code>nums</code> ，请你随机输出给定的目标数字&nbsp;<code>target</code> 的索引。你可以假设给定的数字一定存在于数组中。</p>
+
+<p>实现 <code>Solution</code> 类：</p>
+
+<ul>
+	<li><code>Solution(int[] nums)</code> 用数组 <code>nums</code> 初始化对象。</li>
+	<li><code>int pick(int target)</code> 从 <code>nums</code> 中选出一个满足 <code>nums[i] == target</code> 的随机索引 <code>i</code> 。如果存在多个有效的索引，则每个索引的返回概率应当相等。</li>
+</ul>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入</strong>
+["Solution", "pick", "pick", "pick"]
+[[[1, 2, 3, 3, 3]], [3], [1], [3]]
+<strong>输出</strong>
+[null, 4, 0, 2]
+
+<strong>解释</strong>
+Solution solution = new Solution([1, 2, 3, 3, 3]);
+solution.pick(3); // 随机返回索引 2, 3 或者 4 之一。每个索引的返回概率应该相等。
+solution.pick(1); // 返回 0 。因为只有 nums[0] 等于 1 。
+solution.pick(3); // 随机返回索引 2, 3 或者 4 之一。每个索引的返回概率应该相等。
+</pre>
+
+
+
+<div class="top-view__1vxA">
+<div class="original__bRMd">
+<div>
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>-2<sup>31</sup> &lt;= nums[i] &lt;= 2<sup>31</sup> - 1</code></li>
+	<li><code>target</code> 是 <code>nums</code> 中的一个整数</li>
+	<li>最多调用 <code>pick</code> 函数 <code>10<sup>4</sup></code> 次</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="fullscreen-btn-layer__2kn7">&nbsp;</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private int[] nums;", "    private Random rnd = new Random();", "", "    public Solution(int[] nums) {", "        this.nums = nums;", "    }", "", "    public int pick(int target) {", "        int ans = -1, cnt = 0;   // cnt：到当前为止是第几次遇到 target", "        for (int i = 0; i < nums.length; i++) {", "            if (nums[i] != target) continue;", "            cnt++;", "            // 第 cnt 次遇到时以 1/cnt 概率替换答案，等概率性可归纳证明", "            if (rnd.nextInt(cnt) == 0) ans = i;", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 398. 随机数索引 —— 图解：复刻 Solution.java 的水塘抽样。骰子结果按剧情固定演示，对拍比较的是候选集合。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 2, 3, 3, 3], target: 3 };
+
+function trace(input) {
+  var nums = input.nums, target = input.target;
+  var frames = [];
+  var ans = -1, cnt = 0;
+  var candidates = [];   // target 的全部候选索引（Java 导出的 out 就是它）
+
+  function cellsPanel(i) {
+    var marks = {};
+    for (var k = 0; k < nums.length; k++) {
+      if (nums[k] === target) marks[k] = 'win';   // 候选位置
+    }
+    if (i != null && i >= 0) marks[i] = 'cur';
+    if (ans >= 0) marks[ans] = 'new';             // 当前选中的索引
+    var pointers = i != null && i >= 0 ? [{ at: i, label: 'i', cls: 'p-cur' }] : [];
+    return Viz.cells(nums, { title: 'nums（绿=target 的候选位，蓝=当前选中的索引）', marks: marks, pointers: pointers });
+  }
+
+  for (var i = 0; i < nums.length; i++) {
+    if (nums[i] !== target) continue;
+    cnt++;
+    candidates.push(i);
+    var roll = cnt === 1 ? '必中' : (cnt === 2 ? '没中（保持）' : '中了（替换）');   // 剧情骰子
+    if (cnt === 1 || cnt === 3) ans = i;
+
+    if (cnt === 1) {
+      frames.push(Viz.frame('if (rnd.nextInt(cnt) == 0) ans = i;',
+        '第 1 次遇到 ' + target + '：概率 1/1 必中，ans=' + i,
+        [cellsPanel(i), Viz.vars([{ name: 'cnt', v: '1' }, { name: '概率', v: '1/1' }, { name: 'ans', v: String(ans) }])]));
+    }
+    if (cnt === 2) {
+      frames.push(Viz.frame('if (rnd.nextInt(cnt) == 0) ans = i;',
+        '第 2 次：以 1/2 概率替换；这次没中，ans 还是 ' + ans,
+        [cellsPanel(i), Viz.vars([{ name: 'cnt', v: '2' }, { name: '概率', v: '1/2' }, { name: 'ans', v: String(ans) }])]));
+    }
+    if (cnt === 3) {
+      frames.push(Viz.frame('if (rnd.nextInt(cnt) == 0) ans = i;',
+        '第 3 次：以 1/3 概率替换；这次中了，ans=' + i,
+        [cellsPanel(i), Viz.vars([{ name: 'cnt', v: '3' }, { name: '概率', v: '1/3' }, { name: 'ans', v: String(ans) }])]));
+    }
+  }
+
+  frames.push(Viz.frame('return ans;',
+    '扫完：候选 ' + (candidates.length) + ' 个，每个被选中的概率都是 1/' + cnt + '，一定相等',
+    [cellsPanel(null), Viz.vars([{ name: 'cnt', v: String(cnt) }, { name: '候选', v: '[' + candidates.join(',') + ']' },
+      { name: '每个概率', v: '1/' + cnt }])]));
+
+  return { frames: frames, result: candidates };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

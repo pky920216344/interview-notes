@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>组合总和 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 116 / 1159</span>
+  <nav class="pn"><a href="0016.html">上一篇</a><a href="offer-51.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">40. </span>组合总和 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 55</li><li class="algo">回溯</li><li class="aux">深度优先搜索/递归</li><li class="tag">数组</li><li class="tag">回溯</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">排序 + 回溯：递归传 i+1 保证每个数只用一次，同层跳过重复值防重复组合，超出 target 就剪枝。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先排序：同值相邻才能「同层去重」，也才能提前 <code>break</code> 剪枝。</li><li><code>dfs(start, target)</code>：<code>target==0</code> 记下 <code>path</code>；否则从 <code>start</code> 起逐个候选尝试。</li><li>去重关键：<code>i &gt; start &amp;&amp; a[i] == a[i-1]</code> 时 <code>continue</code>——同一层不重复选相同的值。</li><li>每个候选只能用一次：递归传 <code>i+1</code>（不是 <code>i</code>）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(2^n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; combinationSum2(<span class="k">int</span>[] candidates, <span class="k">int</span> target) {</span><span class="ln"><span class="no">5</span>        <span class="t">Arrays</span>.sort(candidates);   <span class="c">// 排序后同值相邻，才好去重和剪枝</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        dfs(candidates, target, <span class="n">0</span>, <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(), ans);</span><span class="ln"><span class="no">8</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span>[] a, <span class="k">int</span> target, <span class="k">int</span> start, <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; path, <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans) {</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (target == <span class="n">0</span>) {</span><span class="ln"><span class="no">13</span>            ans.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(path));   <span class="c">// path 就是一组答案</span></span><span class="ln"><span class="no">14</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> i = start; i &lt; a.length; i++) {</span><span class="ln"><span class="no">17</span>            <span class="c">// 同一层里和前一个值相同：这个分支上一轮已经找过，跳过防重复组合</span></span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (i &gt; start &amp;&amp; a[i] == a[i - <span class="n">1</span>]) <span class="k">continue</span>;</span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (a[i] &gt; target) <span class="k">break</span>;   <span class="c">// 已排序，后面的更大，剪枝</span></span><span class="ln"><span class="no">20</span>            path.add(a[i]);</span><span class="ln"><span class="no">21</span>            dfs(a, target - a[i], i + <span class="n">1</span>, path, ans);   <span class="c">// 每个候选只能用一次，传 i+1</span></span><span class="ln"><span class="no">22</span>            path.remove(path.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个候选人编号的集合&nbsp;<code>candidates</code>&nbsp;和一个目标数&nbsp;<code>target</code>&nbsp;，找出&nbsp;<code>candidates</code>&nbsp;中所有可以使数字和为&nbsp;<code>target</code>&nbsp;的组合。</p>
+
+<p><code>candidates</code>&nbsp;中的每个数字在每个组合中只能使用&nbsp;<strong>一次</strong>&nbsp;。</p>
+
+<p><strong>注意：</strong>解集不能包含重复的组合。&nbsp;</p>
+
+
+
+<p><strong>示例&nbsp;1:</strong></p>
+
+<pre>
+<strong>输入:</strong> candidates =&nbsp;<code>[10,1,2,7,6,1,5]</code>, target =&nbsp;<code>8</code>,
+<strong>输出:</strong>
+[
+[1,1,6],
+[1,2,5],
+[1,7],
+[2,6]
+]</pre>
+
+<p><strong>示例&nbsp;2:</strong></p>
+
+<pre>
+<strong>输入:</strong> candidates =&nbsp;[2,5,2,1,2], target =&nbsp;5,
+<strong>输出:</strong>
+[
+[1,2,2],
+[5]
+]</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;=&nbsp;candidates.length &lt;= 100</code></li>
+	<li><code>1 &lt;=&nbsp;candidates[i] &lt;= 50</code></li>
+	<li><code>1 &lt;= target &lt;= 30</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<Integer>> combinationSum2(int[] candidates, int target) {", "        Arrays.sort(candidates);   // 排序后同值相邻，才好去重和剪枝", "        List<List<Integer>> ans = new ArrayList<>();", "        dfs(candidates, target, 0, new ArrayList<>(), ans);", "        return ans;", "    }", "", "    private void dfs(int[] a, int target, int start, List<Integer> path, List<List<Integer>> ans) {", "        if (target == 0) {", "            ans.add(new ArrayList<>(path));   // path 就是一组答案", "            return;", "        }", "        for (int i = start; i < a.length; i++) {", "            // 同一层里和前一个值相同：这个分支上一轮已经找过，跳过防重复组合", "            if (i > start && a[i] == a[i - 1]) continue;", "            if (a[i] > target) break;   // 已排序，后面的更大，剪枝", "            path.add(a[i]);", "            dfs(a, target - a[i], i + 1, path, ans);   // 每个候选只能用一次，传 i+1", "            path.remove(path.size() - 1);", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 40. 组合总和 II —— 图解：复刻 Solution.java 的「排序 + 回溯 + 同层去重」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { candidates: [10, 1, 2, 7, 6, 1, 5], target: 8 };
+
+function trace(input) {
+  var a = input.candidates.slice().sort(function (x, y) { return x - y; });
+  var target0 = input.target;
+  var frames = [];
+  var ans = [];
+
+  var SKIP = 'if (i > start && a[i] == a[i - 1]) continue;';
+  var ADD = 'path.add(a[i]);';
+  var FOUND = 'ans.add(new ArrayList<>(path));';
+
+  function snap(at, key, i, path, target, iMark) {
+    var marks = {};
+    if (i != null && i < a.length) marks[i] = iMark || 'cur';
+    var pm = {};
+    if (path.length) pm[path.length - 1] = 'new';
+    frames.push(Viz.frame(at, key, [
+      Viz.cells(a, { title: '排序后的 candidates', marks: marks }),
+      Viz.cells(path.slice(), { title: 'path（当前组合）', marks: pm }),
+      Viz.vars([{ name: 'target 剩余', v: target }])
+    ]));
+  }
+
+  var snappedStart = false, snappedSkip = false, snappedFound = false;
+
+  function dfs(start, target, path) {
+    if (target === 0) {
+      ans.push(path.slice());
+      if (!snappedFound) {
+        snappedFound = true;
+        var dm = {};
+        for (var x = 0; x < path.length; x++) dm[x] = 'done';
+        frames.push(Viz.frame(FOUND, 'target 减到 0：path [' + path.join(',') + '] 就是一组答案，记下并回溯', [
+          Viz.cells(a, { title: '排序后的 candidates' }),
+          Viz.cells(path.slice(), { title: 'path（当前组合）', marks: dm }),
+          Viz.vars([{ name: 'target 剩余', v: 0 }])
+        ]));
+      }
+      return;
+    }
+    for (var i = start; i < a.length; i++) {
+      if (i > start && a[i] === a[i - 1]) {
+        // 去重帧只拍图解示例里最外层那一次
+        if (!snappedSkip && start === 0 && i === 1) {
+          snappedSkip = true;
+          snap(SKIP, '回到最外层时 i 走到第二个 ' + a[i] + '：同一层已用过这个值，跳过防重复', i, path, target, 'bad');
+        }
+        continue;
+      }
+      if (a[i] > target) break;
+      path.push(a[i]);
+      if (!snappedStart && start === 0 && i === 0) {
+        snappedStart = true;
+        snap(ADD, '排序后从最左的 ' + a[0] + ' 开始：选它进 path', i, path, target - a[i], 'new');
+      }
+      dfs(i + 1, target - a[i], path);
+      path.pop();
+    }
+  }
+
+  dfs(0, target0, []);
+
+  // 与 Java 相同的规范化：组合内升序（构造时已有序），组合间按字典序
+  ans.sort(function (p, q) {
+    for (var i = 0; i < Math.min(p.length, q.length); i++) {
+      if (p[i] !== q[i]) return p[i] - q[i];
+    }
+    return p.length - q.length;
+  });
+
+  frames.push(Viz.frame('return ans;', '回溯结束：共 ' + ans.length + ' 组，已去重', [
+    Viz.table('所有组合', ans.map(function (c, i2) { return { k: '#' + (i2 + 1), v: '[' + c.join(',') + ']', cls: '' }; }))
+  ]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

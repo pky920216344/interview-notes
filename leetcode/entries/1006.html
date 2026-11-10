@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>笨阶乘 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 925 / 1159</span>
+  <nav class="pn"><a href="1239.html">上一篇</a><a href="1396.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1006. </span>笨阶乘</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">栈</li><li class="tag">栈</li><li class="tag">数学</li><li class="tag">模拟</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">栈模拟：乘除立刻弹顶算完压回，加减先压栈（减法压负数），最后栈内全部相加；负号跟着乘除走，向零取整恰好等价。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>操作符按 <code>* / + -</code> 循环；遇到 <code>* /</code> 直接弹出栈顶算完压回，遇到 <code>+</code> 压正数、<code>-</code> 压负数。</li><li>减法后的乘除在栈里带着负号继续算：Java 的 <code>/</code> 向零取整，<code>(-a)/b == -(a/b)</code>，正好等于题意的「正数地板除后取负」。</li><li>结尾把栈里所有数相加即为答案；<code>n ≤ 3</code> 时没有减法分支，天然成立。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> clumsy(<span class="k">int</span> n) {</span><span class="ln"><span class="no">5</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; st = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        st.push(n);</span><span class="ln"><span class="no">7</span>        n--;</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> op = <span class="n">0</span>;                                  <span class="c">// 0:* 1:/ 2:+ 3:-，按此循环</span></span><span class="ln"><span class="no">9</span>        <span class="k">while</span> (n &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (op == <span class="n">0</span>) st.push(st.pop() * n);      <span class="c">// 乘除立刻弹顶算完压回</span></span><span class="ln"><span class="no">11</span>            <span class="k">else</span> <span class="k">if</span> (op == <span class="n">1</span>) st.push(st.pop() / n); <span class="c">// 积带负号除：Java / 向零取整，恰等于先正除再取负</span></span><span class="ln"><span class="no">12</span>            <span class="k">else</span> <span class="k">if</span> (op == <span class="n">2</span>) st.push(n);            <span class="c">// 加法：先压着，最后一起加</span></span><span class="ln"><span class="no">13</span>            <span class="k">else</span> st.push(-n);                        <span class="c">// 减法：压成负数</span></span><span class="ln"><span class="no">14</span>            op = (op + <span class="n">1</span>) % <span class="n">4</span>;</span><span class="ln"><span class="no">15</span>            n--;</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> sum = <span class="n">0</span>;</span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (!st.isEmpty()) sum += st.pop();</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> sum;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>通常，正整数 <code>n</code> 的阶乘是所有小于或等于 <code>n</code> 的正整数的乘积。例如，<code>factorial(10) = 10 * 9 * 8 * 7 * 6 * 5 * 4 * 3 * 2 * 1</code>。</p>
+
+<p>相反，我们设计了一个笨阶乘 <code>clumsy</code>：在整数的递减序列中，我们以一个固定顺序的操作符序列来依次替换原有的乘法操作符：乘法(*)，除法(/)，加法(+)和减法(-)。</p>
+
+<p>例如，<code>clumsy(10) = 10 * 9 / 8 + 7 - 6 * 5 / 4 + 3 - 2 * 1</code>。然而，这些运算仍然使用通常的算术运算顺序：我们在任何加、减步骤之前执行所有的乘法和除法步骤，并且按从左到右处理乘法和除法步骤。</p>
+
+<p>另外，我们使用的除法是地板除法（<em>floor division</em>），所以&nbsp;<code>10 * 9 / 8</code>&nbsp;等于&nbsp;<code>11</code>。这保证结果是一个整数。</p>
+
+<p>实现上面定义的笨函数：给定一个整数 <code>N</code>，它返回 <code>N</code> 的笨阶乘。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>4
+<strong>输出：</strong>7
+<strong>解释：</strong>7 = 4 * 3 / 2 + 1
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>10
+<strong>输出：</strong>12
+<strong>解释：</strong>12 = 10 * 9 / 8 + 7 - 6 * 5 / 4 + 3 - 2 * 1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ol>
+	<li><code>1 &lt;= N &lt;= 10000</code></li>
+	<li><code>-2^31 &lt;= answer &lt;= 2^31 - 1</code>&nbsp; （答案保证符合 32 位整数。）</li>
+</ol>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int clumsy(int n) {", "        Deque<Integer> st = new ArrayDeque<>();", "        st.push(n);", "        n--;", "        int op = 0;                                  // 0:* 1:/ 2:+ 3:-，按此循环", "        while (n > 0) {", "            if (op == 0) st.push(st.pop() * n);      // 乘除立刻弹顶算完压回", "            else if (op == 1) st.push(st.pop() / n); // 积带负号除：Java / 向零取整，恰等于先正除再取负", "            else if (op == 2) st.push(n);            // 加法：先压着，最后一起加", "            else st.push(-n);                        // 减法：压成负数", "            op = (op + 1) % 4;", "            n--;", "        }", "        int sum = 0;", "        while (!st.isEmpty()) sum += st.pop();", "        return sum;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1006. 笨阶乘 —— 图解：复刻 Solution.java 的栈模拟，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 8 };
+
+function trace(input) {
+  var total = input.n;        // 展示用的原始 n
+  var n = input.n;
+  var st = [n];
+  n--;
+  var op = 0;                 // 0:* 1:/ 2:+ 3:-
+  var frames = [];
+  var step = 0;               // 已处理完的操作符个数
+
+  var OPN = ['×', '÷', '+', '−'];
+  // 数字序列面板：只显示最大的 8 个；已消费的置 dim，当前数字 cur
+  function numsPanel() {
+    var items = [], marks = {}, first = Math.max(1, total - 7);
+    for (var v = total; v >= first; v--) items.push(v);
+    for (var v = n + 1; v <= total; v++) {
+      var idx = total - v;
+      if (idx < items.length) marks[idx] = 'dim';
+    }
+    if (n >= first && n >= 1) {
+      var ci = total - n;
+      if (ci < items.length) marks[ci] = 'cur';
+      var pointers = [{ at: ci, label: OPN[op], cls: 'p-cur' }];
+    } else {
+      var pointers = [];
+    }
+    return Viz.cells(items, { title: '数字从大到小', marks: marks, pointers: pointers, hideIndex: true });
+  }
+  function stPanel() {
+    var marks = {};
+    if (st.length) marks[st.length - 1] = 'cur';
+    return Viz.cells(st.slice(), { title: '栈（乘除立即算，加减压着）', marks: marks });
+  }
+  function snap(at, key) { frames.push(Viz.frame(at, key, [numsPanel(), stPanel()])); }
+
+  snap('int op = 0;', '开头：最大数先进栈，之后每一步带一个操作符');
+
+  while (n > 0) {
+    if (op === 0) st.push(st.pop() * n);
+    else if (op === 1) st.push(Math.trunc(st.pop() / n));   // 与 Java 一致：向零取整
+    else if (op === 2) st.push(n);
+    else st.push(-n);
+    op = (op + 1) % 4;
+    n--;
+    step++;
+    if (step === 2) snap('st.push(st.pop() / n);', '乘除立刻弹顶算：8×7÷6 = 9，栈里只剩一个数');
+    if (step === 4) snap('else st.push(-n);', '加减先压栈：减法压成负数 5−4 → 压入 -4');
+    if (step === 6) snap('st.push(st.pop() / n);', '负号跟着乘除走：−4×3÷2 = −6');
+  }
+
+  var sum = 0;
+  for (var i = 0; i < st.length; i++) sum += st[i];
+  var marksF = {};
+  for (var i = 0; i < st.length; i++) marksF[i] = 'done';
+  frames.push(Viz.frame('while (!st.isEmpty()) sum += st.pop();', '最后把栈里的数全部相加 = ' + sum,
+    [Viz.cells(st.slice(), { title: '栈', marks: marksF }), Viz.vars([{ name: '答案', v: String(sum) }])]));
+
+  return { frames: frames, result: sum };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

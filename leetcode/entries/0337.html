@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>打家劫舍 III · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 236 / 1159</span>
+  <nav class="pn"><a href="0191.html">上一篇</a><a href="offer-45.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">337. </span>打家劫舍 III</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 20</li><li class="algo">动态规划</li><li class="aux">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">动态规划</li><li class="tag">二叉树</li><li class="tag">dp-on-trees</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">树形 DP 后序遍历：每个结点返回「偷它 / 不偷它」两种最大收益，父亲据此决定偷不偷。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>后序遍历：先拿左右孩子的 <code>(偷, 不偷)</code> 二元组，再合成当前结点的二元组返回。</li><li><strong>偷当前</strong>：两个直接儿子必须空着，收益 = <code>val + 左[不偷] + 右[不偷]</code>。</li><li><strong>不偷当前</strong>：儿子偷不偷随意，收益 = <code>max(左偷, 左不偷) + max(右偷, 右不偷)</code>。</li><li>空结点返回 <code>(0, 0)</code>；答案取根的两种情况较大者。</li><li>一趟 O(n)，比「记忆化 + 重复讨论父子状态」省事得多。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)，h 为树高</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> rob(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span>[] t = dfs(root);</span><span class="ln"><span class="no">4</span>        <span class="c">// 根偷不偷都行，取大的</span></span><span class="ln"><span class="no">5</span>        <span class="k">return</span> <span class="t">Math</span>.max(t[<span class="n">0</span>], t[<span class="n">1</span>]);</span><span class="ln"><span class="no">6</span>    }</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="c">// 返回 [偷 node 的最大收益, 不偷 node 的最大收益]</span></span><span class="ln"><span class="no">9</span>    <span class="k">private</span> <span class="k">int</span>[] dfs(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">10</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[<span class="n">2</span>];</span><span class="ln"><span class="no">11</span>        <span class="k">int</span>[] l = dfs(node.left), r = dfs(node.right);</span><span class="ln"><span class="no">12</span>        <span class="c">// 偷当前：两个直接儿子必须空着</span></span><span class="ln"><span class="no">13</span>        <span class="k">int</span> yes = node.val + l[<span class="n">1</span>] + r[<span class="n">1</span>];</span><span class="ln"><span class="no">14</span>        <span class="c">// 不偷当前：儿子偷不偷随意，各取大的</span></span><span class="ln"><span class="no">15</span>        <span class="k">int</span> no = <span class="t">Math</span>.max(l[<span class="n">0</span>], l[<span class="n">1</span>]) + <span class="t">Math</span>.max(r[<span class="n">0</span>], r[<span class="n">1</span>]);</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{yes, no};</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>小偷又发现了一个新的可行窃的地区。这个地区只有一个入口，我们称之为<meta charset="UTF-8" />&nbsp;<code>root</code>&nbsp;。</p>
+
+<p>除了<meta charset="UTF-8" />&nbsp;<code>root</code>&nbsp;之外，每栋房子有且只有一个“父“房子与之相连。一番侦察之后，聪明的小偷意识到“这个地方的所有房屋的排列类似于一棵二叉树”。 如果 <strong>两个直接相连的房子在同一天晚上被打劫</strong> ，房屋将自动报警。</p>
+
+<p>给定二叉树的&nbsp;<code>root</code>&nbsp;。返回&nbsp;<em><strong>在不触动警报的情况下</strong>&nbsp;，小偷能够盗取的最高金额</em>&nbsp;。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<p><img alt="" src="../assets/img/ad98beb3ccc1.jpg" /></p>
+
+<pre>
+<strong>输入: </strong>root = [3,2,3,null,3,null,1]
+<strong>输出:</strong> 7 
+<strong>解释:</strong>&nbsp;小偷一晚能够盗取的最高金额 3 + 3 + 1 = 7</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<p><img alt="" src="../assets/img/9d18e5d60fe1.jpg" /></p>
+
+<pre>
+<strong>输入: </strong>root = [3,4,5,1,3,null,1]
+<strong>输出:</strong> 9
+<strong>解释:</strong>&nbsp;小偷一晚能够盗取的最高金额 4 + 5 = 9
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<p><meta charset="UTF-8" /></p>
+
+<ul>
+	<li>树的节点数在&nbsp;<code>[1, 10<sup>4</sup>]</code> 范围内</li>
+	<li><code>0 &lt;= Node.val &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int rob(TreeNode root) {", "        int[] t = dfs(root);", "        // 根偷不偷都行，取大的", "        return Math.max(t[0], t[1]);", "    }", "", "    // 返回 [偷 node 的最大收益, 不偷 node 的最大收益]", "    private int[] dfs(TreeNode node) {", "        if (node == null) return new int[2];", "        int[] l = dfs(node.left), r = dfs(node.right);", "        // 偷当前：两个直接儿子必须空着", "        int yes = node.val + l[1] + r[1];", "        // 不偷当前：儿子偷不偷随意，各取大的", "        int no = Math.max(l[0], l[1]) + Math.max(r[0], r[1]);", "        return new int[]{yes, no};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 337. 打家劫舍 III —— 图解：复刻 Solution.java 的「后序返回 (偷, 不偷)」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [3, 2, 3, null, 3, null, 1] };
+
+function trace(input) {
+  var arr = input.root || [];
+  var nodes = arr.map(function (v, i) { return v === null ? null : { v: v, idx: i, l: null, r: null }; });
+  var root = arr.length && nodes[0] ? nodes[0] : null;
+  if (root) {
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var cur = q.shift();
+      if (i < arr.length && nodes[i]) { cur.l = nodes[i]; q.push(nodes[i]); }
+      i++;
+      if (i < arr.length && nodes[i]) { cur.r = nodes[i]; q.push(nodes[i]); }
+      i++;
+    }
+  }
+
+  var frames = [];
+  var LEAF = 'return new int[]{yes, no};';
+  var ROOTRET = 'return Math.max(t[0], t[1]);';
+  var leafSeen = false;
+
+  function treePanel(marks, labels) {
+    return Viz.tree(arr, { title: '二叉树（标签 = (偷它, 不偷它)）', marks: marks || {}, labels: labels || [] });
+  }
+  function snap(at, key, node, pair, baseMarks) {
+    var marks = {};
+    var k;
+    for (k in baseMarks) marks[k] = baseMarks[k];
+    if (node) marks[node.idx] = 'cur';
+    var labels = node ? [{ at: node.idx, label: '(' + pair[0] + ', ' + pair[1] + ')', cls: 'p-cur' }] : [];
+    frames.push(Viz.frame(at, key, [treePanel(marks, labels),
+      Viz.vars([{ name: '返回 (偷, 不偷)', v: '(' + pair[0] + ', ' + pair[1] + ')', cls: 'chg' }])]));
+  }
+
+  function dfs(node) {
+    if (!node) return [0, 0];
+    var l = node.l ? dfs(node.l) : [0, 0];
+    var r = node.r ? dfs(node.r) : [0, 0];
+    var yes = node.v + l[1] + r[1];
+    var no = Math.max(l[0], l[1]) + Math.max(r[0], r[1]);
+    var pair = [yes, no];
+    var isLeaf = !node.l && !node.r;
+    if (isLeaf && !leafSeen) {
+      leafSeen = true;
+      snap(LEAF, '叶子 ' + node.v + '：偷 = ' + yes + '，不偷 = 0，把两个值带给父亲', node, pair, {});
+    }
+    if (node.idx === 1) {
+      var m = {};
+      m[node.idx] = 'dim';
+      snap(LEAF, '结点 ' + node.v + ' 合并孩子：偷它 = ' + yes + '，不偷 = 孩子里挑大的 = ' + no, node, pair, m);
+    }
+    if (node.idx === 0) {
+      var m2 = {};
+      for (var j = 1; j < arr.length; j++) if (arr[j] !== null) m2[j] = 'dim';
+      snap(LEAF, '根 ' + node.v + ' 合并两边：偷 = ' + yes + '，不偷 = ' + no, node, pair, m2);
+    }
+    return pair;
+  }
+
+  if (!root) {
+    snap(LEAF, '空树：偷与不偷都是 0', null, [0, 0], {});
+  } else {
+    var t = dfs(root);
+    var m3 = {};
+    for (var j = 1; j < arr.length; j++) if (arr[j] !== null) m3[j] = 'dim';
+    m3[0] = 'done';
+    frames.push(Viz.frame(ROOTRET, '根上取大：max(' + t[0] + ', ' + t[1] + ') = ' + Math.max(t[0], t[1]),
+      [treePanel(m3, [{ at: 0, label: '取大 → ' + Math.max(t[0], t[1]), cls: 'p-cur' }]),
+       Viz.vars([{ name: '答案', v: Math.max(t[0], t[1]), cls: 'done' }])]));
+  }
+  return { frames: frames, result: root ? Math.max(t[0], t[1]) : 0 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

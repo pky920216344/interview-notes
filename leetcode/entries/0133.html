@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>克隆图 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 343 / 1159</span>
+  <nav class="pn"><a href="1206.html">上一篇</a><a href="0986.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">133. </span>克隆图</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 11</li><li class="algo">深度优先搜索/递归</li><li class="aux">哈希表</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="tag">哈希表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">哈希表记「原结点 → 克隆结点」，DFS 递归：克隆过的直接复用，没克隆的先登记自己再去克隆邻居。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>map</code> 既是「去重」也是「防环」：查到克隆过就直接返回，不会重复建也不会死循环。</li><li>克隆一个结点时<strong>先 <code>map.put(node, copy)</code> 再递归克隆邻居</strong>——自环或环都会绕回自己，先登记才拿得到克隆。</li><li>邻居列表按原顺序逐个 <code>cloneGraph</code> 后 <code>add</code>，克隆图的邻接关系和原图完全一致。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + m)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="c">/*</span></span><span class="ln"><span class="no">2</span><span class="c">// Definition for a Node.</span></span><span class="ln"><span class="no">3</span><span class="c">class Node {</span></span><span class="ln"><span class="no">4</span><span class="c">    public int val;</span></span><span class="ln"><span class="no">5</span><span class="c">    public List&lt;Node&gt; neighbors;</span></span><span class="ln"><span class="no">6</span><span class="c">    public Node() {</span></span><span class="ln"><span class="no">7</span><span class="c">        val = 0;</span></span><span class="ln"><span class="no">8</span><span class="c">        neighbors = new ArrayList&lt;Node&gt;();</span></span><span class="ln"><span class="no">9</span><span class="c">    }</span></span><span class="ln"><span class="no">10</span><span class="c">    public Node(int _val) {</span></span><span class="ln"><span class="no">11</span><span class="c">        val = _val;</span></span><span class="ln"><span class="no">12</span><span class="c">        neighbors = new ArrayList&lt;Node&gt;();</span></span><span class="ln"><span class="no">13</span><span class="c">    }</span></span><span class="ln"><span class="no">14</span><span class="c">    public Node(int _val, ArrayList&lt;Node&gt; _neighbors) {</span></span><span class="ln"><span class="no">15</span><span class="c">        val = _val;</span></span><span class="ln"><span class="no">16</span><span class="c">        neighbors = _neighbors;</span></span><span class="ln"><span class="no">17</span><span class="c">    }</span></span><span class="ln"><span class="no">18</span><span class="c">}</span></span><span class="ln"><span class="no">19</span><span class="c">*/</span></span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">22</span> </span><span class="ln"><span class="no">23</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">24</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Node</span>, <span class="t">Node</span>&gt; map = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();   <span class="c">// 原结点 → 克隆结点</span></span><span class="ln"><span class="no">25</span> </span><span class="ln"><span class="no">26</span>    <span class="k">public</span> <span class="t">Node</span> cloneGraph(<span class="t">Node</span> node) {</span><span class="ln"><span class="no">27</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">28</span>        <span class="t">Node</span> copy = map.get(node);</span><span class="ln"><span class="no">29</span>        <span class="k">if</span> (copy != <span class="k">null</span>) <span class="k">return</span> copy;   <span class="c">// 克隆过就复用，环也不会死循环</span></span><span class="ln"><span class="no">30</span>        copy = <span class="k">new</span> <span class="t">Node</span>(node.val);</span><span class="ln"><span class="no">31</span>        map.put(node, copy);             <span class="c">// 先登记再克隆邻居，防止自环时丢自己</span></span><span class="ln"><span class="no">32</span>        <span class="k">for</span> (<span class="t">Node</span> next : node.neighbors) copy.neighbors.add(cloneGraph(next));</span><span class="ln"><span class="no">33</span>        <span class="k">return</span> copy;</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你无向&nbsp;<strong><a href="https://baike.baidu.com/item/连通图/6460995?fr=aladdin" target="_blank">连通</a>&nbsp;</strong>图中一个节点的引用，请你返回该图的&nbsp;<a href="https://baike.baidu.com/item/深拷贝/22785317?fr=aladdin" target="_blank"><strong>深拷贝</strong></a>（克隆）。</p>
+
+<p>图中的每个节点都包含它的值 <code>val</code>（<code>int</code>） 和其邻居的列表（<code>list[Node]</code>）。</p>
+
+<pre>
+class Node {
+    public int val;
+    public List&lt;Node&gt; neighbors;
+}</pre>
+
+
+
+<p><strong>测试用例格式：</strong></p>
+
+<p>简单起见，每个节点的值都和它的索引相同。例如，第一个节点值为 1（<code>val = 1</code>），第二个节点值为 2（<code>val = 2</code>），以此类推。该图在测试用例中使用邻接列表表示。</p>
+
+<p><strong>邻接列表</strong> 是用于表示有限图的无序列表的集合。每个列表都描述了图中节点的邻居集。</p>
+
+<p>给定节点将始终是图中的第一个节点（值为 1）。你必须将&nbsp;<strong>给定节点的拷贝&nbsp;</strong>作为对克隆图的引用返回。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/4a0a0e27c081.png" style="height: 500px; width: 500px;" /></p>
+
+<pre>
+<strong>输入：</strong>adjList = [[2,4],[1,3],[2,4],[1,3]]
+<strong>输出：</strong>[[2,4],[1,3],[2,4],[1,3]]
+<strong>解释：
+</strong>图中有 4 个节点。
+节点 1 的值是 1，它有两个邻居：节点 2 和 4 。
+节点 2 的值是 2，它有两个邻居：节点 1 和 3 。
+节点 3 的值是 3，它有两个邻居：节点 2 和 4 。
+节点 4 的值是 4，它有两个邻居：节点 1 和 3 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/930f49de96e4.png" style="height: 148px; width: 163px;" /></p>
+
+<pre>
+<strong>输入：</strong>adjList = [[]]
+<strong>输出：</strong>[[]]
+<strong>解释：</strong>输入包含一个空列表。该图仅仅只有一个值为 1 的节点，它没有任何邻居。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>adjList = []
+<strong>输出：</strong>[]
+<strong>解释：</strong>这个图是空的，它不含任何节点。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>这张图中的节点数在 <code>[0, 100]</code>&nbsp;之间。</li>
+	<li><code>1 &lt;= Node.val &lt;= 100</code></li>
+	<li>每个节点值&nbsp;<code>Node.val</code> 都是唯一的，</li>
+	<li>图中没有重复的边，也没有自环。</li>
+	<li>图是连通图，你可以从给定节点访问到所有节点。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["/*", "// Definition for a Node.", "class Node {", "    public int val;", "    public List<Node> neighbors;", "    public Node() {", "        val = 0;", "        neighbors = new ArrayList<Node>();", "    }", "    public Node(int _val) {", "        val = _val;", "        neighbors = new ArrayList<Node>();", "    }", "    public Node(int _val, ArrayList<Node> _neighbors) {", "        val = _val;", "        neighbors = _neighbors;", "    }", "}", "*/", "", "import java.util.*;", "", "class Solution {", "    private final Map<Node, Node> map = new HashMap<>();   // 原结点 → 克隆结点", "", "    public Node cloneGraph(Node node) {", "        if (node == null) return null;", "        Node copy = map.get(node);", "        if (copy != null) return copy;   // 克隆过就复用，环也不会死循环", "        copy = new Node(node.val);", "        map.put(node, copy);             // 先登记再克隆邻居，防止自环时丢自己", "        for (Node next : node.neighbors) copy.neighbors.add(cloneGraph(next));", "        return copy;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 133. 克隆图 —— 图解：DFS + 「原结点 → 克隆结点」哈希表，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { adj: [[2, 4], [1, 3], [2, 4], [1, 3]] };
+
+function trace(input) {
+  var adj = input.adj;   // adj[i] = 结点 i+1 的邻居 val 列表
+  var n = adj.length;
+  var frames = [];
+  if (n === 0) return { frames: frames, result: [] };
+
+  var cloned = {};       // val → true，对应 map 里「已克隆」的结点
+  var order = [];        // 克隆完成的先后次序
+  var snap = function (at, key, extraRows) { frames.push(Viz.frame(at, key, panels(extraRows))); };
+
+  function adjRows(list, clsFn) {
+    return list.map(function (nbrs, i) {
+      return { k: String(i + 1), v: nbrs.join(','), cls: clsFn ? clsFn(i + 1) : '' };
+    });
+  }
+  function panels(extraRows) {
+    var ps = [
+      Viz.table('原图邻接表', adjRows(adj)),
+      Viz.table('map：原结点 → 克隆结点', Object.keys(cloned).sort(function (a, b) { return a - b; })
+        .map(function (v) { return { k: String(v), v: v + '′', cls: '' }; }), { hint: '克隆过就复用' })
+    ];
+    if (extraRows) ps.push(Viz.table('克隆图的邻接表', extraRows, { hint: '邻居顺序与原图一致' }));
+    return ps;
+  }
+
+  snap('private final Map<Node, Node> map = new HashMap<>();',
+    '开局：哈希表负责「原结点 → 克隆」，克隆过的直接复用',
+    null);
+
+  var reuse = null;
+  function dfs(v) {
+    if (cloned[v]) {
+      if (!reuse) {
+        reuse = v;
+        snap('if (copy != null) return copy;',
+          '邻居 ' + v + ' 已克隆过：直接复用 ' + v + '′，环也不会死循环',
+          null);
+      }
+      return;
+    }
+    cloned[v] = true;
+    order.push(v);
+    if (order.length === 2) {
+      snap('map.put(node, copy);',
+        '克隆 ' + order.join('、') + '：先把自己登记进 map，再去克隆邻居',
+        null);
+    }
+    for (var k = 0; k < adj[v - 1].length; k++) dfs(adj[v - 1][k]);
+  }
+  dfs(1);
+
+  var rows = adjRows(adj, function (v) { return cloned[v] ? 'done' : ''; });
+  snap('for (Node next : node.neighbors) copy.neighbors.add(cloneGraph(next));',
+    '全部克隆完：' + order.length + ' 个结点、邻接关系与原图一致',
+    rows);
+
+  return { frames: frames, result: adj.map(function (nbrs) { return nbrs.slice(); }) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

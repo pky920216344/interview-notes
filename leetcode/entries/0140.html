@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>单词拆分 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 355 / 1159</span>
+  <nav class="pn"><a href="0030.html">上一篇</a><a href="1074.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">140. </span>单词拆分 II</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 10</li><li class="algo">动态规划</li><li class="aux">哈希表</li><li class="tag">字典树</li><li class="tag">记忆化</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="tag">回溯</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">回溯 + 记忆化：从 i 出发把「i 之后的所有拆法」缓存下来；拆不出的下标缓存空列表，再路过直接剪掉。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dfs(i)</code> 返回 <code>s[i..]</code> 的全部拆法：枚举词头 <code>s[i..j)</code>，在词典里就递归 <code>dfs(j)</code>，把返回的每种拆法拼上当前词。</li><li>终点 <code>i == n</code> 返回 <code>[""]</code> 占位，上层拼接时不用特判「刚好切完」。</li><li><strong>失败也要缓存</strong>：<code>memo[i]</code> 是空列表表示「从 i 拆不出」，和「还没算」（<code>get</code> 返回 null）区分开，第二次走到直接剪。</li><li>同一后缀的拆法被多条路径共享，重复子问题只算一次；结果顺序不限，输出时排序。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(2^n)（输出本身可达指数级），空间复杂度 O(n²) 级缓存</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; wordBreak(<span class="t">String</span> s, <span class="t">List</span>&lt;<span class="t">String</span>&gt; wordDict) {</span><span class="ln"><span class="no">5</span>        <span class="t">Set</span>&lt;<span class="t">String</span>&gt; dict = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;(wordDict);</span><span class="ln"><span class="no">6</span>        <span class="c">// memo[i]：s[i..] 的全部拆法；没算过是 null，算过但拆不出是空列表，下次直接剪掉</span></span><span class="ln"><span class="no">7</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; memo = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="k">return</span> dfs(s, <span class="n">0</span>, dict, memo);</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="c">// 从 i 开始把剩余部分拆完的所有句子</span></span><span class="ln"><span class="no">12</span>    <span class="k">private</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; dfs(<span class="t">String</span> s, <span class="k">int</span> i, <span class="t">Set</span>&lt;<span class="t">String</span>&gt; dict, <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; memo) {</span><span class="ln"><span class="no">13</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; cached = memo.get(i);</span><span class="ln"><span class="no">14</span>        <span class="k">if</span> (cached != <span class="k">null</span>) <span class="k">return</span> cached;</span><span class="ln"><span class="no">15</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; res = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">16</span>        <span class="k">if</span> (i == s.length()) {</span><span class="ln"><span class="no">17</span>            res.add(<span class="s">""</span>);   <span class="c">// 空句子占位：上层拼接时不用特判</span></span><span class="ln"><span class="no">18</span>        } <span class="k">else</span> {</span><span class="ln"><span class="no">19</span>            <span class="k">for</span> (<span class="k">int</span> j = i + <span class="n">1</span>; j &lt;= s.length(); j++) {</span><span class="ln"><span class="no">20</span>                <span class="t">String</span> word = s.substring(i, j);</span><span class="ln"><span class="no">21</span>                <span class="k">if</span> (!dict.contains(word)) <span class="k">continue</span>;</span><span class="ln"><span class="no">22</span>                <span class="k">for</span> (<span class="t">String</span> rest : dfs(s, j, dict, memo)) {</span><span class="ln"><span class="no">23</span>                    res.add(rest.isEmpty() ? word : word + <span class="s">" "</span> + rest);</span><span class="ln"><span class="no">24</span>                }</span><span class="ln"><span class="no">25</span>            }</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        memo.put(i, res);</span><span class="ln"><span class="no">28</span>        <span class="k">return</span> res;</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个字符串 <code>s</code> 和一个字符串字典<meta charset="UTF-8" />&nbsp;<code>wordDict</code>&nbsp;，在字符串<meta charset="UTF-8" />&nbsp;<code>s</code>&nbsp;中增加空格来构建一个句子，使得句子中所有的单词都在词典中。<strong>以任意顺序</strong> 返回所有这些可能的句子。</p>
+
+<p><strong>注意：</strong>词典中的同一个单词可能在分段中被重复使用多次。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<pre>
+<strong>输入:</strong>s = "catsanddog", wordDict = ["cat","cats","and","sand","dog"]
+<strong>输出:</strong>["cats and dog","cat sand dog"]
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入:</strong>s = "pineapplepenapple", wordDict = ["apple","pen","applepen","pine","pineapple"]
+<strong>输出:</strong>["pine apple pen apple","pineapple pen apple","pine applepen apple"]
+<strong>解释:</strong> 注意你可以重复使用字典中的单词。
+</pre>
+
+<p><strong class="example">示例&nbsp;3：</strong></p>
+
+<pre>
+<strong>输入:</strong>s = "catsandog", wordDict = ["cats","dog","sand","and","cat"]
+<strong>输出:</strong>[]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<p><meta charset="UTF-8" /></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 20</code></li>
+	<li><code>1 &lt;= wordDict.length &lt;= 1000</code></li>
+	<li><code>1 &lt;= wordDict[i].length &lt;= 10</code></li>
+	<li><code>s</code>&nbsp;和&nbsp;<code>wordDict[i]</code>&nbsp;仅有小写英文字母组成</li>
+	<li><code>wordDict</code>&nbsp;中所有字符串都 <strong>不同</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<String> wordBreak(String s, List<String> wordDict) {", "        Set<String> dict = new HashSet<>(wordDict);", "        // memo[i]：s[i..] 的全部拆法；没算过是 null，算过但拆不出是空列表，下次直接剪掉", "        Map<Integer, List<String>> memo = new HashMap<>();", "        return dfs(s, 0, dict, memo);", "    }", "", "    // 从 i 开始把剩余部分拆完的所有句子", "    private List<String> dfs(String s, int i, Set<String> dict, Map<Integer, List<String>> memo) {", "        List<String> cached = memo.get(i);", "        if (cached != null) return cached;", "        List<String> res = new ArrayList<>();", "        if (i == s.length()) {", "            res.add(\"\");   // 空句子占位：上层拼接时不用特判", "        } else {", "            for (int j = i + 1; j <= s.length(); j++) {", "                String word = s.substring(i, j);", "                if (!dict.contains(word)) continue;", "                for (String rest : dfs(s, j, dict, memo)) {", "                    res.add(rest.isEmpty() ? word : word + \" \" + rest);", "                }", "            }", "        }", "        memo.put(i, res);", "        return res;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 140. 单词拆分 II —— 图解：复刻 Solution.java 的「回溯 + 记忆化剪枝」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'abcbab', wordDict: ['a', 'b', 'ab', 'ba', 'abc'] };
+
+function trace(input) {
+  var s = input.s, dict = {};
+  for (var k = 0; k < input.wordDict.length; k++) dict[input.wordDict[k]] = true;
+  var n = s.length;
+  var frames = [];
+  var memo = {};        // 起点 i → 该后缀的全部拆法；空数组 = 算过但拆不出
+  var memoOrder = [];
+  var fired = { word: false, concat: false, failStore: false, failHit: false };
+
+  function sPanel(i, j, cls) {
+    var marks = {};
+    if (i != null && j != null) for (var t = i; t < j; t++) marks[t] = cls || 'cur';
+    else if (i != null) marks[i] = cls || 'bad';
+    var pointers = i != null && i < n ? [{ at: i, label: 'i', cls: 'p-cur' }] : [];
+    var range = i != null && j != null && j > i ? { from: i, to: j - 1, label: '正在试的词' } : null;
+    return Viz.cells(s.split(''), { title: 's', marks: marks, pointers: pointers, range: range });
+  }
+  function memoPanel(hitKey, newKey) {
+    return Viz.table('memo：起点 i → 拆法', memoOrder.map(function (i2) {
+      var cnt = memo[i2].length;
+      return { k: 'i = ' + i2, v: cnt === 0 ? '拆不出' : cnt + ' 种', cls: String(i2) === hitKey ? 'hit' : (String(i2) === newKey ? 'new' : '') };
+    }), { hint: '（拆不出记空列表，也算「算过」）' });
+  }
+
+  function dfs(i) {
+    if (i in memo) {
+      var cached = memo[i];
+      if (!fired.failHit && cached.length === 0) {
+        fired.failHit = true;
+        frames.push(Viz.frame('if (cached != null) return cached;',
+          '又一次走到 i=' + i + '：缓存里是「拆不出」，直接剪掉不再展开',
+          [sPanel(i, null, 'bad'), memoPanel(String(i), null)]));
+      }
+      return cached;
+    }
+    var res = [];
+    if (i === n) {
+      res.push('');   // 空句子占位，上层拼接不用特判
+    } else {
+      for (var j = i + 1; j <= n; j++) {
+        var word = s.substring(i, j);
+        if (!(word in dict)) continue;
+        if (!fired.word) {
+          fired.word = true;
+          frames.push(Viz.frame('String word = s.substring(i, j);',
+            '从 i=' + i + ' 逐个试词头：s[' + i + '..' + j + ') = "' + word + '" 在词典里，递归剩下的',
+            [sPanel(i, j, 'cur'), memoPanel(null, null)]));
+        }
+        var rests = dfs(j);
+        for (var t = 0; t < rests.length; t++) {
+          res.push(rests[t] === '' ? word : word + ' ' + rests[t]);
+          if (!fired.concat) {
+            fired.concat = true;
+            frames.push(Viz.frame('res.add(rest.isEmpty() ? word : word + " " + rest);',
+              '余下部分的每种拆法拼上当前词「' + word + '」，就多一种完整句子',
+              [sPanel(i, j, 'cur'), memoPanel(null, null)]));
+          }
+        }
+      }
+    }
+    memo[i] = res;
+    if (memoOrder.indexOf(i) < 0) memoOrder.push(i);
+    if (!fired.failStore && res.length === 0) {
+      fired.failStore = true;
+      frames.push(Viz.frame('memo.put(i, res);',
+        'i=' + i + ' 一个词都接不上：把「拆不出」记进 memo，下回路过直接剪',
+        [sPanel(i, null, 'bad'), memoPanel(null, String(i))]));
+    }
+    return res;
+  }
+
+  var ans = dfs(0).slice().sort();
+  frames.push(Viz.frame('return dfs(s, 0, dict, memo);',
+    '回到最外层：共 ' + ans.length + ' 种拆法（输出按字典序排序）',
+    [Viz.table('ans：全部拆法', ans.map(function (x, k2) {
+      return { k: '第 ' + (k2 + 1) + ' 种', v: x, cls: 'done' };
+    }))]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>设计自助结算系统 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 496 / 1159</span>
+  <nav class="pn"><a href="offer-15.html">上一篇</a><a href="0428.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 59 - II. </span>设计自助结算系统</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">单调栈</li><li class="aux">设计</li><li class="tag">设计</li><li class="tag">队列</li><li class="tag">单调队列</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">普通队列管进出，另挂一个单调递减双端队列，队头永远等于当前队列里的最大值。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>max</code> 保持<strong>单调递减</strong>：<code>add</code> 时把队尾所有比新值小的挤掉再入队——被挤的没出队新值就先进来了，最大轮不到它们。</li><li><code>get_max</code>：直接看 <code>max</code> 队头，空队返回 <code>-1</code>。</li><li><code>remove</code>：普通队列出队得到 <code>v</code>；若 <code>v</code> 恰好等于 <code>max</code> 队头，<code>max</code> 队头同步弹出（其他值不在 <code>max</code> 里，不用管）。</li><li>挤掉相等的吗？不：用<strong>严格小于</strong>才挤，相等要留着，否则先出的最大值会被误删。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 均摊 O(1)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Checkout</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();     <span class="c">// 普通队列：保证先进先出</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; max = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();   <span class="c">// 单调递减：队头永远是当前最大</span></span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">Checkout</span>() {</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">public</span> <span class="k">int</span> get_max() {</span><span class="ln"><span class="no">11</span>        <span class="k">return</span> max.isEmpty() ? -<span class="n">1</span> : max.peekFirst();</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="k">public</span> <span class="k">void</span> add(<span class="k">int</span> value) {</span><span class="ln"><span class="no">15</span>        q.addLast(value);</span><span class="ln"><span class="no">16</span>        <span class="c">// 队尾比 value 小的全部挤掉：它们没出队 value 就先进来了，最大轮不到它们</span></span><span class="ln"><span class="no">17</span>        <span class="k">while</span> (!max.isEmpty() &amp;&amp; max.peekLast() &lt; value) max.pollLast();</span><span class="ln"><span class="no">18</span>        max.addLast(value);</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>    <span class="k">public</span> <span class="k">int</span> remove() {</span><span class="ln"><span class="no">22</span>        <span class="k">if</span> (q.isEmpty()) <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">23</span>        <span class="k">int</span> v = q.pollFirst();</span><span class="ln"><span class="no">24</span>        <span class="c">// 出队的恰好是当前最大：单调队列的队头同步弹出</span></span><span class="ln"><span class="no">25</span>        <span class="k">if</span> (max.peekFirst() == v) max.pollFirst();</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> v;</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>请设计一个自助结账系统，该系统需要通过一个队列来模拟顾客通过购物车的结算过程，需要实现的功能有：</p>
+
+<ul>
+	<li><code>get_max()</code>：获取结算商品中的最高价格，如果队列为空，则返回 -1</li>
+	<li><code>add(value)</code>：将价格为 <code>value</code> 的商品加入待结算商品队列的尾部</li>
+	<li><code>remove()</code>：移除第一个待结算的商品价格，如果队列为空，则返回 -1</li>
+</ul>
+
+<p>注意，为保证该系统运转高效性，以上函数的均摊时间复杂度均为 O(1)</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+输入: 
+["Checkout","add","add","get_max","remove","get_max"]
+[[],[4],[7],[],[],[]]
+
+输出: [null,null,null,7,4,7]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+输入: 
+["Checkout","remove","get_max"]
+[[],[],[]]
+
+输出: [null,-1,-1]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= get_max, add, remove 的总操作数&nbsp;&lt;= 10000</code></li>
+	<li><code>1 &lt;= value &lt;= 10^5</code></li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Checkout {", "    private final Deque<Integer> q = new ArrayDeque<>();     // 普通队列：保证先进先出", "    private final Deque<Integer> max = new ArrayDeque<>();   // 单调递减：队头永远是当前最大", "", "    public Checkout() {", "    }", "", "    public int get_max() {", "        return max.isEmpty() ? -1 : max.peekFirst();", "    }", "", "    public void add(int value) {", "        q.addLast(value);", "        // 队尾比 value 小的全部挤掉：它们没出队 value 就先进来了，最大轮不到它们", "        while (!max.isEmpty() && max.peekLast() < value) max.pollLast();", "        max.addLast(value);", "    }", "", "    public int remove() {", "        if (q.isEmpty()) return -1;", "        int v = q.pollFirst();", "        // 出队的恰好是当前最大：单调队列的队头同步弹出", "        if (max.peekFirst() == v) max.pollFirst();", "        return v;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// LCR 184 设计自助结算系统 —— 图解：普通队列 + 单调递减队列，队头永远是最大值。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { ops: [['add', 4], ['add', 7], ['add', 2], ['remove'], ['remove'], ['get_max']] };
+
+function trace(input) {
+  var q = [], maxq = [], out = [];
+  var frames = [];
+
+  var SQUEEZE = 'while (!max.isEmpty() && max.peekLast() < value) max.pollLast();';
+  var APPEND = 'max.addLast(value);';
+  var POPCHK = 'if (max.peekFirst() == v) max.pollFirst();';
+  var GET = 'return max.isEmpty() ? -1 : max.peekFirst();';
+
+  function cellsPanel(items, title, markLast) {
+    var marks = markLast && items.length ? {} : null;
+    if (marks) marks[items.length - 1] = 'new';
+    var pointers = items.length ? [{ at: 0, label: '队头', cls: 'p-left' }] : [];
+    return Viz.cells(items.length ? items : ['（空）'], { title: title, marks: marks || {}, pointers: pointers });
+  }
+  function panels() {
+    return [
+      cellsPanel(q, 'q：普通队列（先进先出）', false),
+      cellsPanel(maxq, 'max：单调递减，队头 = 当前最大', true)
+    ];
+  }
+
+  input.ops.forEach(function (op, i) {
+    var type = op[0];
+    if (type === 'add') {
+      var v = op[1];
+      q.push(v);
+      var squeezed = [];
+      while (maxq.length && maxq[maxq.length - 1] < v) squeezed.push(maxq.pop());
+      maxq.push(v);
+      if (i === 1) frames.push(Viz.frame(SQUEEZE, 'add(' + v + ')：队尾比 ' + v + ' 小的 ' + squeezed.join('、') + ' 被挤掉——它们没出队，最大也轮不到它们', panels()));
+      else if (i === 2) frames.push(Viz.frame(APPEND, 'add(' + v + ')：' + v + ' 没挤掉谁，排到 max 队尾，队列仍递减', panels()));
+      else if (i === 0) frames.push(Viz.frame(APPEND, '开局 add(' + v + ')：q 和 max 各进一人', panels()));
+    } else if (type === 'remove') {
+      if (!q.length) { out.push(-1); return; }
+      var v2 = q.shift();
+      if (maxq[0] === v2) maxq.shift();
+      if (i === 3) frames.push(Viz.frame(POPCHK, 'remove()：出队 ' + v2 + '，它不是最大（max 里早没它了），max 不动', panels()));
+      else if (i === 4) frames.push(Viz.frame(POPCHK, 'remove()：出队 ' + v2 + ' = max 队头，max 同步弹出', panels()));
+      out.push(v2);
+    } else {
+      var got = maxq.length ? maxq[0] : -1;
+      out.push(got);
+      if (i === 5) frames.push(Viz.frame(GET, 'get_max()：直接看 max 队头 → ' + got, panels()));
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

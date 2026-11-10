@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>情侣牵手 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1138 / 1159</span>
+  <nav class="pn"><a href="0598.html">上一篇</a><a href="0728.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">765. </span>情侣牵手</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">图</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">贪心逐座位对修：左边坐谁就把他的伴侣换过来；每次交换至少修好一对，次数最少。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>情侣编号 <code>(0,1)(2,3)…</code>，所以伴侣 = <code>x ^ 1</code>；<code>pos[]</code> 记每个人在哪，O(1) 找到伴侣座位。</li><li>从左往右扫<strong>座位对</strong> <code>(i, i+1)</code>：<code>row[i+1]</code> 不是 <code>row[i]</code> 的伴侣，就把伴侣从 <code>j</code> 换到 <code>i+1</code>，交换数 +1。</li><li>交换时同步维护 <code>pos</code>：被换走的人记新座位 <code>j</code>，伴侣记 <code>i+1</code>。</li><li>最少性：每次交换都让左边一对永久配对，也从不拆散已配好的对，所以交换数最少。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> minSwapsCouples(<span class="k">int</span>[] row) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = row.length;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] pos = <span class="k">new</span> <span class="k">int</span>[n];   <span class="c">// pos[人] = 他现在坐的座位下标</span></span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) pos[row[i]] = i;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i += <span class="n">2</span>) {</span><span class="ln"><span class="no">8</span>            <span class="k">int</span> want = row[i] ^ <span class="n">1</span>;   <span class="c">// 伴侣编号：情侣 (0,1)(2,3)…，编号恰差 1，异或 1 即得</span></span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (row[i + <span class="n">1</span>] == want) <span class="k">continue</span>;   <span class="c">// 这一对已经牵手</span></span><span class="ln"><span class="no">10</span>            <span class="k">int</span> j = pos[want];   <span class="c">// 伴侣现在坐在 j</span></span><span class="ln"><span class="no">11</span>            <span class="c">// 把伴侣换到 i+1：先记被换走的人的新座位，再交换两人</span></span><span class="ln"><span class="no">12</span>            pos[row[i + <span class="n">1</span>]] = j;</span><span class="ln"><span class="no">13</span>            row[j] = row[i + <span class="n">1</span>];</span><span class="ln"><span class="no">14</span>            row[i + <span class="n">1</span>] = want;</span><span class="ln"><span class="no">15</span>            pos[want] = i + <span class="n">1</span>;</span><span class="ln"><span class="no">16</span>            ans++;</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p><code>n</code> 对情侣坐在连续排列的 <code>2n</code>&nbsp;个座位上，想要牵到对方的手。</p>
+
+<p>人和座位由一个整数数组 <code>row</code> 表示，其中 <code>row[i]</code> 是坐在第 <code>i </code>个座位上的人的 <strong>ID</strong>。情侣们按顺序编号，第一对是&nbsp;<code>(0, 1)</code>，第二对是&nbsp;<code>(2, 3)</code>，以此类推，最后一对是&nbsp;<code>(2n - 2, 2n - 1)</code>。</p>
+
+<p>返回 <em>最少交换座位的次数，以便每对情侣可以并肩坐在一起</em>。 <i>每次</i>交换可选择任意两人，让他们站起来交换座位。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> row = [0,2,1,3]
+<strong>输出:</strong> 1
+<strong>解释:</strong> 只需要交换第二个人（row[1]）和第三个人（row[2]）的位置即可。
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> row = [3,2,0,1]
+<strong>输出:</strong> 0
+<strong>解释:</strong> 无需交换座位，所有的情侣都已经可以手牵手了。
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>2n == row.length</code></li>
+	<li><code>2 &lt;= n &lt;= 30</code></li>
+	<li><code>n</code>&nbsp;是偶数</li>
+	<li><code>0 &lt;= row[i] &lt; 2n</code></li>
+	<li><code>row</code>&nbsp;中所有元素均&nbsp;<strong>无重复</strong></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int minSwapsCouples(int[] row) {", "        int n = row.length;", "        int[] pos = new int[n];   // pos[人] = 他现在坐的座位下标", "        for (int i = 0; i < n; i++) pos[row[i]] = i;", "        int ans = 0;", "        for (int i = 0; i < n; i += 2) {", "            int want = row[i] ^ 1;   // 伴侣编号：情侣 (0,1)(2,3)…，编号恰差 1，异或 1 即得", "            if (row[i + 1] == want) continue;   // 这一对已经牵手", "            int j = pos[want];   // 伴侣现在坐在 j", "            // 把伴侣换到 i+1：先记被换走的人的新座位，再交换两人", "            pos[row[i + 1]] = j;", "            row[j] = row[i + 1];", "            row[i + 1] = want;", "            pos[want] = i + 1;", "            ans++;", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 765. 情侣牵手 —— 图解：贪心逐座位对，把伴侣换过来，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { row: [0, 2, 4, 1, 3, 5] };
+
+function trace(input) {
+  var row = input.row.slice();
+  var n = row.length;
+  var frames = [];
+  var CHECK = 'if (row[i + 1] == want) continue;';
+  var FIND = 'int j = pos[want];';
+  var SWAP = 'row[i + 1] = want;';
+  var RET = 'return ans;';
+
+  var pos = {};
+  row.forEach(function (p, i) { pos[p] = i; });
+  var ans = 0;
+
+  function rowPanel(o) {
+    var marks = {};
+    for (var i = 0; i < n; i++) {
+      if (o.fixed && i < o.fixed) marks[i] = 'win';       // 前面的座位对已修好
+      else if (o.bad && i >= o.bad[0] && i <= o.bad[1]) marks[i] = 'bad';
+    }
+    (o.chgAt || []).forEach(function (x) { marks[x] = 'chg'; });
+    if (o.cur != null) marks[o.cur] = 'cur';
+    if (o.done) for (var i2 = 0; i2 < n; i2++) marks[i2] = 'done';
+    var pointers = [];
+    if (o.ptr1 != null) pointers.push({ at: o.ptr1, label: 'i', cls: 'p-left' });
+    if (o.ptr2 != null) pointers.push({ at: o.ptr2, label: 'j（伴侣）', cls: 'p-cur' });
+    return Viz.cells(row, { title: 'row：座位 → 人（每两个座位一对）', marks: marks, pointers: pointers });
+  }
+  function posPanel(hit) {
+    var rows = [];
+    for (var p = 0; p < n; p++) rows.push({ k: '人 ' + p, v: '座位 ' + pos[p], cls: p === hit ? 'hit' : '' });
+    return Viz.table('pos：人 → 座位（找伴侣全靠它）', rows);
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+
+  var swaps = 0;
+  var checkedSkip = false;
+  for (var i = 0; i < n; i += 2) {
+    var want = row[i] ^ 1;
+    if (row[i + 1] === want) {
+      if (swaps > 0 && !checkedSkip) {
+        checkedSkip = true;
+        frames.push(Viz.frame(CHECK, '座位对 (' + i + ',' + (i + 1) + ')：' + row[i] + ' 和 ' + row[i + 1] + ' 已是伴侣，跳过',
+          [rowPanel({ fixed: i, bad: null, ptr1: i }), varsPanel([
+            { name: '座位对', v: '(' + i + ',' + (i + 1) + ')' },
+            { name: '状态', v: '已配对，不用换', cls: 'done' },
+            { name: 'ans', v: ans }
+          ])]));
+      }
+      continue;
+    }
+    var j = pos[want];
+    if (swaps === 0) {
+      frames.push(Viz.frame(FIND, '座位对 (' + i + ',' + (i + 1) + ')：' + row[i] + ' 的伴侣是 ' + want + '，坐在 ' + j + ' 号位',
+        [rowPanel({ bad: [i, i + 1], cur: j, ptr1: i, ptr2: j }), posPanel(want), varsPanel([
+          { name: '左边坐的人', v: row[i] },
+          { name: 'want（伴侣）', v: want, cls: 'cur' },
+          { name: 'j（伴侣座位）', v: j, cls: 'chg' }
+        ])]));
+    }
+    pos[row[i + 1]] = j;
+    row[j] = row[i + 1];
+    row[i + 1] = want;
+    pos[want] = i + 1;
+    ans++;
+    swaps++;
+    if (swaps <= 2) {
+      frames.push(Viz.frame(SWAP, '第 ' + swaps + ' 次交换：把 ' + want + ' 换到 ' + (i + 1) + ' 号位，配成一对',
+        [rowPanel({ fixed: i, chgAt: [i + 1, j], ptr1: i, ptr2: j }), varsPanel([
+          { name: '交换后座位对', v: '(' + row[i] + ',' + row[i + 1] + ')', cls: 'done' },
+          { name: 'ans', v: ans, cls: 'chg' }
+        ])]));
+    }
+  }
+
+  frames.push(Viz.frame(RET, '每个座位对都配好了：最少交换 ' + ans + ' 次',
+    [rowPanel({ done: true }), varsPanel([{ name: 'ans', v: ans, cls: 'done' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

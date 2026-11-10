@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K 站中转内最便宜的航班 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 674 / 1159</span>
+  <nav class="pn"><a href="1518.html">上一篇</a><a href="lcp-13.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">787. </span>K 站中转内最便宜的航班</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">图算法</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="tag">动态规划</li><li class="tag">最短路</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">限制轮次的 Bellman-Ford：每轮用上一轮的 dist 快照松弛全部边，跑 k+1 轮，dist[dst] 即答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>普通最短路没有「中转次数」概念，Bellman-Ford 的轮数恰好对应「最多飞几条边」：第 r 轮后 <code>dist</code> 是最多 <code>r</code> 条边的最短路。</li><li><code>k</code> 站中转 = 最多 <code>k+1</code> 条边，所以跑 <code>k+1</code> 轮。</li><li><strong>每轮必须先 <code>clone</code> 快照</strong>：若用本轮已更新的值继续松弛，一轮会串起多条边，把超限的路径也算进来。</li><li>没用 Dijkstra：它按「距离」出队，无法表达「边数限制」这层状态。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(k · E)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> findCheapestPrice(<span class="k">int</span> n, <span class="k">int</span>[][] flights, <span class="k">int</span> src, <span class="k">int</span> dst, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="k">final</span> <span class="k">int</span> INF = <span class="t">Integer</span>.MAX_VALUE / <span class="n">2</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] dist = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">7</span>        <span class="t">Arrays</span>.fill(dist, INF);</span><span class="ln"><span class="no">8</span>        dist[src] = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="c">// 限制轮次的 Bellman-Ford：第 r 轮后 dist = 最多走 r 条边的最短路</span></span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt;= k; r++) {</span><span class="ln"><span class="no">11</span>            <span class="k">int</span>[] nxt = dist.clone();   <span class="c">// 用上一轮的快照，保证每轮只多飞一条边</span></span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span>[] f : flights) {</span><span class="ln"><span class="no">13</span>                <span class="k">if</span> (dist[f[<span class="n">0</span>]] + f[<span class="n">2</span>] &lt; nxt[f[<span class="n">1</span>]]) nxt[f[<span class="n">1</span>]] = dist[f[<span class="n">0</span>]] + f[<span class="n">2</span>];</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>            dist = nxt;</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> dist[dst] &gt;= INF ? -<span class="n">1</span> : dist[dst];</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>有 <code>n</code> 个城市通过一些航班连接。给你一个数组&nbsp;<code>flights</code> ，其中&nbsp;<code>flights[i] = [from<sub>i</sub>, to<sub>i</sub>, price<sub>i</sub>]</code> ，表示该航班都从城市 <code>from<sub>i</sub></code> 开始，以价格 <code>price<sub>i</sub></code> 抵达 <code>to<sub>i</sub></code>。</p>
+
+<p>现在给定所有的城市和航班，以及出发城市 <code>src</code> 和目的地 <code>dst</code>，你的任务是找到出一条最多经过 <code>k</code>&nbsp;站中转的路线，使得从 <code>src</code> 到 <code>dst</code> 的 <strong>价格最便宜</strong> ，并返回该价格。 如果不存在这样的路线，则输出 <code>-1</code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/46a357db2c43.png" style="width: 332px; height: 392px;" />
+<pre>
+<strong>输入:</strong> 
+n = 4, flights = [[0,1,100],[1,2,100],[2,0,100],[1,3,600],[2,3,200]], src = 0, dst = 3, k = 1
+<strong>输出:</strong> 700 
+<strong>解释:</strong> 城市航班图如上
+从城市 0 到城市 3 经过最多 1 站的最佳路径用红色标记，费用为 100 + 600 = 700。
+请注意，通过城市 [0, 1, 2, 3] 的路径更便宜，但无效，因为它经过了 2 站。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/b5e26913599a.png" style="width: 332px; height: 242px;" />
+<pre>
+<strong>输入:</strong> 
+n = 3, edges = [[0,1,100],[1,2,100],[0,2,500]], src = 0, dst = 2, k = 1
+<strong>输出:</strong> 200
+<strong>解释:</strong> 
+城市航班图如上
+从城市 0 到城市 2 经过最多 1 站的最佳路径标记为红色，费用为 100 + 100 = 200。
+</pre>
+
+<p><strong class="example">示例 3：</strong></p>
+<img alt="" src="../assets/img/fe6b3c504bed.png" style="width: 332px; height: 242px;" />
+<pre>
+<b>输入：</b>n = 3, flights = [[0,1,100],[1,2,100],[0,2,500]], src = 0, dst = 2, k = 0
+<b>输出：</b>500
+<strong>解释：</strong>
+城市航班图如上
+从城市 0 到城市 2 不经过站点的最佳路径标记为红色，费用为 500。
+</pre>
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= n &lt;= 100</code></li>
+	<li><code>0 &lt;= flights.length &lt;= (n * (n - 1) / 2)</code></li>
+	<li><code>flights[i].length == 3</code></li>
+	<li><code>0 &lt;= from<sub>i</sub>, to<sub>i</sub> &lt; n</code></li>
+	<li><code>from<sub>i</sub> != to<sub>i</sub></code></li>
+	<li><code>1 &lt;= price<sub>i</sub> &lt;= 10<sup>4</sup></code></li>
+	<li>航班没有重复，且不存在自环</li>
+	<li><code>0 &lt;= src, dst, k &lt; n</code></li>
+	<li><code>src != dst</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int findCheapestPrice(int n, int[][] flights, int src, int dst, int k) {", "        final int INF = Integer.MAX_VALUE / 2;", "        int[] dist = new int[n];", "        Arrays.fill(dist, INF);", "        dist[src] = 0;", "        // 限制轮次的 Bellman-Ford：第 r 轮后 dist = 最多走 r 条边的最短路", "        for (int r = 0; r <= k; r++) {", "            int[] nxt = dist.clone();   // 用上一轮的快照，保证每轮只多飞一条边", "            for (int[] f : flights) {", "                if (dist[f[0]] + f[2] < nxt[f[1]]) nxt[f[1]] = dist[f[0]] + f[2];", "            }", "            dist = nxt;", "        }", "        return dist[dst] >= INF ? -1 : dist[dst];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 787. K 站中转内最便宜的航班 —— 图解：复刻 Solution.java 的「限轮 Bellman-Ford」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 4, flights: [[0, 1, 100], [1, 2, 100], [2, 0, 100], [1, 3, 600], [2, 3, 200]], src: 0, dst: 3, k: 1 };
+
+function trace(input) {
+  var n = input.n, flights = input.flights, src = input.src, dst = input.dst, k = input.k;
+  var INF = 1000000000;
+  var dist = [];
+  for (var i = 0; i < n; i++) dist.push(i === src ? 0 : INF);
+  var frames = [];
+
+  function distPanel(hitNodes) {
+    var rows = [];
+    for (var v = 0; v < n; v++) {
+      rows.push({ k: '城市 ' + v, v: dist[v] >= INF ? '∞' : String(dist[v]),
+        cls: hitNodes && hitNodes[v] ? 'chg' : (v === dst ? 'win' : '') });
+    }
+    return Viz.table('dist：最多 r 条边能到的最便宜价格', rows, { hint: 'src=' + src + '，dst=' + dst + '，k=' + k });
+  }
+
+  frames.push(Viz.frame('dist[src] = 0;', '开局：只有出发地是 0，其余都是 ∞',
+    [distPanel(null), Viz.vars([{ name: '轮次', v: 0 }, { name: '最多飞', v: (k + 1) + ' 条边' }])]));
+
+  var shown = 0;
+  for (var r = 0; r <= k; r++) {
+    var nxt = dist.slice();
+    var hit = {};
+    for (var e = 0; e < flights.length; e++) {
+      var f = flights[e];
+      if (dist[f[0]] + f[2] < nxt[f[1]]) { nxt[f[1]] = dist[f[0]] + f[2]; hit[f[1]] = true; }
+    }
+    dist = nxt;
+    if (shown < 2) {
+      shown++;
+      frames.push(Viz.frame('int[] nxt = dist.clone();',
+        '第 ' + (r + 1) + ' 轮：只用「上一轮的距离」松弛一遍，正好多飞一条边',
+        [distPanel(hit), Viz.vars([{ name: '轮次', v: r + 1 }, { name: '最多飞', v: (r + 1) + ' 条边' }])]));
+    }
+  }
+
+  var ans = dist[dst] >= INF ? -1 : dist[dst];
+  frames.push(Viz.frame('return dist[dst] >= INF ? -1 : dist[dst];',
+    ans < 0 ? 'k+1 轮后 dst 仍是 ∞：到不了，返回 -1' : 'k+1 轮后 dst 的价格就是答案：' + ans,
+    [distPanel(null), Viz.vars([{ name: '答案', v: ans }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

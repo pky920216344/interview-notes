@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K 个不同整数的子数组 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 509 / 1159</span>
+  <nav class="pn"><a href="0310.html">上一篇</a><a href="0423.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">992. </span>K 个不同整数的子数组</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 4</li><li class="algo">滑动窗口</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">计数</li><li class="tag">滑动窗口</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">「恰好 K 种」拆成两次「至多」滑窗相减：atMost(K) − atMost(K−1)；每个右端点贡献 r−l+1 个子数组。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>恰好 k 个不同整数的子数组没法直接滑窗，<strong>拆成两次「至多」</strong>：<code>atMost(k) − atMost(k−1)</code>。</li><li><code>atMost(m)</code>：<code>cnt[v]</code> 计数，新值入窗时 <code>distinct++</code>；一旦 <code>distinct &gt; m</code> 就从左端缩到重新 <code>≤ m</code>。</li><li>缩完窗后，以 <code>r</code> 结尾、左端点在 <code>l..r</code> 的子数组都合法，一次加 <code>r - l + 1</code>。</li><li><code>nums[i] ∈ 1..n</code>，计数数组大小 <code>n+1</code> 即可；<code>m = 0</code> 时窗口每步缩空、贡献 0，不用特判。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> subarraysWithKDistinct(<span class="k">int</span>[] nums, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 恰好 k 个不同整数 = 至多 k 个 − 至多 k−1 个，各做一次滑窗</span></span><span class="ln"><span class="no">4</span>        <span class="k">return</span> atMost(nums, k) - atMost(nums, k - <span class="n">1</span>);</span><span class="ln"><span class="no">5</span>    }</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="c">// 不同整数不超过 m 个的子数组数目：右端每前进一格，贡献 r-l+1 个</span></span><span class="ln"><span class="no">8</span>    <span class="k">private</span> <span class="k">int</span> atMost(<span class="k">int</span>[] nums, <span class="k">int</span> m) {</span><span class="ln"><span class="no">9</span>        <span class="k">int</span>[] cnt = <span class="k">new</span> <span class="k">int</span>[nums.length + <span class="n">1</span>];   <span class="c">// nums[i] 在 1..n，直接数组计数</span></span><span class="ln"><span class="no">10</span>        <span class="k">int</span> distinct = <span class="n">0</span>, ans = <span class="n">0</span>, l = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; nums.length; r++) {</span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (cnt[nums[r]]++ == <span class="n">0</span>) distinct++;</span><span class="ln"><span class="no">13</span>            <span class="k">while</span> (distinct &gt; m) <span class="k">if</span> (--cnt[nums[l++]] == <span class="n">0</span>) distinct--;</span><span class="ln"><span class="no">14</span>            ans += r - l + <span class="n">1</span>;</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个正整数数组 <code>nums</code>和一个整数 <code>k</code>，返回 <code>nums</code> 中 「<strong>好子数组」</strong><em>&nbsp;</em>的数目。</p>
+
+<p>如果 <code>nums</code>&nbsp;的某个子数组中不同整数的个数恰好为 <code>k</code>，则称 <code>nums</code>&nbsp;的这个连续、不一定不同的子数组为 <strong>「</strong><strong>好子数组 」</strong>。</p>
+
+<ul>
+	<li>例如，<code>[1,2,3,1,2]</code> 中有&nbsp;<code>3</code>&nbsp;个不同的整数：<code>1</code>，<code>2</code>，以及&nbsp;<code>3</code>。</li>
+</ul>
+
+<p><strong>子数组</strong> 是数组的 <strong>连续</strong> 部分。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,1,2,3], k = 2
+<strong>输出：</strong>7
+<strong>解释：</strong>恰好由 2 个不同整数组成的子数组：[1,2], [2,1], [1,2], [2,3], [1,2,1], [2,1,2], [1,2,1,2].
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,1,3,4], k = 3
+<strong>输出：</strong>3
+<strong>解释：</strong>恰好由 3 个不同整数组成的子数组：[1,2,1,3], [2,1,3], [1,3,4].
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= nums[i], k &lt;= nums.length</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int subarraysWithKDistinct(int[] nums, int k) {", "        // 恰好 k 个不同整数 = 至多 k 个 − 至多 k−1 个，各做一次滑窗", "        return atMost(nums, k) - atMost(nums, k - 1);", "    }", "", "    // 不同整数不超过 m 个的子数组数目：右端每前进一格，贡献 r-l+1 个", "    private int atMost(int[] nums, int m) {", "        int[] cnt = new int[nums.length + 1];   // nums[i] 在 1..n，直接数组计数", "        int distinct = 0, ans = 0, l = 0;", "        for (int r = 0; r < nums.length; r++) {", "            if (cnt[nums[r]]++ == 0) distinct++;", "            while (distinct > m) if (--cnt[nums[l++]] == 0) distinct--;", "            ans += r - l + 1;", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 992. K 个不同整数的子数组 —— 图解：恰好 K = atMost(K) − atMost(K−1)，两次滑窗，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 2, 1, 2, 3], k: 2 };
+
+function trace(input) {
+  var a = input.nums, k = input.k;
+  var n = a.length;
+  var frames = [];
+
+  function panel(marks, l, r, rangeLabel) {
+    var pointers = [{ at: l, label: 'l', cls: 'p-left' }, { at: r, label: 'r', cls: 'p-right' }];
+    var range = rangeLabel && l <= r ? { from: l, to: r, label: rangeLabel } : null;
+    return Viz.cells(a.map(String), { title: '数组 nums', marks: marks || {}, pointers: pointers, range: range });
+  }
+
+  // 与 Solution.atMost 相同的滑窗；phase 用来在 vars 里区分两轮
+  function atMost(m, phase, wantFrames) {
+    var cnt = {}, distinct = 0, ans = 0, l = 0;
+    for (var r = 0; r < n; r++) {
+      var v = a[r];
+      cnt[v] = (cnt[v] || 0) + 1;
+      if (cnt[v] === 1) distinct++;
+      var marks = {}, i;
+      if (wantFrames && distinct > m && l <= r) {
+        for (i = l; i <= r; i++) marks[i] = i === r ? 'bad' : 'win';
+        frames.push(Viz.frame('while (distinct > m) if (--cnt[nums[l++]] == 0) distinct--;',
+          '第 ' + (r + 1) + ' 格出现第 ' + distinct + ' 种数 ' + v + '，超出 ' + m + '，左端缩窗',
+          [panel(marks, l, r, '窗口 ' + (r - l + 1) + ' 格'),
+           Viz.vars([{ name: 'distinct', v: distinct }, { name: 'm', v: m }, { name: 'ans', v: ans }])]));
+      }
+      while (distinct > m) {
+        cnt[a[l]]--;
+        if (cnt[a[l]] === 0) distinct--;
+        l++;
+      }
+      var added = r - l + 1;
+      ans += added;
+      if (wantFrames && (r === 1 || r === n - 1)) {
+        for (i = l; i <= r; i++) marks[i] = 'win';
+        frames.push(Viz.frame('ans += r - l + 1;',
+          phase + ' r=' + r + '：窗口内 ' + distinct + ' 种数，新增 ' + added + ' 个',
+          [panel(added > 0 ? marks : {}, l, r, added > 0 ? '窗口 [' + a.slice(l, r + 1) + ']' : null),
+           Viz.vars([{ name: 'distinct', v: distinct }, { name: 'ans', v: ans }])]));
+      }
+    }
+    return ans;
+  }
+
+  var atK = atMost(k, 'atMost(' + k + ')：', true);
+  var atK1 = atMost(k - 1, 'atMost(' + (k - 1) + ')：', false);
+  var result = atK - atK1;
+
+  frames.push(Viz.frame('return atMost(nums, k) - atMost(nums, k - 1);',
+    '恰好 ' + k + ' 种 = ' + atK + ' − ' + atK1 + ' = ' + result,
+    [Viz.vars([{ name: 'atMost(' + k + ')', v: atK }, { name: 'atMost(' + (k - 1) + ')', v: atK1 }, { name: '恰好', v: result }])]));
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

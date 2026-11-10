@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>设置交集大小至少为2 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 989 / 1159</span>
+  <nav class="pn"><a href="1681.html">上一篇</a><a href="1390.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">757. </span>设置交集大小至少为2</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">贪心：按右端点升序扫，维护已选的两个最大点；区间缺几个就从它的右端点往左补几个（选最右的点最容易被后面的区间复用）。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>按右端点升序（同右端左端大的在前）处理；记已选点中最大的两个 <code>p1 ≤ p2</code>，因为右端递增，后面的区间右端 <code>e ≥ p2</code>。</li><li>区间 <code>[s, e]</code> 里若 <code>s ≤ p1</code>，两个点都在内，跳过；若 <code>s ≤ p2</code>，只有 <code>p2</code> 在内，补一个 <code>e</code>；否则补 <code>e−1、e</code>。</li><li><strong>补点永远尽量靠右</strong>：右端点最可能被后续区间共用，这就是贪心的正确性来源。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(log n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> intersectionSizeTwo(<span class="k">int</span>[][] intervals) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 右端小的先处理；右端相同时左端大的在前（它更难满足，先逼出选点）</span></span><span class="ln"><span class="no">6</span>        <span class="t">Arrays</span>.sort(intervals, (a, b) -&gt; a[<span class="n">1</span>] != b[<span class="n">1</span>] ? a[<span class="n">1</span>] - b[<span class="n">1</span>] : b[<span class="n">0</span>] - a[<span class="n">0</span>]);</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> ans = <span class="n">0</span>, p1 = -<span class="n">1</span>, p2 = -<span class="n">1</span>;   <span class="c">// 已选点里最大的两个：p1 ≤ p2</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span>[] iv : intervals) {</span><span class="ln"><span class="no">9</span>            <span class="k">int</span> s = iv[<span class="n">0</span>], e = iv[<span class="n">1</span>];</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (s &lt;= p1) <span class="k">continue</span>;       <span class="c">// p1、p2 都在区间内（p2 ≤ 前面的 end ≤ e）</span></span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (s &lt;= p2) {               <span class="c">// 只有 p2 在区间内：补上右端点 e</span></span><span class="ln"><span class="no">12</span>                ans++;</span><span class="ln"><span class="no">13</span>                p1 = p2;</span><span class="ln"><span class="no">14</span>                p2 = e;</span><span class="ln"><span class="no">15</span>            } <span class="k">else</span> {                     <span class="c">// 两个都不在：补 e-1、e</span></span><span class="ln"><span class="no">16</span>                ans += <span class="n">2</span>;</span><span class="ln"><span class="no">17</span>                p1 = e - <span class="n">1</span>;</span><span class="ln"><span class="no">18</span>                p2 = e;</span><span class="ln"><span class="no">19</span>            }</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个二维整数数组 <code>intervals</code> ，其中 <code>intervals[i] = [start<sub>i</sub>, end<sub>i</sub>]</code> 表示从 <code>start<sub>i</sub></code> 到 <code>end<sub>i</sub></code> 的所有整数，包括 <code>start<sub>i</sub></code> 和 <code>end<sub>i</sub></code> 。</p>
+
+<p><strong>包含集合</strong> 是一个名为 <code>nums</code> 的数组，并满足 <code>intervals</code> 中的每个区间都 <strong>至少</strong> 有 <strong>两个</strong> 整数在 <code>nums</code> 中。</p>
+
+<ul>
+	<li>例如，如果 <code>intervals = [[1,3], [3,7], [8,9]]</code> ，那么 <code>[1,2,4,7,8,9]</code> 和 <code>[2,3,4,8,9]</code> 都符合 <strong>包含集合</strong> 的定义。</li>
+</ul>
+
+<p>返回包含集合可能的最小大小。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>intervals = [[1,3],[3,7],[8,9]]
+<strong>输出：</strong>5
+<strong>解释：</strong>nums = [2, 3, 4, 8, 9].
+可以证明不存在元素数量为 4 的包含集合。
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>intervals = [[1,3],[1,4],[2,5],[3,5]]
+<strong>输出：</strong>3
+<strong>解释：</strong>nums = [2, 3, 4].
+可以证明不存在元素数量为 2 的包含集合。 
+</pre>
+
+<p><strong class="example">示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>intervals = [[1,2],[2,3],[2,4],[4,5]]
+<strong>输出：</strong>5
+<strong>解释：</strong>nums = [1, 2, 3, 4, 5].
+可以证明不存在元素数量为 4 的包含集合。 
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= intervals.length &lt;= 3000</code></li>
+	<li><code>intervals[i].length == 2</code></li>
+	<li><code>0 &lt;= start<sub>i</sub> &lt; end<sub>i</sub> &lt;= 10<sup>8</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int intersectionSizeTwo(int[][] intervals) {", "        // 右端小的先处理；右端相同时左端大的在前（它更难满足，先逼出选点）", "        Arrays.sort(intervals, (a, b) -> a[1] != b[1] ? a[1] - b[1] : b[0] - a[0]);", "        int ans = 0, p1 = -1, p2 = -1;   // 已选点里最大的两个：p1 ≤ p2", "        for (int[] iv : intervals) {", "            int s = iv[0], e = iv[1];", "            if (s <= p1) continue;       // p1、p2 都在区间内（p2 ≤ 前面的 end ≤ e）", "            if (s <= p2) {               // 只有 p2 在区间内：补上右端点 e", "                ans++;", "                p1 = p2;", "                p2 = e;", "            } else {                     // 两个都不在：补 e-1、e", "                ans += 2;", "                p1 = e - 1;", "                p2 = e;", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 757. 设置交集大小至少为 2 —— 图解：复刻「右端排序贪心，补点尽量靠右」，在前 3 个区间拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { intervals: [[1, 3], [3, 7], [8, 9]] };
+
+function trace(input) {
+  var ivs = input.intervals.slice().sort(function (a, b) {
+    return a[1] !== b[1] ? a[1] - b[1] : b[0] - a[0];
+  });
+  var maxEnd = 1;
+  ivs.forEach(function (iv) { if (iv[1] > maxEnd) maxEnd = iv[1]; });
+
+  var frames = [];
+  var picked = [];   // 已选点（升序）
+  var rows = [];     // 已处理区间的覆盖行
+  var ans = 0, p1 = -1, p2 = -1;
+
+  var PICK2 = 'p1 = e - 1;';
+  var PICK1 = 'p1 = p2;';
+  var DONE = 'return ans;';
+
+  function colLabels() {
+    var labels = [];
+    for (var v = 0; v <= maxEnd; v++) labels.push(String(v));
+    return labels;
+  }
+  function rowOf(iv) {
+    var row = [];
+    for (var v = 0; v <= maxEnd; v++) row.push(v >= iv[0] && v <= iv[1] ? '·' : '');
+    return row;
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: 'p1（已选次大点）', v: String(p1), cls: '' },
+      { name: 'p2（已选最大点）', v: String(p2), cls: '' },
+      { name: 'ans（已选点数）', v: String(ans), cls: '' }
+    ]);
+  }
+  function snap(at, key, newPts) {
+    var marks = {};
+    for (var r = 0; r < rows.length; r++) {
+      for (var c = 0; c <= maxEnd; c++) {
+        if (rows[r][c] === '·') marks[r + ',' + c] = 'win';
+      }
+    }
+    picked.forEach(function (p, i) {
+      for (var r2 = 0; r2 < rows.length; r2++) {
+        if (rows[r2][p] === '·') marks[r2 + ',' + p] = 'done';
+      }
+    });
+    (newPts || []).forEach(function (p) {
+      for (var r3 = 0; r3 < rows.length; r3++) {
+        if (rows[r3][p] === '·') marks[r3 + ',' + p] = 'new';
+      }
+    });
+    // 把 ★ 写进格子文本
+    var withStars = rows.map(function (row) {
+      return row.map(function (cell, c) { return picked.indexOf(c) >= 0 && cell === '·' ? '★' : cell; });
+    });
+    var panels = [Viz.grid(withStars, { title: '数轴上的区间与选点（★ 已选 · · 覆盖）', marks: marks, colLabels: colLabels(), corner: '区间' }), varsPanel()];
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  ivs.forEach(function (iv, idx) {
+    var s = iv[0], e = iv[1];
+    rows.push(rowOf(iv));
+    var newPts = [];
+    if (s <= p1) {
+      // 两个已选点都在区间内，不补
+    } else if (s <= p2) {
+      ans++;
+      p1 = p2;
+      p2 = e;
+      picked.push(e);
+      newPts.push(e);
+      if (idx === 1) snap(PICK1, '[' + s + ',' + e + ']：只有 p2=' + p1 + ' 在内，补右端点 ' + e, newPts);
+    } else {
+      ans += 2;
+      p1 = e - 1;
+      p2 = e;
+      picked.push(e - 1, e);
+      newPts.push(e - 1, e);
+      if (idx === 0) snap(PICK2, '首区间 [' + s + ',' + e + ']：补最大的两个点 ' + (e - 1) + '、' + e, newPts);
+      else if (idx === 2) snap(PICK2, '[' + s + ',' + e + ']：两个点都不在内，补 ' + (e - 1) + '、' + e, newPts);
+    }
+  });
+
+  picked.sort(function (a, b) { return a - b; });
+  snap(DONE, '结束：每个区间都盖住 ≥ 2 个点，最少要 ' + ans + ' 个', []);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

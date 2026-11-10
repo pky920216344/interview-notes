@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>不同字符的最小子序列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 814 / 1159</span>
+  <nav class="pn"><a href="0201.html">上一篇</a><a href="1100.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1081. </span>不同字符的最小子序列</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">单调栈</li><li class="aux">贪心</li><li class="aux">哈希表</li><li class="tag">栈</li><li class="tag">贪心</li><li class="tag">字符串</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">单调栈贪心：栈里存「还没定死」的字符；新字符更小且栈顶后面还有剩，就弹掉栈顶（以后能补回来）。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>left[c]</code> 先数好每种字符还剩几个没读；<code>in[c]</code> 记录是否已在栈里，在栈里的直接跳过。</li><li>读到 <code>c</code>：只要栈顶比 <code>c</code> 大<strong>且 <code>left[栈顶] &gt; 0</code></strong>（后面还有，弹掉以后能补回来），就弹栈顶。</li><li>两个条件缺一不可：栈顶更大但后面没有了，弹掉就再也回不来，只能保留（这是最容易漏的分支）。</li><li>栈底到栈顶就是字典序最小、每种字符恰一次的子序列。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(26)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">String</span> smallestSubsequence(<span class="t">String</span> s) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span>[] left = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];    <span class="c">// 每种字符还剩几个没读</span></span><span class="ln"><span class="no">4</span>        <span class="k">boolean</span>[] in = <span class="k">new</span> <span class="k">boolean</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) left[s.charAt(i) - <span class="s">'a'</span>]++;</span><span class="ln"><span class="no">6</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();   <span class="c">// 当栈用，栈顶是最后一个字符</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) {</span><span class="ln"><span class="no">8</span>            <span class="k">char</span> c = s.charAt(i);</span><span class="ln"><span class="no">9</span>            left[c - <span class="s">'a'</span>]--;</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (in[c - <span class="s">'a'</span>]) <span class="k">continue</span>;   <span class="c">// 已在栈里：再放一个也不会更小</span></span><span class="ln"><span class="no">11</span>            <span class="c">// 栈顶比 c 大且后面还有：弹掉，以后还能补回来</span></span><span class="ln"><span class="no">12</span>            <span class="k">while</span> (sb.length() &gt; <span class="n">0</span> &amp;&amp; sb.charAt(sb.length() - <span class="n">1</span>) &gt; c</span><span class="ln"><span class="no">13</span>                    &amp;&amp; left[sb.charAt(sb.length() - <span class="n">1</span>) - <span class="s">'a'</span>] &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">14</span>                in[sb.charAt(sb.length() - <span class="n">1</span>) - <span class="s">'a'</span>] = <span class="k">false</span>;</span><span class="ln"><span class="no">15</span>                sb.deleteCharAt(sb.length() - <span class="n">1</span>);</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>            sb.append(c);</span><span class="ln"><span class="no">18</span>            in[c - <span class="s">'a'</span>] = <span class="k">true</span>;</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>返回 <code>s</code> 字典序最小的<span>子序列</span>，该子序列包含 <code>s</code> 的所有不同字符，且只包含一次。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong><code>s = "bcabc"</code>
+<strong>输出<code>：</code></strong><code>"abc"</code>
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong><code>s = "cbacdcbc"</code>
+<strong>输出：</strong><code>"acdb"</code></pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 1000</code></li>
+	<li><code>s</code> 由小写英文字母组成</li>
+</ul>
+
+
+
+<p><strong>注意：</strong>该题与 316 <a href="https://leetcode.cn/problems/remove-duplicate-letters/">https://leetcode.cn/problems/remove-duplicate-letters/</a> 相同</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public String smallestSubsequence(String s) {", "        int[] left = new int[26];    // 每种字符还剩几个没读", "        boolean[] in = new boolean[26];", "        for (int i = 0; i < s.length(); i++) left[s.charAt(i) - 'a']++;", "        StringBuilder sb = new StringBuilder();   // 当栈用，栈顶是最后一个字符", "        for (int i = 0; i < s.length(); i++) {", "            char c = s.charAt(i);", "            left[c - 'a']--;", "            if (in[c - 'a']) continue;   // 已在栈里：再放一个也不会更小", "            // 栈顶比 c 大且后面还有：弹掉，以后还能补回来", "            while (sb.length() > 0 && sb.charAt(sb.length() - 1) > c", "                    && left[sb.charAt(sb.length() - 1) - 'a'] > 0) {", "                in[sb.charAt(sb.length() - 1) - 'a'] = false;", "                sb.deleteCharAt(sb.length() - 1);", "            }", "            sb.append(c);", "            in[c - 'a'] = true;", "        }", "        return sb.toString();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1081. 不同字符的最小子序列 —— 图解：复刻 Solution.java 的单调栈写法，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'cbacdcbc' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+  var DEC = "left[c - 'a']--;";
+  var WHILE = 'while (sb.length() > 0 && sb.charAt(sb.length() - 1) > c';
+  var PUSH = 'sb.append(c);';
+  var RET = 'return sb.toString();';
+
+  var left = {};    // 字符 -> 还剩几个没读
+  var inStack = {}; // 字符 -> 是否已在栈里
+  var i;
+  for (i = 0; i < n; i++) left[s[i]] = (left[s[i]] || 0) + 1;
+
+  var showedInit = false, showedPop = false, showedBlocked = false;
+
+  function sPanel(cur) {
+    var marks = {};
+    for (var j = 0; j < n; j++) if (j < cur) marks[j] = 'dim';
+    if (cur < n) marks[cur] = 'cur';
+    return Viz.cells(s.split(''), { title: 's', marks: marks });
+  }
+  function stackPanel(mark) {
+    var marks = {};
+    if (mark != null) marks[mark] = 'bad';
+    return Viz.cells(stack === '' ? [] : stack.split(''), { title: '栈 sb（左 = 栈底，右 = 栈顶）', marks: marks });
+  }
+  function tablePanel(hit) {
+    var order = [];
+    for (var j = 0; j < n; j++) if (order.indexOf(s[j]) < 0) order.push(s[j]);
+    return Viz.table('left[c]：还剩几个没读（0 = 以后补不回来了）',
+      order.map(function (c) {
+        return { k: c, v: String(left[c]), cls: c === hit ? 'hit' : '' };
+      }));
+  }
+  function snap(at, key, cur, stackMark, hit) {
+    frames.push(Viz.frame(at, key, [sPanel(cur), stackPanel(stackMark), tablePanel(hit)]));
+  }
+
+  var stack = '';
+  for (i = 0; i < n; i++) {
+    var c = s[i];
+    left[c]--;
+    if (!showedInit) {
+      showedInit = true;
+      snap(DEC, '读到 ' + c + '：先把它的剩余次数减一，栈里只放「还没定死」的字符', 0, null, c);
+    }
+    if (inStack[c]) continue;
+    // 先看会不会弹：栈顶更大且后面还有才弹
+    var willPop = false, blockedTop = null;
+    while (stack.length > 0 && stack[stack.length - 1] > c && left[stack[stack.length - 1]] > 0) {
+      var top = stack[stack.length - 1];
+      if (!showedPop) {
+        showedPop = true;
+        snap(WHILE, '栈顶 ' + top + ' 比 ' + c + ' 大且后面还有：弹掉，以后能补回来', i, stack.length - 1, c);
+      }
+      inStack[top] = false;
+      stack = stack.slice(0, -1);
+      willPop = true;
+    }
+    if (!willPop && stack.length > 0 && stack[stack.length - 1] > c && !showedBlocked) {
+      showedBlocked = true;
+      blockedTop = stack[stack.length - 1];
+      snap(WHILE, '栈顶 ' + blockedTop + ' 比 ' + c + ' 大，但它后面没有了：弹掉就回不来，只能保留', i, stack.length - 1, c);
+    }
+    stack += c;
+    inStack[c] = true;
+  }
+
+  frames.push(Viz.frame(RET, '栈底到栈顶就是字典序最小、每种字符恰一次的子序列：' + stack, [
+    Viz.cells(stack.split(''), { title: '最终结果', marks: stack.split('').map(function () { return 'done'; }) }),
+    tablePanel(null)
+  ]));
+
+  return { frames: frames, result: stack };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

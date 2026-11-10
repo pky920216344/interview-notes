@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最大间距 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 308 / 1159</span>
+  <nav class="pn"><a href="0735.html">上一篇</a><a href="0060.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">164. </span>最大间距</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 13</li><li class="algo">数学</li><li class="tag">数组</li><li class="tag">桶排序</li><li class="tag">基数排序</li><li class="tag">排序</li><li class="tag">pigeonhole-principle</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">不排序：n 个数放进 n+1 个等宽桶，必有空桶；最大间距 = 相邻非空桶之间「本桶 min − 上桶 max」的最大值。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>鸽笼原理：n−1 个相邻间距的和是 <code>max−min</code>，所以答案 ≥ <code>(max−min)/(n−1)</code>；把桶宽做成比它小，<strong>桶内的间距不可能就是答案</strong>。</li><li>每个数用 <code>(x−min)·(n+1)/(max−min+1)</code> 算桶号（分母 +1 让 max 正好落在最后一桶），每桶只记 min 和 max。</li><li>扫描非空桶：<code>ans = max(ans, 桶i.min − 上个非空桶.max)</code>，空桶直接跳过；全相等要提前返回 0。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> maximumGap(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (n &lt; <span class="n">2</span>) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> min = <span class="t">Integer</span>.MAX_VALUE, max = <span class="t">Integer</span>.MIN_VALUE;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) { min = <span class="t">Math</span>.min(min, x); max = <span class="t">Math</span>.max(max, x); }</span><span class="ln"><span class="no">9</span>        <span class="k">if</span> (min == max) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="c">// n 个数放进 n+1 个桶：必有空桶，桶内间距小于桶宽</span></span><span class="ln"><span class="no">11</span>        <span class="c">// 而桶宽 ≤ 真答案，所以答案只可能在桶之间</span></span><span class="ln"><span class="no">12</span>        <span class="k">long</span> range = (<span class="k">long</span>) max - min;   <span class="c">// 用 long 做差：int 里 max−min 会溢出</span></span><span class="ln"><span class="no">13</span>        <span class="k">int</span>[] bMin = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>], bMax = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">14</span>        <span class="t">Arrays</span>.fill(bMin, <span class="t">Integer</span>.MAX_VALUE);   <span class="c">// bMin 还是 MAX_VALUE 说明桶是空的</span></span><span class="ln"><span class="no">15</span>        <span class="t">Arrays</span>.fill(bMax, <span class="t">Integer</span>.MIN_VALUE);</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) {</span><span class="ln"><span class="no">17</span>            <span class="c">// 线性映射到 0..n：min 落 0 号桶，max 落 n 号桶（分母 +1 保证不越界）</span></span><span class="ln"><span class="no">18</span>            <span class="k">long</span> d = (<span class="k">long</span>) x - min;   <span class="c">// 用 long 做差：int 里 max−min 会溢出</span></span><span class="ln"><span class="no">19</span>            <span class="k">int</span> idx = (<span class="k">int</span>) (d * (n + <span class="n">1</span>) / (range + <span class="n">1</span>));</span><span class="ln"><span class="no">20</span>            bMin[idx] = <span class="t">Math</span>.min(bMin[idx], x);</span><span class="ln"><span class="no">21</span>            bMax[idx] = <span class="t">Math</span>.max(bMax[idx], x);</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="c">// 扫非空桶：本桶 min 减上一非空桶的 max，取最大</span></span><span class="ln"><span class="no">24</span>        <span class="k">int</span> ans = <span class="n">0</span>, prevMax = bMax[<span class="n">0</span>];</span><span class="ln"><span class="no">25</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= n; i++) {</span><span class="ln"><span class="no">26</span>            <span class="k">if</span> (bMin[i] == <span class="t">Integer</span>.MAX_VALUE) <span class="k">continue</span>;   <span class="c">// 空桶：跨过去</span></span><span class="ln"><span class="no">27</span>            ans = <span class="t">Math</span>.max(ans, bMin[i] - prevMax);</span><span class="ln"><span class="no">28</span>            prevMax = bMax[i];</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个无序的数组&nbsp;<code>nums</code>，返回 <em>数组在排序之后，相邻元素之间最大的差值</em> 。如果数组元素个数小于 2，则返回 <code>0</code> 。</p>
+
+<p>您必须编写一个在「线性时间」内运行并使用「线性额外空间」的算法。</p>
+
+
+
+<p><strong>示例&nbsp;1:</strong></p>
+
+<pre>
+<strong>输入:</strong> nums = [3,6,9,1]
+<strong>输出:</strong> 3
+<strong>解释:</strong> 排序后的数组是 [1,3,6,9]<strong><em>, </em></strong>其中相邻元素 (3,6) 和 (6,9) 之间都存在最大差值 3。</pre>
+
+<p><strong>示例&nbsp;2:</strong></p>
+
+<pre>
+<strong>输入:</strong> nums = [10]
+<strong>输出:</strong> 0
+<strong>解释:</strong> 数组元素个数小于 2，因此返回 0。</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>0 &lt;= nums[i] &lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int maximumGap(int[] nums) {", "        int n = nums.length;", "        if (n < 2) return 0;", "        int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;", "        for (int x : nums) { min = Math.min(min, x); max = Math.max(max, x); }", "        if (min == max) return 0;", "        // n 个数放进 n+1 个桶：必有空桶，桶内间距小于桶宽", "        // 而桶宽 ≤ 真答案，所以答案只可能在桶之间", "        long range = (long) max - min;   // 用 long 做差：int 里 max−min 会溢出", "        int[] bMin = new int[n + 1], bMax = new int[n + 1];", "        Arrays.fill(bMin, Integer.MAX_VALUE);   // bMin 还是 MAX_VALUE 说明桶是空的", "        Arrays.fill(bMax, Integer.MIN_VALUE);", "        for (int x : nums) {", "            // 线性映射到 0..n：min 落 0 号桶，max 落 n 号桶（分母 +1 保证不越界）", "            long d = (long) x - min;   // 用 long 做差：int 里 max−min 会溢出", "            int idx = (int) (d * (n + 1) / (range + 1));", "            bMin[idx] = Math.min(bMin[idx], x);", "            bMax[idx] = Math.max(bMax[idx], x);", "        }", "        // 扫非空桶：本桶 min 减上一非空桶的 max，取最大", "        int ans = 0, prevMax = bMax[0];", "        for (int i = 1; i <= n; i++) {", "            if (bMin[i] == Integer.MAX_VALUE) continue;   // 空桶：跨过去", "            ans = Math.max(ans, bMin[i] - prevMax);", "            prevMax = bMax[i];", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 164. 最大间距 —— 图解：复刻 Solution.java 的「n+1 个桶」线性法，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [3, 6, 9, 1] };
+
+function trace(input) {
+  var nums = input.nums;
+  var n = nums.length;
+  if (n < 2) return { frames: [], result: 0 };
+  var frames = [];
+  var MINMAX = 'for (int x : nums) { min = Math.min(min, x); max = Math.max(max, x); }';
+  var IDX = 'int idx = (int) (d * (n + 1) / (range + 1));';
+  var EMPTY = 'if (bMin[i] == Integer.MAX_VALUE) continue;';
+  var GAP = 'ans = Math.max(ans, bMin[i] - prevMax);';
+  var RET = 'return ans;';
+
+  var min = 2147483647, max = -2147483648;
+  for (var i = 0; i < n; i++) { min = Math.min(min, nums[i]); max = Math.max(max, nums[i]); }
+  if (min === max) return { frames: [], result: 0 };
+  var range = max - min;
+
+  var bMin = [], bMax = [];
+  for (i = 0; i <= n; i++) { bMin.push(2147483647); bMax.push(-2147483648); }
+  for (i = 0; i < n; i++) {
+    var idx = Math.floor((nums[i] - min) * (n + 1) / (range + 1));
+    bMin[idx] = Math.min(bMin[idx], nums[i]);
+    bMax[idx] = Math.max(bMax[idx], nums[i]);
+  }
+
+  function numsPanel(i, markAll) {
+    var marks = {};
+    for (var k = 0; k < n; k++) marks[k] = markAll ? 'done' : '';
+    if (!markAll && i < n) marks[i] = 'cur';
+    return Viz.cells(nums, { title: 'nums', marks: marks, pointers: markAll ? [] : [{ at: Math.min(i, n - 1), label: 'x', cls: 'p-cur' }] });
+  }
+  // 桶面板：第一行是桶内最小值，第二行是桶内最大值；空桶显示 −
+  function bucketPanel(marks) {
+    var minRow = [], maxRow = [];
+    for (var k = 0; k <= n; k++) {
+      minRow.push(bMin[k] === 2147483647 ? '−' : String(bMin[k]));
+      maxRow.push(bMax[k] === -2147483648 ? '−' : String(bMax[k]));
+    }
+    var lbl = [];
+    for (k = 0; k <= n; k++) lbl.push('桶' + k);
+    return Viz.grid([minRow, maxRow], { title: 'n+1=' + (n + 1) + ' 个桶（空桶画 −）', marks: marks || {},
+      rowLabels: ['桶内 min', '桶内 max'], colLabels: lbl, corner: '' });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+
+  frames.push(Viz.frame(MINMAX, 'min=' + min + '，max=' + max + '：答案至少是 (max−min)/(n−1)，桶宽要做得比它小',
+    [numsPanel(n, true), varsPanel([{ name: 'min', v: min, cls: 'chg' }, { name: 'max', v: max, cls: 'chg' },
+      { name: 'n', v: n }])]));
+
+  var lastIdx = Math.floor((nums[n - 1] - min) * (n + 1) / (range + 1));
+  frames.push(Viz.frame(IDX, '每个数按 (x−min)·(n+1)/(max−min+1) 落桶：' + nums[n - 1] + ' → 桶 ' + lastIdx,
+    [numsPanel(n - 1), bucketPanel((function () { var m = {}; m['0,' + lastIdx] = 'new'; m['1,' + lastIdx] = 'new'; return m; })())]));
+
+  var emptyBucket = -1;
+  for (i = 1; i <= n; i++) if (bMin[i] === 2147483647) { emptyBucket = i; break; }
+  if (emptyBucket >= 0) {
+    var m3 = {};
+    m3['0,' + emptyBucket] = 'bad';
+    m3['1,' + emptyBucket] = 'bad';
+    frames.push(Viz.frame(EMPTY, '桶 ' + emptyBucket + ' 是空的：鸽笼原理保证必有空桶，最大间距一定跨过它',
+      [numsPanel(n, true), bucketPanel(m3)]));
+  }
+
+  var ans = 0, prevMax = bMax[0];
+  var fired = 0;
+  for (i = 1; i <= n; i++) {
+    if (bMin[i] === 2147483647) continue;
+    ans = Math.max(ans, bMin[i] - prevMax);
+    fired++;
+    if (fired <= 2) {
+      var m4 = {};
+      m4['1,' + i] = 'cur';
+      frames.push(Viz.frame(GAP, '本桶 min − 上桶 max = ' + (bMin[i] - prevMax) + (ans === bMin[i] - prevMax ? '，ans 更新' : '，不更大'),
+        [bucketPanel(m4), varsPanel([{ name: '本桶 min', v: bMin[i] }, { name: '上桶 max', v: prevMax },
+          { name: 'ans', v: ans, cls: 'chg' }])]));
+    }
+    prevMax = bMax[i];
+  }
+
+  var m5 = {};
+  for (i = 0; i <= n; i++) if (bMin[i] !== 2147483647) { m5['0,' + i] = 'done'; m5['1,' + i] = 'done'; }
+  frames.push(Viz.frame(RET, '排序后相邻差的最大值就是 ' + ans + '，桶法没排序也算了出来',
+    [bucketPanel(m5), varsPanel([{ name: '答案', v: ans, cls: 'done' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

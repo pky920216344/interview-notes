@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>库存管理 I · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 254 / 1159</span>
+  <nav class="pn"><a href="0222.html">上一篇</a><a href="0525.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 11. </span>库存管理 I</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 18</li><li class="algo">二分查找</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">二分和 hi 比大小：mid &gt; stock[hi] 断点在右半段，&lt; 则在左半段收 hi，相等分不清就 hi--，O(log n)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>旋转数组 = 两段非降序拼成，最小值是<strong>右段的头</strong>。拿 <code>mid</code> 和 <code>stock[hi]</code> 比（和 <code>hi</code> 比，而不是 <code>lo</code>，因为断点信息在右端）：</li><li><code>stock[mid] &gt; stock[hi]</code>：mid 处还在左段，最小值在 <code>(mid, hi]</code> → <code>lo = mid + 1</code>。</li><li><code>stock[mid] &lt; stock[hi]</code>：<code>[mid, hi]</code> 整段有序，最小值在 <code>[lo, mid]</code> → <code>hi = mid</code>（mid 本身可能是答案，不能跳过）。</li><li><code>stock[mid] == stock[hi]</code>：比如 <code>[3,3,1,3]</code>，分不清断点在左还是右 → <code>hi--</code>：末尾值有 <code>mid</code> 兜底，丢掉不影响答案。这一步最坏把算法拖成 O(n)，其余情况 O(log n)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log n)，全相等退化 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> inventoryManagement(<span class="k">int</span>[] stock) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> lo = <span class="n">0</span>, hi = stock.length - <span class="n">1</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">5</span>            <span class="k">int</span> mid = lo + (hi - lo) / <span class="n">2</span>;   <span class="c">// 偏左取中：hi-- 时区间也一定在缩</span></span><span class="ln"><span class="no">6</span>            <span class="k">if</span> (stock[mid] &gt; stock[hi]) {</span><span class="ln"><span class="no">7</span>                lo = mid + <span class="n">1</span>;               <span class="c">// mid 比末尾大：断点在 mid 右边，最小值也在那边</span></span><span class="ln"><span class="no">8</span>            } <span class="k">else</span> <span class="k">if</span> (stock[mid] &lt; stock[hi]) {</span><span class="ln"><span class="no">9</span>                hi = mid;                   <span class="c">// mid 到 hi 是有序段，最小值在 mid 及其左边</span></span><span class="ln"><span class="no">10</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">11</span>                hi--;                        <span class="c">// 分不清断点在哪边：末尾这个重复值丢掉也不影响答案</span></span><span class="ln"><span class="no">12</span>            }</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> stock[lo];</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>仓库管理员以数组 <code>stock</code> 形式记录商品库存表。<code>stock[i]</code> 表示商品 <code>id</code>，可能存在重复。原库存表按商品 <code>id</code> 升序排列。现因突发情况需要进行商品紧急调拨，管理员将这批商品 <code>id</code> 提前依次整理至库存表最后。请你找到并返回库存表中编号的 <strong>最小的元素</strong> 以便及时记录本次调拨。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>stock =[4,5,8,3,4]
+<strong>输出：</strong>3
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>stock = [5,7,9,1,2]
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p>提示：</p>
+
+<ul>
+	<li>1 &lt;= stock.length &lt;= 5000</li>
+	<li>-5000 &lt;= stock[i] &lt;= 5000</li>
+</ul>
+
+
+
+<p>注意：本题与主站 154 题相同：<a href="https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array-ii/">https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array-ii/</a></p>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int inventoryManagement(int[] stock) {", "        int lo = 0, hi = stock.length - 1;", "        while (lo < hi) {", "            int mid = lo + (hi - lo) / 2;   // 偏左取中：hi-- 时区间也一定在缩", "            if (stock[mid] > stock[hi]) {", "                lo = mid + 1;               // mid 比末尾大：断点在 mid 右边，最小值也在那边", "            } else if (stock[mid] < stock[hi]) {", "                hi = mid;                   // mid 到 hi 是有序段，最小值在 mid 及其左边", "            } else {", "                hi--;                        // 分不清断点在哪边：末尾这个重复值丢掉也不影响答案", "            }", "        }", "        return stock[lo];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// offer-11（LCR 128）. 旋转数组的最小数字 —— 图解：复刻 Solution.java 的「和末尾比的三分支二分」，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { stock: [10, 1, 10, 10, 10] };
+
+function trace(input) {
+  var a = input.stock;
+  var n = a.length;
+  var frames = [];
+
+  var LO = 'int lo = 0, hi = stock.length - 1;';
+  var GT = 'lo = mid + 1;';
+  var LT = 'hi = mid;';
+  var EQ = 'hi--;';
+  var RET = 'return stock[lo];';
+
+  // 数组面板：o.lo / o.hi / o.mid 三个指针；o.bad 标出这步丢掉的格子；o.dim 标出已排除的区间
+  function panel(o) {
+    var marks = {}, i;
+    for (i = 0; i < n; i++) if (o.dim && i >= o.dim[0] && i <= o.dim[1]) marks[i] = 'dim';
+    if (o.bad != null) marks[o.bad] = 'bad';
+    if (o.done != null) marks[o.done] = 'done';
+    var pointers = [];
+    if (o.lo != null) pointers.push({ at: o.lo, label: 'lo', cls: 'p-left' });
+    if (o.mid != null) pointers.push({ at: o.mid, label: 'mid', cls: 'p-mid' });
+    if (o.hi != null) pointers.push({ at: o.hi, label: 'hi', cls: 'p-right' });
+    return Viz.cells(a, { title: 'stock（旋转过的非降序数组）', marks: marks, pointers: pointers });
+  }
+
+  function snap(at, key, o) { frames.push(Viz.frame(at, key, [panel(o)])); }
+
+  var lo = 0, hi = n - 1;
+  snap(LO, '开局：最小值一定还在 [lo, hi] 里', { lo: lo, hi: hi });
+
+  while (lo < hi) {
+    var mid = lo + Math.floor((hi - lo) / 2);
+    if (a[mid] > a[hi]) {
+      lo = mid + 1;
+      snap(GT, 'mid ' + a[mid] + ' > 末尾 ' + a[hi] + '：断点在 mid 右边，左半段整个丢掉',
+        { lo: lo, hi: hi, dim: [0, mid] });
+    } else if (a[mid] < a[hi]) {
+      var oldHi = hi;
+      hi = mid;
+      snap(LT, 'mid ' + a[mid] + ' < 末尾 ' + a[oldHi] + '：mid 到末尾有序，hi 收到 mid',
+        { lo: lo, hi: hi, mid: mid, dim: [mid + 1, oldHi] });
+    } else {
+      var drop = hi;
+      hi--;
+      snap(EQ, 'mid 和 hi 都是 ' + a[mid] + '：分不清断点在左还是右，hi 缩一格（防死循环）',
+        { lo: lo, hi: hi, mid: mid, bad: drop, dim: [hi + 1, drop - 1] });
+    }
+  }
+
+  snap(RET, 'lo 追上 hi：stock[' + lo + '] = ' + a[lo] + ' 就是最小值', { lo: lo, hi: lo, done: lo, dim: lo > 0 ? [0, lo - 1] : null });
+  return { frames: frames, result: a[lo] };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

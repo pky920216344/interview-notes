@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>逆波兰表达式求值 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 267 / 1159</span>
+  <nav class="pn"><a href="0107.html">上一篇</a><a href="0235.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">150. </span>逆波兰表达式求值</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 16</li><li class="algo">栈</li><li class="tag">栈</li><li class="tag">数组</li><li class="tag">数学</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">栈：数字直接压栈；遇到运算符就弹出两个数算完压回，先弹的是右操作数（减、除别搞反）。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>逐个读 token：数字（可能带负号，用 <code>parseInt</code>）压栈。</li><li>遇到 <code>+ - * /</code>：弹两次，<strong>先弹的是右操作数 b，后弹的是左操作数 a</strong>，算 <code>a op b</code> 压回栈。</li><li>除法 Java 本来就向零截断，和题面一致；扫完栈里剩一个数即答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> evalRPN(<span class="t">String</span>[] tokens) {</span><span class="ln"><span class="no">5</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="t">String</span> t : tokens) {</span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (t.equals(<span class="s">"+"</span>) || t.equals(<span class="s">"-"</span>) || t.equals(<span class="s">"*"</span>) || t.equals(<span class="s">"/"</span>)) {</span><span class="ln"><span class="no">8</span>                <span class="c">// 先弹的是右操作数，后弹的是左操作数：减、除的顺序不能搞反</span></span><span class="ln"><span class="no">9</span>                <span class="k">int</span> b = stack.pop(), a = stack.pop();</span><span class="ln"><span class="no">10</span>                <span class="k">switch</span> (t) {</span><span class="ln"><span class="no">11</span>                    <span class="k">case</span> <span class="s">"+"</span>: stack.push(a + b); <span class="k">break</span>;</span><span class="ln"><span class="no">12</span>                    <span class="k">case</span> <span class="s">"-"</span>: stack.push(a - b); <span class="k">break</span>;</span><span class="ln"><span class="no">13</span>                    <span class="k">case</span> <span class="s">"*"</span>: stack.push(a * b); <span class="k">break</span>;</span><span class="ln"><span class="no">14</span>                    <span class="k">default</span>:  stack.push(a / b); <span class="k">break</span>;</span><span class="ln"><span class="no">15</span>                }</span><span class="ln"><span class="no">16</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">17</span>                stack.push(<span class="t">Integer</span>.parseInt(t));   <span class="c">// 数字（可能带负号）直接压栈</span></span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> stack.pop();   <span class="c">// 扫完栈里剩一个数，就是答案</span></span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串数组 <code>tokens</code> ，表示一个根据&nbsp;<a href="https://baike.baidu.com/item/%E9%80%86%E6%B3%A2%E5%85%B0%E5%BC%8F/128437" target="_blank">逆波兰表示法</a> 表示的算术表达式。</p>
+
+<p>请你计算该表达式。返回一个表示表达式值的整数。</p>
+
+<p><strong>注意：</strong></p>
+
+<ul>
+	<li>有效的算符为 <code>'+'</code>、<code>'-'</code>、<code>'*'</code> 和 <code>'/'</code> 。</li>
+	<li>每个操作数（运算对象）都可以是一个整数或者另一个表达式。</li>
+	<li>两个整数之间的除法总是 <strong>向零截断</strong> 。</li>
+	<li>表达式中不含除零运算。</li>
+	<li>输入是一个根据逆波兰表示法表示的算术表达式。</li>
+	<li>答案及所有中间计算结果可以用 <strong>32 位</strong> 整数表示。</li>
+</ul>
+
+
+
+<p><strong>示例&nbsp;1：</strong></p>
+
+<pre>
+<strong>输入：</strong>tokens = ["2","1","+","3","*"]
+<strong>输出：</strong>9
+<strong>解释：</strong>该算式转化为常见的中缀算术表达式为：((2 + 1) * 3) = 9
+</pre>
+
+<p><strong>示例&nbsp;2：</strong></p>
+
+<pre>
+<strong>输入：</strong>tokens = ["4","13","5","/","+"]
+<strong>输出：</strong>6
+<strong>解释：</strong>该算式转化为常见的中缀算术表达式为：(4 + (13 / 5)) = 6
+</pre>
+
+<p><strong>示例&nbsp;3：</strong></p>
+
+<pre>
+<strong>输入：</strong>tokens = ["10","6","9","3","+","-11","*","/","*","17","+","5","+"]
+<strong>输出：</strong>22
+<strong>解释：</strong>该算式转化为常见的中缀算术表达式为：
+  ((10 * (6 / ((9 + 3) * -11))) + 17) + 5
+= ((10 * (6 / (12 * -11))) + 17) + 5
+= ((10 * (6 / -132)) + 17) + 5
+= ((10 * 0) + 17) + 5
+= (0 + 17) + 5
+= 17 + 5
+= 22</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= tokens.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>tokens[i]</code>&nbsp;是一个算符（<code>"+"</code>、<code>"-"</code>、<code>"*"</code> 或 <code>"/"</code>），或是在范围 <code>[-200, 200]</code> 内的一个整数</li>
+</ul>
+
+
+
+<p><strong>逆波兰表达式：</strong></p>
+
+<p>逆波兰表达式是一种后缀表达式，所谓后缀就是指算符写在后面。</p>
+
+<ul>
+	<li>平常使用的算式则是一种中缀表达式，如 <code>( 1 + 2 ) * ( 3 + 4 )</code> 。</li>
+	<li>该算式的逆波兰表达式写法为 <code>( ( 1 2 + ) ( 3 4 + ) * )</code> 。</li>
+</ul>
+
+<p>逆波兰表达式主要有以下两个优点：</p>
+
+<ul>
+	<li>去掉括号后表达式无歧义，上式即便写成 <code>1 2 + 3 4 + * </code>也可以依据次序计算出正确结果。</li>
+	<li>适合用栈操作运算：遇到数字则入栈；遇到算符则取出栈顶两个数字进行计算，并将结果压入栈中</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int evalRPN(String[] tokens) {", "        Deque<Integer> stack = new ArrayDeque<>();", "        for (String t : tokens) {", "            if (t.equals(\"+\") || t.equals(\"-\") || t.equals(\"*\") || t.equals(\"/\")) {", "                // 先弹的是右操作数，后弹的是左操作数：减、除的顺序不能搞反", "                int b = stack.pop(), a = stack.pop();", "                switch (t) {", "                    case \"+\": stack.push(a + b); break;", "                    case \"-\": stack.push(a - b); break;", "                    case \"*\": stack.push(a * b); break;", "                    default:  stack.push(a / b); break;", "                }", "            } else {", "                stack.push(Integer.parseInt(t));   // 数字（可能带负号）直接压栈", "            }", "        }", "        return stack.pop();   // 扫完栈里剩一个数，就是答案", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 150. 逆波兰表达式求值 —— 图解：复刻 Solution.java 的「数字压栈、运算符弹两个」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { tokens: ["2", "1", "+", "3", "*"] };
+
+function trace(input) {
+  var tokens = input.tokens;
+  var frames = [];
+  var stack = [];      // 栈底在左，右边是栈顶
+  var processed = {};  // 已处理完的 token 下标
+  var fired = { push: false, pop: false, result: false };
+
+  function tokensPanel(cur) {
+    var marks = {};
+    Object.keys(processed).forEach(function (k) { marks[k] = 'dim'; });
+    if (cur != null) marks[cur] = 'cur';
+    return Viz.cells(tokens.slice(), { title: 'tokens（灰 = 处理完，黄 = 当前）', marks: marks });
+  }
+  function stackPanel(topCls) {
+    var marks = {};
+    if (stack.length) marks[stack.length - 1] = topCls || 'cur';
+    return Viz.cells(stack.slice(), {
+      title: '栈 stack（右边是栈顶）',
+      marks: marks,
+      pointers: stack.length ? [{ at: stack.length - 1, label: '栈顶', cls: 'p-tail' }] : []
+    });
+  }
+  function varsPanel(a, b, op, r) {
+    var items = [];
+    if (op != null) {
+      items.push({ name: '后弹 a', v: a }, { name: '先弹 b', v: b }, { name: '算式', v: a + ' ' + op + ' ' + b, cls: 'chg' });
+    }
+    if (r != null) items.push({ name: '结果', v: r, cls: 'chg' });
+    return Viz.vars(items);
+  }
+  function snap(at, key, cur, topCls, a, b, op, r) {
+    frames.push(Viz.frame(at, key, [tokensPanel(cur), stackPanel(topCls), varsPanel(a, b, op, r)]));
+  }
+
+  for (var i = 0; i < tokens.length; i++) {
+    var t = tokens[i];
+    if (t === '+' || t === '-' || t === '*' || t === '/') {
+      var b = stack.pop(), a = stack.pop();
+      if (!fired.pop) {
+        fired.pop = true;
+        snap('int b = stack.pop(), a = stack.pop();',
+          '遇到 ' + t + '：先弹 ' + b + '（右操作数），再弹 ' + a + '（左操作数）——顺序别搞反',
+          i, 'bad', a, b, t, null);
+      }
+      var r = t === '+' ? a + b : t === '-' ? a - b : t === '*' ? a * b : Math.trunc(a / b);
+      stack.push(r);
+      if (!fired.result) {
+        fired.result = true;
+        var anchor = { '+': 'case "+": stack.push(a + b); break;', '-': 'case "-": stack.push(a - b); break;',
+                       '*': 'case "*": stack.push(a * b); break;', '/': 'default:  stack.push(a / b); break;' }[t];
+        snap(anchor, a + ' ' + t + ' ' + b + ' = ' + r + '，压回栈', i, 'new', a, b, t, r);
+      }
+    } else {
+      stack.push(parseInt(t, 10));
+      if (!fired.push) {
+        fired.push = true;
+        snap('stack.push(Integer.parseInt(t));', '数字直接压栈：' + t + ' 入栈', i, 'new', null, null, null, null);
+      }
+    }
+    processed[i] = true;
+  }
+
+  snap('return stack.pop();', '扫完：栈里剩一个数，就是答案 ' + stack[0], null, 'done', null, null, null, null);
+  return { frames: frames, result: stack.pop() };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

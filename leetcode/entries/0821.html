@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字符的最短距离 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 666 / 1159</span>
+  <nav class="pn"><a href="1038.html">上一篇</a><a href="mianshi-02-01.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">821. </span>字符的最短距离</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 3</li><li class="algo">模拟</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">两遍扫：从左往右填「到左侧最近 c」的距离，再从右往左用「到右侧最近 c」的距离取较小值。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>第一遍维护 <code>prev</code> = 左侧最近 <code>c</code> 的下标，<code>ans[i] = i - prev</code>；没有左侧 <code>c</code> 时用哨兵 <code>-n</code>，先填个大数。</li><li>第二遍从右往左维护 <code>next</code> = 右侧最近 <code>c</code> 的下标，<code>ans[i] = min(ans[i], next - i)</code>；哨兵 <code>2n</code> 保证不会胜出。</li><li>每个 <code>c</code> 出现的位置距离为 0，两遍扫描自然覆盖；答案 = 左右两个方向距离的较小者。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)（不算输出）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span>[] shortestToChar(<span class="t">String</span> s, <span class="k">char</span> c) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] ans = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">5</span>        <span class="c">// 两遍扫：先只看左边的 c，再只看右边的 c，取较小的距离</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span> prev = -n;   <span class="c">// 左侧最近 c 的位置，还没有时给个足够远的哨兵</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (s.charAt(i) == c) prev = i;</span><span class="ln"><span class="no">9</span>            ans[i] = i - prev;</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> next = <span class="n">2</span> * n;   <span class="c">// 右侧最近 c 的位置，还没有时给个足够远的哨兵</span></span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> i = n - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (s.charAt(i) == c) next = i;</span><span class="ln"><span class="no">14</span>            ans[i] = <span class="t">Math</span>.min(ans[i], next - i);</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串 <code>s</code> 和一个字符 <code>c</code> ，且 <code>c</code> 是 <code>s</code> 中出现过的字符。</p>
+
+<p>返回一个整数数组 <code>answer</code> ，其中 <code>answer.length == s.length</code> 且 <code>answer[i]</code> 是 <code>s</code> 中从下标 <code>i</code> 到离它 <strong>最近</strong> 的字符 <code>c</code> 的 <strong>距离</strong> 。</p>
+
+<p>两个下标&nbsp;<code>i</code> 和 <code>j</code> 之间的 <strong>距离</strong> 为 <code>abs(i - j)</code> ，其中 <code>abs</code> 是绝对值函数。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "loveleetcode", c = "e"
+<strong>输出：</strong>[3,2,1,0,1,0,0,1,2,2,1,0]
+<strong>解释：</strong>字符 'e' 出现在下标 3、5、6 和 11 处（下标从 0 开始计数）。
+距下标 0 最近的 'e' 出现在下标 3 ，所以距离为 abs(0 - 3) = 3 。
+距下标 1 最近的 'e' 出现在下标 3 ，所以距离为 abs(1 - 3) = 2 。
+对于下标 4 ，出现在下标 3 和下标 5 处的 'e' 都离它最近，但距离是一样的 abs(4 - 3) == abs(4 - 5) = 1 。
+距下标 8 最近的 'e' 出现在下标 6 ，所以距离为 abs(8 - 6) = 2 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "aaab", c = "b"
+<strong>输出：</strong>[3,2,1,0]
+</pre>
+
+
+<strong>提示：</strong>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>s[i]</code> 和 <code>c</code> 均为小写英文字母</li>
+	<li>题目数据保证 <code>c</code> 在 <code>s</code> 中至少出现一次</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int[] shortestToChar(String s, char c) {", "        int n = s.length();", "        int[] ans = new int[n];", "        // 两遍扫：先只看左边的 c，再只看右边的 c，取较小的距离", "        int prev = -n;   // 左侧最近 c 的位置，还没有时给个足够远的哨兵", "        for (int i = 0; i < n; i++) {", "            if (s.charAt(i) == c) prev = i;", "            ans[i] = i - prev;", "        }", "        int next = 2 * n;   // 右侧最近 c 的位置，还没有时给个足够远的哨兵", "        for (int i = n - 1; i >= 0; i--) {", "            if (s.charAt(i) == c) next = i;", "            ans[i] = Math.min(ans[i], next - i);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 821 字符的最短距离 —— 图解：复刻 Solution.java 的「两遍扫」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'aaab', c: 'b' };
+
+function trace(input) {
+  var s = input.s;
+  var c = input.c.charAt(0);
+  var n = s.length;
+  var frames = [];
+  var ans = new Array(n);
+  var fRight = false;
+
+  function sPanel(marks) {
+    var m = {};
+    for (var j = 0; j < n; j++) if (s[j] === c) m[j] = 'win';
+    Object.keys(marks || {}).forEach(function (k) { m[k] = marks[k]; });
+    return Viz.cells(s.split(''), { title: '字符串 s（亮格是 c）', marks: m });
+  }
+  function ansPanel(marks) {
+    return Viz.cells(ans.map(function (v) { return v === undefined ? '·' : v; }), { title: 'ans（到最近 c 的距离）', marks: marks || {} });
+  }
+  function snap(at, key, i, who) {
+    var sm = {}, am = {};
+    if (who === 'left' && i >= 0 && i < n) { sm[i] = 'cur'; am[i] = 'win'; }
+    if (who === 'right' && i >= 0) { sm[i] = 'cur'; am[i] = 'cur'; }
+    frames.push(Viz.frame(at, key, [sPanel(sm), ansPanel(am),
+                                    Viz.vars([{ name: who === 'right' ? 'next（右侧最近 c）' : 'prev（左侧最近 c）', v: who === 'right' ? next : prev },
+                                             { name: 'i', v: i }])]));
+  }
+
+  var prev = -n;
+  snap('int prev = -n;', '开局：第一遍从左往右，只记「到左侧最近 c」的距离', -1, null);
+  for (var i = 0; i < n; i++) {
+    if (s[i] === c) prev = i;
+    ans[i] = i - prev;
+  }
+  snap('ans[i] = i - prev;', '第一遍扫完：左侧没有 c 的位置先填了带哨兵的大距离', n, null);
+  var next = 2 * n;
+  for (var k = n - 1; k >= 0; k--) {
+    if (s[k] === c) next = k;
+    var better = next - k < ans[k];
+    ans[k] = Math.min(ans[k], next - k);
+    if (better && !fRight) {
+      fRight = true;
+      snap('ans[i] = Math.min(ans[i], next - i);', '第二遍从右往左：右侧的 c 更近，就用较小距离覆盖大值', k, 'right');
+    }
+  }
+  var done = {};
+  for (var j = 0; j < n; j++) done[j] = 'done';
+  frames.push(Viz.frame('return ans;', '扫完：每个位置都取了左右两侧较小的距离', [sPanel({}), ansPanel(done)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

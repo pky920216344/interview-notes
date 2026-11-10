@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>设计链表 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 765 / 1159</span>
+  <nav class="pn"><a href="1172.html">上一篇</a><a href="0353.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">707. </span>设计链表</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">链表</li><li class="aux">设计</li><li class="tag">设计</li><li class="tag">链表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">哨兵头尾 + size；按下标找「前驱」时从较近的一端走（前半段从头、后半段从尾），增删查改都基于前驱。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>双向链表 + 两个哨兵（<code>head</code>、<code>tail</code> 不存数据）：插入删除不用判空，<code>size</code> 用来判越界。</li><li>一切操作都归结为「找下标 <code>index</code> 的前驱」：<code>index</code> 靠前从 <code>head</code> 正走 <code>index</code> 步，靠后从 <code>tail</code> 倒走 <code>size−index+1</code> 步，各走较短的一段。</li><li><code>addAtIndex</code>：新结点先牵住前后，再让前驱、后继指向它；<code>deleteAtIndex</code>：前驱跨过被删结点直连后继，双向成对改。</li><li><code>addAtHead(0)</code>、<code>addAtTail(size)</code> 都是 <code>addAtIndex</code> 的特例；下标越界一律不动并返回 <code>-1</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(min(index, size−index)) 每次操作，空间复杂度 O(size)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">MyLinkedList</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">class</span> <span class="t">Node</span> {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> val;</span><span class="ln"><span class="no">4</span>        <span class="t">Node</span> prev, next;</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>        <span class="t">Node</span>(<span class="k">int</span> v) { val = v; }</span><span class="ln"><span class="no">7</span>    }</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="c">// 哨兵头尾不算元素：head.next 是下标 0，tail.prev 是最后一个</span></span><span class="ln"><span class="no">10</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Node</span> head = <span class="k">new</span> <span class="t">Node</span>(<span class="n">0</span>), tail = <span class="k">new</span> <span class="t">Node</span>(<span class="n">0</span>);</span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">int</span> size;</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="k">public</span> <span class="t">MyLinkedList</span>() {</span><span class="ln"><span class="no">14</span>        head.next = tail;</span><span class="ln"><span class="no">15</span>        tail.prev = head;</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="c">// 下标 index 的前驱结点：靠前就从 head 正走 index 步，靠后就从 tail 倒走 size-index+1 步</span></span><span class="ln"><span class="no">19</span>    <span class="k">private</span> <span class="t">Node</span> prevOf(<span class="k">int</span> index) {</span><span class="ln"><span class="no">20</span>        <span class="k">if</span> (index &lt;= size - index + <span class="n">1</span>) {</span><span class="ln"><span class="no">21</span>            <span class="t">Node</span> p = head;</span><span class="ln"><span class="no">22</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; index; i++) p = p.next;</span><span class="ln"><span class="no">23</span>            <span class="k">return</span> p;</span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>        <span class="t">Node</span> p = tail;</span><span class="ln"><span class="no">26</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; size - index + <span class="n">1</span>; i++) p = p.prev;</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> p;</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span> </span><span class="ln"><span class="no">30</span>    <span class="k">public</span> <span class="k">int</span> get(<span class="k">int</span> index) {</span><span class="ln"><span class="no">31</span>        <span class="k">if</span> (index &lt; <span class="n">0</span> || index &gt;= size) <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">32</span>        <span class="k">return</span> prevOf(index).next.val;</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span> </span><span class="ln"><span class="no">35</span>    <span class="k">public</span> <span class="k">void</span> addAtHead(<span class="k">int</span> val) { addAtIndex(<span class="n">0</span>, val); }</span><span class="ln"><span class="no">36</span> </span><span class="ln"><span class="no">37</span>    <span class="k">public</span> <span class="k">void</span> addAtTail(<span class="k">int</span> val) { addAtIndex(size, val); }</span><span class="ln"><span class="no">38</span> </span><span class="ln"><span class="no">39</span>    <span class="k">public</span> <span class="k">void</span> addAtIndex(<span class="k">int</span> index, <span class="k">int</span> val) {</span><span class="ln"><span class="no">40</span>        <span class="k">if</span> (index &gt; size) <span class="k">return</span>;   <span class="c">// 太靠后不放行；index == size 相当于接到尾部</span></span><span class="ln"><span class="no">41</span>        <span class="t">Node</span> prev = prevOf(index);</span><span class="ln"><span class="no">42</span>        <span class="t">Node</span> node = <span class="k">new</span> <span class="t">Node</span>(val);</span><span class="ln"><span class="no">43</span>        node.prev = prev;</span><span class="ln"><span class="no">44</span>        node.next = prev.next;</span><span class="ln"><span class="no">45</span>        prev.next.prev = node;</span><span class="ln"><span class="no">46</span>        prev.next = node;</span><span class="ln"><span class="no">47</span>        size++;</span><span class="ln"><span class="no">48</span>    }</span><span class="ln"><span class="no">49</span> </span><span class="ln"><span class="no">50</span>    <span class="k">public</span> <span class="k">void</span> deleteAtIndex(<span class="k">int</span> index) {</span><span class="ln"><span class="no">51</span>        <span class="k">if</span> (index &lt; <span class="n">0</span> || index &gt;= size) <span class="k">return</span>;</span><span class="ln"><span class="no">52</span>        <span class="t">Node</span> prev = prevOf(index);</span><span class="ln"><span class="no">53</span>        <span class="t">Node</span> node = prev.next;</span><span class="ln"><span class="no">54</span>        prev.next = node.next;</span><span class="ln"><span class="no">55</span>        node.next.prev = prev;</span><span class="ln"><span class="no">56</span>        size--;</span><span class="ln"><span class="no">57</span>    }</span><span class="ln"><span class="no">58</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你可以选择使用单链表或者双链表，设计并实现自己的链表。</p>
+
+<p>单链表中的节点应该具备两个属性：<code>val</code> 和 <code>next</code> 。<code>val</code> 是当前节点的值，<code>next</code> 是指向下一个节点的指针/引用。</p>
+
+<p>如果是双向链表，则还需要属性&nbsp;<code>prev</code>&nbsp;以指示链表中的上一个节点。假设链表中的所有节点下标从 <strong>0</strong> 开始。</p>
+
+<p>实现 <code>MyLinkedList</code> 类：</p>
+
+<ul>
+	<li><code>MyLinkedList()</code> 初始化 <code>MyLinkedList</code> 对象。</li>
+	<li><code>int get(int index)</code> 获取链表中下标为 <code>index</code> 的节点的值。如果下标无效，则返回 <code>-1</code> 。</li>
+	<li><code>void addAtHead(int val)</code> 将一个值为 <code>val</code> 的节点插入到链表中第一个元素之前。在插入完成后，新节点会成为链表的第一个节点。</li>
+	<li><code>void addAtTail(int val)</code> 将一个值为 <code>val</code> 的节点追加到链表中作为链表的最后一个元素。</li>
+	<li><code>void addAtIndex(int index, int val)</code> 将一个值为 <code>val</code> 的节点插入到链表中下标为 <code>index</code> 的节点之前。如果 <code>index</code> 等于链表的长度，那么该节点会被追加到链表的末尾。如果 <code>index</code> 比长度更大，该节点将 <strong>不会插入</strong> 到链表中。</li>
+	<li><code>void deleteAtIndex(int index)</code> 如果下标有效，则删除链表中下标为 <code>index</code> 的节点。</li>
+</ul>
+
+
+
+<p><strong class="example">示例：</strong></p>
+
+<pre>
+<strong>输入</strong>
+["MyLinkedList", "addAtHead", "addAtTail", "addAtIndex", "get", "deleteAtIndex", "get"]
+[[], [1], [3], [1, 2], [1], [1], [1]]
+<strong>输出</strong>
+[null, null, null, null, 2, null, 3]
+
+<strong>解释</strong>
+MyLinkedList myLinkedList = new MyLinkedList();
+myLinkedList.addAtHead(1);
+myLinkedList.addAtTail(3);
+myLinkedList.addAtIndex(1, 2);    // 链表变为 1-&gt;2-&gt;3
+myLinkedList.get(1);              // 返回 2
+myLinkedList.deleteAtIndex(1);    // 现在，链表变为 1-&gt;3
+myLinkedList.get(1);              // 返回 3
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= index, val &lt;= 1000</code></li>
+	<li>请不要使用内置的 LinkedList 库。</li>
+	<li>调用 <code>get</code>、<code>addAtHead</code>、<code>addAtTail</code>、<code>addAtIndex</code> 和 <code>deleteAtIndex</code> 的次数不超过 <code>2000</code> 。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class MyLinkedList {", "    private static class Node {", "        int val;", "        Node prev, next;", "", "        Node(int v) { val = v; }", "    }", "", "    // 哨兵头尾不算元素：head.next 是下标 0，tail.prev 是最后一个", "    private final Node head = new Node(0), tail = new Node(0);", "    private int size;", "", "    public MyLinkedList() {", "        head.next = tail;", "        tail.prev = head;", "    }", "", "    // 下标 index 的前驱结点：靠前就从 head 正走 index 步，靠后就从 tail 倒走 size-index+1 步", "    private Node prevOf(int index) {", "        if (index <= size - index + 1) {", "            Node p = head;", "            for (int i = 0; i < index; i++) p = p.next;", "            return p;", "        }", "        Node p = tail;", "        for (int i = 0; i < size - index + 1; i++) p = p.prev;", "        return p;", "    }", "", "    public int get(int index) {", "        if (index < 0 || index >= size) return -1;", "        return prevOf(index).next.val;", "    }", "", "    public void addAtHead(int val) { addAtIndex(0, val); }", "", "    public void addAtTail(int val) { addAtIndex(size, val); }", "", "    public void addAtIndex(int index, int val) {", "        if (index > size) return;   // 太靠后不放行；index == size 相当于接到尾部", "        Node prev = prevOf(index);", "        Node node = new Node(val);", "        node.prev = prev;", "        node.next = prev.next;", "        prev.next.prev = node;", "        prev.next = node;", "        size++;", "    }", "", "    public void deleteAtIndex(int index) {", "        if (index < 0 || index >= size) return;", "        Node prev = prevOf(index);", "        Node node = prev.next;", "        prev.next = node.next;", "        node.next.prev = prev;", "        size--;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 707. 设计链表 —— 图解：复刻 Solution.java 的「哨兵双向链表」，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  ops: [['addAtHead', 0, 1], ['addAtTail', 0, 3], ['addAtIndex', 1, 2], ['get', 1], ['deleteAtIndex', 1], ['get', 1]],
+};
+
+function trace(input) {
+  var ops = input.ops;
+  var frames = [];
+  var size = 0, out = [];
+
+  function mkNode(v) { return { val: v, prev: null, next: null }; }
+  var head = mkNode(0), tail = mkNode(0);   // 哨兵，不画出来
+  head.next = tail;
+  tail.prev = head;
+
+  function addAtIndex(index, val) {
+    if (index > size) return;
+    var prev = prevOf(index);
+    var node = mkNode(val);
+    node.prev = prev;
+    node.next = prev.next;
+    prev.next.prev = node;
+    prev.next = node;
+    size++;
+  }
+  function prevOf(index) {
+    if (index <= size - index + 1) {
+      var p = head;
+      for (var i = 0; i < index; i++) p = p.next;
+      return p;
+    }
+    var q = tail;
+    for (var j = 0; j < size - index + 1; j++) q = q.prev;
+    return q;
+  }
+  function vals() {
+    var a = [];
+    for (var p = head.next; p !== tail; p = p.next) a.push(p.val);
+    return a;
+  }
+
+  function listPanel(marks) {
+    var vs = vals();
+    var pointers = vs.length
+      ? [{ at: 0, label: 'head.next', cls: 'p-head' }, { at: vs.length - 1, label: 'tail.prev', cls: 'p-tail' }]
+      : [];
+    return Viz.list(vs, { title: '双向链表（哨兵不画；head.next 是下标 0）', marks: marks || {}, pointers: pointers });
+  }
+  function varsPanel(freshOut) {
+    return Viz.vars([
+      { name: 'size', v: size, cls: '' },
+      { name: 'get 的返回序列', v: '[' + out.join(',') + ']', cls: freshOut ? 'new' : '' },
+    ]);
+  }
+
+  for (var i = 0; i < ops.length; i++) {
+    var op = ops[i], t = op[0], index = op[1];
+    if (t === 'addAtHead' || t === 'addAtTail') {
+      addAtIndex(t === 'addAtHead' ? 0 : size, op[2]);
+      if (i === 1) {
+        frames.push(Viz.frame('public void addAtHead(int val) { addAtIndex(0, val); }',
+          '头插/尾插都归到 addAtIndex：头插 = 插在下标 0 前，尾插 = 插在下标 size 处',
+          [listPanel({ 0: 'win', 1: 'win' }), varsPanel(false)]));
+      }
+    } else if (t === 'addAtIndex') {
+      if (index > size) continue;
+      addAtIndex(index, op[2]);
+      if (i === 2) {
+        var mNew = {};
+        mNew[index] = 'new';
+        frames.push(Viz.frame('node.next = prev.next;',
+          'addAtIndex(' + index + ',' + op[2] + ')：新结点先牵住前后，再让前驱、后继指向它',
+          [listPanel(mNew), varsPanel(false)]));
+      }
+    } else if (t === 'get') {
+      if (index < 0 || index >= size) { out.push(-1); continue; }
+      out.push(prevOf(index).next.val);
+      if (i === 3) {
+        var mHit = {};
+        mHit[index] = 'hit';
+        frames.push(Viz.frame('return prevOf(index).next.val;',
+          'get(' + index + ')：走到前驱，前驱的 next 就是要找的结点，返回 ' + out[out.length - 1],
+          [listPanel(mHit), varsPanel(true)]));
+      }
+      if (i === 5) {
+        var mHit2 = {};
+        mHit2[index] = 'hit';
+        frames.push(Viz.frame('return prevOf(index).next.val;',
+          '删完再 get(' + index + ')：链表少了一个，返回 ' + out[out.length - 1],
+          [listPanel(mHit2), varsPanel(true)]));
+      }
+    } else if (t === 'deleteAtIndex') {
+      if (index < 0 || index >= size) continue;
+      var prev2 = prevOf(index);
+      var del = prev2.next;
+      prev2.next = del.next;
+      del.next.prev = prev2;
+      size--;
+      if (i === 4) {
+        var mBad = {};
+        mBad[index] = 'bad';
+        frames.push(Viz.frame('prev.next = node.next;',
+          'deleteAtIndex(' + index + ')：前驱跨过被删结点直连后继，双向指针成对改',
+          [listPanel(mBad), varsPanel(false)]));
+      }
+    }
+  }
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

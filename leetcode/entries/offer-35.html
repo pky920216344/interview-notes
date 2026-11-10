@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>复杂链表的复制 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 302 / 1159</span>
+  <nav class="pn"><a href="1095.html">上一篇</a><a href="0029.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 35. </span>复杂链表的复制</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 14</li><li class="algo">链表</li><li class="tag">哈希表</li><li class="tag">链表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">原地三步复制：每个原结点后面插副本串成交错链；副本的 random 指向「原 random 的下一个」；再拆出副本链。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><strong>插副本</strong>：遍历原链，<code>copy</code> 接在 <code>p</code> 后面（<code>copy.next = p.next; p.next = copy</code>），链长变 2n。</li><li><strong>接 random</strong>：原结点 <code>p</code> 的 random 的下一个正好是它的副本，所以 <code>p.next.random = p.random.next</code>；random 为空就留着空。</li><li><strong>拆链</strong>：用尾指针把所有副本串成新链，同时 <code>p.next = copy.next</code> 恢复原链；返回 <code>dummy.next</code>。</li><li>不用哈希表：靠「副本就贴在原结点后面」这个位置关系，把 random 的映射变成 <code>next</code> 跳一步。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="c">/*</span></span><span class="ln"><span class="no">2</span><span class="c">// Definition for a Node.</span></span><span class="ln"><span class="no">3</span><span class="c">class Node {</span></span><span class="ln"><span class="no">4</span><span class="c">    int val;</span></span><span class="ln"><span class="no">5</span><span class="c">    Node next;</span></span><span class="ln"><span class="no">6</span><span class="c">    Node random;</span></span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span><span class="c">    public Node(int val) {</span></span><span class="ln"><span class="no">9</span><span class="c">        this.val = val;</span></span><span class="ln"><span class="no">10</span><span class="c">        this.next = null;</span></span><span class="ln"><span class="no">11</span><span class="c">        this.random = null;</span></span><span class="ln"><span class="no">12</span><span class="c">    }</span></span><span class="ln"><span class="no">13</span><span class="c">}</span></span><span class="ln"><span class="no">14</span><span class="c">*/</span></span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">17</span>    <span class="k">public</span> <span class="t">Node</span> copyRandomList(<span class="t">Node</span> head) {</span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (head == <span class="k">null</span>) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">19</span>        <span class="c">// 第一步：每个原结点后面插一个副本，串成交错链</span></span><span class="ln"><span class="no">20</span>        <span class="k">for</span> (<span class="t">Node</span> p = head; p != <span class="k">null</span>; p = p.next.next) {</span><span class="ln"><span class="no">21</span>            <span class="t">Node</span> copy = <span class="k">new</span> <span class="t">Node</span>(p.val);</span><span class="ln"><span class="no">22</span>            copy.next = p.next;</span><span class="ln"><span class="no">23</span>            p.next = copy;</span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>        <span class="c">// 第二步：副本的 random = 原结点 random 的下一个（正好是它的副本）</span></span><span class="ln"><span class="no">26</span>        <span class="k">for</span> (<span class="t">Node</span> p = head; p != <span class="k">null</span>; p = p.next.next) {</span><span class="ln"><span class="no">27</span>            <span class="k">if</span> (p.random != <span class="k">null</span>) p.next.random = p.random.next;</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="c">// 第三步：把副本链拆出来，同时恢复原链</span></span><span class="ln"><span class="no">30</span>        <span class="t">Node</span> dummy = <span class="k">new</span> <span class="t">Node</span>(<span class="n">0</span>);</span><span class="ln"><span class="no">31</span>        <span class="t">Node</span> tail = dummy;</span><span class="ln"><span class="no">32</span>        <span class="t">Node</span> p = head;</span><span class="ln"><span class="no">33</span>        <span class="k">while</span> (p != <span class="k">null</span>) {</span><span class="ln"><span class="no">34</span>            <span class="t">Node</span> copy = p.next;</span><span class="ln"><span class="no">35</span>            p.next = copy.next;   <span class="c">// 先恢复原链，p.next 就是下一个原结点</span></span><span class="ln"><span class="no">36</span>            tail.next = copy;     <span class="c">// 再把副本接到结果链尾部</span></span><span class="ln"><span class="no">37</span>            tail = copy;</span><span class="ln"><span class="no">38</span>            p = p.next;</span><span class="ln"><span class="no">39</span>        }</span><span class="ln"><span class="no">40</span>        <span class="k">return</span> dummy.next;</span><span class="ln"><span class="no">41</span>    }</span><span class="ln"><span class="no">42</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>请实现 <code>copyRandomList</code> 函数，复制一个复杂链表。在复杂链表中，每个节点除了有一个 <code>next</code> 指针指向下一个节点，还有一个 <code>random</code> 指针指向链表中的任意节点或者 <code>null</code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/2ce4c1a910c3.png"></p>
+
+<pre><strong>输入：</strong>head = [[7,null],[13,0],[11,4],[10,2],[1,0]]
+<strong>输出：</strong>[[7,null],[13,0],[11,4],[10,2],[1,0]]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/b4e84a095154.png"></p>
+
+<pre><strong>输入：</strong>head = [[1,1],[2,1]]
+<strong>输出：</strong>[[1,1],[2,1]]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/9fa9279d4e05.png"></strong></p>
+
+<pre><strong>输入：</strong>head = [[3,null],[3,0],[3,null]]
+<strong>输出：</strong>[[3,null],[3,0],[3,null]]
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre><strong>输入：</strong>head = []
+<strong>输出：</strong>[]
+<strong>解释：</strong>给定的链表为空（空指针），因此返回 null。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>-10000 &lt;= Node.val &lt;= 10000</code></li>
+	<li><code>Node.random</code>&nbsp;为空（null）或指向链表中的节点。</li>
+	<li>节点数目不超过 1000 。</li>
+</ul>
+
+
+
+<p><strong>注意：</strong>本题与主站 138 题相同：<a href="https://leetcode.cn/problems/copy-list-with-random-pointer/">https://leetcode.cn/problems/copy-list-with-random-pointer/</a></p>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["/*", "// Definition for a Node.", "class Node {", "    int val;", "    Node next;", "    Node random;", "", "    public Node(int val) {", "        this.val = val;", "        this.next = null;", "        this.random = null;", "    }", "}", "*/", "", "class Solution {", "    public Node copyRandomList(Node head) {", "        if (head == null) return null;", "        // 第一步：每个原结点后面插一个副本，串成交错链", "        for (Node p = head; p != null; p = p.next.next) {", "            Node copy = new Node(p.val);", "            copy.next = p.next;", "            p.next = copy;", "        }", "        // 第二步：副本的 random = 原结点 random 的下一个（正好是它的副本）", "        for (Node p = head; p != null; p = p.next.next) {", "            if (p.random != null) p.next.random = p.random.next;", "        }", "        // 第三步：把副本链拆出来，同时恢复原链", "        Node dummy = new Node(0);", "        Node tail = dummy;", "        Node p = head;", "        while (p != null) {", "            Node copy = p.next;", "            p.next = copy.next;   // 先恢复原链，p.next 就是下一个原结点", "            tail.next = copy;     // 再把副本接到结果链尾部", "            tail = copy;", "            p = p.next;", "        }", "        return dummy.next;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// LCR 154（=138）复杂链表的复制 —— 图解：复刻 Solution.java 的「插副本 → 接 random → 拆链」三步，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { vals: [7, 13, 11, 10, 1], randoms: [null, 0, 4, 2, 0] };
+
+function trace(input) {
+  var vals = input.vals, randoms = input.randoms;
+  var n = vals.length;
+  var frames = [];
+  var fired = { init: false, inter: false, rnd: false, split: false };
+
+  var INIT = 'if (head == null) return null;';
+  var INTER = 'copy.next = p.next;';
+  var RND = 'p.next.random = p.random.next;';
+  var SPLIT = 'p.next = copy.next;';
+  var RET = 'return dummy.next;';
+
+  // 原结点：id = 下标；副本在第一步里现造
+  var nodes = vals.map(function (v, i) { return { id: i, val: v, next: null, random: null, isCopy: false }; });
+  nodes.forEach(function (p, i) { p.next = nodes[i + 1] || null; });
+  nodes.forEach(function (p, i) { p.random = randoms[i] == null ? null : nodes[randoms[i]]; });
+  var head = nodes[0] || null;
+
+  function label(p) { return p.isCopy ? p.val + '′' : String(p.val); }
+  function walk(from) {
+    var out = [];
+    for (var p = from; p !== null; p = p.next) out.push(p);
+    return out;
+  }
+  function listPanel(title, list, marks) {
+    var edges = [];
+    for (var i = 0; i + 1 < list.length; i++) edges.push([i, i + 1]);
+    return Viz.list(list.map(label), {
+      title: title, edges: edges, nulls: list.length ? [list.length - 1] : [],
+      marks: marks || {}, pointers: list.length ? [{ at: 0, label: 'head', cls: 'p-head' }] : []
+    });
+  }
+  // random 关系表：k = 结点，v = 它的 random 指向（∅ = null）
+  function rndTable(title, list, clsFn) {
+    return Viz.table(title, list.map(function (p, i) {
+      return { k: label(p), v: p.random ? '→ ' + label(p.random) : '→ ∅', cls: clsFn ? clsFn(p, i) : '' };
+    }));
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  if (head !== null && !fired.init) {
+    fired.init = true;
+    snap(INIT, '开局：原链 ' + vals.join('→') + '，每个结点还带一个 random 指针（见下表）',
+      [listPanel('原链表', nodes, {}), rndTable('原结点的 random', nodes, '')]);
+  }
+
+  // 第一步：每个原结点后面插一个副本
+  for (var p = head; p !== null; p = p.next.next) {
+    var copy = { id: 'c' + p.id, val: p.val, next: p.next, random: null, isCopy: true };
+    p.next = copy;
+  }
+  var mixed = walk(head);
+  if (head !== null && !fired.inter) {
+    fired.inter = true;
+    var m = {};
+    mixed.forEach(function (q, i) { if (q.isCopy) m[i] = 'new'; });
+    snap(INTER, '第一步：每个原结点（白）后面插一个副本（青），串成长度加倍的交错链',
+      [listPanel('交错链：原结点和副本间隔排列', mixed, m), rndTable('此刻 random 还没接', mixed, '')]);
+  }
+
+  // 第二步：副本的 random = 原结点 random 的下一个
+  for (p = head; p !== null; p = p.next.next) {
+    if (p.random !== null) p.next.random = p.random.next;
+  }
+  if (head !== null && !fired.rnd) {
+    fired.rnd = true;
+    var m2 = {};
+    mixed.forEach(function (q, i) { if (q.isCopy) m2[i] = 'win'; });
+    snap(RND, '第二步：副本的 random = 原 random 的下一个——正好就是它对应的副本',
+      [listPanel('交错链（random 已接好）', mixed, m2),
+       rndTable('副本结点的 random（青行）', mixed, function (q) { return q.isCopy ? 'win' : ''; })]);
+  }
+
+  // 第三步：拆出副本链，恢复原链
+  var dummy = { val: 0, next: null }, tail = dummy;
+  for (p = head; p !== null; p = p.next) {
+    var c = p.next;
+    p.next = c.next;   // 先恢复原链
+    tail.next = c;     // 再把副本接到结果链尾部
+    tail = c;
+  }
+  var copies = walk(dummy.next);
+  var origin = walk(head);
+  if (copies.length && !fired.split) {
+    fired.split = true;
+    var mm = {};
+    copies.forEach(function (q, i) { mm[i] = 'new'; });
+    snap(SPLIT, '第三步：副本串成新链（青），原链同时恢复成原来的样子',
+      [listPanel('复制出的新链表', copies, mm), rndTable('原链已恢复', origin, '')]);
+  }
+
+  // 输出：[val, random 在新链里的下标或 null]
+  var out = copies.map(function (q) {
+    return [q.val, q.random ? copies.indexOf(q.random) : null];
+  });
+  snap(RET, '返回新链头：按「[val, random 下标]」看，和原链完全对应',
+    [listPanel('返回的复制链表', copies, {}), rndTable('新链的 random（下标形式）', copies, '')]);
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

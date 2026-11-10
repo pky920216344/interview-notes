@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>分数到小数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 306 / 1159</span>
+  <nav class="pn"><a href="0068.html">上一篇</a><a href="0735.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">166. </span>分数到小数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 13</li><li class="algo">哈希表</li><li class="aux">模拟</li><li class="tag">哈希表</li><li class="tag">数学</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">长除法：先算整数部分，之后每步「余数×10 再除」得一位小数；余数重复出现 → 从它上次的位置开始就是循环节。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>符号先定（两数异或），后面全按绝对值算；<strong>必须用 <code>long</code></strong>：<code>Integer.MIN_VALUE</code> 取绝对值会溢出 <code>int</code>。</li><li>每步 <code>r *= 10</code> 再除，商就是下一位小数，<code>r %= b</code> 是新余数；<code>Map&lt;余数, sb 位置&gt;</code> 记下每个余数首次出现的下标。</li><li>余数变 0 → 有限小数，直接返回；余数重复 → 在它上次的位置插入 <code>(</code>，末尾补 <code>)</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(循环节长)，空间复杂度 O(循环节长)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> fractionToDecimal(<span class="k">int</span> numerator, <span class="k">int</span> denominator) {</span><span class="ln"><span class="no">5</span>        <span class="k">if</span> (numerator == <span class="n">0</span>) <span class="k">return</span> <span class="s">"0"</span>;</span><span class="ln"><span class="no">6</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">7</span>        <span class="c">// 符号只由两数异号决定，先定下来，后面全按绝对值算</span></span><span class="ln"><span class="no">8</span>        <span class="k">if</span> ((numerator &lt; <span class="n">0</span>) != (denominator &lt; <span class="n">0</span>)) sb.append(<span class="s">'-'</span>);</span><span class="ln"><span class="no">9</span>        <span class="c">// 用 long：Integer.MIN_VALUE 的绝对值会溢出 int</span></span><span class="ln"><span class="no">10</span>        <span class="k">long</span> a = <span class="t">Math</span>.abs((<span class="k">long</span>) numerator), b = <span class="t">Math</span>.abs((<span class="k">long</span>) denominator);</span><span class="ln"><span class="no">11</span>        sb.append(a / b);</span><span class="ln"><span class="no">12</span>        <span class="k">long</span> r = a % b;</span><span class="ln"><span class="no">13</span>        <span class="k">if</span> (r != <span class="n">0</span>) sb.append(<span class="s">'.'</span>);   <span class="c">// 有小数部分才需要小数点</span></span><span class="ln"><span class="no">14</span>        <span class="c">// seen 记「余数 → 它产生的下一位小数在 sb 里的位置」</span></span><span class="ln"><span class="no">15</span>        <span class="t">Map</span>&lt;<span class="t">Long</span>, <span class="t">Integer</span>&gt; seen = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">16</span>        <span class="c">// 余数没重复就一直除下去；余数变 0 是有限小数</span></span><span class="ln"><span class="no">17</span>        <span class="k">while</span> (r != <span class="n">0</span> &amp;&amp; !seen.containsKey(r)) {</span><span class="ln"><span class="no">18</span>            seen.put(r, sb.length());</span><span class="ln"><span class="no">19</span>            r *= <span class="n">10</span>;</span><span class="ln"><span class="no">20</span>            sb.append(r / b);</span><span class="ln"><span class="no">21</span>            r %= b;</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="c">// 余数重复：循环节从它上次出现的位置开始，套上括号</span></span><span class="ln"><span class="no">24</span>        <span class="k">if</span> (r != <span class="n">0</span>) sb.insert(seen.get(r), <span class="s">"("</span>).append(<span class="s">')'</span>);</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定两个整数，分别表示分数的分子&nbsp;<code>numerator</code> 和分母 <code>denominator</code>，以 <strong>字符串形式返回小数</strong> 。</p>
+
+<p>如果小数部分为循环小数，则将循环的部分括在括号内。</p>
+
+<p>如果存在多个答案，只需返回 <strong>任意一个</strong> 。</p>
+
+<p>对于所有给定的输入，<strong>保证</strong> 答案字符串的长度小于 <code>10<sup>4</sup></code> 。</p>
+
+<p><strong>注意</strong>，如果分数可以表示为有限长度的字符串，则 <strong>必须</strong> 返回它。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>numerator = 1, denominator = 2
+<strong>输出：</strong>"0.5"
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>numerator = 2, denominator = 1
+<strong>输出：</strong>"2"
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>numerator = 4, denominator = 333
+<strong>输出：</strong>"0.(012)"
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>-2<sup>31</sup> &lt;=&nbsp;numerator, denominator &lt;= 2<sup>31</sup> - 1</code></li>
+	<li><code>denominator != 0</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String fractionToDecimal(int numerator, int denominator) {", "        if (numerator == 0) return \"0\";", "        StringBuilder sb = new StringBuilder();", "        // 符号只由两数异号决定，先定下来，后面全按绝对值算", "        if ((numerator < 0) != (denominator < 0)) sb.append('-');", "        // 用 long：Integer.MIN_VALUE 的绝对值会溢出 int", "        long a = Math.abs((long) numerator), b = Math.abs((long) denominator);", "        sb.append(a / b);", "        long r = a % b;", "        if (r != 0) sb.append('.');   // 有小数部分才需要小数点", "        // seen 记「余数 → 它产生的下一位小数在 sb 里的位置」", "        Map<Long, Integer> seen = new HashMap<>();", "        // 余数没重复就一直除下去；余数变 0 是有限小数", "        while (r != 0 && !seen.containsKey(r)) {", "            seen.put(r, sb.length());", "            r *= 10;", "            sb.append(r / b);", "            r %= b;", "        }", "        // 余数重复：循环节从它上次出现的位置开始，套上括号", "        if (r != 0) sb.insert(seen.get(r), \"(\").append(')');", "        return sb.toString();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 166. 分数到小数 —— 图解：复刻 Solution.java 的长除法 + 余数查重，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { numerator: 1, denominator: 6 };
+
+function trace(input) {
+  var frames = [];
+  var DOT = "if (r != 0) sb.append('.');";
+  var DIGIT = 'sb.append(r / b);';
+  var LOOP = 'while (r != 0 && !seen.containsKey(r)) {';
+  var INS = 'if (r != 0) sb.insert(seen.get(r), "(").append(\')\');';
+  var RET = 'return sb.toString();';
+
+  var a = Math.abs(input.numerator), b = Math.abs(input.denominator);
+  var sb = (input.numerator < 0) !== (input.denominator < 0) ? '-' : '';
+  sb += String(Math.floor(a / b));
+  var r = a % b;
+  if (r !== 0) sb += '.';
+  var seen = {};              // 余数 → 它产生的下一位在 sb 里的下标
+  var firedDigit = 0, firedRepeat = false, firedInsert = false;
+
+  function cellsPanel(marks) {
+    return Viz.cells(sb.split(''), { title: 'sb（正在拼的字符串）', marks: marks || {}, hideIndex: true });
+  }
+  function seenPanel(hit) {
+    var keys = Object.keys(seen);
+    return Viz.table('seen：余数 → 小数位下标', keys.map(function (k) {
+      return { k: k, v: seen[k], cls: String(k) === String(hit) ? 'hit' : '' };
+    }), { hint: '余数重复 → 循环节从它的位置开始' });
+  }
+  function push(at, key, marks, hit, rNow) {
+    var panels = [cellsPanel(marks), seenPanel(hit),
+      Viz.vars([{ name: 'r（余数）', v: rNow }, { name: 'b（分母）', v: b }])];
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  if (r !== 0) push(DOT, '整数部分 ' + Math.floor(a / b) + ' 写完，余数 r=' + r + ' 非零，补上小数点',
+    {}, null, r);
+
+  while (r !== 0 && !(r in seen)) {
+    seen[r] = sb.length;
+    r *= 10;
+    var digit = Math.floor(r / b);
+    sb += digit;
+    r %= b;
+    if (firedDigit < 2) {
+      firedDigit++;
+      push(DIGIT, '余数 ×10 再除：商 ' + digit + ' 写进小数，新余数 r=' + r,
+        (function () { var m = {}; m[sb.length - 1] = 'new'; return m; })(), null, r);
+    }
+  }
+
+  if (r !== 0) {
+    var pos = seen[r];
+    push(LOOP, '余数 ' + r + ' 又出现了（它的位置是 ' + pos + '）→ 从这里开始循环，停止除法',
+      {}, r, r);
+    sb = sb.slice(0, pos) + '(' + sb.slice(pos) + ')';
+    var m2 = {};
+    m2[pos] = 'new';
+    m2[sb.length - 1] = 'new';
+    for (var k = pos + 1; k < sb.length - 1; k++) m2[k] = 'win';
+    push(INS, '在位置 ' + pos + ' 插 "("，末尾补 ")"：括号里就是循环节', m2, r, r);
+  }
+
+  push(RET, '得到 ' + sb + (r !== 0 ? '（循环小数）' : '（有限小数）'), (function () {
+    var m = {};
+    for (var k = 0; k < sb.length; k++) m[k] = 'done';
+    return m;
+  })(), null, r);
+
+  return { frames: frames, result: sb };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

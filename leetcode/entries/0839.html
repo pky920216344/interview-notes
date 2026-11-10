@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>相似字符串组 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 980 / 1159</span>
+  <nav class="pn"><a href="0684.html">上一篇</a><a href="0926.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">839. </span>相似字符串组</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">并查集</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">并查集：两两判「相似」（差 0 处或差 2 处且互换相等），相似就合并，答案 = 分量个数。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>相似判定一遍扫描：记录不同的位置，超过 2 处立刻 false；恰 2 处时验证交叉相等。</li><li>先 <code>find(i) != find(j)</code> 再比字符串：同组的免比较，省掉大量重复判定。</li><li>每成功合并一次组数减一；「A~B、B~C 但 A 不直接相似」由传递性自动归到同组。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²·L)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">int</span>[] parent;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> numSimilarGroups(<span class="t">String</span>[] strs) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = strs.length;</span><span class="ln"><span class="no">6</span>        parent = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) parent[i] = i;</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> groups = n;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> j = i + <span class="n">1</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">11</span>                <span class="c">// 同组就免了再比字符串；相似才合并，每合并一次分量数减一</span></span><span class="ln"><span class="no">12</span>                <span class="k">if</span> (find(i) != find(j) &amp;&amp; similar(strs[i], strs[j])) {</span><span class="ln"><span class="no">13</span>                    parent[find(i)] = find(j);</span><span class="ln"><span class="no">14</span>                    groups--;</span><span class="ln"><span class="no">15</span>                }</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> groups;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>    <span class="c">// 相似：完全相同，或恰好两处不同且互换后相等</span></span><span class="ln"><span class="no">22</span>    <span class="k">private</span> <span class="k">boolean</span> similar(<span class="t">String</span> a, <span class="t">String</span> b) {</span><span class="ln"><span class="no">23</span>        <span class="k">int</span> p = -<span class="n">1</span>, q = -<span class="n">1</span>;</span><span class="ln"><span class="no">24</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; a.length(); i++) {</span><span class="ln"><span class="no">25</span>            <span class="k">if</span> (a.charAt(i) != b.charAt(i)) {</span><span class="ln"><span class="no">26</span>                <span class="k">if</span> (p &lt; <span class="n">0</span>) p = i;</span><span class="ln"><span class="no">27</span>                <span class="k">else</span> <span class="k">if</span> (q &lt; <span class="n">0</span>) q = i;</span><span class="ln"><span class="no">28</span>                <span class="k">else</span> <span class="k">return</span> <span class="k">false</span>;   <span class="c">// 已经三处不同</span></span><span class="ln"><span class="no">29</span>            }</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>        <span class="k">return</span> p &lt; <span class="n">0</span>   <span class="c">// 完全相同也算相似</span></span><span class="ln"><span class="no">32</span>            || (q &gt;= <span class="n">0</span> &amp;&amp; a.charAt(p) == b.charAt(q) &amp;&amp; a.charAt(q) == b.charAt(p));</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span> </span><span class="ln"><span class="no">35</span>    <span class="k">private</span> <span class="k">int</span> find(<span class="k">int</span> x) {</span><span class="ln"><span class="no">36</span>        <span class="k">while</span> (parent[x] != x) {</span><span class="ln"><span class="no">37</span>            parent[x] = parent[parent[x]];</span><span class="ln"><span class="no">38</span>            x = parent[x];</span><span class="ln"><span class="no">39</span>        }</span><span class="ln"><span class="no">40</span>        <span class="k">return</span> x;</span><span class="ln"><span class="no">41</span>    }</span><span class="ln"><span class="no">42</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>如果交换字符串&nbsp;<code>X</code> 中的两个不同位置的字母，使得它和字符串&nbsp;<code>Y</code> 相等，那么称 <code>X</code> 和 <code>Y</code> 两个字符串相似。如果这两个字符串本身是相等的，那它们也是相似的。</p>
+
+<p>例如，<code>"tars"</code> 和 <code>"rats"</code> 是相似的 (交换 <code>0</code> 与 <code>2</code> 的位置)；&nbsp;<code>"rats"</code> 和 <code>"arts"</code> 也是相似的，但是 <code>"star"</code> 不与 <code>"tars"</code>，<code>"rats"</code>，或 <code>"arts"</code> 相似。</p>
+
+<p>总之，它们通过相似性形成了两个关联组：<code>{"tars", "rats", "arts"}</code> 和 <code>{"star"}</code>。注意，<code>"tars"</code> 和 <code>"arts"</code> 是在同一组中，即使它们并不相似。形式上，对每个组而言，要确定一个单词在组中，只需要这个词和该组中至少一个单词相似。</p>
+
+<p>给你一个字符串列表 <code>strs</code>。列表中的每个字符串都是 <code>strs</code> 中其它所有字符串的一个字母异位词。请问 <code>strs</code> 中有多少个相似字符串组？</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>strs = ["tars","rats","arts","star"]
+<strong>输出：</strong>2
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>strs = ["omv","ovm"]
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= strs.length &lt;= 300</code></li>
+	<li><code>1 &lt;= strs[i].length &lt;= 300</code></li>
+	<li><code>strs[i]</code> 只包含小写字母。</li>
+	<li><code>strs</code> 中的所有单词都具有相同的长度，且是彼此的字母异位词。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    int[] parent;", "", "    public int numSimilarGroups(String[] strs) {", "        int n = strs.length;", "        parent = new int[n];", "        for (int i = 0; i < n; i++) parent[i] = i;", "        int groups = n;", "        for (int i = 0; i < n; i++) {", "            for (int j = i + 1; j < n; j++) {", "                // 同组就免了再比字符串；相似才合并，每合并一次分量数减一", "                if (find(i) != find(j) && similar(strs[i], strs[j])) {", "                    parent[find(i)] = find(j);", "                    groups--;", "                }", "            }", "        }", "        return groups;", "    }", "", "    // 相似：完全相同，或恰好两处不同且互换后相等", "    private boolean similar(String a, String b) {", "        int p = -1, q = -1;", "        for (int i = 0; i < a.length(); i++) {", "            if (a.charAt(i) != b.charAt(i)) {", "                if (p < 0) p = i;", "                else if (q < 0) q = i;", "                else return false;   // 已经三处不同", "            }", "        }", "        return p < 0   // 完全相同也算相似", "            || (q >= 0 && a.charAt(p) == b.charAt(q) && a.charAt(q) == b.charAt(p));", "    }", "", "    private int find(int x) {", "        while (parent[x] != x) {", "            parent[x] = parent[parent[x]];", "            x = parent[x];", "        }", "        return x;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 839. 相似字符串组 —— 图解：两两判相似，相似就并查集合并，最后数分量。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { strs: ['tars', 'rats', 'arts', 'star'] };
+
+function trace(input) {
+  var strs = input.strs;
+  var n = strs.length;
+  var parent = [];
+  for (var i = 0; i < n; i++) parent[i] = i;
+  var groups = n;
+  var frames = [];
+  var firedMerge = 0, firedReject = false;
+
+  function find(x) {
+    while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; }
+    return x;
+  }
+
+  function groupPanel() {
+    var rows = strs.map(function (s, i) {
+      return { k: s, v: '组 ' + find(i), cls: '' };
+    });
+    return Viz.table('每个字符串 → 当前所在组（组号 = 代表元素）', rows);
+  }
+
+  function varsPanel(note) {
+    return Viz.vars([
+      { name: '组数 groups', v: groups, cls: 'chg' },
+      { name: '说明', v: note || '—' }
+    ]);
+  }
+
+  var MERGE = 'parent[find(i)] = find(j);';
+
+  frames.push(Viz.frame('for (int i = 0; i < n; i++) parent[i] = i;',
+    '初始：n 个字符串各自成组', [groupPanel(), varsPanel('还没比较')]));
+
+  for (var i = 0; i < n; i++) {
+    for (var j = i + 1; j < n; j++) {
+      if (find(i) === find(j)) continue;
+      var mism = mismatches(strs[i], strs[j]);
+      var sim = mism === 0 || (mism === 2 && swaps(strs[i], strs[j]));
+      if (sim) {
+        parent[find(i)] = find(j);
+        groups--;
+        if (firedMerge < 2) {
+          firedMerge++;
+          frames.push(Viz.frame(MERGE, '「' + strs[i] + '」「' + strs[j] + '」相似，并成一组',
+            [groupPanel(), varsPanel('合并成功')]));
+        }
+      } else if (!firedReject) {
+        firedReject = true;
+        frames.push(Viz.frame('else return false;   // 已经三处不同',
+          '「' + strs[i] + '」「' + strs[j] + '」差 ' + mism + ' 处，不相似不合并',
+          [groupPanel(), varsPanel('跳过这对')]));
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return groups;', '扫完：剩余 ' + groups + ' 个相似组', [groupPanel(), varsPanel('完成')]));
+
+  function mismatches(a, b) {
+    var c = 0;
+    for (var k = 0; k < a.length; k++) if (a[k] !== b[k]) c++;
+    return c;
+  }
+
+  function swaps(a, b) {
+    var p = -1, q = -1;
+    for (var k = 0; k < a.length; k++) {
+      if (a[k] !== b[k]) {
+        if (p < 0) p = k; else q = k;
+      }
+    }
+    return a[p] === b[q] && a[q] === b[p];
+  }
+
+  return { frames: frames, result: groups };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

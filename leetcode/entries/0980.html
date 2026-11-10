@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>不同路径 III · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 556 / 1159</span>
+  <nav class="pn"><a href="0807.html">上一篇</a><a href="mianshi-16-16.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">980. </span>不同路径 III</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 4</li><li class="algo">回溯</li><li class="tag">位运算</li><li class="tag">数组</li><li class="tag">回溯</li><li class="tag">hamiltonian-path</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">DFS 回溯：从起点出发四方向走，走过的格子标记成障碍，踩遍所有空格才停在终点才算一条，回来时恢复现场。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先数一遍 <code>need</code> = 所有非障碍格数（含起点、终点），要一条路把他们全踩到。</li><li>DFS 四方向走；进入格子就 <code>walk++</code> 并把 <code>grid[r][c]</code> 标成 <code>-1</code> 当 visited，防止本条路径重复进入。</li><li>踩到终点时只有 <code>walk + 1 == need</code>（其它空格全走过）才计数；提前踩到终点直接返回。</li><li>递归返回前恢复 <code>grid[r][c]</code> 并 <code>walk--</code>，让其它分支重走这个格子。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(3^(m·n))，空间复杂度 O(m·n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">int</span> need, walk, ans;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> uniquePathsIII(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> m = grid.length, n = grid[<span class="n">0</span>].length;</span><span class="ln"><span class="no">6</span>        need = <span class="n">0</span>; walk = <span class="n">0</span>; ans = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> sr = <span class="n">0</span>, sc = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; m; r++)</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; n; c++) {</span><span class="ln"><span class="no">10</span>                <span class="k">if</span> (grid[r][c] != -<span class="n">1</span>) need++;        <span class="c">// 障碍之外的格子全都要踩一遍</span></span><span class="ln"><span class="no">11</span>                <span class="k">if</span> (grid[r][c] == <span class="n">1</span>) { sr = r; sc = c; }</span><span class="ln"><span class="no">12</span>            }</span><span class="ln"><span class="no">13</span>        dfs(grid, sr, sc);</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span> </span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span>[][] grid, <span class="k">int</span> r, <span class="k">int</span> c) {</span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (r &lt; <span class="n">0</span> || r &gt;= grid.length || c &lt; <span class="n">0</span> || c &gt;= grid[<span class="n">0</span>].length || grid[r][c] == -<span class="n">1</span>) <span class="k">return</span>;</span><span class="ln"><span class="no">19</span>        <span class="k">if</span> (grid[r][c] == <span class="n">2</span>) {</span><span class="ln"><span class="no">20</span>            <span class="c">// 踩到终点时，其它空格必须都已走过（walk 记的是走过的非终点格数）</span></span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (walk + <span class="n">1</span> == need) ans++;</span><span class="ln"><span class="no">22</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        walk++;</span><span class="ln"><span class="no">25</span>        <span class="k">int</span> keep = grid[r][c];</span><span class="ln"><span class="no">26</span>        grid[r][c] = -<span class="n">1</span>;   <span class="c">// 标记走过：本条路径不再进来</span></span><span class="ln"><span class="no">27</span>        dfs(grid, r + <span class="n">1</span>, c);</span><span class="ln"><span class="no">28</span>        dfs(grid, r - <span class="n">1</span>, c);</span><span class="ln"><span class="no">29</span>        dfs(grid, r, c + <span class="n">1</span>);</span><span class="ln"><span class="no">30</span>        dfs(grid, r, c - <span class="n">1</span>);</span><span class="ln"><span class="no">31</span>        grid[r][c] = keep;   <span class="c">// 回溯：恢复现场，换别的方向再试</span></span><span class="ln"><span class="no">32</span>        walk--;</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>在二维网格 <code>grid</code> 上，有 4 种类型的方格：</p>
+
+<ul>
+	<li><code>1</code> 表示起始方格。且只有一个起始方格。</li>
+	<li><code>2</code> 表示结束方格，且只有一个结束方格。</li>
+	<li><code>0</code> 表示我们可以走过的空方格。</li>
+	<li><code>-1</code> 表示我们无法跨越的障碍。</li>
+</ul>
+
+<p>返回在四个方向（上、下、左、右）上行走时，从起始方格到结束方格的不同路径的数目<strong>。</strong></p>
+
+<p><strong>每一个无障碍方格都要通过一次，但是一条路径中不能重复通过同一个方格</strong>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>[[1,0,0,0],[0,0,0,0],[0,0,2,-1]]
+<strong>输出：</strong>2
+<strong>解释：</strong>我们有以下两条路径：
+1. (0,0),(0,1),(0,2),(0,3),(1,3),(1,2),(1,1),(1,0),(2,0),(2,1),(2,2)
+2. (0,0),(1,0),(2,0),(2,1),(1,1),(0,1),(0,2),(0,3),(1,3),(1,2),(2,2)</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>[[1,0,0,0],[0,0,0,0],[0,0,0,2]]
+<strong>输出：</strong>4
+<strong>解释：</strong>我们有以下四条路径： 
+1. (0,0),(0,1),(0,2),(0,3),(1,3),(1,2),(1,1),(1,0),(2,0),(2,1),(2,2),(2,3)
+2. (0,0),(0,1),(1,1),(1,0),(2,0),(2,1),(2,2),(1,2),(0,2),(0,3),(1,3),(2,3)
+3. (0,0),(1,0),(2,0),(2,1),(2,2),(1,2),(1,1),(0,1),(0,2),(0,3),(1,3),(2,3)
+4. (0,0),(1,0),(2,0),(2,1),(1,1),(0,1),(0,2),(0,3),(1,3),(1,2),(2,2),(2,3)</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>[[0,1],[2,0]]
+<strong>输出：</strong>0
+<strong>解释：</strong>
+没有一条路能完全穿过每一个空的方格一次。
+请注意，起始和结束方格可以位于网格中的任意位置。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= grid.length * grid[0].length &lt;= 20</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    int need, walk, ans;", "", "    public int uniquePathsIII(int[][] grid) {", "        int m = grid.length, n = grid[0].length;", "        need = 0; walk = 0; ans = 0;", "        int sr = 0, sc = 0;", "        for (int r = 0; r < m; r++)", "            for (int c = 0; c < n; c++) {", "                if (grid[r][c] != -1) need++;        // 障碍之外的格子全都要踩一遍", "                if (grid[r][c] == 1) { sr = r; sc = c; }", "            }", "        dfs(grid, sr, sc);", "        return ans;", "    }", "", "    private void dfs(int[][] grid, int r, int c) {", "        if (r < 0 || r >= grid.length || c < 0 || c >= grid[0].length || grid[r][c] == -1) return;", "        if (grid[r][c] == 2) {", "            // 踩到终点时，其它空格必须都已走过（walk 记的是走过的非终点格数）", "            if (walk + 1 == need) ans++;", "            return;", "        }", "        walk++;", "        int keep = grid[r][c];", "        grid[r][c] = -1;   // 标记走过：本条路径不再进来", "        dfs(grid, r + 1, c);", "        dfs(grid, r - 1, c);", "        dfs(grid, r, c + 1);", "        dfs(grid, r, c - 1);", "        grid[r][c] = keep;   // 回溯：恢复现场，换别的方向再试", "        walk--;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 980. 不同路径 III —— 图解：复刻 Solution.java 的「DFS 回溯」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[1, 0, 0, 0], [0, 0, 0, 0], [0, 0, 2, -1]] };
+
+function trace(input) {
+  var g = input.grid;
+  var m = g.length, n = g[0].length;
+  var frames = [];
+  var need = 0, walk = 0, ans = 0;
+  var visited = {};     // "r,c" -> true，当前路径上走过的格子
+  var startCell = null, endCell = null;
+  var started = false, endEarlySeen = false, backSeen = false, fullSeen = false;
+  var lastFullPath = null;
+  var GO = 'dfs(grid, sr, sc);';
+  var END = 'if (walk + 1 == need) ans++;';
+  var BACK = 'grid[r][c] = keep;   // 回溯：恢复现场，换别的方向再试';
+  var RET = 'return ans;';
+
+  for (var r0 = 0; r0 < m; r0++)
+    for (var c0 = 0; c0 < n; c0++) {
+      if (g[r0][c0] !== -1) need++;
+      if (g[r0][c0] === 1) startCell = [r0, c0];
+      if (g[r0][c0] === 2) endCell = [r0, c0];
+    }
+
+  function snap(at, key, extra) {
+    var marks = {};
+    for (var r = 0; r < m; r++)
+      for (var c = 0; c < n; c++) {
+        if (g[r][c] === -1) marks[r + ',' + c] = 'dim';
+        else if (visited[r + ',' + c]) marks[r + ',' + c] = 'win';
+      }
+    if (extra) for (var k in extra) marks[k] = extra[k];
+    var labels = [];
+    labels.push({ at: startCell[0] * n + startCell[1], label: '起', cls: 'p-head' });
+    labels.push({ at: endCell[0] * n + endCell[1], label: '终', cls: 'p-tail' });
+    frames.push(Viz.frame(at, key, [
+      Viz.grid(g.map(function (row) { return row.map(String); }), {
+        title: 'grid：1 起点、2 终点、0 空格、-1 障碍', marks: marks, labels: labels
+      }),
+      Viz.vars([
+        { name: 'walk 已走', v: walk, cls: 'chg' },
+        { name: 'need 需走', v: need },
+        { name: 'ans 路径数', v: ans, cls: ans > 0 ? 'done' : '' }
+      ])
+    ]));
+  }
+
+  function dfs(r, c) {
+    if (r < 0 || r >= m || c < 0 || c >= n || g[r][c] === -1) return;
+    if (g[r][c] === 2) {
+      if (walk + 1 === need) {
+        ans++;
+        if (!fullSeen) {
+          fullSeen = true;
+          lastFullPath = Object.keys(visited).concat([r + ',' + c]);
+          var fm = {};
+          fm[r + ',' + c] = 'done';
+          snap(END, '踩遍全部 ' + need + ' 个非障碍格才停在终点：完整路径 +1', fm);
+        }
+      } else if (!endEarlySeen) {
+        endEarlySeen = true;
+        var em = {};
+        em[r + ',' + c] = 'bad';
+        snap(END, '提前踩到终点（还有 ' + (need - walk - 1) + ' 个空格没走）：不算数，退回去', em);
+      }
+      return;
+    }
+    walk++;
+    var keep = g[r][c];
+    g[r][c] = -1;
+    visited[r + ',' + c] = true;
+    if (!started) {
+      started = true;
+      var sm = {};
+      sm[r + ',' + c] = 'cur';
+      snap(GO, '从起点出发：每条路都要踩遍所有空格，最后一步才许踩终点', sm);
+    } else if (endEarlySeen && !backSeen) {
+      backSeen = true;
+      var bm = {};
+      bm[r + ',' + c] = 'cur';
+      snap(BACK, '回溯后换了个方向接着走：走过又放弃的格子已恢复成空格', bm);
+    }
+    dfs(r + 1, c);
+    dfs(r - 1, c);
+    dfs(r, c + 1);
+    dfs(r, c - 1);
+    g[r][c] = keep;
+    delete visited[r + ',' + c];
+    walk--;
+    if (endEarlySeen && !backSeen) {
+      backSeen = true;
+      var rm = {};
+      rm[r + ',' + c] = 'chg';
+      snap(BACK, '这条分支走尽了：回溯恢复本格，回到上一步换方向再试', rm);
+    }
+  }
+
+  dfs(startCell[0], startCell[1]);
+
+  var fm = {};
+  if (lastFullPath) lastFullPath.forEach(function (p) { fm[p] = 'done'; });
+  snap(RET, ans > 0 ? '扫完所有分支：一共 ' + ans + ' 条完整路径' : '没有任何一条路能踩遍全部空格，返回 0', fm);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

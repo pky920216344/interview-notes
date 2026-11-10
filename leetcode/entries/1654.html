@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>到家的最少跳跃次数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 635 / 1159</span>
+  <nav class="pn"><a href="0475.html">上一篇</a><a href="1245.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1654. </span>到家的最少跳跃次数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">广度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">BFS，状态是「位置 + 上一步是否后跳」：前跳任意次都行，后跳只能在「上一步不是后跳」时来一次；位置上限 max(x, 最远禁区) + a + b。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>连续两次后跳不合法 → BFS 状态要带「上一步是不是后跳」，<code>seen[p][2]</code> 双份去重。</li><li>位置上限取 <code>max(x, 最远禁区) + a + b</code>：再远的位置不可能出现在最短路上。</li><li>逐层 BFS 数步数；第一次 poll 到 <code>x</code> 的层数即答案，队列空则 <code>-1</code>（<code>x=0</code> 时直接 0）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(limit)，空间复杂度 O(limit)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> minimumJumps(<span class="k">int</span>[] forbidden, <span class="k">int</span> a, <span class="k">int</span> b, <span class="k">int</span> x) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 位置上限：比「家和最远禁区」高出 a+b 的位置不可能出现在最短路上</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span> limit = x;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> f : forbidden) limit = <span class="t">Math</span>.max(limit, f);</span><span class="ln"><span class="no">8</span>        limit += a + b;</span><span class="ln"><span class="no">9</span>        <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; banned = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> f : forbidden) banned.add(f);</span><span class="ln"><span class="no">11</span>        <span class="c">// seen[p][1] 表示「上一步是往后跳到达 p」——这种状态不能再往后跳（不许连续两次）</span></span><span class="ln"><span class="no">12</span>        <span class="k">boolean</span>[][] seen = <span class="k">new</span> <span class="k">boolean</span>[limit + <span class="n">1</span>][<span class="n">2</span>];</span><span class="ln"><span class="no">13</span>        <span class="t">Queue</span>&lt;<span class="k">int</span>[]&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">14</span>        seen[<span class="n">0</span>][<span class="n">0</span>] = <span class="k">true</span>;</span><span class="ln"><span class="no">15</span>        q.add(<span class="k">new</span> <span class="k">int</span>[]{<span class="n">0</span>, <span class="n">0</span>});</span><span class="ln"><span class="no">16</span>        <span class="k">int</span> steps = <span class="n">0</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">while</span> (!q.isEmpty()) {</span><span class="ln"><span class="no">18</span>            <span class="k">for</span> (<span class="k">int</span> size = q.size(); size &gt; <span class="n">0</span>; size--) {</span><span class="ln"><span class="no">19</span>                <span class="k">int</span>[] cur = q.poll();</span><span class="ln"><span class="no">20</span>                <span class="k">int</span> p = cur[<span class="n">0</span>], back = cur[<span class="n">1</span>];</span><span class="ln"><span class="no">21</span>                <span class="k">if</span> (p == x) <span class="k">return</span> steps;</span><span class="ln"><span class="no">22</span>                <span class="k">int</span> np = p + a;   <span class="c">// 往前跳 a：任何状态都可以</span></span><span class="ln"><span class="no">23</span>                <span class="k">if</span> (np &lt;= limit &amp;&amp; !banned.contains(np) &amp;&amp; !seen[np][<span class="n">0</span>]) {</span><span class="ln"><span class="no">24</span>                    seen[np][<span class="n">0</span>] = <span class="k">true</span>;</span><span class="ln"><span class="no">25</span>                    q.add(<span class="k">new</span> <span class="k">int</span>[]{np, <span class="n">0</span>});</span><span class="ln"><span class="no">26</span>                }</span><span class="ln"><span class="no">27</span>                <span class="k">if</span> (back == <span class="n">0</span>) {   <span class="c">// 上一步没往后跳，才能再往后跳一次 b</span></span><span class="ln"><span class="no">28</span>                    np = p - b;</span><span class="ln"><span class="no">29</span>                    <span class="k">if</span> (np &gt;= <span class="n">0</span> &amp;&amp; !banned.contains(np) &amp;&amp; !seen[np][<span class="n">1</span>]) {</span><span class="ln"><span class="no">30</span>                        seen[np][<span class="n">1</span>] = <span class="k">true</span>;</span><span class="ln"><span class="no">31</span>                        q.add(<span class="k">new</span> <span class="k">int</span>[]{np, <span class="n">1</span>});</span><span class="ln"><span class="no">32</span>                    }</span><span class="ln"><span class="no">33</span>                }</span><span class="ln"><span class="no">34</span>            }</span><span class="ln"><span class="no">35</span>            steps++;</span><span class="ln"><span class="no">36</span>        }</span><span class="ln"><span class="no">37</span>        <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">38</span>    }</span><span class="ln"><span class="no">39</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>有一只跳蚤的家在数轴上的位置 <code>x</code> 处。请你帮助它从位置 <code>0</code> 出发，到达它的家。</p>
+
+<p>跳蚤跳跃的规则如下：</p>
+
+<ul>
+	<li>它可以 <strong>往前</strong> 跳恰好 <code>a</code> 个位置（即往右跳）。</li>
+	<li>它可以 <strong>往后</strong> 跳恰好 <code>b</code> 个位置（即往左跳）。</li>
+	<li>它不能 <strong>连续</strong> 往后跳 <code>2</code> 次。</li>
+	<li>它不能跳到任何 <code>forbidden</code> 数组中的位置。</li>
+</ul>
+
+<p>跳蚤可以往前跳 <strong>超过</strong> 它的家的位置，但是它 <strong>不能跳到负整数</strong> 的位置。</p>
+
+<p>给你一个整数数组 <code>forbidden</code> ，其中 <code>forbidden[i]</code> 是跳蚤不能跳到的位置，同时给你整数 <code>a</code>， <code>b</code> 和 <code>x</code> ，请你返回跳蚤到家的最少跳跃次数。如果没有恰好到达 <code>x</code> 的可行方案，请你返回 <code>-1</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<b>输入：</b>forbidden = [14,4,18,1,15], a = 3, b = 15, x = 9
+<b>输出：</b>3
+<b>解释：</b>往前跳 3 次（0 -> 3 -> 6 -> 9），跳蚤就到家了。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<b>输入：</b>forbidden = [8,3,16,6,12,20], a = 15, b = 13, x = 11
+<b>输出：</b>-1
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<b>输入：</b>forbidden = [1,6,2,14,5,17,4], a = 16, b = 9, x = 7
+<b>输出：</b>2
+<b>解释：</b>往前跳一次（0 -> 16），然后往回跳一次（16 -> 7），跳蚤就到家了。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= forbidden.length <= 1000</code></li>
+	<li><code>1 <= a, b, forbidden[i] <= 2000</code></li>
+	<li><code>0 <= x <= 2000</code></li>
+	<li><code>forbidden</code> 中所有位置互不相同。</li>
+	<li>位置 <code>x</code> 不在 <code>forbidden</code> 中。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int minimumJumps(int[] forbidden, int a, int b, int x) {", "        // 位置上限：比「家和最远禁区」高出 a+b 的位置不可能出现在最短路上", "        int limit = x;", "        for (int f : forbidden) limit = Math.max(limit, f);", "        limit += a + b;", "        Set<Integer> banned = new HashSet<>();", "        for (int f : forbidden) banned.add(f);", "        // seen[p][1] 表示「上一步是往后跳到达 p」——这种状态不能再往后跳（不许连续两次）", "        boolean[][] seen = new boolean[limit + 1][2];", "        Queue<int[]> q = new ArrayDeque<>();", "        seen[0][0] = true;", "        q.add(new int[]{0, 0});", "        int steps = 0;", "        while (!q.isEmpty()) {", "            for (int size = q.size(); size > 0; size--) {", "                int[] cur = q.poll();", "                int p = cur[0], back = cur[1];", "                if (p == x) return steps;", "                int np = p + a;   // 往前跳 a：任何状态都可以", "                if (np <= limit && !banned.contains(np) && !seen[np][0]) {", "                    seen[np][0] = true;", "                    q.add(new int[]{np, 0});", "                }", "                if (back == 0) {   // 上一步没往后跳，才能再往后跳一次 b", "                    np = p - b;", "                    if (np >= 0 && !banned.contains(np) && !seen[np][1]) {", "                        seen[np][1] = true;", "                        q.add(new int[]{np, 1});", "                    }", "                }", "            }", "            steps++;", "        }", "        return -1;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1654 到家的最少跳跃次数 —— 图解：复刻 Solution.java 的「BFS + 状态去重」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { forbidden: [2, 6, 4], a: 5, b: 3, x: 7 };
+
+function trace(input) {
+  var forbidden = input.forbidden, a = input.a, b = input.b, x = input.x;
+  var limit = x;
+  for (var i = 0; i < forbidden.length; i++) if (forbidden[i] > limit) limit = forbidden[i];
+  limit += a + b;
+  var banned = {};
+  forbidden.forEach(function (f) { banned[f] = true; });
+
+  var seen = {};   // "p,back" -> true
+  var queue = [];  // { p, back }
+  var frames = [];
+  var steps = 0;
+  var line = [];
+  for (var v = 0; v <= limit; v++) line.push(v);
+
+  var FORWARD = 'int np = p + a;';
+  var BACKCHK = 'if (back == 0) {';
+  var BACKPUSH = 'q.add(new int[]{np, 1});';
+  var FOUND = 'if (p == x) return steps;';
+
+  function linePanel(curP, home) {
+    var marks = {};
+    for (var p = 0; p <= limit; p++) {
+      if (banned[p]) marks[p] = 'bad';
+      else if (seen[p + ',0'] || seen[p + ',1']) marks[p] = 'win';
+    }
+    if (curP != null) marks[curP] = 'cur';
+    if (home) marks[x] = 'done';
+    var pointers = [{ at: x, label: '家', cls: 'p-tail' }];
+    return Viz.cells(line, { title: '数轴（位置 0 ~ ' + limit + '，禁区标红）', marks: marks, pointers: pointers });
+  }
+
+  function queuePanel(curIdx) {
+    var items = queue.map(function (s) { return s.p + (s.back ? '(后跳到)' : ''); });
+    var marks = {};
+    if (curIdx != null) marks[curIdx] = 'cur';
+    return Viz.cells(items, { title: 'BFS 队列', marks: marks, hideIndex: true });
+  }
+
+  function varsPanel(s) {
+    return Viz.vars([
+      { name: '步数 steps', v: String(s), cls: '' },
+      { name: '家 x', v: String(x), cls: '' },
+      { name: '前跳 a / 后跳 b', v: a + ' / ' + b, cls: '' }
+    ]);
+  }
+
+  var fwdFired = false, backChkFired = false, backPushFired = false, found = false;
+  seen['0,0'] = true;
+  queue.push({ p: 0, back: 0 });
+  while (queue.length) {
+    var levelSize = queue.length;
+    while (levelSize-- > 0) {
+      var cur = queue.shift();
+      var p = cur.p, back = cur.back;
+      if (p === x) {
+        found = true;
+        frames.push(Viz.frame(FOUND, 'poll 到家 ' + x + '：最少 ' + steps + ' 跳',
+          [linePanel(p, true), varsPanel(steps)]));
+        break;
+      }
+      var np = p + a;
+      if (np <= limit && !banned[np] && !seen[np + ',0']) {
+        seen[np + ',0'] = true;
+        queue.push({ p: np, back: 0 });
+        if (!fwdFired) {
+          fwdFired = true;
+          frames.push(Viz.frame(FORWARD, '从 ' + p + ' 往前跳 ' + a + ' 到 ' + np + '，入队',
+            [linePanel(p), queuePanel(0)]));
+        }
+      }
+      if (back === 0) {
+        np = p - b;
+        if (!backChkFired && np >= 0 && banned[np]) {
+          backChkFired = true;
+          frames.push(Viz.frame(BACKCHK, '在 ' + p + ' 想往后跳 ' + b + '：落点是禁区 ' + np + '，不能踩',
+            [linePanel(p), queuePanel(0)]));
+        }
+        if (np >= 0 && !banned[np] && !seen[np + ',1']) {
+          seen[np + ',1'] = true;
+          queue.push({ p: np, back: 1 });
+          if (!backPushFired) {
+            backPushFired = true;
+            frames.push(Viz.frame(BACKPUSH, '从 ' + p + ' 往后跳 ' + b + ' 到 ' + np + '（上一步不是后跳，允许）',
+              [linePanel(p), queuePanel(0)]));
+          }
+        }
+      }
+    }
+    if (found) break;
+    steps++;
+  }
+
+  if (!found) {
+    frames.push(Viz.frame(FOUND, '队列空了也到不了家：返回 -1', [linePanel(null), varsPanel(-1)]));
+  }
+
+  return { frames: frames, result: found ? steps : -1 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

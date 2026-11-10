@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>我的日程安排表 III · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 909 / 1159</span>
+  <nav class="pn"><a href="1431.html">上一篇</a><a href="1636.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">732. </span>我的日程安排表 III</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">前缀和/差分</li><li class="aux">设计</li><li class="tag">设计</li><li class="tag">线段树</li><li class="tag">二分查找</li><li class="tag">有序集合</li><li class="tag">前缀和</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">TreeMap 差分：start 处 +1、end 处 −1，每次 book 后按时间扫一遍前缀和，峰值即最大 k 次预订。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>区间是 <code>[start, end)</code>：终点时刻不算在内，所以 <code>end</code> 处记 −1，正好相接的区间不会叠加。</li><li>同一时刻多个 ±1 要 <code>merge</code> 累加（终点撞上别的起点时，先在同一个格子里抵消再算前缀）。</li><li>任意时刻的叠加数 = 差分前缀和，峰值只会出现在某个起点时刻；每次 <code>book</code> 后全表扫一遍取最大。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 book O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">MyCalendarThree</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 差分表：start 处 +1、end 处 -1；某时刻的叠加数 = 差分前缀和</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">TreeMap</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; delta = <span class="k">new</span> <span class="t">TreeMap</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">MyCalendarThree</span>() {</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">public</span> <span class="k">int</span> book(<span class="k">int</span> startTime, <span class="k">int</span> endTime) {</span><span class="ln"><span class="no">11</span>        delta.merge(startTime, <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">12</span>        delta.merge(endTime, -<span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">13</span>        <span class="c">// 时刻按序扫一遍前缀和，峰值就是最大的 k 次预订</span></span><span class="ln"><span class="no">14</span>        <span class="k">int</span> cur = <span class="n">0</span>, k = <span class="n">0</span>;</span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> d : delta.values()) {</span><span class="ln"><span class="no">16</span>            cur += d;</span><span class="ln"><span class="no">17</span>            k = <span class="t">Math</span>.max(k, cur);</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> k;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>当 <code>k</code> 个日程存在一些非空交集时（即, <code>k</code> 个日程包含了一些相同时间），就会产生 <code>k</code> 次预订。</p>
+
+<p>给你一些日程安排 <code>[startTime, endTime)</code> ，请你在每个日程安排添加后，返回一个整数 <code>k</code> ，表示所有先前日程安排会产生的最大 <code>k</code> 次预订。</p>
+
+<p>实现一个 <code>MyCalendarThree</code> 类来存放你的日程安排，你可以一直添加新的日程安排。</p>
+
+<ul>
+	<li><code>MyCalendarThree()</code> 初始化对象。</li>
+	<li><code>int book(int startTime, int endTime)</code> 返回一个整数 <code>k</code> ，表示日历中存在的 <code>k</code> 次预订的最大值。</li>
+</ul>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+["MyCalendarThree", "book", "book", "book", "book", "book", "book"]
+[[], [10, 20], [50, 60], [10, 40], [5, 15], [5, 10], [25, 55]]
+<strong>输出：</strong>
+[null, 1, 1, 2, 3, 3, 3]
+
+<strong>解释：</strong>
+MyCalendarThree myCalendarThree = new MyCalendarThree();
+myCalendarThree.book(10, 20); // 返回 1 ，第一个日程安排可以预订并且不存在相交，所以最大 k 次预订是 1 次预订。
+myCalendarThree.book(50, 60); // 返回 1 ，第二个日程安排可以预订并且不存在相交，所以最大 k 次预订是 1 次预订。
+myCalendarThree.book(10, 40); // 返回 2 ，第三个日程安排 [10, 40) 与第一个日程安排相交，所以最大 k 次预订是 2 次预订。
+myCalendarThree.book(5, 15); // 返回 3 ，剩下的日程安排的最大 k 次预订是 3 次预订。
+myCalendarThree.book(5, 10); // 返回 3
+myCalendarThree.book(25, 55); // 返回 3
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= startTime &lt; endTime &lt;= 10<sup>9</sup></code></li>
+	<li>每个测试用例，调用 <code>book</code>&nbsp;函数最多不超过&nbsp;<code>400</code>次</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class MyCalendarThree {", "    // 差分表：start 处 +1、end 处 -1；某时刻的叠加数 = 差分前缀和", "    private final TreeMap<Integer, Integer> delta = new TreeMap<>();", "", "    public MyCalendarThree() {", "    }", "", "    public int book(int startTime, int endTime) {", "        delta.merge(startTime, 1, Integer::sum);", "        delta.merge(endTime, -1, Integer::sum);", "        // 时刻按序扫一遍前缀和，峰值就是最大的 k 次预订", "        int cur = 0, k = 0;", "        for (int d : delta.values()) {", "            cur += d;", "            k = Math.max(k, cur);", "        }", "        return k;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 732. 我的日程安排表 III —— 图解：复刻 Solution.java 的「TreeMap 差分 + 前缀和扫峰值」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { ops: [[10, 20], [50, 60], [10, 40], [5, 15], [5, 10], [25, 55]] };
+
+function trace(input) {
+  var ops = input.ops;
+  var frames = [];
+
+  var MERGE1 = 'delta.merge(startTime, 1, Integer::sum);';
+  var MERGE2 = 'delta.merge(endTime, -1, Integer::sum);';
+  var ADD = 'cur += d;';
+  var MAX = 'k = Math.max(k, cur);';
+
+  var delta = {};   // 时刻 -> 差分值（Java 里是 TreeMap，这里用对象 + 排序键复刻）
+  var out = [];
+
+  function deltaPanel(chg) {
+    var keys = Object.keys(delta).map(Number).sort(function (a, b) { return a - b; });
+    var cur = 0, rows = [];
+    keys.forEach(function (t) {
+      cur += delta[t];
+      var cls = chg && (t === chg[0] || t === chg[1]) ? 'chg' : '';
+      rows.push({ k: '时刻 ' + t, v: (delta[t] > 0 ? '+' : '') + delta[t] + ' · 前缀 ' + cur, cls: cls });
+    });
+    return Viz.table('差分表：时刻 → 差分值（前缀 = 到该时刻的叠加数）', rows);
+  }
+
+  function varsPanel(k, cls) {
+    return Viz.vars([{ name: '最大 k 次预订', v: k, cls: cls || '' }]);
+  }
+
+  ops.forEach(function (op, i) {
+    var s = op[0], e = op[1];
+    delta[s] = (delta[s] || 0) + 1;
+    delta[e] = (delta[e] || 0) - 1;
+    var keys = Object.keys(delta).map(Number).sort(function (a, b) { return a - b; });
+    var cur = 0, k = 0;
+    keys.forEach(function (t) { cur += delta[t]; if (cur > k) k = cur; });
+    out.push(k);
+
+    if (i === 0) {
+      frames.push(Viz.frame(MAX, 'book(' + s + ',' + e + ')：起点 +1、终点 −1，扫出峰值 ' + k,
+        [deltaPanel([s, e]), varsPanel(k, 'chg')]));
+    }
+    if (i === 2) {
+      frames.push(Viz.frame(MAX, 'book(' + s + ',' + e + ')：时刻 10 叠上两个起点，峰值升到 ' + k,
+        [deltaPanel([s, e]), varsPanel(k, 'chg')]));
+    }
+    if (i === 3) {
+      frames.push(Viz.frame(MAX, 'book(' + s + ',' + e + ')：时刻 10 冲上 ' + k + '，就是最大 k 次预订',
+        [deltaPanel([s, e]), varsPanel(k, 'chg')]));
+    }
+    if (i === 4) {
+      frames.push(Viz.frame(MAX, 'book(' + s + ',' + e + ')：终点 10 撞上别的起点，差分同格先加后减',
+        [deltaPanel([s, e]), varsPanel(k, 'chg')]));
+    }
+  });
+
+  frames.push(Viz.frame(MAX, '全部预订完：最大的 k = ' + (out.length ? out[out.length - 1] : 0),
+    [deltaPanel(null), varsPanel(out.length ? out[out.length - 1] : 0, 'done')]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

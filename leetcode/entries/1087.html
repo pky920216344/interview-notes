@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>花括号展开 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 720 / 1159</span>
+  <nav class="pn"><a href="1116.html">上一篇</a><a href="0388.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1087. </span>花括号展开</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">模拟</li><li class="tag">栈</li><li class="tag">广度优先搜索</li><li class="tag">字符串</li><li class="tag">回溯</li><li class="tag">排序</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">从左往右扫，维护「当前所有已生成的串」：字母全员接尾，花括号段排序去重后做笛卡尔积，最后整体排序。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>逐段处理：遇到字母，池里每串尾部追加它；遇到 <code>{…}</code>，把分支<strong>排序去重</strong>后与池中每串做笛卡尔积。</li><li>分支先排序再展开，池内顺序天然保持字典序；结尾再整体 <code>sort</code> 兜底。</li><li>题面保证无嵌套花括号，<code>indexOf('}')</code> 找配对即可；输出规模受题面约束不会爆炸。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(输出规模)，空间复杂度 O(输出规模)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span>[] expand(<span class="t">String</span> s) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; cur = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        cur.add(<span class="s">""</span>);</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> i = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="c">// 从左往右扫：字母直接接尾；花括号段排序去重后，让已有串各自乘上每个分支</span></span><span class="ln"><span class="no">9</span>        <span class="k">while</span> (i &lt; s.length()) {</span><span class="ln"><span class="no">10</span>            <span class="k">char</span> c = s.charAt(i);</span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (c == <span class="s">'{'</span>) {</span><span class="ln"><span class="no">12</span>                <span class="k">int</span> j = s.indexOf(<span class="s">'}'</span>, i);   <span class="c">// 题面保证无嵌套，直接找配对右括号</span></span><span class="ln"><span class="no">13</span>                <span class="t">String</span>[] raw = s.substring(i + <span class="n">1</span>, j).split(<span class="s">","</span>);</span><span class="ln"><span class="no">14</span>                <span class="t">Arrays</span>.sort(raw);</span><span class="ln"><span class="no">15</span>                <span class="t">List</span>&lt;<span class="t">String</span>&gt; next = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">16</span>                <span class="k">for</span> (<span class="t">String</span> pre : cur)</span><span class="ln"><span class="no">17</span>                    <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; raw.length; k++) {</span><span class="ln"><span class="no">18</span>                        <span class="k">if</span> (k &gt; <span class="n">0</span> &amp;&amp; raw[k].equals(raw[k - <span class="n">1</span>])) <span class="k">continue</span>;   <span class="c">// 重复分支去重</span></span><span class="ln"><span class="no">19</span>                        next.add(pre + raw[k]);</span><span class="ln"><span class="no">20</span>                    }</span><span class="ln"><span class="no">21</span>                cur = next;</span><span class="ln"><span class="no">22</span>                i = j + <span class="n">1</span>;</span><span class="ln"><span class="no">23</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">24</span>                <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; cur.size(); k++) cur.set(k, cur.get(k) + c);</span><span class="ln"><span class="no">25</span>                i++;</span><span class="ln"><span class="no">26</span>            }</span><span class="ln"><span class="no">27</span>        }</span><span class="ln"><span class="no">28</span>        <span class="t">Collections</span>.sort(cur);</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> cur.toArray(<span class="k">new</span> <span class="t">String</span>[<span class="n">0</span>]);</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String[] expand(String s) {", "        List<String> cur = new ArrayList<>();", "        cur.add(\"\");", "        int i = 0;", "        // 从左往右扫：字母直接接尾；花括号段排序去重后，让已有串各自乘上每个分支", "        while (i < s.length()) {", "            char c = s.charAt(i);", "            if (c == '{') {", "                int j = s.indexOf('}', i);   // 题面保证无嵌套，直接找配对右括号", "                String[] raw = s.substring(i + 1, j).split(\",\");", "                Arrays.sort(raw);", "                List<String> next = new ArrayList<>();", "                for (String pre : cur)", "                    for (int k = 0; k < raw.length; k++) {", "                        if (k > 0 && raw[k].equals(raw[k - 1])) continue;   // 重复分支去重", "                        next.add(pre + raw[k]);", "                    }", "                cur = next;", "                i = j + 1;", "            } else {", "                for (int k = 0; k < cur.size(); k++) cur.set(k, cur.get(k) + c);", "                i++;", "            }", "        }", "        Collections.sort(cur);", "        return cur.toArray(new String[0]);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1087 花括号展开 —— 图解：从左往右扫，串池逐段长大：字母接尾、花括号排序去重后做笛卡尔积。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: '{b,a}c{d,e}' };
+
+function trace(input) {
+  var s = input.s;
+  var frames = [];
+
+  var SEED = 'cur.add("");';
+  var NEXT = 'cur = next;';
+  var APPEND = 'for (int k = 0; k < cur.size(); k++) cur.set(k, cur.get(k) + c);';
+  var RET = 'return cur.toArray(new String[0]);';
+
+  var cur = [''];       // 串池：到当前位置为止的所有已生成单词
+
+  function poolPanel(marks, title) {
+    return Viz.cells(cur.slice(), { title: title || '串池 cur（已生成的所有单词）', marks: marks || {}, hideIndex: true });
+  }
+  function varsPanel(i, seg) {
+    return Viz.vars([
+      { name: 'i（扫到的位置）', v: String(i) },
+      { name: '刚处理的段', v: seg }
+    ]);
+  }
+
+  frames.push(Viz.frame(SEED, '开局：串池里只有一个空串', [poolPanel({}, '串池 cur（初始）'), varsPanel(0, '—')]));
+
+  // 跑一遍：记录每段处理后的状态
+  var i = 0, events = [];   // {order, type:'letter'|'brace', cur, i, seg}
+  var order = 0;
+  while (i < s.length) {
+    var c = s[i];
+    if (c === '{') {
+      var j = s.indexOf('}', i);
+      var raw = s.slice(i + 1, j).split(',').sort();
+      var next = [];
+      cur.forEach(function (pre) {
+        for (var k = 0; k < raw.length; k++) {
+          if (k > 0 && raw[k] === raw[k - 1]) continue;
+          next.push(pre + raw[k]);
+        }
+      });
+      cur = next;
+      events.push({ order: order++, type: 'brace', cur: cur.slice(), i: j + 1, seg: '{' + s.slice(i + 1, j) + '}' });
+      i = j + 1;
+    } else {
+      cur = cur.map(function (pre) { return pre + c; });
+      events.push({ order: order++, type: 'letter', cur: cur.slice(), i: i + 1, seg: String(c) });
+      i++;
+    }
+  }
+
+  // 挑帧：第一次字母接尾、第一次花括号展开（按出现顺序）
+  var firstLetter = null, firstBrace = null;
+  events.forEach(function (ev) {
+    if (ev.type === 'letter' && !firstLetter) firstLetter = ev;
+    if (ev.type === 'brace' && !firstBrace) firstBrace = ev;
+  });
+  var picks = [firstLetter, firstBrace].filter(Boolean).sort(function (a, b) { return a.order - b.order; });
+  picks.forEach(function (ev) {
+    var marks = {};
+    for (var k = 0; k < ev.cur.length; k++) marks[k] = 'new';
+    var key = ev.type === 'brace'
+      ? '展开 ' + ev.seg + '：分支排序后与池里每串组合，串池乘上分支数'
+      : '字母 ' + ev.seg + '：池里每串尾部都接上它，串池数量不变';
+    frames.push(Viz.frame(ev.type === 'brace' ? NEXT : APPEND, key,
+      [poolPanel(marks), varsPanel(ev.i, ev.type === 'brace' ? '花括号段 ' + ev.seg : '字母 ' + ev.seg)]));
+  });
+
+  frames.push(Viz.frame(RET, '整串扫完：串池排序后就是全部单词，共 ' + cur.length + ' 个',
+    [poolPanel((function () { var m = {}; for (var k = 0; k < cur.length; k++) m[k] = 'done'; return m; })(), '串池 cur（最终，已排序）'),
+      varsPanel(s.length, '—')]));
+
+  return { frames: frames, result: cur.slice().sort() };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>平面上的最近距离 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1085 / 1159</span>
+  <nav class="pn"><a href="1552.html">上一篇</a><a href="1504.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">612. </span>平面上的最近距离</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">SQL</li><li class="tag">数据库</li><li class="tag">nearest-pair-of-points</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">全点对自连接（排除自身重合），SQRT(POW(dx,2)+POW(dy,2)) 取 MIN，外层 ROUND 保两位。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>任意两点配对用<strong>自连接</strong>；连接条件 <code>p1.x &lt;&gt; p2.x OR p1.y &lt;&gt; p2.y</code> 排除「同一个点」（自身距离 0 会污染 MIN）。</li><li>欧氏距离 <code>SQRT(POW(dx,2)+POW(dy,2))</code> 在行级别算出，<code>MIN</code> 聚合取最短，最外层 <code>ROUND(..., 2)</code> 保两位。</li><li>注意聚合顺序：先 MIN 再 ROUND（先 ROUND 再 MIN 等价但语义混乱；对单值无差，养成「最后统一舍入」的习惯）。</li><li>若两点可能重复出现（表无主键），同坐标的「不同行」会被 <code>&lt;&gt;</code> 条件排除——与题面「两个不同点」的口径一致。</li></ul></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 SQL 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span>-- 612（codetop 0612）平面上的最近距离（MySQL，会员题）</span><span class="ln"><span class="no">2</span>-- 题意：Point_2D(x, y) 无主键。求平面上任意两点间的最短欧氏距离，保留 2 位小数，列名 shortest。</span><span class="ln"><span class="no">3</span>-- 自连接全部点对（排除与自身重合的点），欧氏距离开方后取 MIN 再 ROUND。</span><span class="ln"><span class="no">4</span>SELECT ROUND(MIN(SQRT(POW(p1.x - p2.x, 2) + POW(p1.y - p2.y, 2))), 2) AS shortest</span><span class="ln"><span class="no">5</span>FROM Point_2D p1</span><span class="ln"><span class="no">6</span>JOIN Point_2D p2</span><span class="ln"><span class="no">7</span>     ON p1.x &lt;&gt; p2.x</span><span class="ln"><span class="no">8</span>    OR p1.y &lt;&gt; p2.y;</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["-- 612（codetop 0612）平面上的最近距离（MySQL，会员题）", "-- 题意：Point_2D(x, y) 无主键。求平面上任意两点间的最短欧氏距离，保留 2 位小数，列名 shortest。", "-- 自连接全部点对（排除与自身重合的点），欧氏距离开方后取 MIN 再 ROUND。", "SELECT ROUND(MIN(SQRT(POW(p1.x - p2.x, 2) + POW(p1.y - p2.y, 2))), 2) AS shortest", "FROM Point_2D p1", "JOIN Point_2D p2", "     ON p1.x <> p2.x", "    OR p1.y <> p2.y;"]}</script>
+
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

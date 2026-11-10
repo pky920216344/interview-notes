@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>非重叠矩形中的随机点 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 906 / 1159</span>
+  <nav class="pn"><a href="1485.html">上一篇</a><a href="1071.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">497. </span>非重叠矩形中的随机点</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">前缀和/差分</li><li class="aux">二分查找</li><li class="tag">水塘抽样</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">二分查找</li><li class="tag">有序集合</li><li class="tag">前缀和</li><li class="tag">随机化</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按矩形内整数点数建前缀和，在总点数里均匀抽序号 k，二分定位矩形，再按行编号拆出坐标。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>第 <code>i</code> 个矩形有 <code>(x−a+1)×(y−b+1)</code> 个整数点（含边界），前缀和 <code>pre</code> 让「按面积加权抽矩形」变成一次二分。</li><li><code>pick</code>：<code>k = 随机数 × 总点数</code>，二分找第一个 <code>pre[i] &gt; k</code> 的矩形，<code>k</code> 就落在它里面。</li><li>矩形内按行编号：<code>rest = k − pre[i−1]</code>，<code>x = a + rest % 宽</code>、<code>y = b + rest / 宽</code>，每个点恰好对应一个 <code>k</code>。</li><li>面积可能很大，点数用 <code>long</code> 存。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 构造 O(n)，pick O(log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span>[][] rects;</span><span class="ln"><span class="no">5</span>    <span class="c">// pre[i]：前 i 个矩形覆盖的整数点总数，用来按面积加权挑矩形</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">long</span>[] pre;</span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="t">Random</span> rnd = <span class="k">new</span> <span class="t">Random</span>();</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="k">public</span> <span class="t">Solution</span>(<span class="k">int</span>[][] rects) {</span><span class="ln"><span class="no">10</span>        <span class="k">this</span>.rects = rects;</span><span class="ln"><span class="no">11</span>        pre = <span class="k">new</span> <span class="k">long</span>[rects.length + <span class="n">1</span>];</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; rects.length; i++) {</span><span class="ln"><span class="no">13</span>            <span class="k">int</span>[] r = rects[i];</span><span class="ln"><span class="no">14</span>            <span class="c">// 宽 × 高：边界上的整数点也算被覆盖</span></span><span class="ln"><span class="no">15</span>            <span class="k">long</span> w = r[<span class="n">2</span>] - r[<span class="n">0</span>] + <span class="n">1</span>, h = r[<span class="n">3</span>] - r[<span class="n">1</span>] + <span class="n">1</span>;</span><span class="ln"><span class="no">16</span>            pre[i + <span class="n">1</span>] = pre[i] + w * h;</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span> </span><span class="ln"><span class="no">20</span>    <span class="k">public</span> <span class="k">int</span>[] pick() {</span><span class="ln"><span class="no">21</span>        <span class="k">long</span> total = pre[rects.length];</span><span class="ln"><span class="no">22</span>        <span class="c">// 在全部整数点里等概率抽一个序号 k，再定位它属于哪个矩形</span></span><span class="ln"><span class="no">23</span>        <span class="k">long</span> k = (<span class="k">long</span>) (rnd.nextDouble() * total);</span><span class="ln"><span class="no">24</span>        <span class="k">int</span> lo = <span class="n">1</span>, hi = rects.length;</span><span class="ln"><span class="no">25</span>        <span class="k">while</span> (lo &lt; hi) {   <span class="c">// 找第一个 pre[i] &gt; k 的矩形，k 就落在第 lo 个里</span></span><span class="ln"><span class="no">26</span>            <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">27</span>            <span class="k">if</span> (pre[mid] &gt; k) hi = mid; <span class="k">else</span> lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="k">int</span>[] r = rects[lo - <span class="n">1</span>];</span><span class="ln"><span class="no">30</span>        <span class="c">// 矩形内按行编号的第 rest 个点：商是行（y），余数是列（x）</span></span><span class="ln"><span class="no">31</span>        <span class="k">long</span> rest = k - pre[lo - <span class="n">1</span>];</span><span class="ln"><span class="no">32</span>        <span class="k">long</span> w = r[<span class="n">2</span>] - r[<span class="n">0</span>] + <span class="n">1</span>;</span><span class="ln"><span class="no">33</span>        <span class="k">int</span> x = r[<span class="n">0</span>] + (<span class="k">int</span>) (rest % w);</span><span class="ln"><span class="no">34</span>        <span class="k">int</span> y = r[<span class="n">1</span>] + (<span class="k">int</span>) (rest / w);</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{x, y};</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个由非重叠的轴对齐矩形的数组 <code>rects</code> ，其中 <code>rects[i] = [ai, bi, xi, yi]</code> 表示 <code>(ai, bi)</code> 是第 <code>i</code> 个矩形的左下角点，<code>(xi, yi)</code> 是第 <code>i</code> 个矩形的右上角点。设计一个算法来随机挑选一个被某一矩形覆盖的整数点。矩形周长上的点也算做是被矩形覆盖。所有满足要求的点必须等概率被返回。</p>
+
+<p>在给定的矩形覆盖的空间内的任何整数点都有可能被返回。</p>
+
+<p><strong>请注意&nbsp;</strong>，整数点是具有整数坐标的点。</p>
+
+<p>实现&nbsp;<code>Solution</code>&nbsp;类:</p>
+
+<ul>
+	<li><code>Solution(int[][] rects)</code>&nbsp;用给定的矩形数组&nbsp;<code>rects</code> 初始化对象。</li>
+	<li><code>int[] pick()</code>&nbsp;返回一个随机的整数点 <code>[u, v]</code> 在给定的矩形所覆盖的空间内。</li>
+</ul>
+
+<ol>
+</ol>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/d84ccfea21d4.jpg" style="height: 539px; width: 419px;" /></p>
+
+<pre>
+<strong>输入: 
+</strong>["Solution", "pick", "pick", "pick", "pick", "pick"]
+[[[[-2, -2, 1, 1], [2, 2, 4, 6]]], [], [], [], [], []]
+<strong>输出: 
+</strong>[null, [1, -2], [1, -1], [-1, -2], [-2, -2], [0, 0]]
+
+<strong>解释：</strong>
+Solution solution = new Solution([[-2, -2, 1, 1], [2, 2, 4, 6]]);
+solution.pick(); // 返回 [1, -2]
+solution.pick(); // 返回 [1, -1]
+solution.pick(); // 返回 [-1, -2]
+solution.pick(); // 返回 [-2, -2]
+solution.pick(); // 返回 [0, 0]</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= rects.length &lt;= 100</code></li>
+	<li><code>rects[i].length == 4</code></li>
+	<li><code>-10<sup>9</sup>&nbsp;&lt;= a<sub>i</sub>&nbsp;&lt; x<sub>i</sub>&nbsp;&lt;= 10<sup>9</sup></code></li>
+	<li><code>-10<sup>9</sup>&nbsp;&lt;= b<sub>i</sub>&nbsp;&lt; y<sub>i</sub>&nbsp;&lt;= 10<sup>9</sup></code></li>
+	<li><code>x<sub>i</sub>&nbsp;- a<sub>i</sub>&nbsp;&lt;= 2000</code></li>
+	<li><code>y<sub>i</sub>&nbsp;- b<sub>i</sub>&nbsp;&lt;= 2000</code></li>
+	<li>所有的矩形不重叠。</li>
+	<li><code>pick</code> 最多被调用&nbsp;<code>10<sup>4</sup></code>&nbsp;次。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private final int[][] rects;", "    // pre[i]：前 i 个矩形覆盖的整数点总数，用来按面积加权挑矩形", "    private final long[] pre;", "    private Random rnd = new Random();", "", "    public Solution(int[][] rects) {", "        this.rects = rects;", "        pre = new long[rects.length + 1];", "        for (int i = 0; i < rects.length; i++) {", "            int[] r = rects[i];", "            // 宽 × 高：边界上的整数点也算被覆盖", "            long w = r[2] - r[0] + 1, h = r[3] - r[1] + 1;", "            pre[i + 1] = pre[i] + w * h;", "        }", "    }", "", "    public int[] pick() {", "        long total = pre[rects.length];", "        // 在全部整数点里等概率抽一个序号 k，再定位它属于哪个矩形", "        long k = (long) (rnd.nextDouble() * total);", "        int lo = 1, hi = rects.length;", "        while (lo < hi) {   // 找第一个 pre[i] > k 的矩形，k 就落在第 lo 个里", "            int mid = (lo + hi) >>> 1;", "            if (pre[mid] > k) hi = mid; else lo = mid + 1;", "        }", "        int[] r = rects[lo - 1];", "        // 矩形内按行编号的第 rest 个点：商是行（y），余数是列（x）", "        long rest = k - pre[lo - 1];", "        long w = r[2] - r[0] + 1;", "        int x = r[0] + (int) (rest % w);", "        int y = r[1] + (int) (rest / w);", "        return new int[]{x, y};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 497. 非重叠矩形中的随机点 —— 图解：复刻 Solution.java 的「前缀和 + 二分定位 + 行编号拆坐标」。
+// 随机抽中的序号 k 由 Check 导出（Java 侧固定种子生成），图解复刻 k → 点 的完整映射。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { rects: [[-2, -2, 1, 1], [2, 2, 4, 6]], k: 16 };
+
+function trace(input) {
+  var rects = input.rects, k = input.k;
+  var frames = [];
+
+  var PRE = 'pre[i + 1] = pre[i] + w * h;';
+  var DRAW = 'long k = (long) (rnd.nextDouble() * total);';
+  var BIN = 'if (pre[mid] > k) hi = mid; else lo = mid + 1;';
+  var REST = 'long rest = k - pre[lo - 1];';
+  var RET = 'return new int[]{x, y};';
+
+  var pre = [0];
+  for (var i = 0; i < rects.length; i++) {
+    var r0 = rects[i];
+    var w0 = r0[2] - r0[0] + 1, h0 = r0[3] - r0[1] + 1;
+    pre.push(pre[i] + w0 * h0);
+  }
+  var total = pre[rects.length];
+
+  function prePanel(hitIdx) {
+    var rows = rects.map(function (r, i) {
+      return { k: '矩形 ' + (i + 1) + ' [' + r.join(',') + ']',
+        v: (pre[i + 1] - pre[i]) + ' 点 · 累计 ' + pre[i + 1], cls: i + 1 === hitIdx ? 'hit' : '' };
+    });
+    return Viz.table('前缀和 pre：矩形 → 整数点数（累计）', rows);
+  }
+
+  function gridPanel(rectIdx, cell, markCls) {
+    var r = rects[rectIdx];
+    var w = r[2] - r[0] + 1, h = r[3] - r[1] + 1;
+    var rows = [], marks = {};
+    for (var yy = 0; yy < h; yy++) {
+      var row = [];
+      for (var xx = 0; xx < w; xx++) row.push(String(yy * w + xx));
+      rows.push(row);
+    }
+    if (cell) marks[cell[1] + ',' + cell[0]] = markCls;   // cell = [x 序号, y 序号]，格键是 "行,列"
+    return Viz.grid(rows, {
+      title: '矩形 ' + (rectIdx + 1) + ' 内部按行编号（格子里是 rest）',
+      marks: marks,
+      rowLabels: rows.map(function (_, yy) { return 'y=' + (r[1] + yy); }),
+      colLabels: rows[0].map(function (_, xx) { return 'x=' + (r[0] + xx); })
+    });
+  }
+
+  frames.push(Viz.frame(PRE, '每个矩形的整数点数 = 宽×高，累加成前缀和，总共 ' + total + ' 个点',
+    [prePanel(null), Viz.vars([{ name: '总点数', v: total, cls: '' }])]));
+
+  frames.push(Viz.frame(DRAW, '在 ' + total + ' 个整数点里等概率抽中第 ' + k + ' 个（0 起始）',
+    [prePanel(null), Viz.vars([{ name: 'k', v: k, cls: 'new' }])]));
+
+  var lo = 1, hi = rects.length;
+  while (lo < hi) {
+    var mid = (lo + hi) >> 1;
+    if (pre[mid] > k) hi = mid; else lo = mid + 1;
+  }
+  var ri = lo - 1;
+  frames.push(Viz.frame(BIN, '二分找第一个累计 > k 的矩形：k=' + k + ' 落在矩形 ' + lo,
+    [prePanel(lo), Viz.vars([{ name: 'k', v: k, cls: '' }, { name: '落在', v: '第 ' + lo + ' 个矩形', cls: 'chg' }])]));
+
+  var r2 = rects[ri];
+  var w2 = r2[2] - r2[0] + 1;
+  var rest = k - pre[ri];
+  var xIdx = rest % w2, yIdx = Math.floor(rest / w2);
+  frames.push(Viz.frame(REST, '矩形内按行编号：rest=' + rest + ' 是第 ' + yIdx + ' 行第 ' + xIdx + ' 列',
+    [gridPanel(ri, [xIdx, yIdx], 'new'),
+     Viz.vars([{ name: 'rest', v: rest, cls: 'chg' }, { name: '宽 w', v: w2, cls: '' }])]));
+
+  var x = r2[0] + xIdx, y = r2[1] + yIdx;
+  frames.push(Viz.frame(RET, '换算回坐标：x=' + r2[0] + '+' + xIdx + '，y=' + r2[1] + '+' + yIdx + '，返回 [' + x + ',' + y + ']',
+    [gridPanel(ri, [xIdx, yIdx], 'done'),
+     Viz.vars([{ name: '返回点', v: '[' + x + ',' + y + ']', cls: 'done' }])]));
+
+  return { frames: frames, result: [x, y] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

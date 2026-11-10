@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>鸡蛋掉落 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 179 / 1159</span>
+  <nav class="pn"><a href="0611.html">上一篇</a><a href="offer-21.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">887. </span>鸡蛋掉落</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 30</li><li class="algo">动态规划</li><li class="tag">数学</li><li class="tag">二分查找</li><li class="tag">动态规划</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">换个定义：dp[t][k] = t 次操作、k 个蛋最多能测多少层；t 一轮轮涨到首次盖住 n 就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>不问「n 层要几次」，反问「t 次能测几层」：<code>dp[t][k] = dp[t-1][k-1] + dp[t-1][k] + 1</code>。</li><li>扔一层：碎了往它下面测 <code>dp[t-1][k-1]</code> 层，没碎往上面测 <code>dp[t-1][k]</code> 层，加上本层共 <code>+1</code>。</li><li>一维数组从 <code>j = k</code> <strong>倒序</strong>更新，<code>dp[j-1]</code> 用的才是上一轮的旧值；<code>dp[j]</code> 封顶在 <code>n</code> 防溢出。</li><li><code>t</code> 从 1 起每轮整体重算，<code>dp[k]</code> 首次 ≥ <code>n</code> 时的 <code>t</code> 就是答案，复杂度 O(k·answer)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(k·answer)，空间复杂度 O(k)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> superEggDrop(<span class="k">int</span> k, <span class="k">int</span> n) {</span><span class="ln"><span class="no">3</span>        <span class="c">// dp[j]：t 次操作、j 个鸡蛋最多能确定多少层楼</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[k + <span class="n">1</span>];</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> t = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">while</span> (dp[k] &lt; n) {                  <span class="c">// 还测不满 n 层就再来一轮</span></span><span class="ln"><span class="no">7</span>            t++;</span><span class="ln"><span class="no">8</span>            <span class="k">for</span> (<span class="k">int</span> j = k; j &gt;= <span class="n">1</span>; j--) {   <span class="c">// 倒序：dp[j-1] 要用上一轮的旧值</span></span><span class="ln"><span class="no">9</span>                <span class="c">// 扔一层：碎了往下测 dp[j-1] 层 + 没碎往上测 dp[j] 层 + 当前这层</span></span><span class="ln"><span class="no">10</span>                dp[j] = dp[j - <span class="n">1</span>] + dp[j] + <span class="n">1</span>;</span><span class="ln"><span class="no">11</span>                <span class="k">if</span> (dp[j] &gt; n) dp[j] = n;    <span class="c">// 封顶，防止溢出</span></span><span class="ln"><span class="no">12</span>            }</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> t;</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你 <code>k</code> 枚相同的鸡蛋，并可以使用一栋从第 <code>1</code> 层到第 <code>n</code> 层共有 <code>n</code> 层楼的建筑。</p>
+
+<p>已知存在楼层 <code>f</code> ，满足 <code>0 <= f <= n</code> ，任何从<strong> 高于</strong> <code>f</code> 的楼层落下的鸡蛋都会碎，从 <code>f</code> 楼层或比它低的楼层落下的鸡蛋都不会破。</p>
+
+<p>每次操作，你可以取一枚没有碎的鸡蛋并把它从任一楼层 <code>x</code> 扔下（满足 <code>1 <= x <= n</code>）。如果鸡蛋碎了，你就不能再次使用它。如果某枚鸡蛋扔下后没有摔碎，则可以在之后的操作中 <strong>重复使用</strong> 这枚鸡蛋。</p>
+
+<p>请你计算并返回要确定 <code>f</code> <strong>确切的值</strong> 的 <strong>最小操作次数</strong> 是多少？</p>
+ 
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>k = 1, n = 2
+<strong>输出：</strong>2
+<strong>解释：</strong>
+鸡蛋从 1 楼掉落。如果它碎了，肯定能得出 f = 0 。 
+否则，鸡蛋从 2 楼掉落。如果它碎了，肯定能得出 f = 1 。 
+如果它没碎，那么肯定能得出 f = 2 。 
+因此，在最坏的情况下我们需要移动 2 次以确定 f 是多少。 
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>k = 2, n = 6
+<strong>输出：</strong>3
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>k = 3, n = 14
+<strong>输出：</strong>4
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= k <= 100</code></li>
+	<li><code>1 <= n <= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int superEggDrop(int k, int n) {", "        // dp[j]：t 次操作、j 个鸡蛋最多能确定多少层楼", "        int[] dp = new int[k + 1];", "        int t = 0;", "        while (dp[k] < n) {                  // 还测不满 n 层就再来一轮", "            t++;", "            for (int j = k; j >= 1; j--) {   // 倒序：dp[j-1] 要用上一轮的旧值", "                // 扔一层：碎了往下测 dp[j-1] 层 + 没碎往上测 dp[j] 层 + 当前这层", "                dp[j] = dp[j - 1] + dp[j] + 1;", "                if (dp[j] > n) dp[j] = n;    // 封顶，防止溢出", "            }", "        }", "        return t;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 887. 鸡蛋掉落 —— 图解：复刻 Solution.java 的「t 次操作最多测几层」递推，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { k: 3, n: 14 };
+
+function trace(input) {
+  var k = input.k, n = input.n;
+  var dp = [];
+  for (var j = 0; j <= k; j++) dp.push(0);   // dp[0] 恒为 0，只是占位
+  var frames = [], t = 0;
+
+  function dpPanel(marks) {
+    var items = [];
+    for (var j = 1; j <= k; j++) items.push(String(dp[j]));
+    return Viz.cells(items, { title: 'dp[j]：t 次操作、j 个蛋最多测几层（左小右大）', marks: marks || {}, hideIndex: true });
+  }
+  function varsPanel(extra) {
+    var items = [{ name: 't（已用操作数）', v: t, cls: '' }, { name: 'n（要测满的层数）', v: n, cls: '' }];
+    return Viz.vars(items.concat(extra || []));
+  }
+  function curMark(j) { var m = {}; m[j - 1] = 'chg'; return m; }   // 面板里 j-1 对应下标
+
+  frames.push(Viz.frame('int t = 0;',
+    '0 次操作什么都测不了：dp 全 0，目标是测满 n=' + n + ' 层', [dpPanel({}), varsPanel()]));
+
+  while (dp[k] < n) {
+    t++;
+    for (var j = k; j >= 1; j--) {
+      dp[j] = dp[j - 1] + dp[j] + 1;
+      if (dp[j] > n) dp[j] = n;
+      if (t === 1 && j === k) {
+        frames.push(Viz.frame('dp[j] = dp[j - 1] + dp[j] + 1;',
+          '第 1 轮：1 次操作不管几个蛋都只能确定 1 层', [dpPanel(curMark(j)), varsPanel()]));
+      }
+      if (t === 2 && j === k) {
+        frames.push(Viz.frame('dp[j] = dp[j - 1] + dp[j] + 1;',
+          '第 2 轮：碎了往下 + 没碎往上 + 当前层，涨得越来越快', [dpPanel(curMark(j)), varsPanel()]));
+      }
+    }
+  }
+  var fin = {}; fin[k - 1] = 'done';
+  frames.push(Viz.frame('return t;',
+    'dp[' + k + ']=' + dp[k] + ' ≥ ' + n + '：' + t + ' 次操作足够，返回',
+    [dpPanel(fin), varsPanel([{ name: '答案', v: t, cls: 'done' }])]));
+  return { frames: frames, result: t };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

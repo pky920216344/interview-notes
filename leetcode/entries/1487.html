@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>保证文件名唯一 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1037 / 1159</span>
+  <nav class="pn"><a href="0843.html">上一篇</a><a href="1685.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1487. </span>保证文件名唯一</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">哈希记占用集合；重名就从 k=1 往后试 name(k)，并记下「下次从几试起」避免重复扫描。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>used</code> 集合存所有已用名字（<strong>包括生成出来的变体名</strong>，比如 <code>gta(1)</code> 也算占用）。</li><li>名字没被占用直接用；被占用就从 <code>k=1</code> 试 <code>name(k)</code>，试到空位为止。</li><li>关键加速：<code>next[基名]</code> 记「下次从哪个 k 试起」——已经试过的号必然仍被占用，不用从头扫。</li><li>别忘了把变体名也放进 <code>used</code>，否则 <code>kaido(1)</code> 会被分配两次。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(总字符数)（均摊），空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span>[] getFolderNames(<span class="t">String</span>[] names) {</span><span class="ln"><span class="no">5</span>        <span class="c">// used：已占用的名字；next：基名 -&gt; 下次从哪个后缀号试起（免得每次从头试）</span></span><span class="ln"><span class="no">6</span>        <span class="t">Set</span>&lt;<span class="t">String</span>&gt; used = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt; next = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="t">String</span>[] ans = <span class="k">new</span> <span class="t">String</span>[names.length];</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; names.length; i++) {</span><span class="ln"><span class="no">10</span>            <span class="t">String</span> name = names[i];</span><span class="ln"><span class="no">11</span>            <span class="k">if</span> (!used.contains(name)) {</span><span class="ln"><span class="no">12</span>                ans[i] = name;                     <span class="c">// 没被占用，直接用</span></span><span class="ln"><span class="no">13</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">14</span>                <span class="t">String</span> base = name;</span><span class="ln"><span class="no">15</span>                <span class="k">int</span> k = next.getOrDefault(base, <span class="n">1</span>);</span><span class="ln"><span class="no">16</span>                <span class="t">String</span> candidate = base + <span class="s">"("</span> + k + <span class="s">")"</span>;</span><span class="ln"><span class="no">17</span>                <span class="k">while</span> (used.contains(candidate)) { <span class="c">// 撞名就往后找空位</span></span><span class="ln"><span class="no">18</span>                    k++;</span><span class="ln"><span class="no">19</span>                    candidate = base + <span class="s">"("</span> + k + <span class="s">")"</span>;</span><span class="ln"><span class="no">20</span>                }</span><span class="ln"><span class="no">21</span>                ans[i] = candidate;</span><span class="ln"><span class="no">22</span>                next.put(base, k + <span class="n">1</span>);</span><span class="ln"><span class="no">23</span>            }</span><span class="ln"><span class="no">24</span>            used.add(ans[i]);                      <span class="c">// 新名字（含变体名）一律登记</span></span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个长度为 <code>n</code> 的字符串数组 <code>names</code> 。你将会在文件系统中创建 <code>n</code> 个文件夹：在第 <code>i</code> 分钟，新建名为 <code>names[i]</code> 的文件夹。</p>
+
+<p>由于两个文件 <strong>不能</strong> 共享相同的文件名，因此如果新建文件夹使用的文件名已经被占用，系统会以 <code>(k)</code> 的形式为新文件夹的文件名添加后缀，其中 <code>k</code> 是能保证文件名唯一的 <strong>最小正整数</strong> 。</p>
+
+<p>返回长度为<em> <code>n</code></em> 的字符串数组，其中 <code>ans[i]</code> 是创建第 <code>i</code> 个文件夹时系统分配给该文件夹的实际名称。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>names = [&quot;pes&quot;,&quot;fifa&quot;,&quot;gta&quot;,&quot;pes(2019)&quot;]
+<strong>输出：</strong>[&quot;pes&quot;,&quot;fifa&quot;,&quot;gta&quot;,&quot;pes(2019)&quot;]
+<strong>解释：</strong>文件系统将会这样创建文件名：
+&quot;pes&quot; --&gt; 之前未分配，仍为 &quot;pes&quot;
+&quot;fifa&quot; --&gt; 之前未分配，仍为 &quot;fifa&quot;
+&quot;gta&quot; --&gt; 之前未分配，仍为 &quot;gta&quot;
+&quot;pes(2019)&quot; --&gt; 之前未分配，仍为 &quot;pes(2019)&quot;
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>names = [&quot;gta&quot;,&quot;gta(1)&quot;,&quot;gta&quot;,&quot;avalon&quot;]
+<strong>输出：</strong>[&quot;gta&quot;,&quot;gta(1)&quot;,&quot;gta(2)&quot;,&quot;avalon&quot;]
+<strong>解释：</strong>文件系统将会这样创建文件名：
+&quot;gta&quot; --&gt; 之前未分配，仍为 &quot;gta&quot;
+&quot;gta(1)&quot; --&gt; 之前未分配，仍为 &quot;gta(1)&quot;
+&quot;gta&quot; --&gt; 文件名被占用，系统为该名称添加后缀 (k)，由于 &quot;gta(1)&quot; 也被占用，所以 k = 2 。实际创建的文件名为 &quot;gta(2)&quot; 。
+&quot;avalon&quot; --&gt; 之前未分配，仍为 &quot;avalon&quot;
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>names = [&quot;onepiece&quot;,&quot;onepiece(1)&quot;,&quot;onepiece(2)&quot;,&quot;onepiece(3)&quot;,&quot;onepiece&quot;]
+<strong>输出：</strong>[&quot;onepiece&quot;,&quot;onepiece(1)&quot;,&quot;onepiece(2)&quot;,&quot;onepiece(3)&quot;,&quot;onepiece(4)&quot;]
+<strong>解释：</strong>当创建最后一个文件夹时，最小的正有效 k 为 4 ，文件名变为 &quot;onepiece(4)&quot;。
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre><strong>输入：</strong>names = [&quot;wano&quot;,&quot;wano&quot;,&quot;wano&quot;,&quot;wano&quot;]
+<strong>输出：</strong>[&quot;wano&quot;,&quot;wano(1)&quot;,&quot;wano(2)&quot;,&quot;wano(3)&quot;]
+<strong>解释：</strong>每次创建文件夹 &quot;wano&quot; 时，只需增加后缀中 k 的值即可。</pre>
+
+<p><strong>示例 5：</strong></p>
+
+<pre><strong>输入：</strong>names = [&quot;kaido&quot;,&quot;kaido(1)&quot;,&quot;kaido&quot;,&quot;kaido(1)&quot;]
+<strong>输出：</strong>[&quot;kaido&quot;,&quot;kaido(1)&quot;,&quot;kaido(2)&quot;,&quot;kaido(1)(1)&quot;]
+<strong>解释：</strong>注意，如果含后缀文件名被占用，那么系统也会按规则在名称后添加新的后缀 (k) 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= names.length &lt;= 5 * 10^4</code></li>
+	<li><code>1 &lt;= names[i].length &lt;= 20</code></li>
+	<li><code>names[i]</code> 由小写英文字母、数字和/或圆括号组成。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String[] getFolderNames(String[] names) {", "        // used：已占用的名字；next：基名 -> 下次从哪个后缀号试起（免得每次从头试）", "        Set<String> used = new HashSet<>();", "        Map<String, Integer> next = new HashMap<>();", "        String[] ans = new String[names.length];", "        for (int i = 0; i < names.length; i++) {", "            String name = names[i];", "            if (!used.contains(name)) {", "                ans[i] = name;                     // 没被占用，直接用", "            } else {", "                String base = name;", "                int k = next.getOrDefault(base, 1);", "                String candidate = base + \"(\" + k + \")\";", "                while (used.contains(candidate)) { // 撞名就往后找空位", "                    k++;", "                    candidate = base + \"(\" + k + \")\";", "                }", "                ans[i] = candidate;", "                next.put(base, k + 1);", "            }", "            used.add(ans[i]);                      // 新名字（含变体名）一律登记", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1487. 保证文件名唯一 —— 图解：复刻 Solution.java 的「占用集合 + 后缀试探」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { names: ['gta', 'gta(1)', 'gta', 'avalon'] };
+
+function trace(input) {
+  var names = input.names;
+  var frames = [];
+  var used = [];         // 已占用的名字（按登记顺序）
+  var next = {};         // 基名 -> 下次试起的后缀号
+  var ans = [];
+
+  var FREE = 'if (!used.contains(name)) {';
+  var WHILE = 'while (used.contains(candidate)) {';
+  var REM = 'next.put(base, k + 1);';
+  var DONE = 'return ans;';
+
+  function namesPanel(curIdx) {
+    var marks = {};
+    for (var i = 0; i < names.length; i++) marks[i] = i < curIdx ? 'done' : (i === curIdx ? 'cur' : '');
+    return Viz.cells(names, { title: '按分钟依次创建的名字（黄 = 处理中，绿 = 已创建）', marks: marks });
+  }
+
+  function usedPanel(newName, extra) {
+    var rows = used.map(function (u) {
+      return { k: u, v: '占用', cls: u === newName ? 'new' : '' };
+    });
+    if (extra) rows.push(extra);
+    return Viz.table('已占用的名字 used', rows, { hint: newName ? '（绿 = 刚登记）' : '' });
+  }
+
+  var fired = { free: false, dup: false, next: false };
+
+  for (var i = 0; i < names.length; i++) {
+    var name = names[i];
+    if (!used.includes(name)) {
+      ans.push(name);
+      used.push(name);
+      if (!fired.free) {
+        fired.free = true;
+        frames.push(Viz.frame(FREE, '「' + name + '」没被占用：直接用它', [namesPanel(i), usedPanel(name, null)]));
+      }
+    } else {
+      var base = name;
+      var k = next[base] || 1;
+      var candidate = base + '(' + k + ')';
+      var trials = [];
+      while (used.includes(candidate)) {
+        trials.push({ k: candidate, v: '已占用 ✗', cls: 'bad' });
+        if (!fired.dup) {
+          fired.dup = true;
+          frames.push(Viz.frame(WHILE, '「' + base + '」被占用：从 k=' + k + ' 试起，' + candidate + ' 也被占，继续往后',
+            [namesPanel(i), Viz.table('给 ' + base + ' 试后缀 (k)', trials.slice()), Viz.vars([{ name: 'k', v: k, cls: 'chg' }])]));
+        }
+        k++;
+        candidate = base + '(' + k + ')';
+      }
+      ans.push(candidate);
+      used.push(candidate);
+      next[base] = k + 1;
+      if (!fired.next) {
+        fired.next = true;
+        frames.push(Viz.frame(REM, '采用 ' + candidate + '，记下 next[' + base + ']=' + (k + 1) + '，下次撞名直接从 ' + (k + 1) + ' 试起',
+          [namesPanel(i), usedPanel(candidate, null), Viz.vars([{ name: 'next[' + base + ']', v: k + 1, cls: 'new' }])]));
+      }
+    }
+  }
+
+  frames.push(Viz.frame(DONE, '全部创建完：ans 就是系统实际分配的名字', [(function () {
+    var marks = {};
+    for (var i = 0; i < names.length; i++) marks[i] = 'done';
+    return Viz.cells(ans, { title: '实际分配的名字 ans', marks: marks });
+  })()]));
+
+  return { frames: frames, result: ans };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

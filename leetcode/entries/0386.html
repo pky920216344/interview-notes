@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字典序排数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 277 / 1159</span>
+  <nav class="pn"><a href="0946.html">上一篇</a><a href="0523.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">386. </span>字典序排数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 15</li><li class="algo">深度优先搜索/递归</li><li class="tag">深度优先搜索</li><li class="tag">字典树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">十叉树先序遍历：1~9 出发，孩子 = cur×10 + d（≤ n 才递归），访问顺序就是字典序。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>把 <code>[1, n]</code> 看成一棵十叉树：结点 <code>cur</code> 的孩子是 <code>cur*10 + 0..9</code>；<strong>先序遍历</strong>（先父后子、兄弟从小到大）正好是字典序。</li><li>外层对 <code>1..9</code> 各做一次 DFS；<code>start &gt; n</code> 的直接跳过。</li><li>递归里先 <code>ans.add(cur)</code> 再下探；孩子 <code>cur*10 + d</code> 一旦 <code>&gt; n</code> 直接 <code>return</code>——后面的 <code>d</code> 更大，整枝剪掉。</li><li>递归深度就是数字位数（n ≤ 5×10⁴ 时 ≤ 5 层），额外空间可视为 O(1)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)（递归深度 ≤ 位数）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; lexicalOrder(<span class="k">int</span> n) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="c">// 十叉树先序遍历：1~9 各是一棵子树的根，孩子 = 父 × 10 + d</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> start = <span class="n">1</span>; start &lt;= <span class="n">9</span>; start++) {</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (start &gt; n) <span class="k">break</span>;</span><span class="ln"><span class="no">9</span>            dfs(start, n, ans);</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span> cur, <span class="k">int</span> n, <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ans) {</span><span class="ln"><span class="no">15</span>        ans.add(cur);</span><span class="ln"><span class="no">16</span>        <span class="c">// 先加自己（先序）；孩子 cur*10+d 一旦超出 n，后面的 d 更大，整枝剪掉</span></span><span class="ln"><span class="no">17</span>        cur *= <span class="n">10</span>;</span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="k">int</span> d = <span class="n">0</span>; d &lt;= <span class="n">9</span>; d++) {</span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (cur + d &gt; n) <span class="k">return</span>;</span><span class="ln"><span class="no">20</span>            dfs(cur + d, n, ans);</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数 <code>n</code> ，按字典序返回范围 <code>[1, n]</code> 内所有整数。</p>
+
+<p>你必须设计一个时间复杂度为 <code>O(n)</code> 且使用 <code>O(1)</code> 额外空间的算法。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 13
+<strong>输出：</strong>[1,10,11,12,13,2,3,4,5,6,7,8,9]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 2
+<strong>输出：</strong>[1,2]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 5 * 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> lexicalOrder(int n) {", "        List<Integer> ans = new ArrayList<>();", "        // 十叉树先序遍历：1~9 各是一棵子树的根，孩子 = 父 × 10 + d", "        for (int start = 1; start <= 9; start++) {", "            if (start > n) break;", "            dfs(start, n, ans);", "        }", "        return ans;", "    }", "", "    private void dfs(int cur, int n, List<Integer> ans) {", "        ans.add(cur);", "        // 先加自己（先序）；孩子 cur*10+d 一旦超出 n，后面的 d 更大，整枝剪掉", "        cur *= 10;", "        for (int d = 0; d <= 9; d++) {", "            if (cur + d > n) return;", "            dfs(cur + d, n, ans);", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 386. 字典序排数 —— 图解：复刻 Solution.java 的「十叉树先序遍历」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 13 };
+
+function trace(input) {
+  var n = input.n;
+  var ans = [];
+  var frames = [];
+  var seen = { first: false, second: false, dead: false, jump: false };
+
+  var ADD = 'ans.add(cur);';
+  var DEAD = 'if (cur + d > n) return;';
+  var JUMP = 'dfs(start, n, ans);';
+
+  // 孩子候选行：cur×10 + d 里 ≤ n 的标绿，第一个超界的标红（整枝剪掉）
+  function kidsPanel(cur) {
+    var base = cur * 10;
+    var items = [], marks = {};
+    if (base > n) {
+      items.push(String(base));
+      marks[0] = 'bad';
+    } else {
+      for (var d = 0; d <= 9; d++) {
+        if (base + d <= n) { items.push(String(base + d)); marks[items.length - 1] = 'win'; }
+        else { items.push(String(base + d)); marks[items.length - 1] = 'bad'; break; }
+      }
+    }
+    return Viz.cells(items, {
+      title: 'cur=' + cur + ' 的孩子：cur×10 + d（红 = 超出 n，剪枝）', marks: marks, hideIndex: true
+    });
+  }
+
+  function ansPanel(newIdx) {
+    var marks = {};
+    if (newIdx != null) marks[newIdx] = 'new';
+    return Viz.cells(ans.map(String), {
+      title: ans.length ? 'ans：先序遍历顺序 = 字典序' : 'ans（还没开始）', marks: marks, hideIndex: true
+    });
+  }
+
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  function dfs(cur) {
+    ans.push(cur);
+    if (!seen.first) {
+      seen.first = true;
+      snap(ADD, '先序遍历从 1 出发：先访问 1，再深入它的孩子 10、11…',
+        [ansPanel(0), kidsPanel(cur)]);
+    } else if (ans.length === 2) {
+      snap(ADD, 'ans.add(' + cur + ')：访问完父结点就深入第一个孩子',
+        [ansPanel(ans.length - 1), kidsPanel(cur)]);
+    }
+    var base = cur * 10;
+    if (base > n) {
+      if (cur === n && !seen.dead) {
+        seen.dead = true;
+        snap(DEAD, '到 n=' + n + ' 本身：孩子 ' + base + ' 超界剪枝，1 的子树走完',
+          [ansPanel(null), kidsPanel(cur)]);
+      }
+      return;
+    }
+    for (var d = 0; d <= 9; d++) {
+      if (base + d > n) return;
+      dfs(base + d);
+    }
+  }
+
+  for (var s = 1; s <= 9; s++) {
+    if (s > n) break;
+    if (s >= 2 && !seen.jump) {
+      seen.jump = true;
+      snap(JUMP, '1 的子树走完：从 ' + s + ' 重新出发——' + ans[ans.length - 1] + ' 后面紧跟 ' + s,
+        [ansPanel(null), kidsPanel(s)]);
+    }
+    dfs(s);
+  }
+
+  snap('return ans;', '遍历完：[1..' + n + '] 按字典序排出 ' + ans.length + ' 个数',
+    [ansPanel(null)]);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

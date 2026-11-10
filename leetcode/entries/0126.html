@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>单词接龙 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1102 / 1159</span>
+  <nav class="pn"><a href="0689.html">上一篇</a><a href="1456.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">126. </span>单词接龙 II</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">广度优先搜索</li><li class="aux">回溯</li><li class="aux">哈希表</li><li class="tag">广度优先搜索</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">回溯</li><li class="tag">bidirectional-search</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">分层 BFS 建每个词的「来路表 prev」，到终点后从终点回溯，还原全部最短路径。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>BFS 逐层扩展：新词首次出现记层数，来路（上一层邻居）记进 <code>prev</code>；同层再来路继续追加。</li><li>终点入层后，<strong>只再扩完当前层</strong>就停（<code>lv &gt;= level[end]</code> 即 break）：更深的层不可能在最短路上。</li><li>从 <code>end</code> 沿 <code>prev</code> 一路回溯到 <code>begin</code>，反转即得每条最短路径；<code>prev</code> 图按层严格递减，天然无环。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·L^2·26)（n 词、词长 L），空间复杂度 O(n·L)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; findLadders(<span class="t">String</span> beginWord, <span class="t">String</span> endWord, <span class="t">List</span>&lt;<span class="t">String</span>&gt; wordList) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="t">HashSet</span>&lt;<span class="t">String</span>&gt; dict = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;(wordList);</span><span class="ln"><span class="no">7</span>        <span class="c">// 终点不在词典里，怎么变都到不了</span></span><span class="ln"><span class="no">8</span>        <span class="k">if</span> (!dict.contains(endWord)) <span class="k">return</span> ans;</span><span class="ln"><span class="no">9</span>        dict.remove(beginWord);</span><span class="ln"><span class="no">10</span>        <span class="t">HashMap</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt; level = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        <span class="t">HashMap</span>&lt;<span class="t">String</span>, <span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; prev = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">12</span>        <span class="t">ArrayDeque</span>&lt;<span class="t">String</span>&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">13</span>        q.add(beginWord);</span><span class="ln"><span class="no">14</span>        level.put(beginWord, <span class="n">0</span>);</span><span class="ln"><span class="no">15</span>        <span class="k">int</span> L = beginWord.length();</span><span class="ln"><span class="no">16</span>        <span class="k">while</span> (!q.isEmpty()) {</span><span class="ln"><span class="no">17</span>            <span class="t">String</span> cur = q.poll();</span><span class="ln"><span class="no">18</span>            <span class="k">int</span> lv = level.get(cur);</span><span class="ln"><span class="no">19</span>            <span class="c">// 终点层数已定，更深的层不可能出现在最短路上</span></span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (level.containsKey(endWord) &amp;&amp; lv &gt;= level.get(endWord)) <span class="k">break</span>;</span><span class="ln"><span class="no">21</span>            <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>(cur);</span><span class="ln"><span class="no">22</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; L; i++) {</span><span class="ln"><span class="no">23</span>                <span class="k">char</span> old = sb.charAt(i);</span><span class="ln"><span class="no">24</span>                <span class="k">for</span> (<span class="k">char</span> c = <span class="s">'a'</span>; c &lt;= <span class="s">'z'</span>; c++) {</span><span class="ln"><span class="no">25</span>                    <span class="k">if</span> (c == old) <span class="k">continue</span>;</span><span class="ln"><span class="no">26</span>                    sb.setCharAt(i, c);</span><span class="ln"><span class="no">27</span>                    <span class="t">String</span> next = sb.toString();</span><span class="ln"><span class="no">28</span>                    <span class="k">if</span> (!dict.contains(next)) <span class="k">continue</span>;</span><span class="ln"><span class="no">29</span>                    <span class="k">if</span> (!level.containsKey(next)) {</span><span class="ln"><span class="no">30</span>                        level.put(next, lv + <span class="n">1</span>);</span><span class="ln"><span class="no">31</span>                        <span class="t">List</span>&lt;<span class="t">String</span>&gt; ps = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">32</span>                        ps.add(cur);</span><span class="ln"><span class="no">33</span>                        prev.put(next, ps);</span><span class="ln"><span class="no">34</span>                        q.add(next);</span><span class="ln"><span class="no">35</span>                    } <span class="k">else</span> <span class="k">if</span> (level.get(next) == lv + <span class="n">1</span>) {</span><span class="ln"><span class="no">36</span>                        <span class="c">// 同层的另一条来路：最短路在这里分叉</span></span><span class="ln"><span class="no">37</span>                        prev.get(next).add(cur);</span><span class="ln"><span class="no">38</span>                    }</span><span class="ln"><span class="no">39</span>                }</span><span class="ln"><span class="no">40</span>                sb.setCharAt(i, old);</span><span class="ln"><span class="no">41</span>            }</span><span class="ln"><span class="no">42</span>        }</span><span class="ln"><span class="no">43</span>        <span class="k">if</span> (!level.containsKey(endWord)) <span class="k">return</span> ans;</span><span class="ln"><span class="no">44</span>        <span class="c">// 从终点沿 prev 回溯到起点，反转即得每条最短路径</span></span><span class="ln"><span class="no">45</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; path = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">46</span>        path.add(endWord);</span><span class="ln"><span class="no">47</span>        dfs(endWord, beginWord, prev, path, ans);</span><span class="ln"><span class="no">48</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">49</span>    }</span><span class="ln"><span class="no">50</span> </span><span class="ln"><span class="no">51</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="t">String</span> word, <span class="t">String</span> begin, <span class="t">HashMap</span>&lt;<span class="t">String</span>, <span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; prev,</span><span class="ln"><span class="no">52</span>                     <span class="t">List</span>&lt;<span class="t">String</span>&gt; path, <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; ans) {</span><span class="ln"><span class="no">53</span>        <span class="k">if</span> (word.equals(begin)) {</span><span class="ln"><span class="no">54</span>            <span class="t">List</span>&lt;<span class="t">String</span>&gt; copy = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(path);</span><span class="ln"><span class="no">55</span>            <span class="t">Collections</span>.reverse(copy);</span><span class="ln"><span class="no">56</span>            ans.add(copy);</span><span class="ln"><span class="no">57</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">58</span>        }</span><span class="ln"><span class="no">59</span>        <span class="k">for</span> (<span class="t">String</span> p : prev.get(word)) {</span><span class="ln"><span class="no">60</span>            path.add(p);</span><span class="ln"><span class="no">61</span>            dfs(p, begin, prev, path, ans);</span><span class="ln"><span class="no">62</span>            path.remove(path.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">63</span>        }</span><span class="ln"><span class="no">64</span>    }</span><span class="ln"><span class="no">65</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>按字典&nbsp;<code>wordList</code> 完成从单词 <code>beginWord</code> 到单词 <code>endWord</code> 转化，一个表示此过程的 <strong>转换序列</strong> 是形式上像 <code>beginWord -&gt; s<sub>1</sub> -&gt; s<sub>2</sub> -&gt; ... -&gt; s<sub>k</sub></code> 这样的单词序列，并满足：</p>
+
+<div class="original__bRMd">
+<div>
+<ul>
+	<li>每对相邻的单词之间仅有单个字母不同。</li>
+	<li>转换过程中的每个单词 <code>s<sub>i</sub></code>（<code>1 &lt;= i &lt;= k</code>）必须是字典&nbsp;<code>wordList</code> 中的单词。注意，<code>beginWord</code> 不必是字典 <code>wordList</code> 中的单词。</li>
+	<li><code>s<sub>k</sub> == endWord</code></li>
+</ul>
+
+<p>给你两个单词 <code>beginWord</code> 和 <code>endWord</code> ，以及一个字典 <code>wordList</code> 。请你找出并返回所有从 <code>beginWord</code> 到 <code>endWord</code> 的 <strong>最短转换序列</strong> ，如果不存在这样的转换序列，返回一个空列表。每个序列都应该以单词列表<em> </em><code>[beginWord, s<sub>1</sub>, s<sub>2</sub>, ..., s<sub>k</sub>]</code> 的形式返回。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log","cog"]
+<strong>输出：</strong>[["hit","hot","dot","dog","cog"],["hit","hot","lot","log","cog"]]
+<strong>解释：</strong>存在 2 种最短的转换序列：
+"hit" -&gt; "hot" -&gt; "dot" -&gt; "dog" -&gt; "cog"
+"hit" -&gt; "hot" -&gt; "lot" -&gt; "log" -&gt; "cog"
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log"]
+<strong>输出：</strong>[]
+<strong>解释：</strong>endWord "cog" 不在字典 wordList 中，所以不存在符合要求的转换序列。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= beginWord.length &lt;= 5</code></li>
+	<li><code>endWord.length == beginWord.length</code></li>
+	<li><code>1 &lt;= wordList.length &lt;= 500</code></li>
+	<li><code>wordList[i].length == beginWord.length</code></li>
+	<li><code>beginWord</code>、<code>endWord</code> 和 <code>wordList[i]</code> 由小写英文字母组成</li>
+	<li><code>beginWord != endWord</code></li>
+	<li><code>wordList</code> 中的所有单词 <strong>互不相同</strong></li>
+</ul>
+</div>
+</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<String>> findLadders(String beginWord, String endWord, List<String> wordList) {", "        List<List<String>> ans = new ArrayList<>();", "        HashSet<String> dict = new HashSet<>(wordList);", "        // 终点不在词典里，怎么变都到不了", "        if (!dict.contains(endWord)) return ans;", "        dict.remove(beginWord);", "        HashMap<String, Integer> level = new HashMap<>();", "        HashMap<String, List<String>> prev = new HashMap<>();", "        ArrayDeque<String> q = new ArrayDeque<>();", "        q.add(beginWord);", "        level.put(beginWord, 0);", "        int L = beginWord.length();", "        while (!q.isEmpty()) {", "            String cur = q.poll();", "            int lv = level.get(cur);", "            // 终点层数已定，更深的层不可能出现在最短路上", "            if (level.containsKey(endWord) && lv >= level.get(endWord)) break;", "            StringBuilder sb = new StringBuilder(cur);", "            for (int i = 0; i < L; i++) {", "                char old = sb.charAt(i);", "                for (char c = 'a'; c <= 'z'; c++) {", "                    if (c == old) continue;", "                    sb.setCharAt(i, c);", "                    String next = sb.toString();", "                    if (!dict.contains(next)) continue;", "                    if (!level.containsKey(next)) {", "                        level.put(next, lv + 1);", "                        List<String> ps = new ArrayList<>();", "                        ps.add(cur);", "                        prev.put(next, ps);", "                        q.add(next);", "                    } else if (level.get(next) == lv + 1) {", "                        // 同层的另一条来路：最短路在这里分叉", "                        prev.get(next).add(cur);", "                    }", "                }", "                sb.setCharAt(i, old);", "            }", "        }", "        if (!level.containsKey(endWord)) return ans;", "        // 从终点沿 prev 回溯到起点，反转即得每条最短路径", "        List<String> path = new ArrayList<>();", "        path.add(endWord);", "        dfs(endWord, beginWord, prev, path, ans);", "        return ans;", "    }", "", "    private void dfs(String word, String begin, HashMap<String, List<String>> prev,", "                     List<String> path, List<List<String>> ans) {", "        if (word.equals(begin)) {", "            List<String> copy = new ArrayList<>(path);", "            Collections.reverse(copy);", "            ans.add(copy);", "            return;", "        }", "        for (String p : prev.get(word)) {", "            path.add(p);", "            dfs(p, begin, prev, path, ans);", "            path.remove(path.size() - 1);", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 单词接龙 II —— 图解：复刻 Solution.java 的「分层 BFS 建 prev + 回溯」，5 个关键帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { begin: 'hit', end: 'cog', wordList: ['hot', 'dot', 'dog', 'lot', 'log', 'cog'] };
+
+function trace(input) {
+  var begin = input.begin, end = input.end;
+  var frames = [];
+  var dict = {};
+  input.wordList.forEach(function (w) { dict[w] = true; });
+  if (!dict[end]) return { frames: frames, result: [] };
+  delete dict[begin];
+
+  var level = {}, prev = {}, q = [begin];
+  level[begin] = 0;
+
+  function levelTable(hitKey) {
+    var rows = [];
+    for (var w in level) rows.push({ k: w, v: String(level[w]), cls: w === hitKey ? 'new' : '' });
+    return Viz.table('level：词 → BFS 层数', rows);
+  }
+  function prevTable(hitKey) {
+    var rows = [];
+    for (var w in prev) rows.push({ k: w, v: '← ' + prev[w].join(' '), cls: w === hitKey ? 'new' : '' });
+    return Viz.table('prev：从上一层的谁变来', rows);
+  }
+
+  frames.push(Viz.frame('q.add(beginWord);', '起点入队：' + begin + ' 是第 0 层', [levelTable(null)]));
+
+  var L = begin.length, head = 0;
+  var snappedFirst = false, snappedFork = false, broke = false;
+  while (head < q.length) {
+    var cur = q[head++];
+    var lv = level[cur];
+    if (end in level && lv >= level[end]) { broke = true; break; }
+    for (var i = 0; i < L; i++) {
+      for (var c = 97; c <= 122; c++) {
+        var ch = String.fromCharCode(c);
+        if (ch === cur.charAt(i)) continue;
+        var next = cur.slice(0, i) + ch + cur.slice(i + 1);
+        if (!dict[next]) continue;
+        if (!(next in level)) {
+          level[next] = lv + 1;
+          (prev[next] = prev[next] || []).push(cur);
+          q.push(next);
+          if (!snappedFirst) {
+            snappedFirst = true;
+            frames.push(Viz.frame('prev.put(next, ps);',
+              '逐层扩展：新词 ' + next + ' 记下层数，来路 ' + cur + ' 记进 prev',
+              [levelTable(next), prevTable(next)]));
+          }
+        } else if (level[next] === lv + 1) {
+          prev[next].push(cur);
+          if (next === end && prev[end].length === 2 && !snappedFork) {
+            snappedFork = true;
+            frames.push(Viz.frame('prev.get(next).add(cur);',
+              end + ' 的来路有两条：最短路在这里分叉', [levelTable(next), prevTable(end)]));
+          }
+        }
+      }
+    }
+  }
+
+  if (!(end in level)) return { frames: frames, result: [] };
+
+  frames.push(Viz.frame('if (level.containsKey(endWord) && lv >= level.get(endWord)) break;',
+    broke ? end + ' 已在第 ' + level[end] + ' 层，再扩不可能更短，停止'
+      : '队列扫完也没碰到更深的层，开始回溯', [levelTable(null)]));
+
+  // 从 end 沿 prev 回溯到 begin，反转成每条完整路径
+  var out = [], path = [end];
+  (function dfs(word) {
+    if (word === begin) { out.push(path.slice().reverse()); return; }
+    var ps = prev[word] || [];
+    for (var k = 0; k < ps.length; k++) {
+      path.push(ps[k]);
+      dfs(ps[k]);
+      path.pop();
+    }
+  })(end);
+
+  // 与 Java 导出一致：路径列表按字典序规范化
+  out.sort(function (a, b) {
+    for (var i = 0; i < Math.min(a.length, b.length); i++) {
+      if (a[i] !== b[i]) return a[i] < b[i] ? -1 : 1;
+    }
+    return a.length - b.length;
+  });
+
+  var panels = out.slice(0, 2).map(function (p, idx) {
+    var marks = {};
+    for (var j = 0; j < p.length; j++) marks[j] = 'done';
+    return Viz.cells(p, { title: '最短路径 ' + (idx + 1), marks: marks, hideIndex: true });
+  });
+  panels.push(Viz.vars([{ name: '路径数', v: out.length }, { name: '每条长度', v: out.length ? out[0].length : 0 }]));
+  frames.push(Viz.frame('dfs(endWord, beginWord, prev, path, ans);',
+    '从 ' + end + ' 沿 prev 回溯，共 ' + out.length + ' 条最短路径', panels));
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

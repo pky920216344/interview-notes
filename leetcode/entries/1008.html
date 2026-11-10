@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>前序遍历构造二叉搜索树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 722 / 1159</span>
+  <nav class="pn"><a href="0388.html">上一篇</a><a href="0812.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1008. </span>前序遍历构造二叉搜索树</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">深度优先搜索/递归</li><li class="tag">栈</li><li class="tag">树</li><li class="tag">二叉搜索树</li><li class="tag">数组</li><li class="tag">二叉树</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按 preorder 顺序消费，递归带区间 (lo, hi)：下一个值在区间内就建结点，越界就返回空——O(n)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>全局 <code>idx</code> 只前进不回退：<code>build(lo, hi)</code> 消费「值落在 (lo, hi) 的前缀」，正好是这棵子树的结点。</li><li>建根后把区间劈成两半：左子树 <code>(lo, 根值)</code>、右子树 <code>(根值, hi)</code>。</li><li>下一个值不在区间内就返回空，<strong>idx 不动</strong>，留给上层的另一个分支用——这是 O(n) 的关键。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)（递归栈）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">int</span> idx;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">TreeNode</span> bstFromPreorder(<span class="k">int</span>[] preorder) {</span><span class="ln"><span class="no">5</span>        idx = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">return</span> build(preorder, <span class="t">Integer</span>.MIN_VALUE, <span class="t">Integer</span>.MAX_VALUE);</span><span class="ln"><span class="no">7</span>    }</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="c">// preorder[idx..] 里值落在 (lo, hi) 的前缀正好构成这棵子树；读到越界值就停</span></span><span class="ln"><span class="no">10</span>    <span class="k">private</span> <span class="t">TreeNode</span> build(<span class="k">int</span>[] preorder, <span class="k">int</span> lo, <span class="k">int</span> hi) {</span><span class="ln"><span class="no">11</span>        <span class="k">if</span> (idx == preorder.length || preorder[idx] &lt; lo || preorder[idx] &gt; hi) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">12</span>        <span class="t">TreeNode</span> root = <span class="k">new</span> <span class="t">TreeNode</span>(preorder[idx++]);</span><span class="ln"><span class="no">13</span>        root.left = build(preorder, lo, root.val);</span><span class="ln"><span class="no">14</span>        root.right = build(preorder, root.val, hi);</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> root;</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个整数数组，它表示BST(即 <strong>二叉搜索树</strong> )的 <strong>先</strong><strong>序遍历</strong> ，构造树并返回其根。</p>
+
+<p><strong>保证</strong> 对于给定的测试用例，总是有可能找到具有给定需求的二叉搜索树。</p>
+
+<p><strong>二叉搜索树</strong> 是一棵二叉树，其中每个节点，&nbsp;<code>Node.left</code>&nbsp;的任何后代的值 <strong>严格小于</strong> <code>Node.val</code>&nbsp;,&nbsp;<code>Node.right</code>&nbsp;的任何后代的值 <strong>严格大于</strong> <code>Node.val</code>。</p>
+
+<p>二叉树的 <strong>前序遍历</strong> 首先显示节点的值，然后遍历<code>Node.left</code>，最后遍历<code>Node.right</code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/28d82eeebdf8.png" /></p>
+
+<pre>
+<strong>输入：</strong>preorder = [8,5,1,7,10,12]
+<strong>输出：</strong>[8,5,10,1,7,null,12]
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> preorder = [1,3]
+<strong>输出:</strong> [1,null,3]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= preorder.length &lt;= 100</code></li>
+	<li><code>1 &lt;= preorder[i]&nbsp;&lt;= 10^8</code></li>
+	<li><code>preorder</code> 中的值 <strong>互不相同</strong></li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private int idx;", "", "    public TreeNode bstFromPreorder(int[] preorder) {", "        idx = 0;", "        return build(preorder, Integer.MIN_VALUE, Integer.MAX_VALUE);", "    }", "", "    // preorder[idx..] 里值落在 (lo, hi) 的前缀正好构成这棵子树；读到越界值就停", "    private TreeNode build(int[] preorder, int lo, int hi) {", "        if (idx == preorder.length || preorder[idx] < lo || preorder[idx] > hi) return null;", "        TreeNode root = new TreeNode(preorder[idx++]);", "        root.left = build(preorder, lo, root.val);", "        root.right = build(preorder, root.val, hi);", "        return root;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1008. 前序遍历构造二叉搜索树 —— 图解：复刻 Solution.java 的「区间递归 + 越界回退」，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { preorder: [8, 5, 1, 7, 10, 12] };
+
+function trace(input) {
+  var pre = input.preorder;
+  var frames = [];
+  var idx = 0;
+  var nodes = [];   // 已建好的结点（按创建序）：{ v, l, r }，nodes[0] 是根
+
+  // 层序展开（不删尾部 null），values 是对应的取值数组；返回 [对象数组, 取值数组]
+  // 与 lib/Trees.toLevel 相同的队列写法：null 不再扩展，队列才会耗尽
+  function flatten(root) {
+    var objs = [], vals = [];
+    if (!root) return [objs, vals];
+    var q = [root];
+    while (q.length) {
+      var nd = q.shift();
+      if (!nd) { objs.push(null); vals.push(null); continue; }
+      objs.push(nd); vals.push(nd.v);
+      q.push(nd.l, nd.r);
+    }
+    return [objs, vals];
+  }
+  function trim(vals) {
+    var out = vals.slice();
+    while (out.length && out[out.length - 1] === null) out.pop();
+    return out;
+  }
+
+  function treePanel(curNode, title) {
+    var pair = flatten(nodes[0] || null);
+    var objs = pair[0], vals = trim(pair[1]);
+    var marks = {}, labels = [];
+    if (curNode) {
+      var at = pair[0].indexOf(curNode);   // 层序下标
+      if (at >= 0 && vals[at] !== null && at < vals.length) {
+        marks[at] = 'cur';
+        labels.push({ at: at, label: '新结点 ' + curNode.v, cls: 'p-cur' });
+      }
+    }
+    return Viz.tree(vals, { title: title || '已建好的树', marks: marks, labels: labels });
+  }
+  function varsPanel(lo, hi) {
+    var fmt = function (x) { return x <= -1e17 ? '-∞' : x >= 1e17 ? '∞' : String(x); };
+    return Viz.vars([
+      { name: 'idx（下一个待读）', v: String(idx), cls: '' },
+      { name: '当前区间 (lo, hi)', v: '(' + fmt(lo) + ', ' + fmt(hi) + ')', cls: 'chg' }
+    ]);
+  }
+
+  // 与 Solution.java 相同的递归：值落在 (lo, hi) 才建，否则空子树回退
+  function build(lo, hi) {
+    if (idx === pre.length || pre[idx] < lo || pre[idx] > hi) {
+      if (idx < pre.length && pre[idx] === 7 && hi === 1) {
+        frames.push(Viz.frame('if (idx == preorder.length || preorder[idx] < lo || preorder[idx] > hi) return null;',
+          '7 不落在 (−∞, 1)：结点 1 的左右都为空，回退去接 5 的右子树',
+          [treePanel(null), varsPanel(lo, hi)]));
+      }
+      return null;
+    }
+    var node = { v: pre[idx++], l: null, r: null };
+    nodes.push(node);
+    if (node.v === 8 && hi >= 1e17) {
+      frames.push(Viz.frame('return build(preorder, Integer.MIN_VALUE, Integer.MAX_VALUE);',
+        '根 8：剩下的值要么进左子树（< 8）要么进右子树（> 8）',
+        [treePanel(node), varsPanel(lo, hi)]));
+    }
+    if (node.v === 5) {
+      frames.push(Viz.frame('root.left = build(preorder, lo, root.val);',
+        '5 < 8：是 8 的左孩子，它的子树值只能在 (−∞, 5) 里',
+        [treePanel(node), varsPanel(lo, hi)]));
+    }
+    if (node.v === 7) {
+      frames.push(Viz.frame('root.left = build(preorder, lo, root.val);',
+        '7 落在 (5, 8)：接成 5 的右孩子，上界由祖先的 8 兜底',
+        [treePanel(node), varsPanel(lo, hi)]));
+    }
+    if (node.v === 10) {
+      frames.push(Viz.frame('root.right = build(preorder, root.val, hi);',
+        '10 > 8：是 8 的右孩子，区间收紧成 (8, ∞)',
+        [treePanel(node), varsPanel(lo, hi)]));
+    }
+    node.l = build(lo, node.v);
+    node.r = build(node.v, hi);
+    return node;
+  }
+
+  build(-Infinity, Infinity);
+
+  frames.push(Viz.frame('return root;',
+    '全部值消费完：BST 建好，层序就是要求的输出',
+    [treePanel(null, '结果'), Viz.vars([{ name: 'idx', v: String(idx), cls: 'done' }])]));
+
+  return { frames: frames, result: trim(flatten(nodes[0] || null)[1]) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

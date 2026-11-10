@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>解数独 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 240 / 1159</span>
+  <nav class="pn"><a href="offer-34.html">上一篇</a><a href="0567.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">37. </span>解数独</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 20</li><li class="algo">回溯</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">回溯</li><li class="tag">矩阵</li><li class="tag">algorithm-x</li><li class="tag">dancing-links</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">回溯：行/列/宫三张布尔表记已用数字，按行展开逐空格试填 1-9，此路不通就擦掉退回。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>预处理：把已给数字记进 <code>row[r][d]</code>、<code>col[c][d]</code>、<code>box[宫号][d]</code> 三张布尔表，宫号 = <code>r/3*3 + c/3</code>。</li><li>按行展开成 <code>p = 0..80</code> 逐格走：已给的直接跳过；空格从 <code>'1'</code> 到 <code>'9'</code> 试，三位都没用过才放。</li><li>放下后三张表置位，递归下一格；失败就<strong>擦掉</strong>（还原数字和三张表），试下一个数字。</li><li><code>fill</code> 返回 <code>true</code> 一路向上传播、立即结束；题面保证唯一解，找到即答案。</li><li>顺序固定（格子从左上到右下、数字从小到大）——第一个找到的解就是唯一解。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(9^m)，m 为空格数（剪枝后远小于此），空间复杂度 O(m) 递归栈 + 三张布尔表</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">void</span> solveSudoku(<span class="k">char</span>[][] board) {</span><span class="ln"><span class="no">3</span>        <span class="k">boolean</span>[][] row = <span class="k">new</span> <span class="k">boolean</span>[<span class="n">9</span>][<span class="n">9</span>], col = <span class="k">new</span> <span class="k">boolean</span>[<span class="n">9</span>][<span class="n">9</span>], box = <span class="k">new</span> <span class="k">boolean</span>[<span class="n">9</span>][<span class="n">9</span>];</span><span class="ln"><span class="no">4</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; <span class="n">9</span>; r++)</span><span class="ln"><span class="no">5</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; <span class="n">9</span>; c++)</span><span class="ln"><span class="no">6</span>                <span class="k">if</span> (board[r][c] != <span class="s">'.'</span>) {</span><span class="ln"><span class="no">7</span>                    <span class="k">int</span> d = board[r][c] - <span class="s">'1'</span>;</span><span class="ln"><span class="no">8</span>                    row[r][d] = col[c][d] = box[r / <span class="n">3</span> * <span class="n">3</span> + c / <span class="n">3</span>][d] = <span class="k">true</span>;</span><span class="ln"><span class="no">9</span>                }</span><span class="ln"><span class="no">10</span>        fill(board, <span class="n">0</span>, row, col, box);</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="c">// 从第 p 格（按行展开）开始填；p 到 81 说明全部填满</span></span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="k">boolean</span> fill(<span class="k">char</span>[][] b, <span class="k">int</span> p, <span class="k">boolean</span>[][] row, <span class="k">boolean</span>[][] col, <span class="k">boolean</span>[][] box) {</span><span class="ln"><span class="no">15</span>        <span class="k">if</span> (p == <span class="n">81</span>) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">int</span> r = p / <span class="n">9</span>, c = p % <span class="n">9</span>, k = r / <span class="n">3</span> * <span class="n">3</span> + c / <span class="n">3</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (b[r][c] != <span class="s">'.'</span>) <span class="k">return</span> fill(b, p + <span class="n">1</span>, row, col, box);</span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="k">char</span> d = <span class="s">'1'</span>; d &lt;= <span class="s">'9'</span>; d++) {</span><span class="ln"><span class="no">19</span>            <span class="k">int</span> i = d - <span class="s">'1'</span>;</span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (row[r][i] || col[c][i] || box[k][i]) <span class="k">continue</span>;</span><span class="ln"><span class="no">21</span>            b[r][c] = d;</span><span class="ln"><span class="no">22</span>            row[r][i] = col[c][i] = box[k][i] = <span class="k">true</span>;</span><span class="ln"><span class="no">23</span>            <span class="k">if</span> (fill(b, p + <span class="n">1</span>, row, col, box)) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">24</span>            b[r][c] = <span class="s">'.'</span>;   <span class="c">// 这条路不通：擦掉，退回去试下一个数字</span></span><span class="ln"><span class="no">25</span>            row[r][i] = col[c][i] = box[k][i] = <span class="k">false</span>;</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>编写一个程序，通过填充空格来解决数独问题。</p>
+
+<p>数独的解法需<strong> 遵循如下规则</strong>：</p>
+
+<ol>
+	<li>数字&nbsp;<code>1-9</code>&nbsp;在每一行只能出现一次。</li>
+	<li>数字&nbsp;<code>1-9</code>&nbsp;在每一列只能出现一次。</li>
+	<li>数字&nbsp;<code>1-9</code>&nbsp;在每一个以粗实线分隔的&nbsp;<code>3x3</code>&nbsp;宫内只能出现一次。（请参考示例图）</li>
+</ol>
+
+<p>数独部分空格内已填入了数字，空白格用&nbsp;<code>'.'</code>&nbsp;表示。</p>
+
+
+
+<div class="top-view__1vxA">
+<div class="original__bRMd">
+<div>
+<p><strong>示例 1：</strong></p>
+<img src="../assets/img/d3c0386041d5.png" style="height:250px; width:250px" />
+<pre>
+<strong>输入：</strong>board = [["5","3",".",".","7",".",".",".","."],["6",".",".","1","9","5",".",".","."],[".","9","8",".",".",".",".","6","."],["8",".",".",".","6",".",".",".","3"],["4",".",".","8",".","3",".",".","1"],["7",".",".",".","2",".",".",".","6"],[".","6",".",".",".",".","2","8","."],[".",".",".","4","1","9",".",".","5"],[".",".",".",".","8",".",".","7","9"]]
+<strong>输出：</strong>[["5","3","4","6","7","8","9","1","2"],["6","7","2","1","9","5","3","4","8"],["1","9","8","3","4","2","5","6","7"],["8","5","9","7","6","1","4","2","3"],["4","2","6","8","5","3","7","9","1"],["7","1","3","9","2","4","8","5","6"],["9","6","1","5","3","7","2","8","4"],["2","8","7","4","1","9","6","3","5"],["3","4","5","2","8","6","1","7","9"]]
+<strong>解释：</strong>输入的数独如上图所示，唯一有效的解决方案如下所示：
+
+<img src=" https://assets.leetcode.cn/aliyun-lc-upload/uploads/2021/04/12/250px-sudoku-by-l2g-20050714_solutionsvg.png" style="height:250px; width:250px" />
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>board.length == 9</code></li>
+	<li><code>board[i].length == 9</code></li>
+	<li><code>board[i][j]</code> 是一位数字或者 <code>'.'</code></li>
+	<li>题目数据 <strong>保证</strong> 输入数独仅有一个解</li>
+</ul>
+</div>
+</div>
+</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public void solveSudoku(char[][] board) {", "        boolean[][] row = new boolean[9][9], col = new boolean[9][9], box = new boolean[9][9];", "        for (int r = 0; r < 9; r++)", "            for (int c = 0; c < 9; c++)", "                if (board[r][c] != '.') {", "                    int d = board[r][c] - '1';", "                    row[r][d] = col[c][d] = box[r / 3 * 3 + c / 3][d] = true;", "                }", "        fill(board, 0, row, col, box);", "    }", "", "    // 从第 p 格（按行展开）开始填；p 到 81 说明全部填满", "    private boolean fill(char[][] b, int p, boolean[][] row, boolean[][] col, boolean[][] box) {", "        if (p == 81) return true;", "        int r = p / 9, c = p % 9, k = r / 3 * 3 + c / 3;", "        if (b[r][c] != '.') return fill(b, p + 1, row, col, box);", "        for (char d = '1'; d <= '9'; d++) {", "            int i = d - '1';", "            if (row[r][i] || col[c][i] || box[k][i]) continue;", "            b[r][c] = d;", "            row[r][i] = col[c][i] = box[k][i] = true;", "            if (fill(b, p + 1, row, col, box)) return true;", "            b[r][c] = '.';   // 这条路不通：擦掉，退回去试下一个数字", "            row[r][i] = col[c][i] = box[k][i] = false;", "        }", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 37. 解数独 —— 图解：复刻 Solution.java 的「三张布尔表 + 回溯试填」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  board: [
+    '53..7....',
+    '6..195...',
+    '.98....6.',
+    '8...6...3',
+    '4..8.3..1',
+    '7...2...6',
+    '.6....28.',
+    '...419..5',
+    '....8..79'
+  ]
+};
+
+function trace(input) {
+  var b = input.board.map(function (s) { return s.split(''); });
+  var frames = [];
+  var row = [], col = [], box = [];
+  var r, c, i;
+  for (r = 0; r < 9; r++) {
+    var fresh = [false, false, false, false, false, false, false, false, false];
+    row.push(fresh.slice());
+    col.push(fresh.slice());
+    box.push(fresh.slice());
+  }
+  for (r = 0; r < 9; r++)
+    for (c = 0; c < 9; c++)
+      if (b[r][c] !== '.') {
+        var d0 = b[r][c].charCodeAt(0) - 49;
+        row[r][d0] = col[c][d0] = box[Math.floor(r / 3) * 3 + Math.floor(c / 3)][d0] = true;
+      }
+
+  var FILL0 = 'fill(board, 0, row, col, box);';
+  var PLACE = 'b[r][c] = d;';
+  var SKIP = 'if (row[r][i] || col[c][i] || box[k][i]) continue;';
+  var UNDO = "b[r][c] = '.';";
+  var DONE = 'if (fill(b, p + 1, row, col, box)) return true;';
+
+  var firstEmpty = -1;
+  outer:
+  for (r = 0; r < 9; r++) for (c = 0; c < 9; c++) if (b[r][c] === '.') { firstEmpty = r * 9 + c; break outer; }
+
+  function gridPanel(extra) {
+    var marks = extra ? extra : {};
+    var rows = [];
+    for (var rr = 0; rr < 9; rr++) rows.push(b[rr].slice());
+    return Viz.grid(rows, { title: '盘面（. 为空格）', marks: marks });
+  }
+  function varsPanel() {
+    var dots = 0, rr, cc;
+    for (rr = 0; rr < 9; rr++) for (cc = 0; cc < 9; cc++) if (b[rr][cc] === '.') dots++;
+    return Viz.vars([{ name: '还剩空格', v: dots }]);
+  }
+
+  var placeSeen = false, blockSeen = false, undoSeen = false, doneSeen = false;
+
+  frames.push(Viz.frame(FILL0, '先把已给数字记进行/列/宫三张布尔表，再从左上角逐格填',
+    [gridPanel(null), varsPanel()]));
+
+  function fill(p) {
+    if (p === 81) return true;
+    var rr = Math.floor(p / 9), cc = p % 9, k = Math.floor(rr / 3) * 3 + Math.floor(cc / 3);
+    if (b[rr][cc] !== '.') return fill(p + 1);
+    for (var i = 0; i < 9; i++) {
+      if (row[rr][i] || col[cc][i] || box[k][i]) {
+        if (!blockSeen) {
+          blockSeen = true;
+          var ex = {};
+          ex[rr + ',' + cc] = 'cur';
+          var v = String(i + 1), j2;
+          for (j2 = 0; j2 < 9; j2++) {
+            if (j2 !== cc && b[rr][j2] === v) ex[rr + ',' + j2] = 'bad';
+            if (j2 !== rr && b[j2][cc] === v) ex[j2 + ',' + cc] = 'bad';
+            var br2 = Math.floor(rr / 3) * 3 + Math.floor(j2 / 3), bc2 = Math.floor(cc / 3) * 3 + j2 % 3;
+            if ((br2 !== rr || bc2 !== cc) && b[br2][bc2] === v) ex[br2 + ',' + bc2] = 'bad';
+          }
+          frames.push(Viz.frame(SKIP, '试到 ' + v + ' 被挡：这格的行/列/宫里已经有 ' + v,
+            [gridPanel(ex), varsPanel()]));
+        }
+        continue;
+      }
+      b[rr][cc] = String(i + 1);
+      row[rr][i] = col[cc][i] = box[k][i] = true;
+      if (p === firstEmpty && i === 0 && !placeSeen) {
+        placeSeen = true;
+        var ex2 = {};
+        var j3;
+        for (j3 = 0; j3 < 9; j3++) {
+          ex2[rr + ',' + j3] = 'win';
+          ex2[j3 + ',' + cc] = 'win';
+          ex2[(Math.floor(rr / 3) * 3 + Math.floor(j3 / 3)) + ',' + (Math.floor(cc / 3) * 3 + j3 % 3)] = 'win';
+        }
+        ex2[rr + ',' + cc] = 'cur';
+        frames.push(Viz.frame(PLACE, '第一个空格 (' + rr + ',' + cc + ')：试 1——所在行列宫都没有 1，先放下',
+          [gridPanel(ex2), varsPanel()]));
+      }
+      if (fill(p + 1)) {
+        if (!doneSeen) {
+          doneSeen = true;
+          var ex3 = {};
+          var rr2, cc2;
+          for (rr2 = 0; rr2 < 9; rr2++) for (cc2 = 0; cc2 < 9; cc2++) if (b[rr2][cc2] !== '.') ex3[rr2 + ',' + cc2] = 'done';
+          frames.push(Viz.frame(DONE, '81 格全填满：回溯收敛，得到完整解', [gridPanel(ex3), varsPanel()]));
+        }
+        return true;
+      }
+      if (!undoSeen) {
+        undoSeen = true;
+        var ex4 = {};
+        ex4[rr + ',' + cc] = 'bad';
+        frames.push(Viz.frame(UNDO, '往后填不下去：擦掉 (' + rr + ',' + cc + ') 的 ' + b[rr][cc] + '，换下一个数字',
+          [gridPanel(ex4), varsPanel()]));
+      }
+      b[rr][cc] = '.';
+      row[rr][i] = col[cc][i] = box[k][i] = false;
+    }
+    return false;
+  }
+
+  fill(0);
+  return { frames: frames, result: b.map(function (rowArr) { return rowArr.join(''); }) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

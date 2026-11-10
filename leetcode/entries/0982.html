@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>按位与为零的三元组 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 920 / 1159</span>
+  <nav class="pn"><a href="1064.html">上一篇</a><a href="1163.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">982. </span>按位与为零的三元组</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">动态规划</li><li class="aux">位运算</li><li class="tag">位运算</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">两两枚举记 g[m] = a&amp;b==m 的对数；SOS 求 f[x] = 值⊆x 的个数；答案 = Σ g[m]·f[~m]。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>枚举前两数：<code>g[a &amp; b]++</code>，<code>n ≤ 1000</code> 时 10⁶ 次循环，远快于三重循环的 10⁹。</li><li><code>f[x] = Σ_{c ⊆ x} cnt[c]</code> 用 SOS 逐位累加：<code>f[x] += f[x ^ (1 &lt;&lt; b)]</code>，两重循环 16·2¹⁶。</li><li>三数 AND 为 0 ⟺ 第三个数 <code>c ⊆ ~m</code>（<code>m = a &amp; b</code>）→ 答案 = <code>Σ g[m] · f[~m &amp; 0xFFFF]</code>。</li><li>三元组最多 1000³ = 10⁹，<code>int</code> 装得下，但乘积先按 <code>long</code> 累加更稳。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n² + 16·2^16)，空间复杂度 O(2^16)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> countTriplets(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span>[] cnt = <span class="k">new</span> <span class="k">int</span>[<span class="n">1</span> &lt;&lt; <span class="n">16</span>];</span><span class="ln"><span class="no">4</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) cnt[x]++;</span><span class="ln"><span class="no">5</span>        <span class="c">// g[m]：a &amp; b == m 的有序对 (a, b) 个数；n ≤ 1000，直接两两枚举</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] g = <span class="k">new</span> <span class="k">int</span>[<span class="n">1</span> &lt;&lt; <span class="n">16</span>];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> a : nums) <span class="k">for</span> (<span class="k">int</span> b : nums) g[a &amp; b]++;</span><span class="ln"><span class="no">8</span>        <span class="c">// f[x] = Σ_{c ⊆ x} cnt[c]：子集和（SOS），逐位累加</span></span><span class="ln"><span class="no">9</span>        <span class="k">long</span>[] f = <span class="k">new</span> <span class="k">long</span>[<span class="n">1</span> &lt;&lt; <span class="n">16</span>];</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> x = <span class="n">0</span>; x &lt; (<span class="n">1</span> &lt;&lt; <span class="n">16</span>); x++) f[x] = cnt[x];</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> b = <span class="n">0</span>; b &lt; <span class="n">16</span>; b++)</span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> x = <span class="n">0</span>; x &lt; (<span class="n">1</span> &lt;&lt; <span class="n">16</span>); x++)</span><span class="ln"><span class="no">13</span>                <span class="k">if</span> ((x &amp; (<span class="n">1</span> &lt;&lt; b)) != <span class="n">0</span>) f[x] += f[x ^ (<span class="n">1</span> &lt;&lt; b)];</span><span class="ln"><span class="no">14</span>        <span class="c">// 第三个数 c 要与 m = a &amp; b 无公共位，即 c ⊆ ~m：按 g[m] 配 f[~m] 求和</span></span><span class="ln"><span class="no">15</span>        <span class="k">long</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> m = <span class="n">0</span>; m &lt; (<span class="n">1</span> &lt;&lt; <span class="n">16</span>); m++) ans += g[m] * f[(~m) &amp; 0xFFFF];</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> (<span class="k">int</span>) ans;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> ，返回其中 <strong>按位与三元组</strong> 的数目。</p>
+
+<p><strong>按位与三元组</strong> 是由下标 <code>(i, j, k)</code> 组成的三元组，并满足下述全部条件：</p>
+
+<ul>
+	<li><code>0 &lt;= i &lt; nums.length</code></li>
+	<li><code>0 &lt;= j &lt; nums.length</code></li>
+	<li><code>0 &lt;= k &lt; nums.length</code></li>
+	<li><code>nums[i] &amp; nums[j] &amp; nums[k] == 0</code> ，其中 <code>&amp;</code> 表示按位与运算符。</li>
+</ul>
+&nbsp;
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [2,1,3]
+<strong>输出：</strong>12
+<strong>解释：</strong>可以选出如下 i, j, k 三元组：
+(i=0, j=0, k=1) : 2 &amp; 2 &amp; 1
+(i=0, j=1, k=0) : 2 &amp; 1 &amp; 2
+(i=0, j=1, k=1) : 2 &amp; 1 &amp; 1
+(i=0, j=1, k=2) : 2 &amp; 1 &amp; 3
+(i=0, j=2, k=1) : 2 &amp; 3 &amp; 1
+(i=1, j=0, k=0) : 1 &amp; 2 &amp; 2
+(i=1, j=0, k=1) : 1 &amp; 2 &amp; 1
+(i=1, j=0, k=2) : 1 &amp; 2 &amp; 3
+(i=1, j=1, k=0) : 1 &amp; 1 &amp; 2
+(i=1, j=2, k=0) : 1 &amp; 3 &amp; 2
+(i=2, j=0, k=1) : 3 &amp; 2 &amp; 1
+(i=2, j=1, k=0) : 3 &amp; 1 &amp; 2
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [0,0,0]
+<strong>输出：</strong>27
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 1000</code></li>
+	<li><code>0 &lt;= nums[i] &lt; 2<sup>16</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int countTriplets(int[] nums) {", "        int[] cnt = new int[1 << 16];", "        for (int x : nums) cnt[x]++;", "        // g[m]：a & b == m 的有序对 (a, b) 个数；n ≤ 1000，直接两两枚举", "        int[] g = new int[1 << 16];", "        for (int a : nums) for (int b : nums) g[a & b]++;", "        // f[x] = Σ_{c ⊆ x} cnt[c]：子集和（SOS），逐位累加", "        long[] f = new long[1 << 16];", "        for (int x = 0; x < (1 << 16); x++) f[x] = cnt[x];", "        for (int b = 0; b < 16; b++)", "            for (int x = 0; x < (1 << 16); x++)", "                if ((x & (1 << b)) != 0) f[x] += f[x ^ (1 << b)];", "        // 第三个数 c 要与 m = a & b 无公共位，即 c ⊆ ~m：按 g[m] 配 f[~m] 求和", "        long ans = 0;", "        for (int m = 0; m < (1 << 16); m++) ans += g[m] * f[(~m) & 0xFFFF];", "        return (int) ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 982. 按位与为零的三元组 —— 图解：复刻 Solution.java 的「两两记 g、SOS 求 f、按补集配对」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// JS 里值域按输入缩到 bits 位（结果与 Java 的 16 位完全一致，高位上没有值）。
+
+var STORY_INPUT = { nums: [2, 1, 3] };
+
+function trace(input) {
+  var nums = input.nums;
+  var n = nums.length;
+  var frames = [];
+
+  var cnt = [];
+  var maxV = 0;
+  for (var i = 0; i < n; i++) {
+    maxV = Math.max(maxV, nums[i]);
+  }
+  var bits = 1;
+  while ((1 << bits) <= maxV) bits++;
+  for (var x = 0; x < (1 << bits); x++) cnt[x] = 0;
+  for (i = 0; i < n; i++) cnt[nums[i]]++;
+
+  function bin(m) {
+    var out = '';
+    for (var b = bits - 1; b >= 0; b--) out += (m >> b) & 1;
+    return out;
+  }
+  function tableOf(title, arr, hitM) {
+    var rows = [];
+    for (var m = 0; m < arr.length; m++) {
+      if (!arr[m]) continue;
+      rows.push({ k: bin(m), v: String(arr[m]), cls: m === hitM ? 'hit' : '' });
+    }
+    return Viz.table(title, rows, { hint: 'k = 掩码（二进制），v = 个数' });
+  }
+  function varsPanel(pairsTxt) {
+    return Viz.vars([{ name: '三元组数', v: String(ans), cls: 'chg' }].concat(pairsTxt ? [{ name: '当前配对', v: pairsTxt }] : []));
+  }
+
+  var g = [];
+  for (x = 0; x < (1 << bits); x++) g[x] = 0;
+  for (i = 0; i < n; i++) for (var j = 0; j < n; j++) g[nums[i] & nums[j]]++;
+
+  frames.push(Viz.frame('for (int x : nums) cnt[x]++;',
+    '先数每个值的出现次数（值域 0~' + ((1 << bits) - 1) + '）', [tableOf('cnt[v]：值 → 出现次数', cnt, null)]));
+
+  frames.push(Viz.frame('for (int b = 0; b < 16; b++)',
+    'g 算好了：n² 个有序对按 a&b 的值分桶（m=0 的 2 对是最有希望的组合）', [tableOf('g[m]：a & b = m 的对数', g, 0), tableOf('cnt[v]：值 → 出现次数', cnt, null)]));
+
+  var f = [];
+  for (x = 0; x < (1 << bits); x++) f[x] = cnt[x];
+  for (var b2 = 0; b2 < bits; b2++)
+    for (x = 0; x < (1 << bits); x++)
+      if (x & (1 << b2)) f[x] += f[x ^ (1 << b2)];
+
+  frames.push(Viz.frame('for (int m = 0; m < (1 << 16); m++) ans += g[m] * f[(~m) & 0xFFFF];',
+    'f 算好了（SOS 子集和）：f[x] = 值 ⊆ x 的元素个数', [tableOf('f[x]：值 ⊆ x 的元素个数', f, null)]));
+
+  var ans = 0;
+  var full = (1 << bits) - 1;
+  var pairs = [];
+  for (x = 0; x < (1 << bits); x++) {
+    if (g[x]) {
+      ans += g[x] * f[full ^ x];
+      pairs.push({ k: 'm=' + bin(x), v: g[x] + '×' + f[full ^ x] + '=' + g[x] * f[full ^ x] });
+    }
+  }
+  frames.push(Viz.frame('return (int) ans;',
+    '每个 m 配上补集：g[m]×f[~m] 全加起来 = ' + ans, [tableOf('g[m]：a & b = m 的对数', g, null), tableOf('f[x]：值 ⊆ x 的元素个数', f, null), Viz.table('g[m] × f[~m] 配对明细', pairs), varsPanel(null)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

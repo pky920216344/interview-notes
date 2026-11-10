@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最多能完成排序的块 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1078 / 1159</span>
+  <nav class="pn"><a href="offer-30.html">上一篇</a><a href="0835.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">768. </span>最多能完成排序的块 II</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">单调栈</li><li class="tag">栈</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">排序</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">单调栈存「每个已定块的最大值」：新数小于栈顶就把那些块并进来取最大，最后栈深即块数。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>块与块之间必须「左边整块 ≤ 右边整块」，所以从左到右<strong>块最大值严格递增</strong>——栈里就存这些最大值。</li><li>新数 <code>x</code> ≥ 栈顶：自己开一块（相等也算，<code>[4][4]</code> 能分开）。</li><li><code>x</code> 更小：所有最大值 <code>&gt; x</code> 的块与 <code>x</code> 必须同块，弹出合并，新块最大值 = <code>max(x, 弹出值)</code>，回栈。</li><li>答案 = 最终栈深。重复值不会被迫合并，所以比 768.I 版本多靠「值比较」而不是下标。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maxChunksToSorted(<span class="k">int</span>[] arr) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 栈里存每个「已定块」的最大值，从栈底到栈顶严格递增</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] stack = <span class="k">new</span> <span class="k">int</span>[arr.length];</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> top = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> x : arr) {</span><span class="ln"><span class="no">7</span>            <span class="c">// 不小于栈顶（当前最右块的最大值）：x 自己能开一块</span></span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (top == <span class="n">0</span> || x &gt;= stack[top - <span class="n">1</span>]) {</span><span class="ln"><span class="no">9</span>                stack[top++] = x;</span><span class="ln"><span class="no">10</span>                <span class="k">continue</span>;</span><span class="ln"><span class="no">11</span>            }</span><span class="ln"><span class="no">12</span>            <span class="c">// x 更小：把所有最大值比 x 大的块都并进来，合并块的最大值记下来</span></span><span class="ln"><span class="no">13</span>            <span class="k">int</span> mx = x;</span><span class="ln"><span class="no">14</span>            <span class="k">while</span> (top &gt; <span class="n">0</span> &amp;&amp; stack[top - <span class="n">1</span>] &gt; x) mx = <span class="t">Math</span>.max(mx, stack[--top]);</span><span class="ln"><span class="no">15</span>            stack[top++] = mx;</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="c">// 栈里剩几个块最大值，就最多能分几块</span></span><span class="ln"><span class="no">18</span>        <span class="k">return</span> top;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>arr</code> 。</p>
+
+<p>将 <code>arr</code> 分割成若干 <strong>块</strong> ，并将这些块分别进行排序。之后再连接起来，使得连接的结果和按升序排序后的原数组相同。</p>
+
+<p>返回能将数组分成的最多块数？</p>
+&nbsp;
+
+<p><strong class="example">示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [5,4,3,2,1]
+<strong>输出：</strong>1
+<strong>解释：</strong>
+将数组分成2块或者更多块，都无法得到所需的结果。 
+例如，分成 [5, 4], [3, 2, 1] 的结果是 [4, 5, 1, 2, 3]，这不是有序的数组。 
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [2,1,3,4,4]
+<strong>输出：</strong>4
+<strong>解释：</strong>
+可以把它分成两块，例如 [2, 1], [3, 4, 4]。 
+然而，分成 [2, 1], [3], [4], [4] 可以得到最多的块数。 
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= arr.length &lt;= 2000</code></li>
+	<li><code>0 &lt;= arr[i] &lt;= 10<sup>8</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maxChunksToSorted(int[] arr) {", "        // 栈里存每个「已定块」的最大值，从栈底到栈顶严格递增", "        int[] stack = new int[arr.length];", "        int top = 0;", "        for (int x : arr) {", "            // 不小于栈顶（当前最右块的最大值）：x 自己能开一块", "            if (top == 0 || x >= stack[top - 1]) {", "                stack[top++] = x;", "                continue;", "            }", "            // x 更小：把所有最大值比 x 大的块都并进来，合并块的最大值记下来", "            int mx = x;", "            while (top > 0 && stack[top - 1] > x) mx = Math.max(mx, stack[--top]);", "            stack[top++] = mx;", "        }", "        // 栈里剩几个块最大值，就最多能分几块", "        return top;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 768. 最多能完成排序的块 II —— 图解：复刻 Solution.java 的「单调栈存块最大值」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [2, 1, 3, 4, 4] };
+
+function trace(input) {
+  var arr = input.arr;
+  var n = arr.length;
+  var frames = [];
+  var NEW = 'stack[top++] = x;';
+  var MERGE = 'while (top > 0 && stack[top - 1] > x) mx = Math.max(mx, stack[--top]);';
+  var MERGED = 'stack[top++] = mx;';
+  var RET = 'return top;';
+
+  var stack = [], top = 0;
+
+  function stackPanel(marks) {
+    return Viz.cells(stack, { title: '栈：每个已定块的最大值（从底到顶递增）', marks: marks || {}, hideIndex: true });
+  }
+  function arrPanel(i) {
+    var marks = {};
+    for (var k = 0; k < n; k++) marks[k] = k < i ? 'dim' : (k === i ? 'cur' : '');
+    return Viz.cells(arr, { title: '数组 arr（逐个读入）', marks: marks });
+  }
+  function snap(at, key, i, smarks) {
+    frames.push(Viz.frame(at, key, [arrPanel(i), stackPanel(smarks), Viz.vars([{ name: 'top（块数）', v: top }])]));
+  }
+
+  for (var i = 0; i < n; i++) {
+    var x = arr[i];
+    if (top === 0 || x >= stack[top - 1]) {
+      stack.push(x);
+      top++;
+      if (i === 0) snap(NEW, '第 1 个数自己成一块：栈里放块最大值', i, (function () { var m = {}; m[0] = 'new'; return m; })());
+      if (i === 3 && n >= 4 && top >= 2) snap(NEW, x + ' ≥ 栈顶 ' + stack[top - 2] + '：再开一块，最大值仍递增', i, (function () { var m = {}; m[top - 1] = 'new'; return m; })());
+      if (i === 4 && n >= 5) snap(NEW, '相等的 ' + x + ' 也算「不小于」：能各成一块', i, (function () { var m = {}; m[top - 1] = 'new'; return m; })());
+    } else {
+      var mx = x, oldTop = stack[top - 1];
+      while (top > 0 && stack[top - 1] > x) {
+        mx = Math.max(mx, stack.pop());
+        top--;
+      }
+      if (i === 1) snap(MERGE, x + ' 小于栈顶 ' + oldTop + '：弹出合并，新块最大值取 ' + mx, i, (function () { var m = {}; m[0] = 'bad'; return m; })());
+      stack.push(mx);
+      top++;
+      if (i === 1) snap(MERGED, '合并完成：块 [2,1] 的最大值 2 回栈', i, (function () { var m = {}; m[0] = 'chg'; return m; })());
+    }
+  }
+
+  snap(RET, '栈里剩几个最大值，就最多分几块', n - 1, (function () { var m = {}; for (var k = 0; k < top; k++) m[k] = 'done'; return m; })());
+  return { frames: frames, result: top };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

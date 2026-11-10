@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>非递减子序列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 622 / 1159</span>
+  <nav class="pn"><a href="1490.html">上一篇</a><a href="0724.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">491. </span>非递减子序列</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">回溯</li><li class="aux">哈希表</li><li class="tag">位运算</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">回溯</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">回溯枚举全部子序列：长度 ≥ 2 且非递减就收录；每层用哈希集合挡住重复值去重。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每个下标二选一（选 / 不选）：进入 <code>dfs</code> 先看收录——路径长度 ≥ 2 就拷贝一份进答案。</li><li>只能选 <code>nums[i] ≥ 路径末尾</code> 的值，保证子序列<strong>非递减</strong>。</li><li><strong>去重是关键</strong>：每层局部开一个 <code>used</code> 集合，同一层某个值试过就跳过；同值同层只走第一条分支，重复子序列就全被挡住了（不能靠全局 visited，那会把不同层的同值也误杀）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·2^n)，空间复杂度 O(n)（递归栈，不计答案）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; findSubsequences(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        dfs(nums, <span class="n">0</span>, <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(), ans);</span><span class="ln"><span class="no">7</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span>[] nums, <span class="k">int</span> start, <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; path, <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans) {</span><span class="ln"><span class="no">11</span>        <span class="c">// 进入本层先收录：长度到 2 的前缀本身就是答案</span></span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (path.size() &gt;= <span class="n">2</span>) ans.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(path));</span><span class="ln"><span class="no">13</span>        <span class="c">// used：本层试过的值；同层同值只走第一条分支，天然去重</span></span><span class="ln"><span class="no">14</span>        <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; used = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> i = start; i &lt; nums.length; i++) {</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (used.contains(nums[i])) <span class="k">continue</span>;</span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (!path.isEmpty() &amp;&amp; nums[i] &lt; path.get(path.size() - <span class="n">1</span>)) <span class="k">continue</span>;</span><span class="ln"><span class="no">18</span>            used.add(nums[i]);</span><span class="ln"><span class="no">19</span>            path.add(nums[i]);</span><span class="ln"><span class="no">20</span>            dfs(nums, i + <span class="n">1</span>, path, ans);</span><span class="ln"><span class="no">21</span>            path.remove(path.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> ，找出并返回所有该数组中不同的递增子序列，递增子序列中 <strong>至少有两个元素</strong> 。你可以按 <strong>任意顺序</strong> 返回答案。</p>
+
+<p>数组中可能含有重复元素，如出现两个整数相等，也可以视作递增序列的一种特殊情况。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [4,6,7,7]
+<strong>输出：</strong>[[4,6],[4,6,7],[4,6,7,7],[4,7],[4,7,7],[6,7],[6,7,7],[7,7]]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [4,4,3,2,1]
+<strong>输出：</strong>[[4,4]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 15</code></li>
+	<li><code>-100 &lt;= nums[i] &lt;= 100</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<Integer>> findSubsequences(int[] nums) {", "        List<List<Integer>> ans = new ArrayList<>();", "        dfs(nums, 0, new ArrayList<>(), ans);", "        return ans;", "    }", "", "    private void dfs(int[] nums, int start, List<Integer> path, List<List<Integer>> ans) {", "        // 进入本层先收录：长度到 2 的前缀本身就是答案", "        if (path.size() >= 2) ans.add(new ArrayList<>(path));", "        // used：本层试过的值；同层同值只走第一条分支，天然去重", "        Set<Integer> used = new HashSet<>();", "        for (int i = start; i < nums.length; i++) {", "            if (used.contains(nums[i])) continue;", "            if (!path.isEmpty() && nums[i] < path.get(path.size() - 1)) continue;", "            used.add(nums[i]);", "            path.add(nums[i]);", "            dfs(nums, i + 1, path, ans);", "            path.remove(path.size() - 1);", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 491. 非递减子序列 —— 图解：复刻 Solution.java 的「回溯 + 每层集合去重」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [4, 6, 7, 7] };
+
+function trace(input) {
+  var nums = input.nums;
+  var frames = [];
+  var ans = [];
+  var snap = { add: false, collect: false, dup: false };
+
+  function numsPanel(i, marks) {
+    var pointers = i >= 0 && i < nums.length ? [{ at: i, label: 'i', cls: 'p-cur' }] : [];
+    return Viz.cells(nums, { title: 'nums', pointers: pointers, marks: marks || {} });
+  }
+  function pathPanel(marks) {
+    return Viz.cells(path.length ? path : ['（空）'], { title: '当前路径 path', marks: marks || {} });
+  }
+  function usedPanel(used) {
+    var keys = Object.keys(used).map(Number).sort(function (a, b) { return a - b; });
+    return Viz.table('本层集合 used（试过的值不再试）', keys.map(function (v) {
+      return { k: String(v), v: '已试', cls: 'hit' };
+    }), { hint: keys.length ? '' : '（空）' });
+  }
+  function ansPanel(chg) {
+    return Viz.table('答案（长度 ≥ 2 的非递减子序列）', ans.map(function (sub, k) {
+      return { k: '#' + (k + 1), v: '[' + sub.join(', ') + ']', cls: k === chg ? 'new' : '' };
+    }), { hint: ans.length ? '' : '（还没有）' });
+  }
+
+  var path = [];
+  function dfs(start, depth) {
+    if (path.length >= 2) {
+      ans.push(path.slice());
+      if (!snap.collect) {
+        snap.collect = true;
+        var m = {};
+        m[path.length - 1] = 'new';
+        frames.push(Viz.frame('if (path.size() >= 2) ans.add(new ArrayList<>(path));',
+          '路径一够 2 个就先收录：前缀本身也是合法答案',
+          [pathPanel(m), ansPanel(ans.length - 1)]));
+      }
+    }
+    var used = {};
+    for (var i = start; i < nums.length; i++) {
+      if (used[nums[i]]) {
+        if (!snap.dup && depth === 2 && i === 3) {
+          snap.dup = true;
+          var skipMarks = {};
+          skipMarks[i] = 'bad';
+          frames.push(Viz.frame('if (used.contains(nums[i])) continue;',
+            '同层第二个 7 被集合挡下：[4, 6, 7, 7] 不出两次',
+            [numsPanel(i, skipMarks), usedPanel(used), pathPanel({})]));
+        }
+        continue;
+      }
+      if (path.length && nums[i] < path[path.length - 1]) continue;
+      used[nums[i]] = true;
+      path.push(nums[i]);
+      if (!snap.add && depth === 0 && path.length === 1) {
+        snap.add = true;
+        var cur = {};
+        cur[i] = 'cur';
+        frames.push(Viz.frame('path.add(nums[i]);',
+          '选中 4 进路径，然后从它的右边继续找不小于它的',
+          [numsPanel(i, cur), pathPanel({ 0: 'new' }), usedPanel(used)]));
+      }
+      dfs(i + 1, depth + 1);
+      path.pop();
+    }
+  }
+
+  frames.push(Viz.frame('List<List<Integer>> ans = new ArrayList<>();',
+    '开局：从下标 0 开始回溯，路径为空，每个下标二选一',
+    [numsPanel(0, {}), pathPanel({}), ansPanel(-1)]));
+
+  dfs(0, 0);
+
+  frames.push(Viz.frame('return ans;',
+    '回溯结束：同层去重后，答案里没有任何重复子序列',
+    [ansPanel(-1)]));
+
+  var sorted = ans.slice().sort(function (a, b) {
+    for (var k = 0; k < Math.min(a.length, b.length); k++) if (a[k] !== b[k]) return a[k] - b[k];
+    return a.length - b.length;
+  });
+
+  return { frames: frames, result: sorted };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

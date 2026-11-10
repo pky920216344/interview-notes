@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>冗余连接 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 979 / 1159</span>
+  <nav class="pn"><a href="0444.html">上一篇</a><a href="0839.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">684. </span>冗余连接</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">并查集</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">图</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">并查集逐边合并：一条边的两端已经同根，说明它把环闭上，就是多余的边。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>图 = 树 + 恰一条多余边；依次加边，前 n−1 条都只是把两棵树合并。</li><li>遇到两端已连通的边：它连的两个点本来就在一个分量里，这条边就是成环的那条。</li><li>返回的天然是「最后出现」的答案：环在最后一条环边加入时才闭合，而它正是第一个两端同根的边。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·α(n))，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">int</span>[] parent;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] findRedundantConnection(<span class="k">int</span>[][] edges) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = edges.length;</span><span class="ln"><span class="no">6</span>        parent = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= n; i++) parent[i] = i;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span>[] e : edges) {</span><span class="ln"><span class="no">9</span>            <span class="c">// 两个端点已经连通：加上这条边就成环，它就是答案</span></span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (find(e[<span class="n">0</span>]) == find(e[<span class="n">1</span>])) <span class="k">return</span> e;</span><span class="ln"><span class="no">11</span>            parent[find(e[<span class="n">0</span>])] = find(e[<span class="n">1</span>]);</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[<span class="n">0</span>];   <span class="c">// 题目保证有解，不会走到这里</span></span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="c">// 找根，路径减半压缩</span></span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="k">int</span> find(<span class="k">int</span> x) {</span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (parent[x] != x) {</span><span class="ln"><span class="no">19</span>            parent[x] = parent[parent[x]];</span><span class="ln"><span class="no">20</span>            x = parent[x];</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> x;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>树可以看成是一个连通且 <strong>无环&nbsp;</strong>的&nbsp;<strong>无向&nbsp;</strong>图。</p>
+
+<p>给定一个图，该图从一棵&nbsp;<code>n</code> 个节点 (节点值&nbsp;<code>1～n</code>) 的树中添加一条边后获得。添加的边的两个不同顶点编号在 <code>1</code> 到 <code>n</code>&nbsp;中间，且这条附加的边不属于树中已存在的边。图的信息记录于长度为 <code>n</code> 的二维数组 <code>edges</code>&nbsp;，<code>edges[i] = [a<sub>i</sub>, b<sub>i</sub>]</code>&nbsp;表示图中在 <code>ai</code> 和 <code>bi</code> 之间存在一条边。</p>
+
+<p>请找出一条可以删去的边，删除后可使得剩余部分是一个有着 <code>n</code> 个节点的树。如果有多个答案，则返回数组&nbsp;<code>edges</code>&nbsp;中最后出现的那个。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/c8dddea72dfb.png" style="width: 152px; " /></p>
+
+<pre>
+<strong>输入:</strong> edges = [[1,2], [1,3], [2,3]]
+<strong>输出:</strong> [2,3]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/a04662df8505.png" style="width: 250px; " /></p>
+
+<pre>
+<strong>输入:</strong> edges = [[1,2], [2,3], [3,4], [1,4], [1,5]]
+<strong>输出:</strong> [1,4]
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>n == edges.length</code></li>
+	<li><code>3 &lt;= n &lt;= 1000</code></li>
+	<li><code>edges[i].length == 2</code></li>
+	<li><code>1 &lt;= ai&nbsp;&lt; bi&nbsp;&lt;= edges.length</code></li>
+	<li><code>ai != bi</code></li>
+	<li><code>edges</code> 中无重复元素</li>
+	<li>给定的图是连通的&nbsp;</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    int[] parent;", "", "    public int[] findRedundantConnection(int[][] edges) {", "        int n = edges.length;", "        parent = new int[n + 1];", "        for (int i = 1; i <= n; i++) parent[i] = i;", "        for (int[] e : edges) {", "            // 两个端点已经连通：加上这条边就成环，它就是答案", "            if (find(e[0]) == find(e[1])) return e;", "            parent[find(e[0])] = find(e[1]);", "        }", "        return new int[0];   // 题目保证有解，不会走到这里", "    }", "", "    // 找根，路径减半压缩", "    private int find(int x) {", "        while (parent[x] != x) {", "            parent[x] = parent[parent[x]];", "            x = parent[x];", "        }", "        return x;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 684. 冗余连接 —— 图解：并查集逐边合并，第一条「两端已同根」的边就是成环的那条。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { edges: [[1, 2], [2, 3], [3, 4], [1, 4], [1, 5]] };
+
+function trace(input) {
+  var edges = input.edges;
+  var n = edges.length;
+  var parent = [];
+  for (var i = 0; i <= n; i++) parent[i] = i;
+  var frames = [];
+  var ans = null;
+
+  function find(x) {
+    while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; }
+    return x;
+  }
+
+  // parent 数组面板：下标 i 显示结点 i 的父指针（含哨兵 0，画时隐藏）
+  function parentPanel() {
+    var items = [];
+    for (var i = 1; i <= n; i++) items.push(parent[i]);
+    var marks = {};
+    // 每个连通分量的根高亮成 win
+    var roots = {};
+    for (var j = 1; j <= n; j++) roots[find(j)] = true;
+    for (var k = 1; k <= n; k++) if (roots[k]) marks[k - 1] = 'win';
+    return Viz.cells(items, { title: 'parent[]（值是父结点；亮的是各分量的根）', marks: marks });
+  }
+
+  // 边序列面板：k 是边，v 是状态
+  function edgePanel(upTo, badEdge) {
+    var rows = edges.map(function (e, i) {
+      var cls = '';
+      if (i < upTo) cls = 'dim';
+      if (badEdge === i) cls = 'bad';
+      return { k: e[0] + '—' + e[1], v: badEdge === i ? '两端已连通！' : (i < upTo ? '已合并' : '待处理'), cls: cls };
+    });
+    return Viz.table('按输入顺序处理每条边', rows);
+  }
+
+  var UNION = 'parent[find(e[0])] = find(e[1]);';
+  var unions = 0;
+
+  frames.push(Viz.frame('for (int i = 1; i <= n; i++) parent[i] = i;',
+    '初始：每个结点自成一个集合', [parentPanel(), edgePanel(0, -1)]));
+
+  for (var i = 0; i < edges.length; i++) {
+    var e = edges[i];
+    var ra = find(e[0]), rb = find(e[1]);
+    if (ra === rb) {
+      ans = [e[0], e[1]];
+      frames.push(Viz.frame('if (find(e[0]) == find(e[1])) return e;',
+        '边 ' + e[0] + '—' + e[1] + ' 两端已连通：加上它就成环', [parentPanel(), edgePanel(i, i)]));
+      break;
+    }
+    parent[ra] = rb;
+    unions++;
+    if (unions <= 3 || i === edges.length - 2) {
+      frames.push(Viz.frame(UNION, '边 ' + e[0] + '—' + e[1] + ' 两端不同根，合并两棵树',
+        [parentPanel(), edgePanel(i + 1, -1)]));
+    }
+  }
+
+  frames.push(Viz.frame('return e;', ans ? '答案：返回 [' + ans[0] + ',' + ans[1] + ']' : '无冗余边',
+    [parentPanel(), edgePanel(edges.length, -1)]));
+  return { frames: frames, result: ans || [] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>24 点游戏 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 177 / 1159</span>
+  <nav class="pn"><a href="0416.html">上一篇</a><a href="0611.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">679. </span>24 点游戏</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 30</li><li class="algo">回溯</li><li class="aux">深度优先搜索/递归</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">回溯</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">回溯：每次任选两个数，用加减乘除合并成一个放回去，直到剩一个数看是否为 24。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>只剩一个数时判 <code>|x - 24| &lt; 1e-6</code>——除法会产生分数，浮点比较必须留容差。</li><li>任选一对 <code>(i, j)</code>（<code>i&lt;j</code> 去重），试 6 种结果：加、乘各一种，减、除各两个方向。</li><li>除数绝对值小于 <code>1e-6</code> 视为 0，跳过除法；<code>4 个数、6 种运算</code>是常数级搜索量。</li><li>递归完把合并的数<strong>从列表里拿掉</strong>（回溯），恢复现场再试下一种运算。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> judgePoint24(<span class="k">int</span>[] cards) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">Double</span>&gt; a = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> c : cards) a.add((<span class="k">double</span>) c);</span><span class="ln"><span class="no">7</span>        <span class="k">return</span> dfs(a);</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="c">// 每次挑两个数合并成一个放回去，直到只剩一个数</span></span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">boolean</span> dfs(<span class="t">List</span>&lt;<span class="t">Double</span>&gt; a) {</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (a.size() == <span class="n">1</span>)</span><span class="ln"><span class="no">13</span>            <span class="k">return</span> <span class="t">Math</span>.abs(a.get(<span class="n">0</span>) - <span class="n">24</span>) &lt; 1e-<span class="n">6</span>;   <span class="c">// 浮点比较必须留容差</span></span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; a.size(); i++) {</span><span class="ln"><span class="no">15</span>            <span class="k">for</span> (<span class="k">int</span> j = i + <span class="n">1</span>; j &lt; a.size(); j++) {</span><span class="ln"><span class="no">16</span>                <span class="t">List</span>&lt;<span class="t">Double</span>&gt; rest = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">17</span>                <span class="k">for</span> (<span class="k">int</span> t = <span class="n">0</span>; t &lt; a.size(); t++)</span><span class="ln"><span class="no">18</span>                    <span class="k">if</span> (t != i &amp;&amp; t != j) rest.add(a.get(t));</span><span class="ln"><span class="no">19</span>                <span class="k">double</span> x = a.get(i), y = a.get(j);</span><span class="ln"><span class="no">20</span>                <span class="c">// 加乘与顺序无关；减除要试两个方向；除数近似 0 就跳过</span></span><span class="ln"><span class="no">21</span>                <span class="k">if</span> (go(rest, x + y) || go(rest, x * y)) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">22</span>                <span class="k">if</span> (go(rest, x - y) || go(rest, y - x)) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">23</span>                <span class="k">if</span> (<span class="t">Math</span>.abs(y) &gt; 1e-<span class="n">6</span> &amp;&amp; go(rest, x / y)) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">24</span>                <span class="k">if</span> (<span class="t">Math</span>.abs(x) &gt; 1e-<span class="n">6</span> &amp;&amp; go(rest, y / x)) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">25</span>            }</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span> </span><span class="ln"><span class="no">30</span>    <span class="c">// 把合并结果 r 放回去递归，试完拿掉（回溯）</span></span><span class="ln"><span class="no">31</span>    <span class="k">private</span> <span class="k">boolean</span> go(<span class="t">List</span>&lt;<span class="t">Double</span>&gt; rest, <span class="k">double</span> r) {</span><span class="ln"><span class="no">32</span>        rest.add(r);</span><span class="ln"><span class="no">33</span>        <span class="k">boolean</span> ok = dfs(rest);</span><span class="ln"><span class="no">34</span>        rest.remove(rest.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> ok;</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个长度为4的整数数组&nbsp;<code>cards</code>&nbsp;。你有 <code>4</code> 张卡片，每张卡片上都包含一个范围在 <code>[1,9]</code> 的数字。您应该使用运算符&nbsp;<code>['+', '-', '*', '/']</code>&nbsp;和括号&nbsp;<code>'('</code>&nbsp;和&nbsp;<code>')'</code>&nbsp;将这些卡片上的数字排列成数学表达式，以获得值24。</p>
+
+<p>你须遵守以下规则:</p>
+
+<ul>
+	<li>除法运算符 <code>'/'</code> 表示实数除法，而不是整数除法。
+
+	<ul>
+		<li>例如，&nbsp;<code>4 /(1 - 2 / 3)= 4 /(1 / 3)= 12</code>&nbsp;。</li>
+	</ul>
+	</li>
+	<li>每个运算都在两个数字之间。特别是，不能使用 <code>“-”</code> 作为一元运算符。
+	<ul>
+		<li>例如，如果 <code>cards =[1,1,1,1]</code> ，则表达式 <code>“-1 -1 -1 -1”</code> 是 <strong>不允许</strong> 的。</li>
+	</ul>
+	</li>
+	<li>你不能把数字串在一起
+	<ul>
+		<li>例如，如果 <code>cards =[1,2,1,2]</code> ，则表达式 <code>“12 + 12”</code> 无效。</li>
+	</ul>
+	</li>
+</ul>
+
+<p>如果可以得到这样的表达式，其计算结果为 <code>24</code> ，则返回 <code>true </code>，否则返回 <code>false</code>&nbsp;。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> cards = [4, 1, 8, 7]
+<strong>输出:</strong> true
+<strong>解释:</strong> (8-4) * (7-1) = 24
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> cards = [1, 2, 1, 2]
+<strong>输出:</strong> false
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>cards.length == 4</code></li>
+	<li><code>1 &lt;= cards[i] &lt;= 9</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean judgePoint24(int[] cards) {", "        List<Double> a = new ArrayList<>();", "        for (int c : cards) a.add((double) c);", "        return dfs(a);", "    }", "", "    // 每次挑两个数合并成一个放回去，直到只剩一个数", "    private boolean dfs(List<Double> a) {", "        if (a.size() == 1)", "            return Math.abs(a.get(0) - 24) < 1e-6;   // 浮点比较必须留容差", "        for (int i = 0; i < a.size(); i++) {", "            for (int j = i + 1; j < a.size(); j++) {", "                List<Double> rest = new ArrayList<>();", "                for (int t = 0; t < a.size(); t++)", "                    if (t != i && t != j) rest.add(a.get(t));", "                double x = a.get(i), y = a.get(j);", "                // 加乘与顺序无关；减除要试两个方向；除数近似 0 就跳过", "                if (go(rest, x + y) || go(rest, x * y)) return true;", "                if (go(rest, x - y) || go(rest, y - x)) return true;", "                if (Math.abs(y) > 1e-6 && go(rest, x / y)) return true;", "                if (Math.abs(x) > 1e-6 && go(rest, y / x)) return true;", "            }", "        }", "        return false;", "    }", "", "    // 把合并结果 r 放回去递归，试完拿掉（回溯）", "    private boolean go(List<Double> rest, double r) {", "        rest.add(r);", "        boolean ok = dfs(rest);", "        rest.remove(rest.size() - 1);", "        return ok;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 679. 24 点游戏 —— 图解：复刻 Solution.java 的回溯：任选两数合并、结果放回，直到剩一个数。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { cards: [4, 1, 8, 7] };
+
+function trace(input) {
+  var frames = [];
+
+  function fmt(v) {
+    return Math.abs(v - Math.round(v)) < 1e-9 ? String(Math.round(v)) : String(Math.round(v * 1e6) / 1e6);
+  }
+  function numPanel(list, marks, pointers) {
+    return Viz.cells(list.map(fmt), { title: '当前的数（新合并的放最后）', marks: marks || {}, pointers: pointers || [], hideIndex: true });
+  }
+
+  // dfs(a) 复刻 Solution 的顺序：任选一对 (i<j)，依次试 +、*、-两个方向、/两个方向
+  function dfs(a) {
+    if (a.length === 1) {
+      var ok = Math.abs(a[0] - 24) < 1e-6;
+      if (ok) {
+        frames.push(Viz.frame('return Math.abs(a.get(0) - 24) < 1e-6;',
+          '只剩一个数：3×8 = 24 命中，一路返回 true',
+          [numPanel([a[0]], { 0: 'done' }), Viz.vars([{ name: '结果', v: 'true', cls: 'done' }])]));
+      }
+      return ok;
+    }
+    for (var i = 0; i < a.length; i++) {
+      for (var j = i + 1; j < a.length; j++) {
+        var rest = [];
+        for (var t = 0; t < a.length; t++) if (t !== i && t !== j) rest.push(a[t]);
+        var x = a[i], y = a[j];
+        // 开局瞬间：标出最先试的一对
+        if (a.length === 4 && i === 0 && j === 1) {
+          var m0 = {}; m0[i] = 'cur'; m0[j] = 'cur';
+          frames.push(Viz.frame('double x = a.get(i), y = a.get(j);',
+            '任选两张合并成一个数（先试 4 和 1），放回去继续搜', [numPanel(a, m0)]));
+        }
+        if (go(a, i, j, rest, x + y) || go(a, i, j, rest, x * y)) return true;
+        if (go(a, i, j, rest, x - y) || go(a, i, j, rest, y - x)) return true;
+        if (Math.abs(y) > 1e-6 && go(a, i, j, rest, x / y)) return true;
+        if (Math.abs(x) > 1e-6 && go(a, i, j, rest, y / x)) return true;
+      }
+    }
+    // [7,13] 这条路怎么算都不是 24：拍一张「失败回溯」
+    if (a.length === 2 && a[0] === 7 && a[1] === 13) {
+      frames.push(Viz.frame('return false;',
+        '[7,13] 怎么算都不行：这条路失败，回溯换别的组合',
+        [numPanel(a, { 0: 'bad', 1: 'bad' }), Viz.vars([{ name: '结果', v: 'false', cls: 'bad' }])]));
+    }
+    return false;
+  }
+
+  function go(a, i, j, rest, r) {
+    rest.push(r);
+    var snapKey = null;
+    if (a.length === 4 && i === 0 && j === 1 && r === 4) {
+      snapKey = '4×1=4 放回去：[8,7,4] 继续搜（5 的加法路线已失败）';
+    } else if (a.length === 3 && a[0] === 8 && a[1] === 7 && a[2] === 4 && i === 1 && j === 2 && r === 3) {
+      snapKey = '换成 7−4=3 放回去：[8,3]，离 24 一步之遥';
+    }
+    if (snapKey) {
+      var marks = {}; marks[rest.length - 1] = 'new';
+      frames.push(Viz.frame('rest.add(r);', snapKey, [numPanel(rest, marks)]));
+    }
+    var ok = dfs(rest);
+    rest.pop();
+    return ok;
+  }
+
+  var ok = dfs(input.cards.slice());
+  if (!ok) {
+    frames.push(Viz.frame('return false;', '所有组合都试完仍凑不出 24，返回 false',
+      [numPanel(input.cards, {}), Viz.vars([{ name: '结果', v: 'false', cls: 'bad' }])]));
+  }
+  return { frames: frames, result: ok };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

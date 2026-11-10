@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最后一个能进入巴士的人 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 970 / 1159</span>
+  <nav class="pn"><a href="0937.html">上一篇</a><a href="1292.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1204. </span>最后一个能进入巴士的人</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">SQL</li><li class="tag">数据库</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">自连接算「截至某人时车上总重」：q2.turn ≤ q1.turn 求和，累计 ≤ 1000 里 turn 最大的人就是最后一个上得去的。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>「前缀累加」在 SQL 里用<strong>自连接</strong>表达：<code>q2.turn ≤ q1.turn</code> 把每个人之前的所有乘客（含自己）聚到自己名下。</li><li><code>HAVING SUM(q2.weight) &lt;= 1000</code> 过滤出「上车后不超重」的所有人；其中 <code>turn</code> 最大的就是最后一个进电梯的。</li><li><code>ORDER BY turn DESC LIMIT 1</code> 取该人；GROUP BY 里带上 person_id/person_name 保证聚合正确。</li><li>窗口函数写法 <code>SUM(weight) OVER (ORDER BY turn)</code> 更直观（MySQL 8 支持），自连接写法兼容性更广。</li></ul></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)（n 为排队人数，规模小），空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 SQL 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span>-- 1204（codetop 1204）最后一个能进入电梯的人（MySQL）</span><span class="ln"><span class="no">2</span>-- 题意：Queue(person_id, person_name, weight, turn)，按 turn 顺序上车，电梯限重 1000 千克。</span><span class="ln"><span class="no">3</span>-- 找出「最后一个上得去」的乘客姓名（累计重量不超 1000 的最长前缀的最后一人）。</span><span class="ln"><span class="no">4</span>-- 思路：窗口累加（自连接聚合一遍），取累计 ≤ 1000 的最大 turn 对应的人。</span><span class="ln"><span class="no">5</span>SELECT q1.person_name</span><span class="ln"><span class="no">6</span>FROM Queue q1</span><span class="ln"><span class="no">7</span>JOIN Queue q2 ON q2.turn &lt;= q1.turn</span><span class="ln"><span class="no">8</span>GROUP BY q1.person_id, q1.person_name, q1.turn</span><span class="ln"><span class="no">9</span>HAVING SUM(q2.weight) &lt;= 1000</span><span class="ln"><span class="no">10</span>ORDER BY q1.turn DESC</span><span class="ln"><span class="no">11</span>LIMIT 1;</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>表: <code>Queue</code></p>
+
+<pre>
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| person_id   | int     |
+| person_name | varchar |
+| weight      | int     |
+| turn        | int     |
++-------------+---------+
+person_id 是这个表具有唯一值的列。
+该表展示了所有候车乘客的信息。
+表中 person_id 和 turn 列将包含从 1 到 n 的所有数字，其中 n 是表中的行数。
+turn 决定了候车乘客上巴士的顺序，其中 turn=1 表示第一个上巴士，turn=n 表示最后一个上巴士。
+weight 表示候车乘客的体重，以千克为单位。
+</pre>
+
+
+
+<p>有一队乘客在等着上巴士。然而，巴士有<code>1000</code>&nbsp; <strong>千克</strong> 的重量限制，所以其中一部分乘客可能无法上巴士。</p>
+
+<p>编写解决方案找出 <strong>最后一个</strong> 上巴士且不超过重量限制的乘客，并报告 <code>person_name</code> 。题目测试用例确保顺位第一的人可以上巴士且不会超重。</p>
+
+<p>返回结果格式如下所示。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+Queue 表
++-----------+-------------+--------+------+
+| person_id | person_name | weight | turn |
++-----------+-------------+--------+------+
+| 5         | Alice       | 250    | 1    |
+| 4         | Bob         | 175    | 5    |
+| 3         | Alex        | 350    | 2    |
+| 6         | John Cena   | 400    | 3    |
+| 1         | Winston     | 500    | 6    |
+| 2         | Marie       | 200    | 4    |
++-----------+-------------+--------+------+
+<strong>输出：</strong>
++-------------+
+| person_name |
++-------------+
+| John Cena   |
++-------------+
+<strong>解释：</strong>
+为了简化，Queue 表按 turn 列由小到大排序。
++------+----+-----------+--------+--------------+
+| Turn | ID | Name      | Weight | Total Weight |
++------+----+-----------+--------+--------------+
+| 1    | 5  | Alice     | 250    | 250          |
+| 2    | 3  | Alex      | 350    | 600          |
+| 3    | 6  | John Cena | 400    | 1000         | (最后一个上巴士)
+| 4    | 2  | Marie     | 200    | 1200         | (无法上巴士)
+| 5    | 4  | Bob       | 175    | ___          |
+| 6    | 1  | Winston   | 500    | ___          |
++------+----+-----------+--------+--------------+</pre>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["-- 1204（codetop 1204）最后一个能进入电梯的人（MySQL）", "-- 题意：Queue(person_id, person_name, weight, turn)，按 turn 顺序上车，电梯限重 1000 千克。", "-- 找出「最后一个上得去」的乘客姓名（累计重量不超 1000 的最长前缀的最后一人）。", "-- 思路：窗口累加（自连接聚合一遍），取累计 ≤ 1000 的最大 turn 对应的人。", "SELECT q1.person_name", "FROM Queue q1", "JOIN Queue q2 ON q2.turn <= q1.turn", "GROUP BY q1.person_id, q1.person_name, q1.turn", "HAVING SUM(q2.weight) <= 1000", "ORDER BY q1.turn DESC", "LIMIT 1;"]}</script>
+
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

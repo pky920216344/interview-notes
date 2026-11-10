@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>矩形面积 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 728 / 1159</span>
+  <nav class="pn"><a href="0631.html">上一篇</a><a href="0795.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">850. </span>矩形面积 II</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">扫描线/排序</li><li class="aux">二分查找</li><li class="tag">线段树</li><li class="tag">数组</li><li class="tag">有序集合</li><li class="tag">扫描线</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">把所有 x、y 坐标离散化成 ≤400×400 的格子，每格记被几个矩形盖住，计数 &gt; 0 的格子按真实宽高求和。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>所有矩形的横竖边把平面切成小格子：<code>x</code>、<code>y</code> 坐标排序去重后，格子边界只会落这些值上。</li><li>每个矩形把自己覆盖的格子计数 +1（坐标用二分定位，下标即 <code>[xs[i], xs[i+1])</code> 区间）。</li><li>答案 = 所有 <code>cnt &gt; 0</code> 的格子的真实面积之和：重叠部分只算一次，<code>long</code> 累加后对 10⁹+7 取模。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)（n ≤ 200，格子标记约 3×10⁷），空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> rectangleArea(<span class="k">int</span>[][] rectangles) {</span><span class="ln"><span class="no">5</span>        <span class="k">final</span> <span class="k">int</span> MOD = <span class="n">1_000_000_007</span>;</span><span class="ln"><span class="no">6</span>        <span class="c">// 收集全部 x、y 排序去重：平面被切成 ≤ 400×400 个小格子</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] xs = <span class="k">new</span> <span class="k">int</span>[rectangles.length * <span class="n">2</span>], ys = <span class="k">new</span> <span class="k">int</span>[rectangles.length * <span class="n">2</span>];</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> xn = <span class="n">0</span>, yn = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span>[] r : rectangles) { xs[xn++] = r[<span class="n">0</span>]; xs[xn++] = r[<span class="n">2</span>]; ys[yn++] = r[<span class="n">1</span>]; ys[yn++] = r[<span class="n">3</span>]; }</span><span class="ln"><span class="no">10</span>        xn = uniq(xs, xn);</span><span class="ln"><span class="no">11</span>        yn = uniq(ys, yn);</span><span class="ln"><span class="no">12</span>        <span class="c">// cnt[i][j]：格子 [xs[i],xs[i+1]) × [ys[j],ys[j+1]) 被几个矩形盖住</span></span><span class="ln"><span class="no">13</span>        <span class="k">int</span>[][] cnt = <span class="k">new</span> <span class="k">int</span>[xn][yn];</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span>[] r : rectangles) {</span><span class="ln"><span class="no">15</span>            <span class="k">int</span> x1 = <span class="t">Arrays</span>.binarySearch(xs, <span class="n">0</span>, xn, r[<span class="n">0</span>]), x2 = <span class="t">Arrays</span>.binarySearch(xs, <span class="n">0</span>, xn, r[<span class="n">2</span>]);</span><span class="ln"><span class="no">16</span>            <span class="k">int</span> y1 = <span class="t">Arrays</span>.binarySearch(ys, <span class="n">0</span>, yn, r[<span class="n">1</span>]), y2 = <span class="t">Arrays</span>.binarySearch(ys, <span class="n">0</span>, yn, r[<span class="n">3</span>]);</span><span class="ln"><span class="no">17</span>            <span class="k">for</span> (<span class="k">int</span> i = x1; i &lt; x2; i++)</span><span class="ln"><span class="no">18</span>                <span class="k">for</span> (<span class="k">int</span> j = y1; j &lt; y2; j++)</span><span class="ln"><span class="no">19</span>                    cnt[i][j]++;</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="c">// 被盖过（cnt &gt; 0）的格子各算一次面积</span></span><span class="ln"><span class="no">22</span>        <span class="k">long</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">23</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i + <span class="n">1</span> &lt; xn; i++)</span><span class="ln"><span class="no">24</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j + <span class="n">1</span> &lt; yn; j++)</span><span class="ln"><span class="no">25</span>                <span class="k">if</span> (cnt[i][j] &gt; <span class="n">0</span>) ans += (<span class="k">long</span>) (xs[i + <span class="n">1</span>] - xs[i]) * (ys[j + <span class="n">1</span>] - ys[j]);</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> (<span class="k">int</span>) (ans % MOD);</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span> </span><span class="ln"><span class="no">29</span>    <span class="c">// 排序去重，返回新长度</span></span><span class="ln"><span class="no">30</span>    <span class="k">private</span> <span class="k">int</span> uniq(<span class="k">int</span>[] a, <span class="k">int</span> n) {</span><span class="ln"><span class="no">31</span>        <span class="t">Arrays</span>.sort(a, <span class="n">0</span>, n);</span><span class="ln"><span class="no">32</span>        <span class="k">int</span> m = <span class="n">0</span>;</span><span class="ln"><span class="no">33</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) <span class="k">if</span> (m == <span class="n">0</span> || a[i] != a[m - <span class="n">1</span>]) a[m++] = a[i];</span><span class="ln"><span class="no">34</span>        <span class="k">return</span> m;</span><span class="ln"><span class="no">35</span>    }</span><span class="ln"><span class="no">36</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个轴对齐的二维数组&nbsp;<code>rectangles</code>&nbsp;。 对于&nbsp;<code>rectangle[i] = [x1, y1, x2, y2]</code>，其中&nbsp;<code>(x<sub>i1</sub>, y<sub>i1</sub>)</code>&nbsp;是该矩形 <strong>左下角</strong> 的坐标，<meta charset="UTF-8" />&nbsp;<code>(x<sub>i2</sub>, y<sub>i2</sub>)</code>&nbsp;是该矩形&nbsp;<strong>右上角</strong> 的坐标。</p>
+
+<p>计算平面中所有&nbsp;<code>rectangles</code>&nbsp;所覆盖的 <strong>总面积 </strong>。任何被两个或多个矩形覆盖的区域应只计算 <strong>一次</strong> 。</p>
+
+<p>返回<em> <strong>总面积</strong> </em>。因为答案可能太大，返回<meta charset="UTF-8" />&nbsp;<code>10<sup>9</sup>&nbsp;+ 7</code> 的&nbsp;<strong>模</strong>&nbsp;。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/1ed28e494094.png" style="height: 360px; width: 480px;" /></p>
+
+<pre>
+<strong>输入：</strong>rectangles = [[0,0,2,2],[1,0,2,3],[1,0,3,1]]
+<strong>输出：</strong>6
+<strong>解释：</strong>如图所示，三个矩形覆盖了总面积为 6 的区域。
+从(1,1)到(2,2)，绿色矩形和红色矩形重叠。
+从(1,0)到(2,3)，三个矩形都重叠。
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>rectangles = [[0,0,1000000000,1000000000]]
+<strong>输出：</strong>49
+<strong>解释：</strong>答案是 10<sup>18</sup> 对 (10<sup>9</sup> + 7) 取模的结果， 即 49 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= rectangles.length &lt;= 200</code></li>
+	<li><code>rectanges[i].length = 4</code><meta charset="UTF-8" /></li>
+	<li><code>0 &lt;= x<sub>i1</sub>, y<sub>i1</sub>, x<sub>i2</sub>, y<sub>i2</sub>&nbsp;&lt;= 10<sup>9</sup></code></li>
+	<li><code>x<sub>i1&nbsp;</sub>&lt;= x<sub>i2</sub></code></li>
+	<li><code>y<sub>i1&nbsp;</sub>&lt;= y<sub>i2</sub></code></li>
+	<li>所有矩阵面积不为 0。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int rectangleArea(int[][] rectangles) {", "        final int MOD = 1_000_000_007;", "        // 收集全部 x、y 排序去重：平面被切成 ≤ 400×400 个小格子", "        int[] xs = new int[rectangles.length * 2], ys = new int[rectangles.length * 2];", "        int xn = 0, yn = 0;", "        for (int[] r : rectangles) { xs[xn++] = r[0]; xs[xn++] = r[2]; ys[yn++] = r[1]; ys[yn++] = r[3]; }", "        xn = uniq(xs, xn);", "        yn = uniq(ys, yn);", "        // cnt[i][j]：格子 [xs[i],xs[i+1]) × [ys[j],ys[j+1]) 被几个矩形盖住", "        int[][] cnt = new int[xn][yn];", "        for (int[] r : rectangles) {", "            int x1 = Arrays.binarySearch(xs, 0, xn, r[0]), x2 = Arrays.binarySearch(xs, 0, xn, r[2]);", "            int y1 = Arrays.binarySearch(ys, 0, yn, r[1]), y2 = Arrays.binarySearch(ys, 0, yn, r[3]);", "            for (int i = x1; i < x2; i++)", "                for (int j = y1; j < y2; j++)", "                    cnt[i][j]++;", "        }", "        // 被盖过（cnt > 0）的格子各算一次面积", "        long ans = 0;", "        for (int i = 0; i + 1 < xn; i++)", "            for (int j = 0; j + 1 < yn; j++)", "                if (cnt[i][j] > 0) ans += (long) (xs[i + 1] - xs[i]) * (ys[j + 1] - ys[j]);", "        return (int) (ans % MOD);", "    }", "", "    // 排序去重，返回新长度", "    private int uniq(int[] a, int n) {", "        Arrays.sort(a, 0, n);", "        int m = 0;", "        for (int i = 0; i < n; i++) if (m == 0 || a[i] != a[m - 1]) a[m++] = a[i];", "        return m;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 850. 矩形面积 II —— 图解：复刻 Solution.java 的「坐标离散化 + 格子计数去重」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { rectangles: [[0, 0, 2, 2], [1, 0, 2, 3], [1, 0, 3, 1]] };
+
+function trace(input) {
+  var rects = input.rectangles;
+  var frames = [];
+
+  // 离散化：所有 x、y 排序去重
+  var xs = [], ys = [];
+  rects.forEach(function (r) { xs.push(r[0], r[2]); ys.push(r[1], r[3]); });
+  xs = uniq(xs); ys = uniq(ys);
+
+  // cnt[r][c]：格子（x 单元 c，y 单元 r）被几个矩形盖住；行从上往下是 y 从大到小
+  var units = ys.length - 1;
+  function cntGrid() {
+    var g = [];
+    for (var r = 0; r < units; r++) {
+      var row = [];
+      for (var c = 0; c + 1 < xs.length; c++) row.push(0);
+      g.push(row);
+    }
+    return g;
+  }
+  var cnt = cntGrid();
+
+  function uniq(a) {
+    var s = a.slice().sort(function (p, q) { return p - q; });
+    var out = [];
+    s.forEach(function (v) { if (!out.length || out[out.length - 1] !== v) out.push(v); });
+    return out;
+  }
+  function at(arr, v) {   // 二分找下标（值一定在数组里）
+    var lo = 0, hi = arr.length - 1;
+    while (lo < hi) { var mid = (lo + hi) >> 1; if (arr[mid] < v) lo = mid + 1; else hi = mid; }
+    return lo;
+  }
+
+  function gridPanel(marks) {
+    var rows = [], m = marks || {};
+    var all = {};
+    for (var r = units - 1; r >= 0; r--) {
+      var row = [];
+      for (var c = 0; c + 1 < xs.length; c++) row.push(cnt[r][c] > 0 ? String(cnt[r][c]) : '·');
+      rows.push(row);
+    }
+    // marks 的键是「显示行号」：显示行从上往下，计数行从下往上，要翻转
+    Object.keys(m).forEach(function (k) {
+      var parts = k.split(','), r = Number(parts[0]), c = Number(parts[1]);
+      all[(units - 1 - r) + ',' + c] = m[k];
+    });
+    var labels = [];
+    for (var c3 = 0; c3 + 1 < xs.length; c3++) labels.push('x' + xs[c3] + '~' + xs[c3 + 1]);
+    var rowLabels = [];
+    for (var r2 = units - 1; r2 >= 0; r2--) rowLabels.push('y' + ys[r2] + '~' + ys[r2 + 1]);
+    return Viz.grid(rows, {
+      title: '格子覆盖计数（· = 0，数字 = 被几个矩形盖住）',
+      marks: all,
+      colLabels: labels, rowLabels: rowLabels, corner: '格子'
+    });
+  }
+  function varsPanel(rectIdx, note) {
+    var r = rectIdx == null ? null : rects[rectIdx];
+    return Viz.vars([
+      { name: '当前矩形', v: r ? '[' + r.join(', ') + ']' : '—', cls: 'chg' },
+      { name: '说明', v: note || '', cls: '' }
+    ]);
+  }
+
+  frames.push(Viz.frame('int[][] cnt = new int[xn][yn];',
+    '所有 x、y 排序去重后，平面被切成一个个小格子，先全是 0',
+    [gridPanel({}), varsPanel(null)]));
+
+  rects.forEach(function (r, ri) {
+    var x1 = at(xs, r[0]), x2 = at(xs, r[2]), y1 = at(ys, r[1]), y2 = at(ys, r[3]);
+    var touched = [];
+    for (var i = x1; i < x2; i++) for (var j = y1; j < y2; j++) { cnt[j][i]++; touched.push(j + ',' + i); }
+    var marks = {};
+    touched.forEach(function (k) { marks[k] = 'chg'; });
+    if (ri === 0) {
+      frames.push(Viz.frame('cnt[i][j]++;',
+        '矩形 1 盖住 4 个格子：范围内的格子计数各 +1',
+        [gridPanel(marks), varsPanel(ri)]));
+    }
+    if (ri === 1) {
+      frames.push(Viz.frame('cnt[i][j]++;',
+        '矩形 2 压上来：重叠格计数变 2，最后只按面积算一次',
+        [gridPanel(marks), varsPanel(ri)]));
+    }
+    if (ri === 2) {
+      frames.push(Viz.frame('cnt[i][j]++;',
+        '矩形 3 再压：计数继续累加，重叠部分永远不会被重复算',
+        [gridPanel(marks), varsPanel(ri)]));
+    }
+  });
+
+  // 求和：cnt > 0 的格子按实际宽高累加
+  var ans = 0;
+  var done = {};
+  for (var r = 0; r < units; r++)
+    for (var c = 0; c + 1 < xs.length; c++)
+      if (cnt[r][c] > 0) { ans += (xs[c + 1] - xs[c]) * (ys[r + 1] - ys[r]); done[r + ',' + c] = 'done'; }
+
+  frames.push(Viz.frame('return (int) (ans % MOD);',
+    '计数 > 0 的格子按真实宽高求面积并去重求和：总面积 ' + ans,
+    [gridPanel(done), varsPanel(null)]));
+
+  return { frames: frames, result: ans % 1000000007 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>矩阵置零 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 349 / 1159</span>
+  <nav class="pn"><a href="0118.html">上一篇</a><a href="0456.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">73. </span>矩阵置零</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 11</li><li class="algo">模拟</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">O(1) 空间：把第一行、第一列征用作「该行/该列有 0」的标记数组，它们自己是否含 0 用两个布尔先记下。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>征用前先扫一遍第一行、第一列，把「它们自己是否含 0」记进 <code>row0</code>、<code>col0</code> 两个布尔。</li><li>扫其余部分：<code>matrix[i][j] == 0</code> 就在 <code>matrix[i][0]</code>、<code>matrix[0][j]</code> 打上 0 记号。</li><li>置零顺序很关键：<strong>先按记号清内部，最后才清第一行、第一列</strong>——内部清零会重写记号区，先清就全乱了。</li><li>最后 <code>row0</code> / <code>col0</code> 为真才把第一行/列整体置零。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">void</span> setZeroes(<span class="k">int</span>[][] matrix) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = matrix.length, n = matrix[<span class="n">0</span>].length;</span><span class="ln"><span class="no">4</span>        <span class="c">// 第一行/第一列自己是否含 0：它们要被征用当记号，得先单独记下来</span></span><span class="ln"><span class="no">5</span>        <span class="k">boolean</span> row0 = <span class="k">false</span>, col0 = <span class="k">false</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) <span class="k">if</span> (matrix[<span class="n">0</span>][j] == <span class="n">0</span>) row0 = <span class="k">true</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) <span class="k">if</span> (matrix[i][<span class="n">0</span>] == <span class="n">0</span>) col0 = <span class="k">true</span>;</span><span class="ln"><span class="no">8</span>        <span class="c">// 扫内部：哪个位置是 0，就把它的第一行、第一列打上 0 记号</span></span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">11</span>                <span class="k">if</span> (matrix[i][j] == <span class="n">0</span>) {</span><span class="ln"><span class="no">12</span>                    matrix[i][<span class="n">0</span>] = <span class="n">0</span>;</span><span class="ln"><span class="no">13</span>                    matrix[<span class="n">0</span>][j] = <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>                }</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="c">// 按记号置零：先清内部，第一行/列还留着记号不能用</span></span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">19</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">20</span>                <span class="k">if</span> (matrix[i][<span class="n">0</span>] == <span class="n">0</span> || matrix[<span class="n">0</span>][j] == <span class="n">0</span>) matrix[i][j] = <span class="n">0</span>;</span><span class="ln"><span class="no">21</span>            }</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">if</span> (row0) <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) matrix[<span class="n">0</span>][j] = <span class="n">0</span>;</span><span class="ln"><span class="no">24</span>        <span class="k">if</span> (col0) <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) matrix[i][<span class="n">0</span>] = <span class="n">0</span>;</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个&nbsp;<code><em>m</em> x <em>n</em></code> 的矩阵，如果一个元素为 <strong>0 </strong>，则将其所在行和列的所有元素都设为 <strong>0</strong> 。请使用 <strong><a href="http://baike.baidu.com/item/%E5%8E%9F%E5%9C%B0%E7%AE%97%E6%B3%95" target="_blank">原地</a></strong> 算法<strong>。</strong></p>
+
+<ul>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/aad0c1d2a741.jpg" style="width: 450px; height: 169px;" />
+<pre>
+<strong>输入：</strong>matrix = [[1,1,1],[1,0,1],[1,1,1]]
+<strong>输出：</strong>[[1,0,1],[0,0,0],[1,0,1]]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/c8a0aae329eb.jpg" style="width: 450px; height: 137px;" />
+<pre>
+<strong>输入：</strong>matrix = [[0,1,2,0],[3,4,5,2],[1,3,1,5]]
+<strong>输出：</strong>[[0,0,0,0],[0,4,5,0],[0,3,1,0]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == matrix.length</code></li>
+	<li><code>n == matrix[0].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 200</code></li>
+	<li><code>-2<sup>31</sup> &lt;= matrix[i][j] &lt;= 2<sup>31</sup> - 1</code></li>
+</ul>
+
+
+
+<p><strong>进阶：</strong></p>
+
+<ul>
+	<li>一个直观的解决方案是使用 &nbsp;<code>O(<em>m</em><em>n</em>)</code>&nbsp;的额外空间，但这并不是一个好的解决方案。</li>
+	<li>一个简单的改进方案是使用 <code>O(<em>m</em>&nbsp;+&nbsp;<em>n</em>)</code> 的额外空间，但这仍然不是最好的解决方案。</li>
+	<li>你能想出一个仅使用常量空间的解决方案吗？</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public void setZeroes(int[][] matrix) {", "        int m = matrix.length, n = matrix[0].length;", "        // 第一行/第一列自己是否含 0：它们要被征用当记号，得先单独记下来", "        boolean row0 = false, col0 = false;", "        for (int j = 0; j < n; j++) if (matrix[0][j] == 0) row0 = true;", "        for (int i = 0; i < m; i++) if (matrix[i][0] == 0) col0 = true;", "        // 扫内部：哪个位置是 0，就把它的第一行、第一列打上 0 记号", "        for (int i = 1; i < m; i++) {", "            for (int j = 1; j < n; j++) {", "                if (matrix[i][j] == 0) {", "                    matrix[i][0] = 0;", "                    matrix[0][j] = 0;", "                }", "            }", "        }", "        // 按记号置零：先清内部，第一行/列还留着记号不能用", "        for (int i = 1; i < m; i++) {", "            for (int j = 1; j < n; j++) {", "                if (matrix[i][0] == 0 || matrix[0][j] == 0) matrix[i][j] = 0;", "            }", "        }", "        if (row0) for (int j = 0; j < n; j++) matrix[0][j] = 0;", "        if (col0) for (int i = 0; i < m; i++) matrix[i][0] = 0;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 73. 矩阵置零 —— 图解：第一行/列当标记数组 + row0/col0 两个布尔，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { matrix: [[0, 2, 3, 4], [5, 6, 0, 8], [9, 1, 2, 3]] };
+
+function trace(input) {
+  var origin = input.matrix.map(function (row) { return row.slice(); });
+  var mr = origin.length, mc = origin[0].length;
+  var frames = [];
+
+  function gridPanel(mat, marks) {
+    var rows = mat.map(function (row) { return row.map(String); });
+    return Viz.grid(rows, { title: '矩阵 matrix（原地修改）', marks: marks || {} });
+  }
+  function varsPanel(row0, col0, msg) {
+    return Viz.vars([
+      { name: 'row0（首行含 0）', v: row0, cls: row0 ? 'cur' : '' },
+      { name: 'col0（首列含 0）', v: col0, cls: col0 ? 'cur' : '' },
+      { name: '阶段', v: msg, cls: 'win' }
+    ]);
+  }
+  function snap(at, key, mat, marks, row0, col0, msg) {
+    frames.push(Viz.frame(at, key, [gridPanel(mat, marks), varsPanel(row0, col0, msg)]));
+  }
+  function copyOf(mat) { return mat.map(function (row) { return row.slice(); }); }
+
+  // row0 / col0 在最开始测定（对应 Java 的两个布尔），后面不再变
+  var row0 = origin[0].indexOf(0) >= 0, col0 = origin.some(function (row) { return row[0] === 0; });
+
+  // 1) 开局
+  snap('boolean row0 = false, col0 = false;',
+    '开局：第一行、第一列要被征用当记号，先记它们自己有没有 0',
+    origin, {}, row0, col0, '记录 row0 / col0');
+
+  // 2) 扫内部：第一个内部 0 打记号的瞬间
+  var w = copyOf(origin);
+  var marked = null;
+  for (var i = 1; i < mr && !marked; i++) {
+    for (var j = 1; j < mc; j++) {
+      if (origin[i][j] === 0) {
+        w[i][0] = 0;
+        w[0][j] = 0;
+        var mk = {};
+        mk[i + ',0'] = 'new';
+        mk['0,' + j] = 'new';
+        mk[i + ',' + j] = 'bad';
+        marked = [i, j];
+        break;
+      }
+    }
+  }
+  if (marked) {
+    snap('if (matrix[i][j] == 0) {',
+      '内部 (' + marked[0] + ',' + marked[1] + ') 是 0：在 (i,0)、(0,j) 写 0 当记号',
+      w, mk, row0, col0, '打记号');
+  }
+
+  // 3) 所有内部 0 的记号都打完
+  for (i = 1; i < mr; i++)
+    for (var j = 1; j < mc; j++)
+      if (origin[i][j] === 0) { w[i][0] = 0; w[0][j] = 0; }
+  var mk2 = {};
+  for (i = 0; i < mr; i++) if (w[i][0] === 0) mk2[i + ',0'] = 'bad';
+  for (j = 0; j < mc; j++) if (w[0][j] === 0) mk2['0,' + j] = 'bad';
+  snap('if (matrix[i][0] == 0 || matrix[0][j] == 0) matrix[i][j] = 0;',
+    '记号打完：第一行/列上的 0 就是「待置零」的行列名单',
+    w, mk2, row0, col0, '记号就绪');
+
+  // 4) 按记号置零（内部 → 首行 → 首列），同时是最终结果
+  var doneM = copyOf(w);   // w 里第一行/列已是记号，和 Java 置零那一刻的状态一致
+  for (i = 1; i < mr; i++)
+    for (j = 1; j < mc; j++)
+      if (doneM[i][0] === 0 || doneM[0][j] === 0) doneM[i][j] = 0;
+  if (row0) for (j = 0; j < mc; j++) doneM[0][j] = 0;
+  if (col0) for (i = 0; i < mr; i++) doneM[i][0] = 0;
+
+  var fin = {};
+  for (i = 0; i < mr; i++)
+    for (j = 0; j < mc; j++)
+      if (doneM[i][j] === 0) fin[i + ',' + j] = 'done';
+  snap('if (row0) for (int j = 0; j < n; j++) matrix[0][j] = 0;',
+    '置零完成：先按记号清内部，最后才处理首行/首列自己',
+    doneM, fin, row0, col0, '完成');
+
+  return { frames: frames, result: doneM };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

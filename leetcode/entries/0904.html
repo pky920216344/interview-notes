@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>水果成篮 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 610 / 1159</span>
+  <nav class="pn"><a href="0705.html">上一篇</a><a href="0314.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">904. </span>水果成篮</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">滑动窗口</li><li class="aux">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">滑动窗口</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">滑动窗口 + 哈希计数：窗口里最多两种水果，第三种进来就把左端缩到某一种清零，窗口长取最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>right</code> 扩张时 <code>cnt.merge(fruits[right], 1, sum)</code>；<code>cnt.size() &gt; 2</code> 说明第三种进来了。</li><li>左端收缩：<code>cnt[f]</code> 减到 0 就从哈希表删掉该品种，删完窗口恢复合法。</li><li>每步用 <code>right - left + 1</code> 更新答案；每个元素最多进出窗口一次，整体 O(n)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> totalFruit(<span class="k">int</span>[] fruits) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 窗口里最多两种水果：cnt 记每种在窗口里的个数</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; cnt = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> left = <span class="n">0</span>, ans = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> right = <span class="n">0</span>; right &lt; fruits.length; right++) {</span><span class="ln"><span class="no">9</span>            cnt.merge(fruits[right], <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">10</span>            <span class="c">// 第三种进来了：左端收缩，直到一种被清空</span></span><span class="ln"><span class="no">11</span>            <span class="k">while</span> (cnt.size() &gt; <span class="n">2</span>) {</span><span class="ln"><span class="no">12</span>                <span class="k">int</span> f = fruits[left];</span><span class="ln"><span class="no">13</span>                <span class="k">if</span> (cnt.merge(f, -<span class="n">1</span>, <span class="t">Integer</span>::sum) == <span class="n">0</span>) cnt.remove(f);</span><span class="ln"><span class="no">14</span>                left++;</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>            ans = <span class="t">Math</span>.max(ans, right - left + <span class="n">1</span>);</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你正在探访一家农场，农场从左到右种植了一排果树。这些树用一个整数数组 <code>fruits</code> 表示，其中 <code>fruits[i]</code> 是第 <code>i</code> 棵树上的水果 <strong>种类</strong> 。</p>
+
+<p>你想要尽可能多地收集水果。然而，农场的主人设定了一些严格的规矩，你必须按照要求采摘水果：</p>
+
+<ul>
+	<li>你只有 <strong>两个</strong> 篮子，并且每个篮子只能装 <strong>单一类型</strong> 的水果。每个篮子能够装的水果总量没有限制。</li>
+	<li>你可以选择任意一棵树开始采摘，你必须从 <strong>每棵</strong> 树（包括开始采摘的树）上 <strong>恰好摘一个水果</strong> 。采摘的水果应当符合篮子中的水果类型。每采摘一次，你将会向右移动到下一棵树，并继续采摘。</li>
+	<li>一旦你走到某棵树前，但水果不符合篮子的水果类型，那么就必须停止采摘。</li>
+</ul>
+
+<p>给你一个整数数组 <code>fruits</code> ，返回你可以收集的水果的 <strong>最大</strong> 数目。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>fruits = [<em><strong>1,2,1</strong></em>]
+<strong>输出：</strong>3
+<strong>解释：</strong>可以采摘全部 3 棵树。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>fruits = [0,<em><strong>1,2,2</strong></em>]
+<strong>输出：</strong>3
+<strong>解释：</strong>可以采摘 [1,2,2] 这三棵树。
+如果从第一棵树开始采摘，则只能采摘 [0,1] 这两棵树。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>fruits = [1,<em><strong>2,3,2,2</strong></em>]
+<strong>输出：</strong>4
+<strong>解释：</strong>可以采摘 [2,3,2,2] 这四棵树。
+如果从第一棵树开始采摘，则只能采摘 [1,2] 这两棵树。
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre>
+<strong>输入：</strong>fruits = [3,3,3,<em><strong>1,2,1,1,2</strong></em>,3,3,4]
+<strong>输出：</strong>5
+<strong>解释：</strong>可以采摘 [1,2,1,1,2] 这五棵树。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= fruits.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>0 &lt;= fruits[i] &lt; fruits.length</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int totalFruit(int[] fruits) {", "        // 窗口里最多两种水果：cnt 记每种在窗口里的个数", "        Map<Integer, Integer> cnt = new HashMap<>();", "        int left = 0, ans = 0;", "        for (int right = 0; right < fruits.length; right++) {", "            cnt.merge(fruits[right], 1, Integer::sum);", "            // 第三种进来了：左端收缩，直到一种被清空", "            while (cnt.size() > 2) {", "                int f = fruits[left];", "                if (cnt.merge(f, -1, Integer::sum) == 0) cnt.remove(f);", "                left++;", "            }", "            ans = Math.max(ans, right - left + 1);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 904. 水果成篮 —— 图解：滑动窗口 + 哈希计数，第三种进来就收缩，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { fruits: [1, 2, 3, 2, 2] };
+
+function trace(input) {
+  var f = input.fruits;
+  var cnt = {};   // 品种 -> 窗口内个数，对应 Java 的 cnt
+  var left = 0, ans = 0, bestL = 0, bestR = -1;
+  var frames = [];
+  var shrinkSnapped = false, clearSnapped = false;
+
+  // 水果面板：o = { r, l, third, doneR }；third 是引发收缩的新品种位置
+  function fruitsPanel(o) {
+    var marks = {};
+    for (var i = 0; i < f.length; i++) {
+      if (o.doneR !== undefined) marks[i] = i >= o.l && i <= o.doneR ? 'done' : 'dim';
+      else if (i < o.l) marks[i] = 'dim';
+      else if (i <= o.r) marks[i] = 'win';
+    }
+    if (o.third !== undefined) marks[o.third] = 'bad';
+    if (o.doneR === undefined && o.l <= o.r) marks[o.l] = 'cur';
+    var pointers = o.doneR === undefined ? [
+      { at: o.l, label: 'left', cls: 'p-left' },
+      { at: o.r, label: 'right', cls: 'p-right' }
+    ] : [];
+    var range = o.doneR === undefined && o.r >= o.l ? { from: o.l, to: o.r, label: '窗口 [' + o.l + ', ' + o.r + ']' } : null;
+    return Viz.cells(f.slice(), { title: 'fruits：一排果树', marks: marks, pointers: pointers, range: range });
+  }
+
+  function cntPanel() {
+    var keys = Object.keys(cnt).sort(function (a, b) { return a - b; });
+    var rows = keys.map(function (k) { return { k: k, v: String(cnt[k]), cls: '' }; });
+    return Viz.table('篮子 cnt：品种 → 窗口内个数', rows, { hint: '（最多装两种）' });
+  }
+
+  for (var right = 0; right < f.length; right++) {
+    cnt[f[right]] = (cnt[f[right]] || 0) + 1;
+    if (right === 0) {
+      frames.push(Viz.frame('cnt.merge(fruits[right], 1, Integer::sum);',
+        '开窗：right 进来的水果先计数', [fruitsPanel({ r: 0, l: 0 }), cntPanel()]));
+    }
+    if (Object.keys(cnt).length > 2 && !shrinkSnapped) {
+      shrinkSnapped = true;
+      frames.push(Viz.frame('while (cnt.size() > 2) {',
+        '篮里出现第三种：必须把左端缩到只剩两种', [fruitsPanel({ r: right, l: left, third: right }), cntPanel()]));
+    }
+    while (Object.keys(cnt).length > 2) {
+      var fl = f[left];
+      cnt[fl]--;
+      if (cnt[fl] === 0) {
+        delete cnt[fl];
+        if (!clearSnapped) {
+          clearSnapped = true;
+          frames.push(Viz.frame('if (cnt.merge(f, -1, Integer::sum) == 0) cnt.remove(f);',
+            '品种 ' + fl + ' 计数清零：从哈希表删掉，窗口恢复合法', [fruitsPanel({ r: right, l: left + 1 }), cntPanel()]));
+        }
+      }
+      left++;
+    }
+    if (right - left + 1 > ans) {
+      ans = right - left + 1;
+      bestL = left;
+      bestR = right;
+    }
+  }
+
+  var winText = ans > 0 ? '最长窗口 [' + bestL + ', ' + bestR + '] 长 ' + ans : '空数组，窗口长 0';
+  frames.push(Viz.frame('ans = Math.max(ans, right - left + 1);', '扫完：' + winText,
+    [fruitsPanel({ r: f.length - 1, l: bestL, doneR: bestR }), cntPanel()]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

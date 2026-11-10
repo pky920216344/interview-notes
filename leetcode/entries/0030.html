@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>串联所有单词的子串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 354 / 1159</span>
+  <nav class="pn"><a href="0429.html">上一篇</a><a href="0140.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">30. </span>串联所有单词的子串</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 10</li><li class="algo">滑动窗口</li><li class="aux">哈希表</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">滑动窗口</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">词定长滑窗：以每个偏移（0..词长-1）为起点按「一个词」滑动窗口，哈希计数比较，超量从左边吐词。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>所有词等长 <code>w</code>，合法子串只能从 <code>offset ≡ 起点 (mod w)</code> 的通道上长出来——以 <code>offset = 0..w-1</code> 各扫一条，起点一个不漏。</li><li>每次吞进一个词：不在 <code>need</code> 里就整窗作废重来；超量（某词次数 &gt; 需求）就从左边把词一个个吐出去。</li><li>窗口内词数 <code>cnt == m</code> 且各词不超量 ⇔ 各词次数<strong>恰好</strong>等于需求，记下起点 <code>i - (m-1)*w</code>。</li><li>起点顺序不限，力扣判题允许任意顺序；本地导出时排序。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n × 词长)，空间复杂度 O(m × 词长)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; findSubstring(<span class="t">String</span> s, <span class="t">String</span>[] words) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> n = s.length(), m = words.length, w = words[<span class="n">0</span>].length();</span><span class="ln"><span class="no">7</span>        <span class="c">// need：每个单词该出现的次数；窗口里超过它的次数就是超量</span></span><span class="ln"><span class="no">8</span>        <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt; need = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="t">String</span> word : words) need.merge(word, <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">10</span>        <span class="c">// 以每个偏移（0..w-1）为起点按「词」滑窗：w 条通道合起来覆盖所有起点</span></span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> offset = <span class="n">0</span>; offset &lt; w; offset++) {</span><span class="ln"><span class="no">12</span>            <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt; win = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">13</span>            <span class="k">int</span> cnt = <span class="n">0</span>;   <span class="c">// 窗口里的单词个数</span></span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> i = offset; i + w &lt;= n; i += w) {</span><span class="ln"><span class="no">15</span>                <span class="t">String</span> word = s.substring(i, i + w);</span><span class="ln"><span class="no">16</span>                <span class="k">if</span> (!need.containsKey(word)) {   <span class="c">// 野词：这一段彻底作废，下一个词重新开窗</span></span><span class="ln"><span class="no">17</span>                    win.clear();</span><span class="ln"><span class="no">18</span>                    cnt = <span class="n">0</span>;</span><span class="ln"><span class="no">19</span>                    <span class="k">continue</span>;</span><span class="ln"><span class="no">20</span>                }</span><span class="ln"><span class="no">21</span>                win.merge(word, <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">22</span>                cnt++;</span><span class="ln"><span class="no">23</span>                <span class="c">// 新词超量：从窗口左边把词一个个吐出去，吐到不再超量</span></span><span class="ln"><span class="no">24</span>                <span class="k">while</span> (win.get(word) &gt; need.get(word)) {</span><span class="ln"><span class="no">25</span>                    <span class="t">String</span> drop = s.substring(i - (cnt - <span class="n">1</span>) * w, i - (cnt - <span class="n">1</span>) * w + w);</span><span class="ln"><span class="no">26</span>                    win.merge(drop, -<span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">27</span>                    cnt--;</span><span class="ln"><span class="no">28</span>                }</span><span class="ln"><span class="no">29</span>                <span class="k">if</span> (cnt == m) ans.add(i - (m - <span class="n">1</span>) * w);</span><span class="ln"><span class="no">30</span>            }</span><span class="ln"><span class="no">31</span>        }</span><span class="ln"><span class="no">32</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个字符串&nbsp;<code>s</code>和一个字符串数组&nbsp;<code>words</code><strong>。</strong>&nbsp;<code>words</code>&nbsp;中所有字符串 <strong>长度相同</strong>。</p>
+
+<p>&nbsp;<code>s</code>中的 <strong>串联子串</strong> 是指一个包含&nbsp;&nbsp;<code>words</code>&nbsp;中所有字符串以任意顺序排列连接起来的子串。</p>
+
+<ul>
+	<li>例如，如果&nbsp;<code>words = ["ab","cd","ef"]</code>， 那么&nbsp;<code>"abcdef"</code>，&nbsp;<code>"abefcd"</code>，<code>"cdabef"</code>，&nbsp;<code>"cdefab"</code>，<code>"efabcd"</code>， 和&nbsp;<code>"efcdab"</code> 都是串联子串。&nbsp;<code>"acdbef"</code> 不是串联子串，因为他不是任何&nbsp;<code>words</code>&nbsp;排列的连接。</li>
+</ul>
+
+<p>返回所有串联子串在&nbsp;<code>s</code>中的开始索引。你可以以 <strong>任意顺序</strong> 返回答案。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "barfoothefoobarman", words = ["foo","bar"]
+<strong>输出：</strong><code>[0,9]</code>
+<strong>解释：</strong>因为 words.length == 2 同时 words[i].length == 3，连接的子字符串的长度必须为 6。
+子串 "barfoo" 开始位置是 0。它是 words 中以 ["bar","foo"] 顺序排列的连接。
+子串 "foobar" 开始位置是 9。它是 words 中以 ["foo","bar"] 顺序排列的连接。
+输出顺序无关紧要。返回 [9,0] 也是可以的。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "wordgoodgoodgoodbestword", words = ["word","good","best","word"]
+<code><strong>输出：</strong>[]</code>
+<strong>解释：</strong>因为words.length == 4 并且 words[i].length == 4，所以串联子串的长度必须为 16。
+s 中没有子串长度为 16 并且等于 words 的任何顺序排列的连接。
+所以我们返回一个空数组。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "barfoofoobarthefoobarman", words = ["bar","foo","the"]
+<strong>输出：</strong>[6,9,12]
+<strong>解释：</strong>因为 words.length == 3 并且 words[i].length == 3，所以串联子串的长度必须为 9。
+子串 "foobarthe" 开始位置是 6。它是 words 中以 ["foo","bar","the"] 顺序排列的连接。
+子串 "barthefoo" 开始位置是 9。它是 words 中以 ["bar","the","foo"] 顺序排列的连接。
+子串 "thefoobar" 开始位置是 12。它是 words 中以 ["the","foo","bar"] 顺序排列的连接。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= words.length &lt;= 5000</code></li>
+	<li><code>1 &lt;= words[i].length &lt;= 30</code></li>
+	<li><code>words[i]</code>&nbsp;和&nbsp;<code>s</code> 由小写英文字母组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> findSubstring(String s, String[] words) {", "        List<Integer> ans = new ArrayList<>();", "        int n = s.length(), m = words.length, w = words[0].length();", "        // need：每个单词该出现的次数；窗口里超过它的次数就是超量", "        Map<String, Integer> need = new HashMap<>();", "        for (String word : words) need.merge(word, 1, Integer::sum);", "        // 以每个偏移（0..w-1）为起点按「词」滑窗：w 条通道合起来覆盖所有起点", "        for (int offset = 0; offset < w; offset++) {", "            Map<String, Integer> win = new HashMap<>();", "            int cnt = 0;   // 窗口里的单词个数", "            for (int i = offset; i + w <= n; i += w) {", "                String word = s.substring(i, i + w);", "                if (!need.containsKey(word)) {   // 野词：这一段彻底作废，下一个词重新开窗", "                    win.clear();", "                    cnt = 0;", "                    continue;", "                }", "                win.merge(word, 1, Integer::sum);", "                cnt++;", "                // 新词超量：从窗口左边把词一个个吐出去，吐到不再超量", "                while (win.get(word) > need.get(word)) {", "                    String drop = s.substring(i - (cnt - 1) * w, i - (cnt - 1) * w + w);", "                    win.merge(drop, -1, Integer::sum);", "                    cnt--;", "                }", "                if (cnt == m) ans.add(i - (m - 1) * w);", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 30. 串联所有单词的子串 —— 图解：复刻 Solution.java 的「按词滑窗 + 超量回吐」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'barfoofoobar', words: ['bar', 'foo'] };
+
+function trace(input) {
+  var s = input.s, words = input.words;
+  var n = s.length, m = words.length, w = words[0].length;
+  var frames = [];
+  var need = {};
+  for (var k = 0; k < m; k++) need[words[k]] = (need[words[k]] || 0) + 1;
+  var fired = { open: false, match: 0, shrink: false };
+
+  // 字符串面板：窗口 [start, i+w-1] 画 win，当前词画 cur，野词画 bad
+  function sPanel(start, i, wild) {
+    var marks = {};
+    if (start >= 0 && i + w <= n) {
+      for (var t = start; t < i + w; t++) marks[t] = 'win';
+      if (wild) for (var t2 = i; t2 < i + w; t2++) marks[t2] = 'bad';
+      else marks[i] = 'cur';
+    }
+    var pointers = i < n ? [{ at: i, label: 'i', cls: 'p-cur' }] : [];
+    var range = start >= 0 && start <= i
+      ? { from: Math.max(0, start), to: Math.min(n - 1, i + w - 1), label: '窗口（' + Math.max(0, (i - start) / w + 1) + ' 个词）' }
+      : null;
+    return Viz.cells(s.split(''), { title: 's（窗口按一个词的宽度滑动）', marks: marks, pointers: pointers, range: range });
+  }
+  function tablePanel(curWord, dropWord) {
+    return Viz.table('win / need（窗口内次数 / 应有次数）', Object.keys(need).map(function (word) {
+      var got = win[word] || 0;
+      var cls = word === dropWord ? 'bad' : (word === curWord ? 'cur' : '');
+      return { k: word, v: got + ' / ' + need[word], cls: cls };
+    }));
+  }
+  function varsPanel(extra) {
+    var items = [
+      { name: 'offset', v: offset },
+      { name: 'cnt', v: cnt, cls: 'chg' },
+      { name: 'm', v: m }
+    ];
+    if (extra) items.push({ name: 'ans', v: '[' + ans.join(', ') + ']', cls: 'chg' });
+    return Viz.vars(items);
+  }
+
+  var win = {}, cnt = 0, offset = 0, ans = [];
+
+  for (offset = 0; offset < w; offset++) {
+    win = {}; cnt = 0;
+    if (!fired.open) {
+      fired.open = true;
+      frames.push(Viz.frame('for (int offset = 0; offset < w; offset++) {',
+        'need：' + Object.keys(need).map(function (x) { return x + '×' + need[x]; }).join('、') + '；先沿偏移 0 的通道滑',
+        [sPanel(-1, offset, false), tablePanel(null, null), varsPanel(false)]));
+    }
+    for (var i = offset; i + w <= n; i += w) {
+      var word = s.substring(i, i + w);
+      if (!(word in need)) {
+        win = {}; cnt = 0;
+        continue;
+      }
+      win[word] = (win[word] || 0) + 1;
+      cnt++;
+      var start = i - (cnt - 1) * w;
+      if (win[word] > need[word]) {
+        if (!fired.shrink) {
+          fired.shrink = true;
+          frames.push(Viz.frame('while (win.get(word) > need.get(word)) {',
+            '「' + word + '」第 ' + win[word] + ' 次进窗超量：要从左边吐词了',
+            [sPanel(start, i, false), tablePanel(word, null), varsPanel(false)]));
+        }
+        while (win[word] > need[word]) {
+          var dropStart = i - (cnt - 1) * w;
+          var drop = s.substring(dropStart, dropStart + w);
+          win[drop]--;
+          cnt--;
+        }
+      }
+      if (cnt === m) {
+        var hit = i - (m - 1) * w;
+        ans.push(hit);
+        fired.match++;
+        if (fired.match === 1) {
+          frames.push(Viz.frame('if (cnt == m) ans.add(i - (m - 1) * w);',
+            '窗口里各词次数都正好：凑齐 m=' + m + ' 个词，记下起点 ' + hit,
+            [sPanel(i - (m - 1) * w, i, false), tablePanel(word, null), varsPanel(true)]));
+        } else if (fired.match === 2) {
+          frames.push(Viz.frame('if (cnt == m) ans.add(i - (m - 1) * w);',
+            '吐完超量再进词又凑齐：起点 ' + hit + ' 也是答案',
+            [sPanel(i - (m - 1) * w, i, false), tablePanel(word, null), varsPanel(true)]));
+        }
+      }
+    }
+  }
+
+  ans.sort(function (a, b) { return a - b; });
+  frames.push(Viz.frame('return ans;',
+    'w 条偏移通道扫完：共 ' + ans.length + ' 个起点（导出时已排序）',
+    [sPanel(-1, n, false), tablePanel(null, null), varsPanel(true)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

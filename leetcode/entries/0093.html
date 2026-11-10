@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>复原 IP 地址 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 34 / 1159</span>
+  <nav class="pn"><a href="0019.html">上一篇</a><a href="0124.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">93. </span>复原 IP 地址</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 188</li><li class="algo">回溯</li><li class="tag">字符串</li><li class="tag">回溯</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">回溯：从 start 起切出下一段（1~3 位、不超过 255、不含前导 0），切满 4 段且用完整个串才记录。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dfs(start, path)</code>：<code>path</code> 是已经切好的段，下一段从 <code>s[start]</code> 开始，长度 <code>len</code> 依次试 <code>1~3</code>。</li><li>一段合法要同时满足：不含前导 <code>0</code>（<code>len &gt; 1</code> 且首字符是 <code>'0'</code> 就 <code>break</code>），数值不超过 <code>255</code>（超了就 <code>break</code>，再长只会更大）。</li><li>合法就加入 <code>path</code>，递归 <code>dfs(start + len)</code>，回来后弹出最后一段，换下一个 <code>len</code>。</li><li><code>path</code> 满 4 段时，必须 <code>start == s.length()</code> 才记录，还有字符没用完就丢弃。段数固定为 4，搜索树大小是常数，所以时间、空间都是 <code>O(1)</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1)，空间复杂度 O(1)（不计输出）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; restoreIpAddresses(<span class="t">String</span> s) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        dfs(s, <span class="n">0</span>, <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(), ans);</span><span class="ln"><span class="no">7</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="c">// start：下一段从 s[start] 开始；path：已经切好的段</span></span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="t">String</span> s, <span class="k">int</span> start, <span class="t">List</span>&lt;<span class="t">String</span>&gt; path, <span class="t">List</span>&lt;<span class="t">String</span>&gt; ans) {</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (path.size() == <span class="n">4</span>) {</span><span class="ln"><span class="no">13</span>            <span class="c">// 恰好 4 段，并且整个串用完，才是一个答案</span></span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (start == s.length()) ans.add(<span class="t">String</span>.join(<span class="s">"."</span>, path));</span><span class="ln"><span class="no">15</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">for</span> (<span class="k">int</span> len = <span class="n">1</span>; len &lt;= <span class="n">3</span> &amp;&amp; start + len &lt;= s.length(); len++) {</span><span class="ln"><span class="no">18</span>            <span class="c">// 前导 0：只有单独的 "0" 才合法</span></span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (len &gt; <span class="n">1</span> &amp;&amp; s.charAt(start) == <span class="s">'0'</span>) <span class="k">break</span>;</span><span class="ln"><span class="no">20</span>            <span class="t">String</span> seg = s.substring(start, start + len);</span><span class="ln"><span class="no">21</span>            <span class="c">// 超过 255 就不行，再长只会更大</span></span><span class="ln"><span class="no">22</span>            <span class="k">if</span> (<span class="t">Integer</span>.parseInt(seg) &gt; <span class="n">255</span>) <span class="k">break</span>;</span><span class="ln"><span class="no">23</span>            path.add(seg);</span><span class="ln"><span class="no">24</span>            dfs(s, start + len, path, ans);</span><span class="ln"><span class="no">25</span>            path.remove(path.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p><strong>有效 IP 地址</strong> 正好由四个整数（每个整数位于 <code>0</code> 到 <code>255</code> 之间组成，且不能含有前导 <code>0</code>），整数之间用 <code>'.'</code> 分隔。</p>
+
+<ul>
+	<li>例如：<code>"0.1.2.201"</code> 和<code> "192.168.1.1"</code> 是 <strong>有效</strong> IP 地址，但是 <code>"0.011.255.245"</code>、<code>"192.168.1.312"</code> 和 <code>"192.168@1.1"</code> 是 <strong>无效</strong> IP 地址。</li>
+</ul>
+
+<p>给定一个只包含数字的字符串 <code>s</code> ，用以表示一个 IP 地址，返回所有可能的<strong>有效 IP 地址</strong>，这些地址可以通过在 <code>s</code> 中插入&nbsp;<code>'.'</code> 来形成。你 <strong>不能</strong>&nbsp;重新排序或删除 <code>s</code> 中的任何数字。你可以按 <strong>任何</strong> 顺序返回答案。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "25525511135"
+<strong>输出：</strong>["255.255.11.135","255.255.111.35"]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "0000"
+<strong>输出：</strong>["0.0.0.0"]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "101023"
+<strong>输出：</strong>["1.0.10.23","1.0.102.3","10.1.0.23","10.10.2.3","101.0.2.3"]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 20</code></li>
+	<li><code>s</code> 仅由数字组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<String> restoreIpAddresses(String s) {", "        List<String> ans = new ArrayList<>();", "        dfs(s, 0, new ArrayList<>(), ans);", "        return ans;", "    }", "", "    // start：下一段从 s[start] 开始；path：已经切好的段", "    private void dfs(String s, int start, List<String> path, List<String> ans) {", "        if (path.size() == 4) {", "            // 恰好 4 段，并且整个串用完，才是一个答案", "            if (start == s.length()) ans.add(String.join(\".\", path));", "            return;", "        }", "        for (int len = 1; len <= 3 && start + len <= s.length(); len++) {", "            // 前导 0：只有单独的 \"0\" 才合法", "            if (len > 1 && s.charAt(start) == '0') break;", "            String seg = s.substring(start, start + len);", "            // 超过 255 就不行，再长只会更大", "            if (Integer.parseInt(seg) > 255) break;", "            path.add(seg);", "            dfs(s, start + len, path, ans);", "            path.remove(path.size() - 1);", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 93. 复原 IP 地址 —— 图解：复刻 Solution.java 的「逐段切分 + 回溯」，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: '25502' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var path = [];       // 已经切好的段
+  var ans = [];        // 按 DFS 找到的顺序；返回前再排序，和 Java 的规范化一致
+  var frames = [];
+  var shown = { leftover: false, zero: false, ok: false, big: false };   // 每种关键时刻只拍第一次
+
+  // 字符串面板：path 里已切好的字符标青色；o.trying = [from, to] 是正在试的一段（o.bad 时标红，否则橙色）；
+  // o.rest 为真时，还没用完的字符标红；o.done 为真时整串标成结果。
+  function strPanel(o) {
+    var marks = {};
+    var k, covered = 0;
+    path.forEach(function (seg) { covered += seg.length; });
+    for (k = 0; k < covered; k++) marks[k] = o.done ? 'done' : 'win';
+    if (o.trying) for (k = o.trying[0]; k <= o.trying[1]; k++) marks[k] = o.bad ? 'bad' : 'cur';
+    if (o.rest) for (k = covered; k < n; k++) marks[k] = 'bad';
+    var pointers = !o.done && o.start < n ? [{ at: o.start, label: 'start', cls: 'p-left' }] : [];
+    var range = o.trying ? { from: o.trying[0], to: o.trying[1], label: o.label } : null;
+    return Viz.cells(s.split(''), { title: '字符串 s（青色 = 已切进 path 的字符）', marks: marks, pointers: pointers, range: range });
+  }
+
+  function pathPanel(done) {
+    var marks = {};
+    if (done) path.forEach(function (seg, k) { marks[k] = 'done'; });
+    return Viz.cells(path.slice(), {
+      title: path.length ? 'path：已切好 ' + path.length + ' 段' : 'path：还没切', marks: marks, hideIndex: true
+    });
+  }
+
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  snap('dfs(s, 0, new ArrayList<>(), ans);', 'dfs(0)：从 s[0] 起切第 1 段，每段 1~3 位',
+    [strPanel({ start: 0 }), pathPanel(false)]);
+
+  function dfs(start) {
+    if (path.length === 4) {
+      if (start === n) {
+        ans.push(path.join('.'));
+        if (!shown.ok) {
+          shown.ok = true;
+          snap('ans.add(String.join(', '切满 4 段且正好用完：记下 ' + path.join('.'),
+            [strPanel({ start: start, done: true }), pathPanel(true)]);
+        }
+      } else if (!shown.leftover) {
+        shown.leftover = true;
+        snap('start == s.length()', '已切满 4 段，但还剩「' + s.slice(start) + '」没用完：作废',
+          [strPanel({ start: start, rest: true }), pathPanel(false)]);
+      }
+      return;
+    }
+    for (var len = 1; len <= 3 && start + len <= n; len++) {
+      var seg = s.slice(start, start + len);
+      if (len > 1 && s.charAt(start) === '0') {
+        if (!shown.zero) {
+          shown.zero = true;
+          snap("s.charAt(start) == '0'", '「' + seg + '」以 0 开头且不止一位：非法，break',
+            [strPanel({ start: start, trying: [start, start + len - 1], bad: true, label: '前导 0' }), pathPanel(false)]);
+        }
+        break;
+      }
+      if (parseInt(seg, 10) > 255) {
+        if (!shown.big) {
+          shown.big = true;
+          snap('Integer.parseInt(seg) > 255', '「' + seg + '」> 255：非法，更长的更大，break',
+            [strPanel({ start: start, trying: [start, start + len - 1], bad: true, label: '> 255' }), pathPanel(false)]);
+        }
+        break;
+      }
+      path.push(seg);
+      dfs(start + len);
+      path.pop();
+    }
+  }
+  dfs(0);
+
+  snap('return ans;', '搜完所有切法：共 ' + ans.length + ' 个合法 IP',
+    [Viz.table('ans：合法的 IP 地址', ans.map(function (ip, k) { return { k: String(k + 1), v: ip, cls: '' }; }))]);
+  return { frames: frames, result: ans.slice().sort() };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lisp 语法解析 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 710 / 1159</span>
+  <nav class="pn"><a href="0357.html">上一篇</a><a href="0477.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">736. </span>Lisp 语法解析</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">深度优先搜索/递归</li><li class="aux">哈希表</li><li class="tag">栈</li><li class="tag">递归</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">递归下降：遇左括号读出 op 递归求值；let 逐对「变量=值」压进新作用域，查变量从最内层往外找。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>手写解析器三件套：<code>pos</code> 游标、<code>readWord</code> 读 token、<code>skipSpace</code> 跳空格；原子是整数（可负）或变量。</li><li><code>let</code> 先压一个新作用域（哈希表），循环里读「变量 → 值表达式」成对赋值；读到 <code>(</code> 直接当最后的 expr 求值返回，读到 <code>)</code> 把刚读的 token 当最后的 expr（变量查作用域、其余按数字）。</li><li>值表达式求值后立即写入当前作用域，所以后面的对能看到前面的赋值（题面示例 3 依赖这一点）；作用域用完即弹，嵌套 <code>let</code> 的同名变量天然遮蔽外层。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="t">String</span> s;</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">int</span> pos;</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="t">List</span>&lt;<span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt;&gt; scopes;   <span class="c">// 从外到内，最后一个是最内层作用域</span></span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="k">int</span> evaluate(<span class="t">String</span> expression) {</span><span class="ln"><span class="no">9</span>        s = expression;</span><span class="ln"><span class="no">10</span>        pos = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        scopes = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">12</span>        <span class="k">return</span> eval();</span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span>    <span class="c">// 递归下降：解析一个「整数 / 变量 / (op ...)」并求值</span></span><span class="ln"><span class="no">16</span>    <span class="k">private</span> <span class="k">int</span> eval() {</span><span class="ln"><span class="no">17</span>        skipSpace();</span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (s.charAt(pos) != <span class="s">'('</span>) <span class="k">return</span> atom();</span><span class="ln"><span class="no">19</span>        pos++;                                   <span class="c">// 吃掉 '('</span></span><span class="ln"><span class="no">20</span>        <span class="t">String</span> op = readWord();</span><span class="ln"><span class="no">21</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">22</span>        <span class="k">if</span> (op.equals(<span class="s">"let"</span>)) {</span><span class="ln"><span class="no">23</span>            scopes.add(<span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;());</span><span class="ln"><span class="no">24</span>            <span class="k">while</span> (<span class="k">true</span>) {</span><span class="ln"><span class="no">25</span>                skipSpace();</span><span class="ln"><span class="no">26</span>                <span class="k">if</span> (s.charAt(pos) == <span class="s">'('</span>) { ans = eval(); <span class="k">break</span>; }      <span class="c">// 最后的 expr 是子表达式</span></span><span class="ln"><span class="no">27</span>                <span class="t">String</span> name = readWord();</span><span class="ln"><span class="no">28</span>                skipSpace();</span><span class="ln"><span class="no">29</span>                <span class="k">if</span> (s.charAt(pos) == <span class="s">')'</span>) { ans = atomValue(name); <span class="k">break</span>; }  <span class="c">// 最后的 expr 是变量或数字</span></span><span class="ln"><span class="no">30</span>                scopes.get(scopes.size() - <span class="n">1</span>).put(name, eval());        <span class="c">// 否则这是「变量 = 值」</span></span><span class="ln"><span class="no">31</span>            }</span><span class="ln"><span class="no">32</span>            scopes.remove(scopes.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">33</span>        } <span class="k">else</span> {</span><span class="ln"><span class="no">34</span>            <span class="k">int</span> a = eval();</span><span class="ln"><span class="no">35</span>            <span class="k">int</span> b = eval();</span><span class="ln"><span class="no">36</span>            ans = op.equals(<span class="s">"add"</span>) ? a + b : a * b;</span><span class="ln"><span class="no">37</span>        }</span><span class="ln"><span class="no">38</span>        pos++;                                   <span class="c">// 吃掉 ')'</span></span><span class="ln"><span class="no">39</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">40</span>    }</span><span class="ln"><span class="no">41</span> </span><span class="ln"><span class="no">42</span>    <span class="k">private</span> <span class="k">int</span> atom() {</span><span class="ln"><span class="no">43</span>        <span class="k">char</span> c = s.charAt(pos);</span><span class="ln"><span class="no">44</span>        <span class="k">if</span> (c == <span class="s">'-'</span> || (c &gt;= <span class="s">'0'</span> &amp;&amp; c &lt;= <span class="s">'9'</span>)) {</span><span class="ln"><span class="no">45</span>            <span class="k">int</span> sign = <span class="n">1</span>, v = <span class="n">0</span>;</span><span class="ln"><span class="no">46</span>            <span class="k">if</span> (c == <span class="s">'-'</span>) { sign = -<span class="n">1</span>; pos++; }</span><span class="ln"><span class="no">47</span>            <span class="k">while</span> (pos &lt; s.length() &amp;&amp; s.charAt(pos) &gt;= <span class="s">'0'</span> &amp;&amp; s.charAt(pos) &lt;= <span class="s">'9'</span>) {</span><span class="ln"><span class="no">48</span>                v = v * <span class="n">10</span> + (s.charAt(pos++) - <span class="s">'0'</span>);</span><span class="ln"><span class="no">49</span>            }</span><span class="ln"><span class="no">50</span>            <span class="k">return</span> sign * v;</span><span class="ln"><span class="no">51</span>        }</span><span class="ln"><span class="no">52</span>        <span class="k">return</span> atomValue(readWord());</span><span class="ln"><span class="no">53</span>    }</span><span class="ln"><span class="no">54</span> </span><span class="ln"><span class="no">55</span>    <span class="c">// 名字：小写开头按变量从内往外查，否则按数字解析</span></span><span class="ln"><span class="no">56</span>    <span class="k">private</span> <span class="k">int</span> atomValue(<span class="t">String</span> t) {</span><span class="ln"><span class="no">57</span>        <span class="k">char</span> c = t.charAt(<span class="n">0</span>);</span><span class="ln"><span class="no">58</span>        <span class="k">if</span> (c &gt;= <span class="s">'a'</span> &amp;&amp; c &lt;= <span class="s">'z'</span>) {</span><span class="ln"><span class="no">59</span>            <span class="k">for</span> (<span class="k">int</span> i = scopes.size() - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">60</span>                <span class="t">Integer</span> v = scopes.get(i).get(t);</span><span class="ln"><span class="no">61</span>                <span class="k">if</span> (v != <span class="k">null</span>) <span class="k">return</span> v;</span><span class="ln"><span class="no">62</span>            }</span><span class="ln"><span class="no">63</span>            <span class="k">throw</span> <span class="k">new</span> <span class="t">RuntimeException</span>(<span class="s">"未定义变量 "</span> + t);</span><span class="ln"><span class="no">64</span>        }</span><span class="ln"><span class="no">65</span>        <span class="k">return</span> <span class="t">Integer</span>.parseInt(t);</span><span class="ln"><span class="no">66</span>    }</span><span class="ln"><span class="no">67</span> </span><span class="ln"><span class="no">68</span>    <span class="k">private</span> <span class="t">String</span> readWord() {</span><span class="ln"><span class="no">69</span>        <span class="k">int</span> st = pos;</span><span class="ln"><span class="no">70</span>        <span class="k">while</span> (pos &lt; s.length() &amp;&amp; s.charAt(pos) != <span class="s">' '</span> &amp;&amp; s.charAt(pos) != <span class="s">'('</span> &amp;&amp; s.charAt(pos) != <span class="s">')'</span>) pos++;</span><span class="ln"><span class="no">71</span>        <span class="k">return</span> s.substring(st, pos);</span><span class="ln"><span class="no">72</span>    }</span><span class="ln"><span class="no">73</span> </span><span class="ln"><span class="no">74</span>    <span class="k">private</span> <span class="k">void</span> skipSpace() {</span><span class="ln"><span class="no">75</span>        <span class="k">while</span> (pos &lt; s.length() &amp;&amp; s.charAt(pos) == <span class="s">' '</span>) pos++;</span><span class="ln"><span class="no">76</span>    }</span><span class="ln"><span class="no">77</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个类似 Lisp 语句的字符串表达式 <code>expression</code>，求出其计算结果。</p>
+
+<p>表达式语法如下所示:</p>
+
+<ul>
+	<li>表达式可以为整数，<strong>let</strong> 表达式，<strong>add</strong> 表达式，<strong>mult</strong> 表达式，或赋值的变量。表达式的结果总是一个整数。</li>
+	<li>(整数可以是正整数、负整数、0)</li>
+	<li><strong>let</strong> 表达式采用&nbsp;<code>"(let v<sub>1</sub> e<sub>1</sub> v<sub>2</sub> e<sub>2</sub> ... v<sub>n</sub> e<sub>n</sub> expr)"</code> 的形式，其中&nbsp;<code>let</code> 总是以字符串&nbsp;<code>"let"</code>来表示，接下来会跟随一对或多对交替的变量和表达式，也就是说，第一个变量&nbsp;<code>v<sub>1</sub></code>被分配为表达式&nbsp;<code>e<sub>1</sub></code>&nbsp;的值，第二个变量&nbsp;<code>v<sub>2</sub></code>&nbsp;被分配为表达式&nbsp;<code>e<sub>2</sub></code>&nbsp;的值，<strong>依次类推</strong>；最终 <code>let</code> 表达式的值为&nbsp;<code>expr</code>表达式的值。</li>
+	<li><strong>add </strong>表达式表示为&nbsp;<code>"(add e<sub>1</sub> e<sub>2</sub>)"</code> ，其中&nbsp;<code>add</code> 总是以字符串&nbsp;<code>"add"</code> 来表示，该表达式总是包含两个表达式 <code>e<sub>1</sub></code>、<code>e<sub>2</sub></code> ，最终结果是&nbsp;<code>e<sub>1</sub></code> 表达式的值与&nbsp;<code>e<sub>2</sub></code>&nbsp;表达式的值之 <strong>和 </strong>。</li>
+	<li><strong>mult</strong> 表达式表示为&nbsp;<code>"(mult e<sub>1</sub> e<sub>2</sub>)"</code>&nbsp;，其中&nbsp;<code>mult</code> 总是以字符串 <code>"mult"</code> 表示，该表达式总是包含两个表达式 <code>e<sub>1</sub></code>、<code>e<sub>2</sub></code>，最终结果是&nbsp;<code>e<sub>1</sub></code> 表达式的值与&nbsp;<code>e<sub>2</sub></code>&nbsp;表达式的值之<strong> 积 </strong>。</li>
+	<li>在该题目中，变量名以小写字符开始，之后跟随 0 个或多个小写字符或数字。为了方便，<code>"add"</code> ，<code>"let"</code> ，<code>"mult"</code> 会被定义为 "关键字" ，不会用作变量名。</li>
+	<li>最后，要说一下作用域的概念。计算变量名所对应的表达式时，在计算上下文中，首先检查最内层作用域（按括号计），然后按顺序依次检查外部作用域。测试用例中每一个表达式都是合法的。有关作用域的更多详细信息，请参阅示例。</li>
+</ul>
+&nbsp;
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>expression = "(let x 2 (mult x (let x 3 y 4 (add x y))))"
+<strong>输出：</strong>14
+<strong>解释：</strong>
+计算表达式 (add x y), 在检查变量 x 值时，
+在变量的上下文中由最内层作用域依次向外检查。
+首先找到 x = 3, 所以此处的 x 值是 3 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>expression = "(let x 3 x 2 x)"
+<strong>输出：</strong>2
+<strong>解释：</strong>let 语句中的赋值运算按顺序处理即可。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>expression = "(let x 1 y 2 x (add x y) (add x y))"
+<strong>输出：</strong>5
+<strong>解释：</strong>
+第一个 (add x y) 计算结果是 3，并且将此值赋给了 x 。 
+第二个 (add x y) 计算结果是 3 + 2 = 5 。
+</pre>
+&nbsp;
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= expression.length &lt;= 2000</code></li>
+	<li><code>exprssion</code> 中不含前导和尾随空格</li>
+	<li><code>expressoin</code> 中的不同部分（token）之间用单个空格进行分隔</li>
+	<li>答案和所有中间计算结果都符合 <strong>32-bit</strong> 整数范围</li>
+	<li>测试用例中的表达式均为合法的且最终结果为整数</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private String s;", "    private int pos;", "    private List<Map<String, Integer>> scopes;   // 从外到内，最后一个是最内层作用域", "", "    public int evaluate(String expression) {", "        s = expression;", "        pos = 0;", "        scopes = new ArrayList<>();", "        return eval();", "    }", "", "    // 递归下降：解析一个「整数 / 变量 / (op ...)」并求值", "    private int eval() {", "        skipSpace();", "        if (s.charAt(pos) != '(') return atom();", "        pos++;                                   // 吃掉 '('", "        String op = readWord();", "        int ans = 0;", "        if (op.equals(\"let\")) {", "            scopes.add(new HashMap<>());", "            while (true) {", "                skipSpace();", "                if (s.charAt(pos) == '(') { ans = eval(); break; }      // 最后的 expr 是子表达式", "                String name = readWord();", "                skipSpace();", "                if (s.charAt(pos) == ')') { ans = atomValue(name); break; }  // 最后的 expr 是变量或数字", "                scopes.get(scopes.size() - 1).put(name, eval());        // 否则这是「变量 = 值」", "            }", "            scopes.remove(scopes.size() - 1);", "        } else {", "            int a = eval();", "            int b = eval();", "            ans = op.equals(\"add\") ? a + b : a * b;", "        }", "        pos++;                                   // 吃掉 ')'", "        return ans;", "    }", "", "    private int atom() {", "        char c = s.charAt(pos);", "        if (c == '-' || (c >= '0' && c <= '9')) {", "            int sign = 1, v = 0;", "            if (c == '-') { sign = -1; pos++; }", "            while (pos < s.length() && s.charAt(pos) >= '0' && s.charAt(pos) <= '9') {", "                v = v * 10 + (s.charAt(pos++) - '0');", "            }", "            return sign * v;", "        }", "        return atomValue(readWord());", "    }", "", "    // 名字：小写开头按变量从内往外查，否则按数字解析", "    private int atomValue(String t) {", "        char c = t.charAt(0);", "        if (c >= 'a' && c <= 'z') {", "            for (int i = scopes.size() - 1; i >= 0; i--) {", "                Integer v = scopes.get(i).get(t);", "                if (v != null) return v;", "            }", "            throw new RuntimeException(\"未定义变量 \" + t);", "        }", "        return Integer.parseInt(t);", "    }", "", "    private String readWord() {", "        int st = pos;", "        while (pos < s.length() && s.charAt(pos) != ' ' && s.charAt(pos) != '(' && s.charAt(pos) != ')') pos++;", "        return s.substring(st, pos);", "    }", "", "    private void skipSpace() {", "        while (pos < s.length() && s.charAt(pos) == ' ') pos++;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 736. Lisp 语法解析 —— 图解：递归下降 + 作用域栈，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { expression: '(let x 2 (mult x (let x 3 y 4 (add x y))))' };
+
+function trace(input) {
+  var s = input.expression;
+  var pos = 0;
+  var scopes = [];      // 从外到内；Java 里同样按需压栈
+  var frames = [];
+  var putCount = 0, didShadow = false, didLookup = false, didOp = false;
+  var hitName = null, hitScope = -1;
+
+  var PUT = 'scopes.get(scopes.size() - 1).put(name, eval());';
+  var LOOKUP = 'if (v != null) return v;';
+  var OP = 'ans = op.equals("add") ? a + b : a * b;';
+  var RET = 'return ans;';
+
+  // 作用域栈面板：最内层在上面；hit 标刚查到的绑定
+  function scopePanel() {
+    var rows = [];
+    for (var i = scopes.length - 1; i >= 0; i--) {
+      var names = Object.keys(scopes[i]);
+      for (var j = 0; j < names.length; j++) {
+        var hit = hitName === names[j] && hitScope === i;
+        rows.push({ k: names[j] + '@第' + (i + 1) + '层', v: String(scopes[i][names[j]]),
+          cls: hit ? 'hit' : '' });
+      }
+    }
+    return Viz.table('作用域栈（上=最内层）', rows, { hint: '查变量从最内层往外找' });
+  }
+
+  function snap(at, key) {
+    frames.push(Viz.frame(at, key, [scopePanel()]));
+  }
+
+  function skipSpace() { while (pos < s.length && s.charAt(pos) === ' ') pos++; }
+
+  function readWord() {
+    var st = pos;
+    while (pos < s.length && s.charAt(pos) !== ' ' && s.charAt(pos) !== '(' && s.charAt(pos) !== ')') pos++;
+    return s.substring(st, pos);
+  }
+
+  function atomValue(t) {
+    var c = t.charAt(0);
+    if (c >= 'a' && c <= 'z') {
+      for (var i = scopes.length - 1; i >= 0; i--) {
+        if (t in scopes[i]) {
+          var v = scopes[i][t];
+          if (!didLookup) {
+            didLookup = true;
+            hitName = t; hitScope = i;
+            snap(LOOKUP, '查 ' + t + '：最内层先命中 ' + v + '，外层同名的被遮住');
+            hitName = null; hitScope = -1;
+          }
+          return v;
+        }
+      }
+      throw new Error('未定义变量 ' + t);
+    }
+    return parseInt(t, 10);
+  }
+
+  function atom() {
+    skipSpace();
+    var c = s.charAt(pos);
+    if (c === '-' || (c >= '0' && c <= '9')) {
+      var sign = 1, v = 0;
+      if (c === '-') { sign = -1; pos++; }
+      while (pos < s.length && s.charAt(pos) >= '0' && s.charAt(pos) <= '9') v = v * 10 + (s.charAt(pos++) - '0');
+      return sign * v;
+    }
+    return atomValue(readWord());
+  }
+
+  function evalExpr() {
+    skipSpace();
+    if (s.charAt(pos) !== '(') return atom();
+    pos++;
+    var op = readWord();
+    var ans = 0;
+    if (op === 'let') {
+      scopes.push({});
+      while (true) {
+        skipSpace();
+        if (s.charAt(pos) === '(') { ans = evalExpr(); break; }
+        var name = readWord();
+        skipSpace();
+        if (s.charAt(pos) === ')') { ans = atomValue(name); break; }
+        var v = evalExpr();
+        scopes[scopes.length - 1][name] = v;
+        putCount++;
+        var shadowed = scopes.slice(0, -1).some(function (sc) { return name in sc; });
+        if (putCount === 1) snap(PUT, 'let 开新作用域：' + name + ' = ' + v);
+        if (putCount === 2 && !didShadow && shadowed) {
+          didShadow = true;
+          snap(PUT, '内层又给 ' + name + ' 赋值：遮住外层的同名变量');
+        }
+      }
+      scopes.pop();
+    } else {
+      var a = evalExpr(), b = evalExpr();
+      ans = op === 'add' ? a + b : a * b;
+      if (!didOp) {
+        didOp = true;
+        snap(OP, op + '：' + a + (op === 'add' ? ' + ' : ' × ') + b + ' = ' + ans);
+      }
+    }
+    pos++;
+    return ans;
+  }
+
+  var result = evalExpr();
+  snap(RET, '递归走完：答案是 ' + result);
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

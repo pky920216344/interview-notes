@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>水壶问题 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 448 / 1159</span>
+  <nav class="pn"><a href="0877.html">上一篇</a><a href="0915.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">365. </span>水壶问题</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 6</li><li class="algo">数学</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">数学</li><li class="tag">greatest-common-divisor</li><li class="tag">euclidean-algorithm</li><li class="tag">extended-euclidean-algorithm</li><li class="tag">bezouts-lemma</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">数学：能量出的水量恰是 gcd(x,y) 的倍数，所以 target ≤ x+y 且 target % gcd(x,y) == 0 就可行。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>任何「装满/倒空/互倒」操作，两个壶里的水量组合始终能表示成 <code>a·x + b·y</code>，即 gcd 的倍数（贝祖定理）；反过来 gcd 的每个不超过 <code>x+y</code> 的倍数都真能倒出来。</li><li>两个判定就够：<code>target ≤ x + y</code>（超了必不行）且 <code>target % gcd(x,y) == 0</code>（不是倍数必不行）。</li><li>边界：<code>target == 0</code> 直接 true；<code>x = y = 0</code> 时只有 target 0 可行（上面的判定自然覆盖）。</li><li><code>x</code>、<code>y</code> 都可到 int 上限，<code>(long) x + y</code> 防相加溢出，gcd 参数也用 long。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log(min(x,y)))，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> canMeasureWater(<span class="k">int</span> x, <span class="k">int</span> y, <span class="k">int</span> target) {</span><span class="ln"><span class="no">3</span>        <span class="k">if</span> (target == <span class="n">0</span>) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">if</span> (target &gt; (<span class="k">long</span>) x + y) <span class="k">return</span> <span class="k">false</span>;   <span class="c">// 两壶全满也装不下；int 相加会溢出，用 long</span></span><span class="ln"><span class="no">5</span>        <span class="k">return</span> target % gcd(x, y) == <span class="n">0</span>;            <span class="c">// 可量出的水量恰是 gcd(x,y) 的倍数</span></span><span class="ln"><span class="no">6</span>    }</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="c">// 辗转相除；x、y 都可能取到 int 上限，用 long 防溢出</span></span><span class="ln"><span class="no">9</span>    <span class="k">private</span> <span class="k">long</span> gcd(<span class="k">long</span> a, <span class="k">long</span> b) {</span><span class="ln"><span class="no">10</span>        <span class="k">return</span> b == <span class="n">0</span> ? a : gcd(b, a % b);</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>有两个水壶，容量分别为&nbsp;<code>x</code>&nbsp;和 <code>y</code> 升。水的供应是无限的。确定是否有可能使用这两个壶准确得到&nbsp;<code>target</code>&nbsp;升。</p>
+
+<p>你可以：</p>
+
+<ul>
+	<li>装满任意一个水壶</li>
+	<li>清空任意一个水壶</li>
+	<li>将水从一个水壶倒入另一个水壶，直到接水壶已满，或倒水壶已空。</li>
+</ul>
+
+
+
+<p><strong>示例 1:</strong>&nbsp;</p>
+
+<pre>
+<strong>输入:</strong> x = 3,y = 5,target = 4
+<strong>输出:</strong> true
+<strong>解释：
+</strong>按照以下步骤操作，以达到总共 4 升水：
+1. 装满 5 升的水壶(0, 5)。
+2. 把 5 升的水壶倒进 3 升的水壶，留下 2 升(3, 2)。
+3. 倒空 3 升的水壶(0, 2)。
+4. 把 2 升水从 5 升的水壶转移到 3 升的水壶(2, 0)。
+5. 再次加满 5 升的水壶(2, 5)。
+6. 从 5 升的水壶向 3 升的水壶倒水直到 3 升的水壶倒满。5 升的水壶里留下了 4 升水(3, 4)。
+7. 倒空 3 升的水壶。现在，5 升的水壶里正好有 4 升水(0, 4)。
+参考：来自著名的&nbsp;<a href="https://www.youtube.com/watch?v=BVtQNK_ZUJg"><em>"Die Hard"</em></a></pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> x = 2, y = 6, target = 5
+<strong>输出:</strong> false
+</pre>
+
+<p><strong>示例 3:</strong></p>
+
+<pre>
+<strong>输入:</strong> x = 1, y = 2, target = 3
+<strong>输出:</strong> true
+<b>解释：</b>同时倒满两个水壶。现在两个水壶中水的总量等于 3。</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= x, y, target &lt;= 10<sup>3</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean canMeasureWater(int x, int y, int target) {", "        if (target == 0) return true;", "        if (target > (long) x + y) return false;   // 两壶全满也装不下；int 相加会溢出，用 long", "        return target % gcd(x, y) == 0;            // 可量出的水量恰是 gcd(x,y) 的倍数", "    }", "", "    // 辗转相除；x、y 都可能取到 int 上限，用 long 防溢出", "    private long gcd(long a, long b) {", "        return b == 0 ? a : gcd(b, a % b);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 365. 水壶问题 —— 图解：复刻 Solution.java 的「上限 + gcd 数学判定」，在 3 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { x: 3, y: 5, target: 4 };
+
+function trace(input) {
+  var x = input.x, y = input.y, target = input.target;
+  var frames = [];
+  var fired = { cap: false, gcd: false };
+
+  function varsPanel(items) { return Viz.vars(items); }
+
+  function gcd(a, b) {
+    while (b !== 0) { var t = a % b; a = b; b = t; }
+    return a;
+  }
+
+  // 与 Java 相同的判定顺序
+  if (target === 0) return { frames: frames, result: true };
+  if (!fired.cap) {
+    fired.cap = true;
+    frames.push(Viz.frame('if (target > (long) x + y) return false;',
+      '先看上限：target = ' + target + (target <= x + y ? ' ≤ 两壶全满的 ' + (x + y) + '，还有戏' : ' > 两壶全满的 ' + (x + y) + '，必不可能'),
+      [varsPanel([{ name: 'x', v: x }, { name: 'y', v: y }, { name: 'target', v: target }, { name: 'x+y', v: x + y }])]));
+  }
+  if (target > x + y) return { frames: frames, result: false };
+
+  var g = gcd(x, y);
+  if (!fired.gcd) {
+    fired.gcd = true;
+    frames.push(Viz.frame('return b == 0 ? a : gcd(b, a % b);',
+      '辗转相除求 gcd(' + x + ', ' + y + ') = ' + g + '：任何操作都让总水量落在 gcd 的倍数上',
+      [varsPanel([{ name: 'x', v: x }, { name: 'y', v: y }, { name: 'g = gcd', v: g }])]));
+  }
+
+  // 能量出的水量恰好是 g, 2g, 3g, …, x+y 这些数
+  var amounts = [];
+  for (var v = g; v <= x + y; v += g) amounts.push(v);
+  var marks = {};
+  for (v = 0; v < amounts.length; v++) if (amounts[v] === target) marks[v] = 'done';
+  var ok = target % g === 0;
+  frames.push(Viz.frame('return target % gcd(x, y) == 0;',
+    ok ? 'target = ' + target + ' 是 ' + g + ' 的倍数且 ≤ ' + (x + y) + '：能量出 → true'
+       : 'target = ' + target + ' 不是 ' + g + ' 的倍数：能量出的只有 ' + g + ' 的倍数 → false',
+    [Viz.cells(amounts, { title: '可量出的水量 = gcd 的倍数（≤ x + y）', marks: marks }),
+     varsPanel([{ name: 'target % g', v: target % g }])]));
+
+  return { frames: frames, result: ok };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

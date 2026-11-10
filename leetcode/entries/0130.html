@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>被围绕的区域 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 259 / 1159</span>
+  <nav class="pn"><a href="0188.html">上一篇</a><a href="offer-33.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">130. </span>被围绕的区域</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 17</li><li class="algo">广度优先搜索</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">反着来：从四条边的 O 出发 BFS/DFS 感染，染成 # 的是围不住的；再扫一遍，剩 O 翻 X、# 还原 O。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>正面判断「每块 O 是否被围」很费劲；<strong>从边界往里感染</strong>：凡能连到边的 O 都安全，剩下的必然被围。</li><li>三步：① 四条边的 O 入队并染 <code>#</code>；② BFS 向四方向感染，连着的 O 都变 <code>#</code>；③ 全盘扫描：<code>O→X</code>（被围），<code>#→O</code>（还原）。</li><li>入队即染色，同一格不会重复进队；感染用 <code>#</code> 暂存而不是直接翻 <code>X</code>，最后一步才区分去留。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m·n)，空间复杂度 O(m·n)（队列）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">void</span> solve(<span class="k">char</span>[][] board) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> m = board.length, n = board[<span class="n">0</span>].length;</span><span class="ln"><span class="no">6</span>        <span class="t">Deque</span>&lt;<span class="k">int</span>[]&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="c">// 第一步：四条边上的 O 先入队，贴边的 O 不可能被围</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">9</span>            enq(board, queue, i, <span class="n">0</span>);</span><span class="ln"><span class="no">10</span>            enq(board, queue, i, n - <span class="n">1</span>);</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt; n - <span class="n">1</span>; j++) {</span><span class="ln"><span class="no">13</span>            enq(board, queue, <span class="n">0</span>, j);</span><span class="ln"><span class="no">14</span>            enq(board, queue, m - <span class="n">1</span>, j);</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="c">// 第二步：感染。和边界 O 连着的全部改成 # 暂存，它们都安全</span></span><span class="ln"><span class="no">17</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">18</span>            <span class="k">int</span>[] cur = queue.poll();</span><span class="ln"><span class="no">19</span>            enq(board, queue, cur[<span class="n">0</span>] + <span class="n">1</span>, cur[<span class="n">1</span>]);</span><span class="ln"><span class="no">20</span>            enq(board, queue, cur[<span class="n">0</span>] - <span class="n">1</span>, cur[<span class="n">1</span>]);</span><span class="ln"><span class="no">21</span>            enq(board, queue, cur[<span class="n">0</span>], cur[<span class="n">1</span>] + <span class="n">1</span>);</span><span class="ln"><span class="no">22</span>            enq(board, queue, cur[<span class="n">0</span>], cur[<span class="n">1</span>] - <span class="n">1</span>);</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="c">// 第三步：还剩下的 O 都是被围的，翻成 X；# 还原成 O</span></span><span class="ln"><span class="no">25</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">26</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">27</span>                <span class="k">if</span> (board[i][j] == <span class="s">'O'</span>) board[i][j] = <span class="s">'X'</span>;</span><span class="ln"><span class="no">28</span>                <span class="k">else</span> <span class="k">if</span> (board[i][j] == <span class="s">'#'</span>) board[i][j] = <span class="s">'O'</span>;</span><span class="ln"><span class="no">29</span>            }</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span> </span><span class="ln"><span class="no">33</span>    <span class="c">// (i, j) 在界内且还是 O：染成 # 再入队（入队即染色，不会重复进队）</span></span><span class="ln"><span class="no">34</span>    <span class="k">private</span> <span class="k">void</span> enq(<span class="k">char</span>[][] b, <span class="t">Deque</span>&lt;<span class="k">int</span>[]&gt; queue, <span class="k">int</span> i, <span class="k">int</span> j) {</span><span class="ln"><span class="no">35</span>        <span class="k">if</span> (i &lt; <span class="n">0</span> || i &gt;= b.length || j &lt; <span class="n">0</span> || j &gt;= b[<span class="n">0</span>].length || b[i][j] != <span class="s">'O'</span>) <span class="k">return</span>;</span><span class="ln"><span class="no">36</span>        b[i][j] = <span class="s">'#'</span>;</span><span class="ln"><span class="no">37</span>        queue.add(<span class="k">new</span> <span class="k">int</span>[]{i, j});</span><span class="ln"><span class="no">38</span>    }</span><span class="ln"><span class="no">39</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个 <code>m x n</code> 的矩阵 <code>board</code> ，由若干字符 <code>'X'</code> 和 <code>'O'</code>&nbsp;组成，<strong>捕获</strong> 所有 <strong>被围绕的区域</strong>：</p>
+
+<ul>
+	<li><strong>连接：</strong>一个单元格与水平或垂直方向上相邻的单元格连接。</li>
+	<li><strong>区域：连接所有&nbsp;</strong><code>'O'</code>&nbsp;的单元格来形成一个区域。</li>
+	<li><strong>围绕：</strong>如果一个区域中的所有 <code>'O'</code> 单元格都不在棋盘的边缘，则该区域被包围。这样的区域 <strong>完全</strong> 被 <code>'X'</code> 单元格包围。</li>
+</ul>
+
+<p>通过 <strong>原地</strong>&nbsp;将输入矩阵中的所有 <code>'O'</code>&nbsp;替换为 <code>'X'</code> 来 <strong>捕获被围绕的区域</strong>。你不需要返回任何值。</p>
+
+<div class="original__bRMd">
+<div>
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<div class="example-block">
+<p><strong>输入：</strong><span class="example-io">board = [['X','X','X','X'],['X','O','O','X'],['X','X','O','X'],['X','O','X','X']]</span></p>
+
+<p><b>输出：</b><span class="example-io">[['X','X','X','X'],['X','X','X','X'],['X','X','X','X'],['X','O','X','X']]</span></p>
+
+<p><strong>解释：</strong></p>
+<img alt="" src="../assets/img/28637a27ce66.png" style="width: 367px; height: 158px;" />
+<p>在上图中，底部的区域没有被捕获，因为它在 board 的边缘并且不能被围绕。</p>
+</div>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<div class="example-block">
+<p><strong>输入：</strong><span class="example-io">board = [['X']]</span></p>
+
+<p><strong>输出：</strong><span class="example-io">[['X']]</span></p>
+</div>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == board.length</code></li>
+	<li><code>n == board[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 200</code></li>
+	<li><code>board[i][j]</code> 为 <code>'X'</code> 或 <code>'O'</code></li>
+</ul>
+</div>
+</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public void solve(char[][] board) {", "        int m = board.length, n = board[0].length;", "        Deque<int[]> queue = new ArrayDeque<>();", "        // 第一步：四条边上的 O 先入队，贴边的 O 不可能被围", "        for (int i = 0; i < m; i++) {", "            enq(board, queue, i, 0);", "            enq(board, queue, i, n - 1);", "        }", "        for (int j = 1; j < n - 1; j++) {", "            enq(board, queue, 0, j);", "            enq(board, queue, m - 1, j);", "        }", "        // 第二步：感染。和边界 O 连着的全部改成 # 暂存，它们都安全", "        while (!queue.isEmpty()) {", "            int[] cur = queue.poll();", "            enq(board, queue, cur[0] + 1, cur[1]);", "            enq(board, queue, cur[0] - 1, cur[1]);", "            enq(board, queue, cur[0], cur[1] + 1);", "            enq(board, queue, cur[0], cur[1] - 1);", "        }", "        // 第三步：还剩下的 O 都是被围的，翻成 X；# 还原成 O", "        for (int i = 0; i < m; i++) {", "            for (int j = 0; j < n; j++) {", "                if (board[i][j] == 'O') board[i][j] = 'X';", "                else if (board[i][j] == '#') board[i][j] = 'O';", "            }", "        }", "    }", "", "    // (i, j) 在界内且还是 O：染成 # 再入队（入队即染色，不会重复进队）", "    private void enq(char[][] b, Deque<int[]> queue, int i, int j) {", "        if (i < 0 || i >= b.length || j < 0 || j >= b[0].length || b[i][j] != 'O') return;", "        b[i][j] = '#';", "        queue.add(new int[]{i, j});", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 130. 被围绕的区域 —— 图解：复刻 Solution.java 的「边界 BFS 感染 + 扫尾翻转」，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { board: ['OOXX', 'OOXX', 'XXOX', 'OXXX'] };
+
+function trace(input) {
+  var rows = input.board;
+  var m = rows.length, n = rows[0].length;
+  var g = rows.map(function (s) { return s.split(''); });      // 对应 Java 里被原地改写的 board
+  var orig = rows.map(function (s) { return s.split(''); });   // 分辨「本来就是 X」和「翻掉的 O」用
+  var queue = [];
+  var frames = [];
+  var DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  var shot = { spread: false, flip: false, restore: false };
+
+  function isBorder(i, j) { return i === 0 || i === m - 1 || j === 0 || j === n - 1; }
+
+  function gridPanel(cur) {
+    var marks = {}, r, c;
+    for (r = 0; r < m; r++) {
+      for (c = 0; c < n; c++) {
+        if (g[r][c] === '#') marks[r + ',' + c] = 'new';          // 染成 # 暂存的
+        else if (g[r][c] === 'O') marks[r + ',' + c] = 'win';     // 还没处理的 O
+        else if (orig[r][c] === 'O') marks[r + ',' + c] = 'bad';  // 已被翻成 X 的 O
+      }
+    }
+    if (cur) marks[cur[0] + ',' + cur[1]] = 'cur';
+    var rl = [], cl = [];
+    for (r = 0; r < m; r++) rl.push(String(r));
+    for (c = 0; c < n; c++) cl.push(String(c));
+    return Viz.grid(g, { title: 'board（青 = 还在的 O，蓝 = 染成 #，红 = 被围翻 X，橙 = 当前格）', marks: marks, rowLabels: rl, colLabels: cl });
+  }
+
+  function queuePanel() {
+    var items = queue.map(function (p) { return p[0] + ',' + p[1]; });
+    return Viz.cells(items, {
+      title: items.length ? '队列 queue（等待向外感染）' : '队列 queue（空）', hideIndex: true,
+      pointers: items.length ? [{ at: 0, label: '队首', cls: 'p-head' }] : []
+    });
+  }
+
+  function snap(at, key, cur, withQueue) {
+    var panels = [gridPanel(cur)];
+    if (withQueue) panels.push(queuePanel());
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  // (i, j) 界内且还是 O：染成 # 并入队（对应 Java 的 enq）
+  function enq(i, j) {
+    if (i < 0 || i >= m || j < 0 || j >= n || g[i][j] !== 'O') return false;
+    g[i][j] = '#';
+    queue.push([i, j]);
+    return true;
+  }
+
+  // 第一步：边界上的 O 全部入队
+  var i, j;
+  for (i = 0; i < m; i++) { enq(i, 0); enq(i, n - 1); }
+  for (j = 1; j < n - 1; j++) { enq(0, j); enq(m - 1, j); }
+  snap('enq(board, queue, i, n - 1);', '第一步：四条边的 O 入队并染成 #：贴边的围不住', null, true);
+
+  // 第二步：感染
+  while (queue.length) {
+    var cur = queue.shift();
+    for (var d = 0; d < 4; d++) {
+      var ni = cur[0] + DIRS[d][0], nj = cur[1] + DIRS[d][1];
+      if (enq(ni, nj) && !isBorder(ni, nj) && !shot.spread) {
+        shot.spread = true;
+        snap('enq(board, queue, cur[0] + 1, cur[1]);', '第二步感染：从队首向外扩，连到边的 O 逐层染成 #', cur, true);
+      }
+    }
+  }
+
+  // 第三步：扫尾
+  for (i = 0; i < m; i++) {
+    for (j = 0; j < n; j++) {
+      if (g[i][j] === 'O') {
+        g[i][j] = 'X';
+        if (!shot.flip) {
+          shot.flip = true;
+          snap("if (board[i][j] == 'O') board[i][j] = 'X';", '第三步扫尾：没被染到的 O 就是被围的，翻成 X', [i, j], false);
+        }
+      } else if (g[i][j] === '#') {
+        g[i][j] = 'O';
+        if (!shot.restore) {
+          shot.restore = true;
+          snap("else if (board[i][j] == '#') board[i][j] = 'O';", '# 还原成 O：和边界连通的 O 全保住了', [i, j], false);
+        }
+      }
+    }
+  }
+  snap("else if (board[i][j] == '#') board[i][j] = 'O';", '收工：安全的 O 回来了，被围的 O 已变成 X', null, false);
+  return { frames: frames, result: g.map(function (row) { return row.join(''); }) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

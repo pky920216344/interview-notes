@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>元素和为目标值的子矩阵数量 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 356 / 1159</span>
+  <nav class="pn"><a href="0140.html">上一篇</a><a href="0767.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1074. </span>元素和为目标值的子矩阵数量</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 10</li><li class="algo">前缀和/差分</li><li class="aux">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">矩阵</li><li class="tag">前缀和</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">枚举列对把矩阵压成一维：每行的列段和压成一个数后，就是「和为 target 的子数组」，用前缀和哈希计数（同 560）。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每行先算<strong>列前缀和</strong>，任意列段 <code>[c1, c2)</code> 在该行的和都能 O(1) 拼出。</li><li>枚举列对 <code>(c1, c2)</code>（<code>cols²</code> 个），把每一行的列段和压成一个数——矩阵里跨这个列带的子矩阵 ↔ 一维数组里的子数组。</li><li>一维问题照搬 560：前缀和哈希计数，<code>cnt[prefix - target]</code> 就是能配对的行段数；<strong>前缀和用 long</strong>（100×100×1000 累加防溢出）。</li><li>空前缀 <code>0</code> 先记 1 次，从第 0 行开始的行段才数得进去。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(cols² × rows)，空间复杂度 O(rows)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> numSubmatrixSumTarget(<span class="k">int</span>[][] matrix, <span class="k">int</span> target) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> rows = matrix.length, cols = matrix[<span class="n">0</span>].length, ans = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="c">// 每行先算前缀和：rowPrefix[r][c] = 第 r 行前 c 列之和，任取列段的和 O(1) 拼出</span></span><span class="ln"><span class="no">7</span>        <span class="k">long</span>[][] rowPrefix = <span class="k">new</span> <span class="k">long</span>[rows][cols + <span class="n">1</span>];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; rows; r++) {</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; cols; c++) rowPrefix[r][c + <span class="n">1</span>] = rowPrefix[r][c] + matrix[r][c];</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="c">// 枚举列边界 [c1, c2)：把每行的这一段压成一个数，问题变成一维「和为 target 的子数组」</span></span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> c1 = <span class="n">0</span>; c1 &lt; cols; c1++) {</span><span class="ln"><span class="no">13</span>            <span class="k">for</span> (<span class="k">int</span> c2 = c1 + <span class="n">1</span>; c2 &lt;= cols; c2++) {</span><span class="ln"><span class="no">14</span>                <span class="t">Map</span>&lt;<span class="t">Long</span>, <span class="t">Integer</span>&gt; cnt = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">15</span>                cnt.put(<span class="n">0L</span>, <span class="n">1</span>);</span><span class="ln"><span class="no">16</span>                <span class="k">long</span> prefix = <span class="n">0</span>;</span><span class="ln"><span class="no">17</span>                <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; rows; r++) {</span><span class="ln"><span class="no">18</span>                    prefix += rowPrefix[r][c2] - rowPrefix[r][c1];</span><span class="ln"><span class="no">19</span>                    <span class="c">// 同 560：两个前缀和相差 target，中间夹的行段就是一个答案子矩阵</span></span><span class="ln"><span class="no">20</span>                    ans += cnt.getOrDefault(prefix - target, <span class="n">0</span>);</span><span class="ln"><span class="no">21</span>                    cnt.merge(prefix, <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">22</span>                }</span><span class="ln"><span class="no">23</span>            }</span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给出矩阵&nbsp;<code>matrix</code>&nbsp;和目标值&nbsp;<code>target</code>，返回元素总和等于目标值的非空子矩阵的数量。</p>
+
+<p>子矩阵&nbsp;<code>x1, y1, x2, y2</code>&nbsp;是满足 <code>x1 &lt;= x &lt;= x2</code>&nbsp;且&nbsp;<code>y1 &lt;= y &lt;= y2</code>&nbsp;的所有单元&nbsp;<code>matrix[x][y]</code>&nbsp;的集合。</p>
+
+<p>如果&nbsp;<code>(x1, y1, x2, y2)</code> 和&nbsp;<code>(x1', y1', x2', y2')</code>&nbsp;两个子矩阵中部分坐标不同（如：<code>x1 != x1'</code>），那么这两个子矩阵也不同。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/c3e2bf38c60f.jpg" style="width: 242px; height: 242px;" /></p>
+
+<pre>
+<strong>输入：</strong>matrix = [[0,1,0],[1,1,1],[0,1,0]], target = 0
+<strong>输出：</strong>4
+<strong>解释：</strong>四个只含 0 的 1x1 子矩阵。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>matrix = [[1,-1],[-1,1]], target = 0
+<strong>输出：</strong>5
+<strong>解释：</strong>两个 1x2 子矩阵，加上两个 2x1 子矩阵，再加上一个 2x2 子矩阵。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>matrix = [[904]], target = 0
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong><strong>提示：</strong></strong></p>
+
+<ul>
+	<li><code>1 &lt;= matrix.length &lt;= 100</code></li>
+	<li><code>1 &lt;= matrix[0].length &lt;= 100</code></li>
+	<li><code>-1000 &lt;= matrix[i][j] &lt;= 1000</code></li>
+	<li><code>-10^8 &lt;= target &lt;= 10^8</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int numSubmatrixSumTarget(int[][] matrix, int target) {", "        int rows = matrix.length, cols = matrix[0].length, ans = 0;", "        // 每行先算前缀和：rowPrefix[r][c] = 第 r 行前 c 列之和，任取列段的和 O(1) 拼出", "        long[][] rowPrefix = new long[rows][cols + 1];", "        for (int r = 0; r < rows; r++) {", "            for (int c = 0; c < cols; c++) rowPrefix[r][c + 1] = rowPrefix[r][c] + matrix[r][c];", "        }", "        // 枚举列边界 [c1, c2)：把每行的这一段压成一个数，问题变成一维「和为 target 的子数组」", "        for (int c1 = 0; c1 < cols; c1++) {", "            for (int c2 = c1 + 1; c2 <= cols; c2++) {", "                Map<Long, Integer> cnt = new HashMap<>();", "                cnt.put(0L, 1);", "                long prefix = 0;", "                for (int r = 0; r < rows; r++) {", "                    prefix += rowPrefix[r][c2] - rowPrefix[r][c1];", "                    // 同 560：两个前缀和相差 target，中间夹的行段就是一个答案子矩阵", "                    ans += cnt.getOrDefault(prefix - target, 0);", "                    cnt.merge(prefix, 1, Integer::sum);", "                }", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1074. 元素和为目标值的子矩阵数量 —— 图解：复刻 Solution.java 的「列对压缩 + 一维前缀和哈希」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { matrix: [[1, -1], [-1, 1]], target: 0 };
+
+function trace(input) {
+  var matrix = input.matrix, target = input.target;
+  var rows = matrix.length, cols = matrix[0].length;
+  var frames = [];
+  var fired = { prefix: false, pair: false, hit: false, store: false };
+
+  var rowPrefix = [];
+  for (var r = 0; r < rows; r++) {
+    rowPrefix.push([0]);
+    for (var c = 0; c < cols; c++) rowPrefix[r].push(rowPrefix[r][c] + matrix[r][c]);
+  }
+
+  // 矩阵面板：列带 [c1, c2) 亮 win，当前行在列带上的格子亮 cur
+  function gridPanel(c1, c2, curRow) {
+    var marks = {};
+    if (c1 != null) {
+      for (var r2 = 0; r2 < rows; r2++) {
+        for (var c = c1; c < c2; c++) marks[r2 + ',' + c] = 'win';
+      }
+      if (curRow != null) for (var c3 = c1; c3 < c2; c3++) marks[curRow + ',' + c3] = 'cur';
+    }
+    return Viz.grid(matrix, {
+      title: c1 == null ? 'matrix' : 'matrix（已选定列带 [' + c1 + ', ' + c2 + ')）',
+      marks: marks, rowLabels: rowLabels(), colLabels: colLabels(), corner: 'r＼c'
+    });
+  }
+  function rowLabels() { var l = []; for (var r3 = 0; r3 < rows; r3++) l.push(String(r3)); return l; }
+  function colLabels() { var l = []; for (var c4 = 0; c4 < cols; c4++) l.push(String(c4)); return l; }
+
+  // 压缩后的一维数组：每行列带之和；prefix 已吞掉 win 行
+  function vecPanel(vec, curRow) {
+    var marks = {};
+    if (curRow != null) {
+      for (var r4 = 0; r4 < curRow; r4++) marks[r4] = 'win';
+      marks[curRow] = 'cur';
+    }
+    var pointers = curRow != null && vec.length ? [{ at: curRow, label: 'r', cls: 'p-cur' }] : [];
+    return Viz.cells(vec, { title: '每行列带之和（压成了一维）', marks: marks, pointers: pointers });
+  }
+  function cntPanel(cnt, order, hitKey, newKey) {
+    return Viz.table('cnt：前缀和 → 出现次数', order.map(function (k) {
+      return { k: k, v: String(cnt[k]), cls: k === hitKey ? 'hit' : (k === newKey ? 'new' : '') };
+    }), { hint: '（空前缀 0 先记 1 次）' });
+  }
+  function varsPanel(prefix, ans, emph) {
+    function v(name, val) { return { name: name, v: val, cls: emph === name ? 'chg' : '' }; }
+    var items = prefix == null ? [] : [v('prefix', prefix)];
+    items.push(v('ans', ans));
+    return Viz.vars(items);
+  }
+
+  frames.push(Viz.frame('rowPrefix[r][c + 1] = rowPrefix[r][c] + matrix[r][c];',
+    '先给每行算列前缀和：之后任取一段列的和都能 O(1) 拼出来',
+    [gridPanel(null, null, null), varsPanel(null, 0, '')]));
+
+  var ans = 0;
+  for (var c1 = 0; c1 < cols; c1++) {
+    for (var c2 = c1 + 1; c2 <= cols; c2++) {
+      var cnt = {}, order = [];
+      cnt['0'] = 1; order.push('0');
+      var prefix = 0;
+      var vec = [];
+      for (var r = 0; r < rows; r++) {
+        var seg = rowPrefix[r][c2] - rowPrefix[r][c1];
+        vec.push(seg);
+        prefix += seg;
+        if (!fired.pair) {
+          fired.pair = true;
+          frames.push(Viz.frame('for (int c2 = c1 + 1; c2 <= cols; c2++) {',
+            '枚举列带 [' + c1 + ', ' + c2 + ')：每行的这段压成一个数，矩阵问题变成一维',
+            [gridPanel(c1, c2, r), vecPanel(vec, r), varsPanel(prefix, ans, 'prefix')]));
+        }
+        var need = prefix - target;
+        var got = cnt[need] || 0;
+        if (got > 0) ans += got;
+        if (got > 0 && !fired.hit) {
+          fired.hit = true;
+          frames.push(Viz.frame('ans += cnt.getOrDefault(prefix - target, 0);',
+            '行前缀和 ' + prefix + ' − target ' + target + ' = ' + need + '：表里有 ' + got + ' 个，ans = ' + ans,
+            [gridPanel(c1, c2, r), vecPanel(vec, r), cntPanel(cnt, order, String(need), null), varsPanel(prefix, ans, 'ans')]));
+        }
+        var key = String(prefix);
+        if (cnt[key] === undefined) { cnt[key] = 0; order.push(key); }
+        cnt[key]++;
+        if (!fired.store) {
+          fired.store = true;
+          frames.push(Viz.frame('cnt.merge(prefix, 1, Integer::sum);',
+            '查完就存：前缀和 ' + prefix + ' 入表，给后面的行差着用',
+            [gridPanel(c1, c2, r), vecPanel(vec, r), cntPanel(cnt, order, null, key), varsPanel(prefix, ans, '')]));
+        }
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return ans;',
+    '所有列带扫完：共 ' + ans + ' 个子矩阵的和等于 ' + target,
+    [gridPanel(null, null, null), varsPanel(null, ans, 'ans')]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

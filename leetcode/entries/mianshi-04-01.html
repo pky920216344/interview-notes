@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>节点间通路 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1003 / 1159</span>
+  <nav class="pn"><a href="lcp-07.html">上一篇</a><a href="1061.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 04.01. </span>节点间通路</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">广度优先搜索</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">有向图可达性：把边建成邻接表，从 start 出发 BFS 标记所有能走到的点，弹出 target 就返回 true。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>邻接表 <code>g[a]</code> 存 a 的所有出边（自环、平行边照常挂）。</li><li>BFS 从 <code>start</code> 出发：出队的点先判是不是 <code>target</code>，再把没走过的邻居标 <code>seen</code> 入队。</li><li><code>seen</code> 保证每个点只入队一次，队空还没碰到 <code>target</code> 就是不连通。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + E)，空间复杂度 O(n + E)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> findWhetherExistsPath(<span class="k">int</span> n, <span class="k">int</span>[][] graph, <span class="k">int</span> start, <span class="k">int</span> target) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 邻接表：把有向边按起点分组</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; g = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) g.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;());</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span>[] e : graph) g.get(e[<span class="n">0</span>]).add(e[<span class="n">1</span>]);</span><span class="ln"><span class="no">9</span>        <span class="c">// 从 start 出发 BFS，走到的点都标记为已见</span></span><span class="ln"><span class="no">10</span>        <span class="k">boolean</span>[] seen = <span class="k">new</span> <span class="k">boolean</span>[n];</span><span class="ln"><span class="no">11</span>        <span class="t">ArrayDeque</span>&lt;<span class="t">Integer</span>&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">12</span>        seen[start] = <span class="k">true</span>;</span><span class="ln"><span class="no">13</span>        queue.add(start);</span><span class="ln"><span class="no">14</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">15</span>            <span class="k">int</span> u = queue.poll();</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (u == target) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">17</span>            <span class="k">for</span> (<span class="k">int</span> v : g.get(u)) {</span><span class="ln"><span class="no">18</span>                <span class="k">if</span> (seen[v]) <span class="k">continue</span>;</span><span class="ln"><span class="no">19</span>                seen[v] = <span class="k">true</span>;</span><span class="ln"><span class="no">20</span>                queue.add(v);</span><span class="ln"><span class="no">21</span>            }</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>节点间通路。给定有向图，设计一个算法，找出两个节点之间是否存在一条路径。</p>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong> 输入</strong>：n = 3, graph = [[0, 1], [0, 2], [1, 2], [1, 2]], start = 0, target = 2
+<strong> 输出</strong>：true
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong> 输入</strong>：n = 5, graph = [[0, 1], [0, 2], [0, 4], [0, 4], [0, 1], [1, 3], [1, 4], [1, 3], [2, 3], [3, 4]], start = 0, target = 4
+<strong> 输出</strong>：true
+</pre>
+
+<p><strong>提示：</strong></p>
+
+<ol>
+	<li>节点数量n在[0, 1e5]范围内。</li>
+	<li>节点编号大于等于 0 小于 n。</li>
+	<li>图中可能存在自环和平行边。</li>
+</ol>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean findWhetherExistsPath(int n, int[][] graph, int start, int target) {", "        // 邻接表：把有向边按起点分组", "        List<List<Integer>> g = new ArrayList<>();", "        for (int i = 0; i < n; i++) g.add(new ArrayList<>());", "        for (int[] e : graph) g.get(e[0]).add(e[1]);", "        // 从 start 出发 BFS，走到的点都标记为已见", "        boolean[] seen = new boolean[n];", "        ArrayDeque<Integer> queue = new ArrayDeque<>();", "        seen[start] = true;", "        queue.add(start);", "        while (!queue.isEmpty()) {", "            int u = queue.poll();", "            if (u == target) return true;", "            for (int v : g.get(u)) {", "                if (seen[v]) continue;", "                seen[v] = true;", "                queue.add(v);", "            }", "        }", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试 04.01. 节点间通路 —— 图解：复刻 Solution.java 的 BFS 可达性，在 4 个关键时刻拍快照。
+// 上面板是邻接表，下面板是 seen 数组：灰 = 已入过队，黄 = 刚发现，绿框 = 正在扩展的 u。
+
+var STORY_INPUT = { n: 5, graph: [[0, 1], [1, 2], [0, 3], [3, 4], [2, 4]], start: 0, target: 4 };
+
+function trace(input) {
+  var n = input.n, start = input.start, target = input.target;
+  var frames = [];
+
+  // 邻接表：只列有出边的结点
+  var adj = {};
+  input.graph.forEach(function (e) {
+    if (!adj[e[0]]) adj[e[0]] = [];
+    adj[e[0]].push(e[1]);
+  });
+  function adjPanel() {
+    var rows = [];
+    for (var i = 0; i < n; i++) if (adj[i]) rows.push({ k: String(i), v: adj[i].join(','), cls: '' });
+    return Viz.table('邻接表 g：起点 → 可达的下一批点', rows);
+  }
+
+  var seen = [];
+  for (var i = 0; i < n; i++) seen.push(false);
+  function seenPanel(marks) {
+    var items = [];
+    for (var i = 0; i < n; i++) items.push(String(i));
+    return Viz.cells(items, { title: 'seen[v]：是否已走过（下标即结点号）', marks: marks || {} });
+  }
+  function snap(at, key, marks) { frames.push(Viz.frame(at, key, [adjPanel(), seenPanel(marks)])); }
+
+  var EDGE = 'for (int[] e : graph) g.get(e[0]).add(e[1]);';
+  var INIT = 'seen[start] = true;';
+  var PUSH = 'seen[v] = true;';
+  var HIT = 'if (u == target) return true;';
+
+  snap(EDGE, '先建邻接表：每条边 [a,b] 挂到起点 a 名下', {});
+  seen[start] = true;
+  snap(INIT, '起点 ' + start + ' 先标已见并入队', (function () { var m = {}; m[start] = 'cur'; return m; })());
+
+  var queue = [start];
+  var expandedOnce = false;
+  var hitTarget = false;
+  while (queue.length) {
+    var u = queue.shift();
+    if (u === target) { hitTarget = true; snap(HIT, '弹出 ' + u + '，正是 target：存在通路，返回 true', (function () { var m = {}; m[u] = 'cur'; return m; })()); break; }
+    var neighbors = adj[u] || [];
+    for (var k = 0; k < neighbors.length; k++) {
+      var v = neighbors[k];
+      if (seen[v]) continue;
+      seen[v] = true;
+      queue.push(v);
+      if (!expandedOnce) {
+        expandedOnce = true;
+        var m1 = {};
+        m1[u] = 'cur';
+        m1[v] = 'new';
+        snap(PUSH, '扩展 ' + u + ' 的邻居：没走过的 ' + v + ' 标记并入队', m1);
+      }
+      if (v === target) {
+        var m2 = {};
+        m2[v] = 'new';
+        snap(PUSH, '沿路把没走过的点入队：target ' + v + ' 也被标进了 seen', m2);
+      }
+    }
+  }
+  if (!hitTarget) snap('return false;', '队空也没走到 target：不连通，返回 false', {});
+  return { frames: frames, result: hitTarget };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

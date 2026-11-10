@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>婴儿名字 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 784 / 1159</span>
+  <nav class="pn"><a href="0991.html">上一篇</a><a href="0501.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 17.07. </span>婴儿名字</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">并查集</li><li class="aux">哈希表</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">计数</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">并查集把同义词对全合并，合并时让字典序小的名字当根；频次按根求和，每组输出「字典序最小的名字(总频次)」。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>同义词关系有传递性（John=Jon、Jon=Johnny ⇒ John=Johnny），自然用并查集：每对 synonyms 合并一次。</li><li>合并时把字典序大的根挂到小的下面，这样根就是组内字典序最小的名字，直接当「真实名字」。</li><li>只出现在同义词对里、没进公布名单的名字也登记进并查集：它们可能是组里字典序最小的，频次按 0 参与聚合。</li><li>频次按根累加后输出 <code>真实名字(总频次)</code>；判题机不限输出顺序（实测），实现按组频次降序、并列按名字典序。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O((N+S)·log) 近似线性，空间复杂度 O(N+S)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">String</span>&gt; parent = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="t">String</span>[] trulyMostPopular(<span class="t">String</span>[] names, <span class="t">String</span>[] synonyms) {</span><span class="ln"><span class="no">7</span>        <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt; freq = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="t">String</span> item : names) {</span><span class="ln"><span class="no">9</span>            <span class="k">int</span> i = item.indexOf(<span class="s">'('</span>);</span><span class="ln"><span class="no">10</span>            <span class="c">// 同名条目若出现多次，全部累加</span></span><span class="ln"><span class="no">11</span>            freq.merge(item.substring(<span class="n">0</span>, i), <span class="t">Integer</span>.parseInt(item.substring(i + <span class="n">1</span>, item.length() - <span class="n">1</span>)), <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="t">String</span> pair : synonyms) {</span><span class="ln"><span class="no">14</span>            <span class="t">String</span>[] p = pair.substring(<span class="n">1</span>, pair.length() - <span class="n">1</span>).split(<span class="s">","</span>);</span><span class="ln"><span class="no">15</span>            union(p[<span class="n">0</span>], p[<span class="n">1</span>]);</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="c">// 频次归到组根名下；根 = 组内字典序最小的名字</span></span><span class="ln"><span class="no">18</span>        <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt; total = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">19</span>        <span class="k">for</span> (<span class="t">Map</span>.<span class="t">Entry</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt; e : freq.entrySet()) {</span><span class="ln"><span class="no">20</span>            total.merge(find(e.getKey()), e.getValue(), <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="c">// 输出顺序：组频次大的在前，并列按组名字典序升</span></span><span class="ln"><span class="no">23</span>        <span class="t">List</span>&lt;<span class="t">Map</span>.<span class="t">Entry</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt;&gt; groups = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(total.entrySet());</span><span class="ln"><span class="no">24</span>        groups.sort((x, y) -&gt; x.getValue().intValue() != y.getValue().intValue()</span><span class="ln"><span class="no">25</span>                ? y.getValue() - x.getValue() : x.getKey().compareTo(y.getKey()));</span><span class="ln"><span class="no">26</span>        <span class="t">String</span>[] ans = <span class="k">new</span> <span class="t">String</span>[groups.size()];</span><span class="ln"><span class="no">27</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; groups.size(); i++) {</span><span class="ln"><span class="no">28</span>            ans[i] = groups.get(i).getKey() + <span class="s">"("</span> + groups.get(i).getValue() + <span class="s">")"</span>;</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span> </span><span class="ln"><span class="no">33</span>    <span class="c">// 合并时把字典序大的根挂到小的下面，根就是组内字典序最小的名字</span></span><span class="ln"><span class="no">34</span>    <span class="k">private</span> <span class="k">void</span> union(<span class="t">String</span> a, <span class="t">String</span> b) {</span><span class="ln"><span class="no">35</span>        <span class="t">String</span> ra = find(a), rb = find(b);</span><span class="ln"><span class="no">36</span>        <span class="k">if</span> (ra.equals(rb)) <span class="k">return</span>;</span><span class="ln"><span class="no">37</span>        <span class="k">if</span> (ra.compareTo(rb) &lt; <span class="n">0</span>) parent.put(rb, ra); <span class="k">else</span> parent.put(ra, rb);</span><span class="ln"><span class="no">38</span>    }</span><span class="ln"><span class="no">39</span> </span><span class="ln"><span class="no">40</span>    <span class="k">private</span> <span class="t">String</span> find(<span class="t">String</span> x) {</span><span class="ln"><span class="no">41</span>        <span class="c">// 只出现在同义词对里的名字也是组成员，首次遇到时登记</span></span><span class="ln"><span class="no">42</span>        <span class="k">if</span> (!parent.containsKey(x)) parent.put(x, x);</span><span class="ln"><span class="no">43</span>        <span class="k">while</span> (!parent.get(x).equals(x)) {</span><span class="ln"><span class="no">44</span>            parent.put(x, parent.get(parent.get(x)));   <span class="c">// 路径减半</span></span><span class="ln"><span class="no">45</span>            x = parent.get(x);</span><span class="ln"><span class="no">46</span>        }</span><span class="ln"><span class="no">47</span>        <span class="k">return</span> x;</span><span class="ln"><span class="no">48</span>    }</span><span class="ln"><span class="no">49</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>每年，政府都会公布一万个最常见的婴儿名字和它们出现的频率，也就是同名婴儿的数量。有些名字有多种拼法，例如，John 和 Jon 本质上是相同的名字，但被当成了两个名字公布出来。给定两个列表，一个是名字及对应的频率，另一个是本质相同的名字对。设计一个算法打印出每个真实名字的实际频率。注意，如果 John 和 Jon 是相同的，并且 Jon 和 Johnny 相同，则 John 与 Johnny 也相同，即它们有传递和对称性。</p>
+
+<p>在结果列表中，选择<strong> 字典序最小 </strong>的名字作为真实名字。</p>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入：</strong>names = ["John(15)","Jon(12)","Chris(13)","Kris(4)","Christopher(19)"], synonyms = ["(Jon,John)","(John,Johnny)","(Chris,Kris)","(Chris,Christopher)"]
+<strong>输出：</strong>["John(27)","Chris(36)"]</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>names.length <= 100000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private final Map<String, String> parent = new HashMap<>();", "", "    public String[] trulyMostPopular(String[] names, String[] synonyms) {", "        Map<String, Integer> freq = new HashMap<>();", "        for (String item : names) {", "            int i = item.indexOf('(');", "            // 同名条目若出现多次，全部累加", "            freq.merge(item.substring(0, i), Integer.parseInt(item.substring(i + 1, item.length() - 1)), Integer::sum);", "        }", "        for (String pair : synonyms) {", "            String[] p = pair.substring(1, pair.length() - 1).split(\",\");", "            union(p[0], p[1]);", "        }", "        // 频次归到组根名下；根 = 组内字典序最小的名字", "        Map<String, Integer> total = new HashMap<>();", "        for (Map.Entry<String, Integer> e : freq.entrySet()) {", "            total.merge(find(e.getKey()), e.getValue(), Integer::sum);", "        }", "        // 输出顺序：组频次大的在前，并列按组名字典序升", "        List<Map.Entry<String, Integer>> groups = new ArrayList<>(total.entrySet());", "        groups.sort((x, y) -> x.getValue().intValue() != y.getValue().intValue()", "                ? y.getValue() - x.getValue() : x.getKey().compareTo(y.getKey()));", "        String[] ans = new String[groups.size()];", "        for (int i = 0; i < groups.size(); i++) {", "            ans[i] = groups.get(i).getKey() + \"(\" + groups.get(i).getValue() + \")\";", "        }", "        return ans;", "    }", "", "    // 合并时把字典序大的根挂到小的下面，根就是组内字典序最小的名字", "    private void union(String a, String b) {", "        String ra = find(a), rb = find(b);", "        if (ra.equals(rb)) return;", "        if (ra.compareTo(rb) < 0) parent.put(rb, ra); else parent.put(ra, rb);", "    }", "", "    private String find(String x) {", "        // 只出现在同义词对里的名字也是组成员，首次遇到时登记", "        if (!parent.containsKey(x)) parent.put(x, x);", "        while (!parent.get(x).equals(x)) {", "            parent.put(x, parent.get(parent.get(x)));   // 路径减半", "            x = parent.get(x);", "        }", "        return x;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 17.07. 婴儿名字 —— 图解：复刻 Solution.java 的并查集，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  names: ['John(15)', 'Jon(12)', 'Chris(13)', 'Kris(4)', 'Christopher(19)'],
+  synonyms: ['(Jon,John)', '(John,Johnny)', '(Chris,Kris)', '(Chris,Christopher)']
+};
+
+function trace(input) {
+  var frames = [];
+  var UNION = 'union(p[0], p[1]);';
+  var AGG = 'total.merge(find(e.getKey()), e.getValue(), Integer::sum);';
+  var RET = 'ans[i] = groups.get(i).getKey()';
+
+  // 并查集（与 Java 同一套规则：字典序小的当根 + 路径减半）
+  var parent = {};
+  function find(x) {
+    if (!(x in parent)) parent[x] = x;
+    while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; }
+    return x;
+  }
+  function union(a, b) {
+    var ra = find(a), rb = find(b);
+    if (ra === rb) return;
+    if (ra < rb) parent[rb] = ra; else parent[ra] = rb;
+  }
+
+  // 名字 → 频次（公布名单；同名条目累加）
+  var freq = {};
+  input.names.forEach(function (item) {
+    var i = item.indexOf('(');
+    var nm = item.slice(0, i);
+    freq[nm] = (freq[nm] || 0) + parseInt(item.slice(i + 1, -1), 10);
+  });
+
+  function members() {
+    return Object.keys(parent).sort();
+  }
+  // 名字 → 根 的表格；hit 里放刚合并的两个名字
+  function rootPanel(hit) {
+    var rows = members().map(function (nm) {
+      return { k: nm, v: find(nm), cls: hit && (nm === hit[0] || nm === hit[1]) ? 'hit' : '' };
+    });
+    return Viz.table('名字 → 所属组的根（根 = 组内字典序最小）', rows);
+  }
+
+  input.synonyms.forEach(function (pair, pi) {
+    var p = pair.slice(1, -1).split(',');
+    union(p[0], p[1]);
+    if (pi === 0) {
+      frames.push(Viz.frame(UNION, '同义词对 (' + p[0] + ',' + p[1] + ')：' + (find(p[0]) === p[0] ? p[0] : p[1]) + ' 字典序小，当组的根',
+        [rootPanel(p)]));
+    }
+    if (pi === 1) {
+      var notListed = !(p[0] in freq) ? p[0] : (!(p[1] in freq) ? p[1] : null);
+      frames.push(Viz.frame(UNION, notListed
+        ? notListed + ' 不在公布名单，也并进组里（频次按 0 参与）'
+        : '(' + p[0] + ',' + p[1] + ')：两个组并成一个',
+        [rootPanel(p)]));
+    }
+  });
+
+  // 频次按根聚合
+  var total = {};
+  Object.keys(freq).forEach(function (nm) {
+    var r = find(nm);
+    total[r] = (total[r] || 0) + freq[nm];
+  });
+  var aggRows = Object.keys(total).sort().map(function (r) {
+    return { k: r, v: String(total[r]), cls: 'new' };
+  });
+  var aggParts = Object.keys(total).sort().map(function (r) { return r + ' 组共 ' + total[r]; });
+  var aggText = aggParts.length > 3 ? aggParts.slice(0, 3).join('，') + ' 等 ' + aggParts.length + ' 组' : aggParts.join('，');
+  frames.push(Viz.frame(AGG, '遍历公布名单，频次都归到组根名下：' + aggText,
+    [rootPanel(null), Viz.table('根 → 聚合频次（组内名单条目求和）', aggRows)]));
+
+  var groups = Object.keys(total).map(function (r) { return { k: r, v: total[r] }; });
+  groups.sort(function (x, y) {
+    return x.v !== y.v ? y.v - x.v : (x.k < y.k ? -1 : x.k > y.k ? 1 : 0);
+  });
+  var ans = groups.map(function (g) { return g.k + '(' + g.v + ')'; });
+  var ansText = ans.length > 3 ? ans.slice(0, 3).join('、') + ' 等 ' + ans.length + ' 组' : ans.join('、');
+  frames.push(Viz.frame(RET, '每组输出「真实名字(总频次)」，频次大的在前：' + ansText,
+    [Viz.cells(ans, { title: 'ans（按频次降序的结果）', marks: ans.map(function () { return 'done'; }) })]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

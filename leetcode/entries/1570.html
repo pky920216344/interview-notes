@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>两个稀疏向量的点积 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1133 / 1159</span>
+  <nav class="pn"><a href="0514.html">上一篇</a><a href="1615.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1570. </span>两个稀疏向量的点积</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">双指针</li><li class="aux">设计</li><li class="tag">设计</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">双指针</li><li class="tag">linear-algebra</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">构造时只存非零 &lt;下标,值&gt; 升序表；点积用双指针按下标归并，相等才相乘。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>稀疏向量只存非零：<code>List&lt;int[]&gt;{下标, 值}</code>，天然按下标升序。</li><li><code>dotProduct</code> 双指针：两表下标相等 → 相乘累加、双双前进；谁的下标小谁前进（不可能匹配）。</li><li>关键点：两表下标都<strong>升序</strong>，双指针一遍合并即可；点积只花与非零个数成正比的时间。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 构造 O(n)，点积 O(min(nz₁, nz₂))，空间复杂度 O(nz)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">SparseVector</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 只存非零元素：&lt;下标, 值&gt;，按下标升序，dotProduct 用双指针合并</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; pairs = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">SparseVector</span>(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; nums.length; i++) {</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (nums[i] != <span class="n">0</span>) pairs.add(<span class="k">new</span> <span class="k">int</span>[]{i, nums[i]});   <span class="c">// 稀疏就只记非零</span></span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="c">// Return the dot product of two sparse vectors</span></span><span class="ln"><span class="no">14</span>    <span class="k">public</span> <span class="k">int</span> dotProduct(<span class="t">SparseVector</span> vec) {</span><span class="ln"><span class="no">15</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">int</span> i = <span class="n">0</span>, j = <span class="n">0</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">while</span> (i &lt; pairs.size() &amp;&amp; j &lt; vec.pairs.size()) {</span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (pairs.get(i)[<span class="n">0</span>] == vec.pairs.get(j)[<span class="n">0</span>]) {   <span class="c">// 下标相同：这一对相乘累加</span></span><span class="ln"><span class="no">19</span>                ans += pairs.get(i)[<span class="n">1</span>] * vec.pairs.get(j)[<span class="n">1</span>];</span><span class="ln"><span class="no">20</span>                i++;</span><span class="ln"><span class="no">21</span>                j++;</span><span class="ln"><span class="no">22</span>            } <span class="k">else</span> <span class="k">if</span> (pairs.get(i)[<span class="n">0</span>] &lt; vec.pairs.get(j)[<span class="n">0</span>]) {</span><span class="ln"><span class="no">23</span>                i++;   <span class="c">// 下标小的不可能再匹配，前进</span></span><span class="ln"><span class="no">24</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">25</span>                j++;</span><span class="ln"><span class="no">26</span>            }</span><span class="ln"><span class="no">27</span>        }</span><span class="ln"><span class="no">28</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class SparseVector {", "    // 只存非零元素：<下标, 值>，按下标升序，dotProduct 用双指针合并", "    private final List<int[]> pairs = new ArrayList<>();", "", "    public SparseVector(int[] nums) {", "        for (int i = 0; i < nums.length; i++) {", "            if (nums[i] != 0) pairs.add(new int[]{i, nums[i]});   // 稀疏就只记非零", "        }", "    }", "", "    // Return the dot product of two sparse vectors", "    public int dotProduct(SparseVector vec) {", "        int ans = 0;", "        int i = 0, j = 0;", "        while (i < pairs.size() && j < vec.pairs.size()) {", "            if (pairs.get(i)[0] == vec.pairs.get(j)[0]) {   // 下标相同：这一对相乘累加", "                ans += pairs.get(i)[1] * vec.pairs.get(j)[1];", "                i++;", "                j++;", "            } else if (pairs.get(i)[0] < vec.pairs.get(j)[0]) {", "                i++;   // 下标小的不可能再匹配，前进", "            } else {", "                j++;", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1570. 两个稀疏向量的点积（会员题）—— 图解：只存非零对 + 双指针归并，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums1: [1, 0, 0, 2, 3], nums2: [0, 3, 0, 4, 0] };
+
+function trace(input) {
+  var a = input.nums1, b = input.nums2;
+  var frames = [];
+  var STORE = 'if (nums[i] != 0) pairs.add(new int[]{i, nums[i]});';
+  var MUL = 'ans += pairs.get(i)[1] * vec.pairs.get(j)[1];';
+  var RET = 'return ans;';
+
+  // 构造：只存非零 <下标, 值>（和 Java 一致，天然升序）
+  function build(nums) {
+    var ps = [];
+    for (var i = 0; i < nums.length; i++) if (nums[i] !== 0) ps.push([i, nums[i]]);
+    return ps;
+  }
+  var pa = build(a), pb = build(b);
+
+  function vecPanel(nums, marks) {
+    var m = {};
+    nums.forEach(function (v, i) { if (v !== 0) m[i] = marks && marks[i] ? marks[i] : 'win'; });
+    return Viz.cells(nums, { title: '原向量（非零才存）', marks: m });
+  }
+  function pairPanel(ps, title, hitIdx) {
+    var rows = ps.map(function (p, i) {
+      return { k: '下标 ' + p[0], v: '值 ' + p[1], cls: i === hitIdx ? 'hit' : '' };
+    });
+    return Viz.table(title, rows.length ? rows : [{ k: '（无非零）', v: '—', cls: '' }]);
+  }
+  function varsPanel(o) {
+    var items = [];
+    if (o) {
+      items.push({ name: '指针 i（向量1）', v: o.i });
+      items.push({ name: '指针 j（向量2）', v: o.j });
+      if (o.mul != null) items.push({ name: '本步相乘', v: o.mul, cls: 'chg' });
+    }
+    items.push({ name: 'ans', v: o && o.ans != null ? o.ans : 0 });
+    return Viz.vars(items);
+  }
+
+  frames.push(Viz.frame(STORE, '构造向量 1：非零的 ' + pa.length + ' 个存成 <下标,值>，0 全丢',
+    [vecPanel(a), pairPanel(pa, 'pairs（向量 1）')]));
+
+  frames.push(Viz.frame(STORE, '构造向量 2：同样只存非零 ' + pb.length + ' 个，下标天然升序',
+    [vecPanel(b), pairPanel(pb, 'pairs（向量 2）')]));
+
+  var ans = 0, i = 0, j = 0, matched = null;
+  while (i < pa.length && j < pb.length) {
+    if (pa[i][0] === pb[j][0]) {
+      ans += pa[i][1] * pb[j][1];
+      matched = { i: i, j: j, mul: pa[i][1] * pb[j][1], idx: pa[i][0], ans: ans };
+      i++; j++;
+    } else if (pa[i][0] < pb[j][0]) i++;
+    else j++;
+  }
+
+  if (matched) {
+    var cur = {};
+    cur[matched.idx] = 'cur';
+    frames.push(Viz.frame(MUL, '双指针在下标 ' + matched.idx + ' 相遇：' + pa[matched.i][1] + '×' + pb[matched.j][1] + '=' + matched.mul + '，累加',
+      [vecPanel(a, cur), pairPanel(pb, 'pairs（向量 2）', matched.j), varsPanel({ i: matched.i, j: matched.j, mul: matched.mul, ans: matched.ans })]));
+  } else {
+    frames.push(Viz.frame(MUL, '双指针扫完：两向量没有共同的下标，什么都不乘',
+      [vecPanel(a), pairPanel(pb, 'pairs（向量 2）'), varsPanel({ i: pa.length, j: pb.length, ans: 0 })]));
+  }
+
+  frames.push(Viz.frame(RET, '指针走到头：点积 = ' + ans,
+    [vecPanel(a), varsPanel({ i: pa.length, j: pb.length, ans: ans })]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

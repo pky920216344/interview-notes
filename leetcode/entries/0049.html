@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字母异位词分组 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 256 / 1159</span>
+  <nav class="pn"><a href="0525.html">上一篇</a><a href="0257.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">49. </span>字母异位词分组</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 17</li><li class="algo">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">异位词的 26 字母计数串相同，拿它当哈希键把词分进同一组，省掉每个词排序的 O(k log k)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>两个词是异位词 ⇔ 每个字母出现次数都相同 → 26 位计数串相同的词进同一组。</li><li>计数只要 O(k)，排序键要 O(k log k)；计数之间加分隔符，防止 <code>1,0</code> 和 <code>10</code> 拼接出同一个键。</li><li><code>HashMap&lt;键, 组&gt;</code>：键没见过就开新组，见过就把词追加进已有组；最后把所有组收进 <code>List</code> 返回。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·k)，空间复杂度 O(n·k)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; groupAnagrams(<span class="t">String</span>[] strs) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 键：26 个字母的出现次数拼成计数串，异位词的键相同（省掉每个词的排序）</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; groups = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="t">String</span> s : strs) {</span><span class="ln"><span class="no">8</span>            <span class="k">int</span>[] cnt = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) cnt[s.charAt(i) - <span class="s">'a'</span>]++;</span><span class="ln"><span class="no">10</span>            <span class="t">StringBuilder</span> key = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">11</span>            <span class="k">for</span> (<span class="k">int</span> c : cnt) key.append(c).append(<span class="s">','</span>);</span><span class="ln"><span class="no">12</span>            <span class="t">String</span> k = key.toString();</span><span class="ln"><span class="no">13</span>            <span class="t">List</span>&lt;<span class="t">String</span>&gt; list = groups.get(k);</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (list == <span class="k">null</span>) groups.put(k, list = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;());</span><span class="ln"><span class="no">15</span>            list.add(s);</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(groups.values());</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串数组，请你将 <span>字母异位词</span> 组合在一起。可以按任意顺序返回结果列表。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<div class="example-block">
+<p><strong>输入:</strong> strs = ["eat", "tea", "tan", "ate", "nat", "bat"]</p>
+
+<p><strong>输出: </strong>[["bat"],["nat","tan"],["ate","eat","tea"]]</p>
+
+<p><strong>解释：</strong></p>
+
+<ul>
+	<li>在 strs 中没有字符串可以通过重新排列来形成 <code>"bat"</code>。</li>
+	<li>字符串 <code>"nat"</code> 和 <code>"tan"</code> 是字母异位词，因为它们可以重新排列以形成彼此。</li>
+	<li>字符串 <code>"ate"</code>&nbsp;，<code>"eat"</code>&nbsp;和 <code>"tea"</code> 是字母异位词，因为它们可以重新排列以形成彼此。</li>
+</ul>
+</div>
+
+<p><strong>示例 2:</strong></p>
+
+<div class="example-block">
+<p><strong>输入:</strong> strs = [""]</p>
+
+<p><strong>输出: </strong>[[""]]</p>
+</div>
+
+<p><strong>示例 3:</strong></p>
+
+<div class="example-block">
+<p><strong>输入:</strong> strs = ["a"]</p>
+
+<p><strong>输出: </strong>[["a"]]</p>
+</div>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= strs.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= strs[i].length &lt;= 100</code></li>
+	<li><code>strs[i]</code>&nbsp;仅包含小写字母</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<String>> groupAnagrams(String[] strs) {", "        // 键：26 个字母的出现次数拼成计数串，异位词的键相同（省掉每个词的排序）", "        Map<String, List<String>> groups = new HashMap<>();", "        for (String s : strs) {", "            int[] cnt = new int[26];", "            for (int i = 0; i < s.length(); i++) cnt[s.charAt(i) - 'a']++;", "            StringBuilder key = new StringBuilder();", "            for (int c : cnt) key.append(c).append(',');", "            String k = key.toString();", "            List<String> list = groups.get(k);", "            if (list == null) groups.put(k, list = new ArrayList<>());", "            list.add(s);", "        }", "        return new ArrayList<>(groups.values());", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 49. 字母异位词分组 —— 图解：复刻 Solution.java 的「26 字母计数串当键」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { strs: ['eat', 'tea', 'tan', 'ate', 'nat', 'bat'] };
+
+function trace(input) {
+  var strs = input.strs;
+  var frames = [];
+  var groups = [];          // [{ key: 'a1 e1 t1', words: [...] }]，按出现顺序
+  var indexOfKey = {};
+
+  // 26 字母计数（对应 Java 的 cnt），返回 { 计数数组, 紧凑键, 展示键 }
+  function countOf(s) {
+    var cnt = new Array(26).fill(0);
+    for (var i = 0; i < s.length; i++) cnt[s.charCodeAt(i) - 97]++;
+    var compact = '';
+    for (var c = 0; c < 26; c++) if (cnt[c]) compact += String.fromCharCode(97 + c) + cnt[c] + ' ';
+    return { cnt: cnt, compact: compact.trim(), key: cnt.join(',') };
+  }
+
+  function wordsPanel(cur) {
+    var marks = {};
+    if (cur != null) marks[cur] = 'cur';
+    for (var i = 0; i < strs.length; i++) if (i < cur) marks[i] = 'dim';
+    return Viz.cells(strs, { title: 'strs（橙 = 正在分组，灰 = 已处理）', marks: marks });
+  }
+
+  function groupsPanel(hitCompact, newKey) {
+    var rows = groups.map(function (g) {
+      var cls = g.compact === hitCompact ? (newKey ? 'new' : 'hit') : '';
+      return { k: g.compact, v: g.words.join(' '), cls: cls };
+    });
+    return Viz.table('groups：计数键 -> 组员', rows, { hint: '（键是 26 位计数串，0 也占位）' });
+  }
+
+  function snap(at, key, cur, hitCompact, newKey) {
+    frames.push(Viz.frame(at, key, [wordsPanel(cur), groupsPanel(hitCompact, newKey)]));
+  }
+
+  for (var i = 0; i < strs.length; i++) {
+    var c = countOf(strs[i]);
+    if (i === 0) {
+      snap('cnt[s.charAt(i) - \'a\']++;', '第 1 个词 ' + strs[i] + ' 逐字母计数：键是「' + c.compact + '」', i, null, false);
+    }
+    if (!(c.key in indexOfKey)) {
+      indexOfKey[c.key] = groups.length;
+      groups.push({ compact: c.compact, words: [strs[i]] });
+      if (i === 2) {
+        snap('if (list == null) groups.put(k, list = new ArrayList<>());',
+          strs[i] + ' 的键「' + c.compact + '」没见过：开一个新组', i, c.compact, true);
+      }
+    } else {
+      groups[indexOfKey[c.key]].words.push(strs[i]);
+      if (i === 1) {
+        snap('list.add(s);', strs[i] + ' 的键和 ' + groups[indexOfKey[c.key]].words[0] + ' 相同：并进同一组', i, c.compact, false);
+      }
+    }
+  }
+
+  // 返回前和 Java 一样把组按成员拼接的字典序排好（组内保持出现顺序）
+  function joined(g) { return g.words.join(','); }
+  groups.sort(function (x, y) {
+    var a = joined(x), b = joined(y);
+    return a < b ? -1 : a > b ? 1 : 0;
+  });
+  snap('return new ArrayList<>(groups.values());',
+    '扫完 ' + strs.length + ' 个词分成 ' + groups.length + ' 组；返回前把组排好序', null, null, false);
+
+  var out = groups.map(function (g) { return g.words.slice(); });
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

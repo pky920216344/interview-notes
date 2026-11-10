@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>链表中的下一个更大节点 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 590 / 1159</span>
+  <nav class="pn"><a href="0629.html">上一篇</a><a href="0856.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1019. </span>链表中的下一个更大节点</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">单调栈</li><li class="tag">栈</li><li class="tag">数组</li><li class="tag">链表</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">转成数组从右往左扫，维护「从底到顶递减」的值栈：栈顶就是下一个更大元素，入栈前把 ≤ 当前值的都弹掉。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>链表没法从后往前走，先转数组；答案从右往左填。</li><li>栈里保留的是「右边还没被更大值盖过的候选」，从底到顶严格递减；<code>peek() &lt;= v</code> 的都弹掉（它们永远当不成左边结点的答案）。</li><li>弹完后栈顶即 <code>ans[i]</code>，空栈记 0；再把 <code>v</code> 入栈。每个值最多进出栈一次。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] nextLargerNodes(<span class="t">ListNode</span> head) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; vals = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="t">ListNode</span> p = head; p != <span class="k">null</span>; p = p.next) vals.add(p.val);</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> n = vals.size();</span><span class="ln"><span class="no">8</span>        <span class="k">int</span>[] ans = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">9</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();   <span class="c">// 栈里存值，从底到顶严格递减</span></span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = n - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">11</span>            <span class="k">int</span> v = vals.get(i);</span><span class="ln"><span class="no">12</span>            <span class="c">// 栈顶 ≤ v 的都当不成「下一个更大」，弹掉</span></span><span class="ln"><span class="no">13</span>            <span class="k">while</span> (!stack.isEmpty() &amp;&amp; stack.peek() &lt;= v) stack.pop();</span><span class="ln"><span class="no">14</span>            ans[i] = stack.isEmpty() ? <span class="n">0</span> : stack.peek();</span><span class="ln"><span class="no">15</span>            stack.push(v);</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个长度为&nbsp;<code>n</code>&nbsp;的链表&nbsp;<code>head</code></p>
+
+<p>对于列表中的每个节点，查找下一个 <strong>更大节点</strong> 的值。也就是说，对于每个节点，找到它旁边的第一个节点的值，这个节点的值 <strong>严格大于</strong> 它的值。</p>
+
+<p>返回一个整数数组 <code>answer</code> ，其中 <code>answer[i]</code> 是第 <code>i</code> 个节点( <strong>从1开始</strong> )的下一个更大的节点的值。如果第 <code>i</code> 个节点没有下一个更大的节点，设置&nbsp;<code>answer[i] = 0</code>&nbsp;。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/99afe53291ad.jpg" /></p>
+
+<pre>
+<strong>输入：</strong>head = [2,1,5]
+<strong>输出：</strong>[5,5,0]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img src="../assets/img/f898fd1bb2c0.jpg" /></p>
+
+<pre>
+<strong>输入：</strong>head = [2,7,4,3,5]
+<strong>输出：</strong>[7,0,5,5,0]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>链表中节点数为&nbsp;<code>n</code></li>
+	<li><code>1 &lt;= n &lt;= 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= Node.val &lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] nextLargerNodes(ListNode head) {", "        List<Integer> vals = new ArrayList<>();", "        for (ListNode p = head; p != null; p = p.next) vals.add(p.val);", "        int n = vals.size();", "        int[] ans = new int[n];", "        Deque<Integer> stack = new ArrayDeque<>();   // 栈里存值，从底到顶严格递减", "        for (int i = n - 1; i >= 0; i--) {", "            int v = vals.get(i);", "            // 栈顶 ≤ v 的都当不成「下一个更大」，弹掉", "            while (!stack.isEmpty() && stack.peek() <= v) stack.pop();", "            ans[i] = stack.isEmpty() ? 0 : stack.peek();", "            stack.push(v);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1019. 链表中的下一个更大节点 —— 图解：转数组从右往左扫，单调递减栈顶就是答案。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { head: [2, 7, 4, 3, 5] };
+
+function trace(input) {
+  var vals = input.head.slice();
+  var n = vals.length;
+  var frames = [];
+  var story = vals.join(',') === STORY_INPUT.head.join(',');
+  var stack = [], ans = [];
+  for (var i = 0; i < n; i++) ans.push(null);
+
+  var VLINE = 'int v = vals.get(i);';
+  var POP = 'while (!stack.isEmpty() && stack.peek() <= v) stack.pop();';
+  var ANS = 'ans[i] = stack.isEmpty() ? 0 : stack.peek();';
+  var PUSH = 'stack.push(v);';
+  var RET = 'return ans;';
+
+  function listPanel(marks, at) {
+    var pointers = at == null ? [] : [{ at: at, label: 'i', cls: 'p-cur' }];
+    return Viz.list(vals, { title: '链表（已转成数组）', marks: marks || {}, pointers: pointers });
+  }
+  function stackPanel(marks) {
+    return Viz.cells(stack, { title: '栈（右是栈顶，从底到顶递减）', marks: marks || {} });
+  }
+  function ansPanel(marks) {
+    return Viz.cells(ans.map(function (v) { return v === null ? '·' : v; }), { title: 'ans（· 未算）', marks: marks || {} });
+  }
+
+  var f2 = false, f3 = false, f4 = false;
+  for (i = n - 1; i >= 0; i--) {
+    var v = vals[i];
+    if (story && i === n - 1) {
+      var start = {};
+      start[n - 1] = 'cur';
+      frames.push(Viz.frame(VLINE, '从右往左扫：最右的 5 右边没东西，栈空', [listPanel(start, n - 1), stackPanel({}), ansPanel({})]));
+    }
+    var lm = {};
+    lm[i] = 'cur';
+    while (stack.length && stack[stack.length - 1] <= v) {
+      var top = stack.length - 1;
+      var pm = {};
+      for (var a = 0; a < stack.length; a++) pm[a] = a === top ? 'bad' : '';
+      if (story && !f3 && i === 2) {
+        f3 = true;
+        frames.push(Viz.frame(POP, '4 比栈顶 3 大：把 3 弹掉，它挡不住左边的询问',
+          [listPanel(lm, i), stackPanel(pm), ansPanel({})]));
+      }
+      stack.pop();
+    }
+    var got = stack.length ? stack[stack.length - 1] : 0;
+    ans[i] = got;
+    if (story && !f2 && i === n - 2) {
+      f2 = true;
+      var am = {};
+      am[i] = 'new';
+      frames.push(Viz.frame(ANS, '栈顶 5 > 3：5 就是 3 的下一个更大',
+        [listPanel(lm, i), stackPanel({ 0: 'hit' }), ansPanel(am)]));
+    }
+    stack.push(v);
+    if (story && !f4 && i === 1) {
+      f4 = true;
+      var sm = {};
+      for (a = 0; a < stack.length; a++) sm[a] = a === stack.length - 1 ? 'new' : '';
+      var am2 = {};
+      for (var b = i + 1; b < n; b++) am2[b] = 'win';
+      am2[i] = 'new';
+      frames.push(Viz.frame(PUSH, '7 把 ≤7 的 4、3、5 全弹光，自己入栈当新门槛',
+        [listPanel(lm, i), stackPanel(sm), ansPanel(am2)]));
+    }
+  }
+
+  if (story) {
+    var fin = {};
+    for (var c = 0; c < n; c++) fin[c] = 'done';
+    frames.push(Viz.frame(RET, 'i=0 时栈顶是 7：ans = [7,0,5,5,0]',
+      [listPanel(fin, null), stackPanel({}), ansPanel(fin)]));
+  }
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

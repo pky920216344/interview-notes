@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>排序链表 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 46 / 1159</span>
+  <nav class="pn"><a href="0069.html">上一篇</a><a href="0094.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">148. </span>排序链表</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 149</li><li class="algo">分治</li><li class="aux">链表</li><li class="tag">链表</li><li class="tag">双指针</li><li class="tag">分治</li><li class="tag">排序</li><li class="tag">归并排序</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">自底向上归并排序：步长 step 从 1 翻倍，每趟把链表切成 step 长的小段，相邻两段合并后接回。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>不用递归：<code>step</code> 从 1 起每趟翻倍，每趟按 <code>step</code> 个一段把相邻两段两两合并；<code>step &gt;= n</code> 时只剩一段，排序完成。</li><li>每组先切：<code>cut</code> 在第 <code>step</code> 个结点后切断、返回后面的头，依次切出 <code>left</code>、<code>right</code>，剩下的留给 <code>cur</code>。</li><li><code>prev.next = merge(left, right)</code> 把合并结果接回，再让 <code>prev</code> 走到这一段的末尾，下一组接在它后面；漏了这一步，后面的结点会丢。</li><li>最后一段不够 <code>step</code> 个、或者没有搭档（<code>right == null</code>）时，<code>merge</code> 直接返回它自己，照样接回。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">ListNode</span> sortList(<span class="t">ListNode</span> head) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = <span class="n">0</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">for</span> (<span class="t">ListNode</span> p = head; p != <span class="k">null</span>; p = p.next) n++;</span><span class="ln"><span class="no">5</span>        <span class="t">ListNode</span> dummy = <span class="k">new</span> <span class="t">ListNode</span>(<span class="n">0</span>, head);</span><span class="ln"><span class="no">6</span>        <span class="c">// step：每段的长度，1、2、4……翻倍，直到整条链表只剩一段</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> step = <span class="n">1</span>; step &lt; n; step &lt;&lt;= <span class="n">1</span>) {</span><span class="ln"><span class="no">8</span>            <span class="c">// prev：已处理部分的尾结点，cur：还没处理的部分</span></span><span class="ln"><span class="no">9</span>            <span class="t">ListNode</span> prev = dummy, cur = dummy.next;</span><span class="ln"><span class="no">10</span>            <span class="k">while</span> (cur != <span class="k">null</span>) {</span><span class="ln"><span class="no">11</span>                <span class="c">// 从 cur 起切出相邻两段 left、right，剩下的留给 cur</span></span><span class="ln"><span class="no">12</span>                <span class="t">ListNode</span> left = cur;</span><span class="ln"><span class="no">13</span>                <span class="t">ListNode</span> right = cut(left, step);</span><span class="ln"><span class="no">14</span>                cur = cut(right, step);</span><span class="ln"><span class="no">15</span>                <span class="c">// 合并后接回 prev 后面，prev 再走到这一段的末尾</span></span><span class="ln"><span class="no">16</span>                prev.next = merge(left, right);</span><span class="ln"><span class="no">17</span>                <span class="k">while</span> (prev.next != <span class="k">null</span>) prev = prev.next;</span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> dummy.next;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span> </span><span class="ln"><span class="no">23</span>    <span class="c">// 保留 head 起的前 n 个结点并切断，返回后面部分的头</span></span><span class="ln"><span class="no">24</span>    <span class="k">private</span> <span class="t">ListNode</span> cut(<span class="t">ListNode</span> head, <span class="k">int</span> n) {</span><span class="ln"><span class="no">25</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; head != <span class="k">null</span> &amp;&amp; i &lt; n; i++) head = head.next;</span><span class="ln"><span class="no">26</span>        <span class="k">if</span> (head == <span class="k">null</span>) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">27</span>        <span class="t">ListNode</span> rest = head.next;</span><span class="ln"><span class="no">28</span>        head.next = <span class="k">null</span>;</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> rest;</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span> </span><span class="ln"><span class="no">32</span>    <span class="c">// 合并两个升序链表</span></span><span class="ln"><span class="no">33</span>    <span class="k">private</span> <span class="t">ListNode</span> merge(<span class="t">ListNode</span> a, <span class="t">ListNode</span> b) {</span><span class="ln"><span class="no">34</span>        <span class="t">ListNode</span> dummy = <span class="k">new</span> <span class="t">ListNode</span>(), tail = dummy;</span><span class="ln"><span class="no">35</span>        <span class="k">while</span> (a != <span class="k">null</span> &amp;&amp; b != <span class="k">null</span>) {</span><span class="ln"><span class="no">36</span>            <span class="k">if</span> (a.val &lt;= b.val) {</span><span class="ln"><span class="no">37</span>                tail.next = a;</span><span class="ln"><span class="no">38</span>                a = a.next;</span><span class="ln"><span class="no">39</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">40</span>                tail.next = b;</span><span class="ln"><span class="no">41</span>                b = b.next;</span><span class="ln"><span class="no">42</span>            }</span><span class="ln"><span class="no">43</span>            tail = tail.next;</span><span class="ln"><span class="no">44</span>        }</span><span class="ln"><span class="no">45</span>        tail.next = a != <span class="k">null</span> ? a : b;</span><span class="ln"><span class="no">46</span>        <span class="k">return</span> dummy.next;</span><span class="ln"><span class="no">47</span>    }</span><span class="ln"><span class="no">48</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你链表的头结点&nbsp;<code>head</code>&nbsp;，请将其按 <strong>升序</strong> 排列并返回 <strong>排序后的链表</strong> 。</p>
+
+<ul>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/28677ee483f2.jpg" style="width: 450px;" />
+<pre>
+<b>输入：</b>head = [4,2,1,3]
+<b>输出：</b>[1,2,3,4]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/9f9d7b3182de.jpg" style="width: 550px;" />
+<pre>
+<b>输入：</b>head = [-1,5,3,4,0]
+<b>输出：</b>[-1,0,3,4,5]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<b>输入：</b>head = []
+<b>输出：</b>[]
+</pre>
+
+
+
+<p><b>提示：</b></p>
+
+<ul>
+	<li>链表中节点的数目在范围&nbsp;<code>[0, 5 * 10<sup>4</sup>]</code>&nbsp;内</li>
+	<li><code>-10<sup>5</sup>&nbsp;&lt;= Node.val &lt;= 10<sup>5</sup></code></li>
+</ul>
+
+
+
+<p><b>进阶：</b>你可以在&nbsp;<code>O(n&nbsp;log&nbsp;n)</code> 时间复杂度和常数级空间复杂度下，对链表进行排序吗？</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public ListNode sortList(ListNode head) {", "        int n = 0;", "        for (ListNode p = head; p != null; p = p.next) n++;", "        ListNode dummy = new ListNode(0, head);", "        // step：每段的长度，1、2、4……翻倍，直到整条链表只剩一段", "        for (int step = 1; step < n; step <<= 1) {", "            // prev：已处理部分的尾结点，cur：还没处理的部分", "            ListNode prev = dummy, cur = dummy.next;", "            while (cur != null) {", "                // 从 cur 起切出相邻两段 left、right，剩下的留给 cur", "                ListNode left = cur;", "                ListNode right = cut(left, step);", "                cur = cut(right, step);", "                // 合并后接回 prev 后面，prev 再走到这一段的末尾", "                prev.next = merge(left, right);", "                while (prev.next != null) prev = prev.next;", "            }", "        }", "        return dummy.next;", "    }", "", "    // 保留 head 起的前 n 个结点并切断，返回后面部分的头", "    private ListNode cut(ListNode head, int n) {", "        for (int i = 1; head != null && i < n; i++) head = head.next;", "        if (head == null) return null;", "        ListNode rest = head.next;", "        head.next = null;", "        return rest;", "    }", "", "    // 合并两个升序链表", "    private ListNode merge(ListNode a, ListNode b) {", "        ListNode dummy = new ListNode(), tail = dummy;", "        while (a != null && b != null) {", "            if (a.val <= b.val) {", "                tail.next = a;", "                a = a.next;", "            } else {", "                tail.next = b;", "                b = b.next;", "            }", "            tail = tail.next;", "        }", "        tail.next = a != null ? a : b;", "        return dummy.next;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 148. 排序链表 —— 图解：复刻 Solution.java 的自底向上归并（步长 1、2、4…：切出两段、合并、接回），在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 画面按「当前的链」从左到右排；切开后的几段并排放，段与段之间用 ∅ 隔开。
+
+var STORY_INPUT = { head: [4, 2, 5, 1, 3] };
+
+function trace(input) {
+  var frames = [];
+
+  function node(v) { return { v: v, next: null }; }
+  var head = null, n = 0;
+  (function () {
+    var t = null;
+    input.head.forEach(function (x) { var u = node(x); if (t === null) head = u; else t.next = u; t = u; n++; });
+  })();
+  if (n === 0) return { frames: frames, result: [] };
+
+  var dummy = node('哨兵');
+  dummy.next = head;
+
+  function valsOf(h) { var a = []; for (var p = h; p !== null; p = p.next) a.push(p.v); return a; }
+  function nodesOf(h) { var a = []; for (var p = h; p !== null; p = p.next) a.push(p); return a; }
+
+  // 几段链从左到右排开成一个面板：段内画直线箭头，段尾画 ∅。mark(结点, 位置) 返回高亮类
+  function view(pieces, ptrs, title, mark) {
+    var nodes = [], edges = [], nulls = [], marks = {}, pointers = [];
+    pieces.forEach(function (h) {
+      if (h === null) return;
+      var s = nodes.length;
+      for (var p = h; p !== null; p = p.next) nodes.push(p);
+      for (var i = s; i + 1 < nodes.length; i++) edges.push([i, i + 1, '']);
+      nulls.push(nodes.length - 1);
+    });
+    nodes.forEach(function (u, i) { var c = mark(u, i); if (c) marks[i] = c; });
+    ptrs.forEach(function (q) {
+      var at = nodes.indexOf(q[1]);
+      if (at >= 0) pointers.push({ at: at, label: q[0], cls: q[2] });
+    });
+    return Viz.list(nodes.map(function (u) { return u.v; }), { title: title, marks: marks, edges: edges, nulls: nulls, pointers: pointers });
+  }
+
+  // 每 len 个结点一段，段内有序：青白相间标出来（位置 0 是哨兵）
+  function runs(len) {
+    return function (u, i) { return i >= 1 && Math.floor((i - 1) / len) % 2 === 0 ? 'win' : ''; };
+  }
+  var RUNS_TITLE = '链表（青白相间 = 一段一段，段内有序）';
+
+  // 下面照着 Java 一行行复刻
+  function cut(h, m) {
+    for (var i = 1; h !== null && i < m; i++) h = h.next;
+    if (h === null) return null;
+    var rest = h.next;
+    h.next = null;
+    return rest;
+  }
+
+  function merge(a, b) {
+    var dummy = node(0), tail = dummy;
+    while (a !== null && b !== null) {
+      if (a.v <= b.v) {
+        tail.next = a;
+        a = a.next;
+      } else {
+        tail.next = b;
+        b = b.next;
+      }
+      tail = tail.next;
+    }
+    tail.next = a !== null ? a : b;
+    return dummy.next;
+  }
+
+  frames.push(Viz.frame('int step = 1', '开始 step=1：每个结点自成一段，相邻两段两两合并',
+    [view([dummy], [], RUNS_TITLE, runs(1))]));
+
+  for (var step = 1; step < n; step *= 2) {
+    var prev = dummy, cur = dummy.next, iter = 0;
+    while (cur !== null) {
+      var left = cur;
+      var right = cut(left, step);
+      cur = cut(right, step);
+      var show = step === 2 && iter === 0;   // 只在步长 2 的第一组上拍「切开」「合并接回」两张
+      var L = show ? nodesOf(left) : null, R = show ? nodesOf(right) : null;
+      if (show) {
+        frames.push(Viz.frame('prev.next = merge(left, right);', 'step=' + step + '：切出 left、right 各 ' + step + ' 个，cur 指向剩下的',
+          [view([dummy, right, cur], [['prev', dummy, 'p-prev'], ['left', left, 'p-head'], ['right', right, 'p-next'], ['cur', cur, 'p-cur']],
+            '切开后的几段（青 = left，蓝 = right）', function (u) { return L.indexOf(u) >= 0 ? 'win' : R.indexOf(u) >= 0 ? 'new' : ''; })]));
+      }
+      prev.next = merge(left, right);
+      while (prev.next !== null) prev = prev.next;
+      if (show) {
+        frames.push(Viz.frame('while (prev.next != null) prev = prev.next;', 'left、right 合并后接回 prev 后面，prev 走到段尾',
+          [view([dummy, cur], [['prev', prev, 'p-prev'], ['cur', cur, 'p-cur']],
+            '合并后接回（蓝色 = 刚合并出来的一段）', function (u) { return L.indexOf(u) >= 0 || R.indexOf(u) >= 0 ? 'new' : ''; })]));
+      }
+      iter++;
+    }
+    if (step === 1) {
+      frames.push(Viz.frame('step <<= 1', 'step=1 一趟完：每 2 个为一段，段内有序；step 翻倍',
+        [view([dummy], [], RUNS_TITLE, runs(2))]));
+    }
+  }
+
+  frames.push(Viz.frame('step < n', 'step=' + step + ' ≥ n=' + n + '，循环结束：整条链表只剩一段，已有序',
+    [view([dummy], [], '排序后的链表', function (u, i) { return i >= 1 ? 'done' : ''; })]));
+
+  return { frames: frames, result: valsOf(dummy.next) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

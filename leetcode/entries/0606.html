@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>根据二叉树创建字符串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 872 / 1159</span>
+  <nav class="pn"><a href="1034.html">上一篇</a><a href="0471.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">606. </span>根据二叉树创建字符串</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 1</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">字符串</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">前序遍历：每个结点写「值 + (左)(右)」，只有左孩子或没孩子时省略空括号；左空但有右孩子时必须写 () 占位。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>前序递归：先写结点值，再依次处理左右子树，括号跟着孩子走。</li><li>占位规则是唯一考点：<strong>右孩子存在而左孩子缺失时，必须补一对 <code>()</code></strong>，否则左孩子的缺席无从体现，解码会歧义。</li><li>叶子什么都不加；只有左孩子写 <code>(左)</code>；两个孩子都有写 <code>(左)(右)</code>。</li><li>用 <code>StringBuilder</code> 顺着递归追加，整体一趟 O(n)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">String</span> tree2str(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">3</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">4</span>        build(root, sb);</span><span class="ln"><span class="no">5</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">6</span>    }</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="c">// 前序写每个结点：值 + (左)(右)；左空但有右孩子时，左必须用 () 占位</span></span><span class="ln"><span class="no">9</span>    <span class="k">private</span> <span class="k">void</span> build(<span class="t">TreeNode</span> t, <span class="t">StringBuilder</span> sb) {</span><span class="ln"><span class="no">10</span>        <span class="k">if</span> (t == <span class="k">null</span>) <span class="k">return</span>;</span><span class="ln"><span class="no">11</span>        sb.append(t.val);</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (t.left != <span class="k">null</span> || t.right != <span class="k">null</span>) {</span><span class="ln"><span class="no">13</span>            sb.append(<span class="s">'('</span>);</span><span class="ln"><span class="no">14</span>            build(t.left, sb);</span><span class="ln"><span class="no">15</span>            sb.append(<span class="s">')'</span>);</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (t.right != <span class="k">null</span>) {</span><span class="ln"><span class="no">17</span>                sb.append(<span class="s">'('</span>);</span><span class="ln"><span class="no">18</span>                build(t.right, sb);</span><span class="ln"><span class="no">19</span>                sb.append(<span class="s">')'</span>);</span><span class="ln"><span class="no">20</span>            }</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定二叉树的根节点 <code>root</code>，你的任务是按照一组特定的格式规则创建该树的字符串表示。该表示应基于二叉树的前序遍历，并且必须遵循以下规则：</p>
+
+<ul>
+	<li>
+	<p><strong>节点表示</strong>：树中的每个节点都应使用其整数值表示。</p>
+	</li>
+	<li>
+	<p><strong>子节点的括号表示</strong>：如果一个节点至少有一个子节点（左子节点或右子节点），则其子节点应使用括号表示。具体来说：</p>
+
+	<ul>
+		<li>如果一个节点存在左子节点，则应将左子节点的表示放在括号中，并紧跟在当前节点的值之后。</li>
+		<li>如果一个节点存在右子节点，则也应将右子节点的表示放在括号中。右子节点对应的括号应位于左子节点对应括号之后。</li>
+	</ul>
+	</li>
+	<li>
+	<p><strong>省略空括号</strong>：最终的树字符串表示中，应省略所有空括号对（即 <code>()</code>），但有一种特殊情况除外：当一个节点存在右子节点但不存在左子节点时，必须保留一对空括号，以表示左子节点缺失。这样可以保证字符串表示与原二叉树结构之间的一一对应关系。</p>
+
+	<p>总而言之，当一个节点只有左子节点或者没有任何子节点时，应省略空括号对。但是，当一个节点只有右子节点而没有左子节点时，必须在右子节点的表示之前添加一对空括号，以准确表示树的结构。</p>
+	</li>
+</ul>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+<img alt="" src="../assets/img/e4b91a7da931.jpg" style="padding: 10px; background: #fff; border-radius: .5rem;" />
+<pre>
+<strong>输入：</strong> root = [1,2,3,4]
+<strong>输出：</strong> "1(2(4))(3)"
+<strong>解释：</strong> 原本需要表示为 "1(2(4)())(3()())"，但需要省略所有空括号对。因此最终得到 "1(2(4))(3)"。
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+<img alt="" src="../assets/img/bdced7e06194.jpg" style="padding: 10px; background: #fff; border-radius: .5rem;" />
+<pre>
+<strong>输入：</strong> root = [1,2,3,null,4]
+<strong>输出：</strong> "1(2()(4))(3)"
+<strong>解释：</strong> 与第一个示例基本相同，不同之处在于 <code>2</code> 后面的 <code>()</code> 是必须保留的，因为它表示节点 <code>2</code> 不存在左子节点，但存在右子节点。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中节点的数量范围为 <code>[1, 10<sup>4</sup>]</code>。</li>
+	<li><code>-1000 &lt;= Node.val &lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public String tree2str(TreeNode root) {", "        StringBuilder sb = new StringBuilder();", "        build(root, sb);", "        return sb.toString();", "    }", "", "    // 前序写每个结点：值 + (左)(右)；左空但有右孩子时，左必须用 () 占位", "    private void build(TreeNode t, StringBuilder sb) {", "        if (t == null) return;", "        sb.append(t.val);", "        if (t.left != null || t.right != null) {", "            sb.append('(');", "            build(t.left, sb);", "            sb.append(')');", "            if (t.right != null) {", "                sb.append('(');", "                build(t.right, sb);", "                sb.append(')');", "            }", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 606. 根据二叉树创建字符串 —— 图解：复刻 Solution.java 的前序拼接，在关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, 2, 3, null, 4] };
+
+function trace(input) {
+  var frames = [];
+  var sb = [];         // 已写出的片段，一格一段
+  var visited = {};    // 已写出的结点（层序下标）
+  var VAL = 'sb.append(t.val);';
+  var GO_L = 'build(t.left, sb);';
+  var GO_R = 'build(t.right, sb);';
+  var RET = 'return sb.toString();';
+
+  // 力扣层序数组 -> 结点，记下层序下标
+  function build(arr) {
+    if (!arr.length || arr[0] === null) return null;
+    var r = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [r], i = 1;
+    while (q.length && i < arr.length) {
+      var n = q.shift();
+      if (i < arr.length) { if (arr[i] !== null) { n.left = { idx: i, val: arr[i], left: null, right: null }; q.push(n.left); } i++; }
+      if (i < arr.length) { if (arr[i] !== null) { n.right = { idx: i, val: arr[i], left: null, right: null }; q.push(n.right); } i++; }
+    }
+    return r;
+  }
+  var root = build(input.root);
+
+  function treePanel(curIdx) {
+    var marks = {};
+    Object.keys(visited).forEach(function (k) { marks[k] = 'done'; });
+    if (curIdx != null) marks[curIdx] = 'cur';
+    return Viz.tree(input.root, { title: '二叉树', marks: marks });
+  }
+  function sbPanel(allDone) {
+    var marks = {};
+    if (sb.length) marks[sb.length - 1] = allDone ? 'done' : 'new';
+    return Viz.cells(sb.slice(), { title: 'sb（已写出的结果）', marks: marks, hideIndex: true });
+  }
+
+  var placeholderSnapped = false, leafSnapped = false, rootRightSnapped = false;
+
+  function visit(t, depth) {
+    if (t === null) return;
+    sb.push(String(t.val));
+    visited[t.idx] = true;
+    if (depth === 0) {
+      frames.push(Viz.frame(VAL, '根结点先写值 ' + t.val + '：有孩子就要跟括号', [treePanel(t.idx), sbPanel()]));
+    }
+    if (t.left !== null || t.right !== null) {
+      // 左空右有：必须写一对 () 占位，左孩子的位置不能丢
+      if (t.left === null && t.right !== null && !placeholderSnapped) {
+        placeholderSnapped = true;
+        frames.push(Viz.frame(GO_L, '结点 ' + t.val + ' 左空右有：先写一对 () 占位，结构才不会错位', [treePanel(t.idx), sbPanel()]));
+      }
+      sb.push('(');
+      visit(t.left, depth + 1);
+      sb.push(')');
+      if (t.right !== null) {
+        if (depth === 0 && !rootRightSnapped) {
+          rootRightSnapped = true;
+          frames.push(Viz.frame(GO_R, '左子树写完：补上 ) 再开 ( 接右子树 ' + t.right.val, [treePanel(null), sbPanel()]));
+        }
+        sb.push('(');
+        visit(t.right, depth + 1);
+        sb.push(')');
+      }
+    } else if (!leafSnapped) {
+      leafSnapped = true;
+      frames.push(Viz.frame(VAL, '叶子 ' + t.val + ' 只写值，不加括号', [treePanel(t.idx), sbPanel()]));
+    }
+  }
+
+  visit(root, 0);
+  frames.push(Viz.frame(RET, '完成：' + sb.join(''), [treePanel(null), sbPanel(true)]));
+  return { frames: frames, result: sb.join('') };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

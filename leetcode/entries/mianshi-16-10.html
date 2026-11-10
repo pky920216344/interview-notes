@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>生存人数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1083 / 1159</span>
+  <nav class="pn"><a href="1104.html">上一篇</a><a href="1552.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 16.10. </span>生存人数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">前缀和/差分</li><li class="tag">数组</li><li class="tag">计数</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">差分数组：出生年 +1、死亡次年 −1，前缀和从 1900 扫到 2000，取最大且并列取最小年份。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>人生存区间是 <code>[birth, death]</code> 闭区间：题面明确「生于 1908、死于 1909 计入两年」，死亡当年还算活着。</li><li>差分只在出生年 <code>+1</code>、死亡次年 <code>−1</code>；前缀和扫一遍，每格就是该年活着的人数。</li><li>死亡在 2000 年以后的 <code>−1</code> 落在扫描窗口外，不减也不影响结果（2000 年后没有出生，人数只会变少）。</li><li>更新答案用严格大于 <code>cur &gt; best</code>：并列时自然保留最早的年份。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + 101)，空间复杂度 O(101)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maxAliveYear(<span class="k">int</span>[] birth, <span class="k">int</span>[] death) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 差分：出生年 +1；死亡当年人还在（题面：任意时期存活即计入），-1 放到死亡次年</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] delta = <span class="k">new</span> <span class="k">int</span>[<span class="n">102</span>];   <span class="c">// 下标 0..101 对应年份 1900..2001</span></span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; birth.length; i++) {</span><span class="ln"><span class="no">6</span>            delta[birth[i] - <span class="n">1900</span>]++;</span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (death[i] &lt; <span class="n">2000</span>) delta[death[i] + <span class="n">1</span> - <span class="n">1900</span>]--;   <span class="c">// 2000 之后扫不到，减不减一样</span></span><span class="ln"><span class="no">8</span>        }</span><span class="ln"><span class="no">9</span>        <span class="k">int</span> cur = <span class="n">0</span>, best = <span class="n">0</span>, ans = <span class="n">1900</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> y = <span class="n">1900</span>; y &lt;= <span class="n">2000</span>; y++) {</span><span class="ln"><span class="no">11</span>            cur += delta[y - <span class="n">1900</span>];</span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (cur &gt; best) {           <span class="c">// 严格大于：并列时保留最早（最小）的年份</span></span><span class="ln"><span class="no">13</span>                best = cur;</span><span class="ln"><span class="no">14</span>                ans = y;</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定 N 个人的出生年份和死亡年份，第 <code>i</code> 个人的出生年份为 <code>birth[i]</code>，死亡年份为 <code>death[i]</code>，实现一个方法以计算生存人数最多的年份。</p>
+
+<p>你可以假设所有人都出生于 1900 年至 2000 年（含 1900 和 2000 ）之间。如果一个人在某一年的任意时期处于生存状态，那么他应该被纳入那一年的统计中。例如，生于 1908 年、死于 1909 年的人应当被列入 1908 年和 1909 年的计数。</p>
+
+<p>如果有多个年份生存人数相同且均为最大值，输出其中最小的年份。</p>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+birth = [1900, 1901, 1950]
+death = [1948, 1951, 2000]
+<strong>输出：</strong> 1901
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt; birth.length == death.length &lt;= 10000</code></li>
+	<li><code>birth[i] &lt;= death[i]</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maxAliveYear(int[] birth, int[] death) {", "        // 差分：出生年 +1；死亡当年人还在（题面：任意时期存活即计入），-1 放到死亡次年", "        int[] delta = new int[102];   // 下标 0..101 对应年份 1900..2001", "        for (int i = 0; i < birth.length; i++) {", "            delta[birth[i] - 1900]++;", "            if (death[i] < 2000) delta[death[i] + 1 - 1900]--;   // 2000 之后扫不到，减不减一样", "        }", "        int cur = 0, best = 0, ans = 1900;", "        for (int y = 1900; y <= 2000; y++) {", "            cur += delta[y - 1900];", "            if (cur > best) {           // 严格大于：并列时保留最早（最小）的年份", "                best = cur;", "                ans = y;", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 16.10. 生存人数 —— 图解：复刻 Solution.java 的「差分 + 前缀和」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { birth: [1950, 1952, 1955, 1956], death: [1953, 1956, 1957, 1956] };
+
+function trace(input) {
+  var birth = input.birth, death = input.death;
+  var delta = {};                 // 年份 → 差分值（对应 Java 里的 delta 数组）
+  for (var i = 0; i < birth.length; i++) {
+    delta[birth[i]] = (delta[birth[i]] || 0) + 1;
+    if (death[i] < 2000) delta[death[i] + 1] = (delta[death[i] + 1] || 0) - 1;
+  }
+
+  // 展示窗口：出生年到「死亡次年」的并集，最多铺 100 格
+  var lo = 2001, hi = 1899;
+  for (i = 0; i < birth.length; i++) {
+    lo = Math.min(lo, birth[i]);
+    hi = Math.max(hi, Math.min(death[i] + 1, 2001));
+  }
+  if (lo > hi) { lo = 1900; hi = 1901; }        // 没有人：铺两个空年份
+  hi = Math.min(Math.max(hi, lo + 1), 2001);
+
+  var years = [], dRow = [], pRow = [];
+  var cur = 0, best = 0, ans = 1900, firstUp = -1;
+  for (var y = lo; y <= hi; y++) {
+    years.push(y);
+    dRow.push(delta[y] || 0);
+    cur += delta[y] || 0;                        // 年份可能超出 1900..2000，只算不影响
+    pRow.push(cur);
+  }
+  var ansIdx = 0;
+  cur = 0; best = 0; ans = 1900;
+  for (y = 1900; y <= 2000; y++) {               // 与 Java 相同：只在 1900..2000 里找答案
+    cur += delta[y] || 0;
+    if (cur > best) { best = cur; ans = y; if (firstUp < 0) firstUp = y; }
+  }
+  ansIdx = ans - lo;
+
+  function cellsPanel(values, title, marks, ptrAt) {
+    var pointers = ptrAt != null && ptrAt >= 0 && ptrAt < values.length
+      ? [{ at: ptrAt, label: 'y', cls: 'p-cur' }] : [];
+    return Viz.cells(values, { title: title + '（年份 ' + lo + ' … ' + (lo + values.length - 1) + '）',
+      marks: marks || {}, pointers: pointers });
+  }
+  var frames = [];
+
+  var build = {};
+  for (y = 0; y < dRow.length; y++) if (dRow[y] !== 0) build[y] = 'new';
+  frames.push(Viz.frame('delta[birth[i] - 1900]++;', '出生年 +1、死亡次年才 -1（死亡当年还算活着）',
+    [cellsPanel(dRow, '差分 delta', build, null)]));
+
+  if (firstUp > 0) {
+    var scanMarks = {};
+    scanMarks[firstUp - lo] = 'cur';
+    frames.push(Viz.frame('cur += delta[y - 1900];', '前缀和从左往扫：每格就是该年活着的人数',
+      [cellsPanel(pRow, '当年存活人数', scanMarks, firstUp - lo)]));
+    var peakMarks = {};
+    peakMarks[ansIdx] = 'chg';
+    frames.push(Viz.frame('if (cur > best) {', ans + ' 年 ' + best + ' 人是全程最高：记下年份（并列取最小）',
+      [cellsPanel(pRow, '当年存活人数', peakMarks, ansIdx)]));
+  }
+  var doneMarks = {};
+  doneMarks[ansIdx] = 'done';
+  frames.push(Viz.frame('return ans;', '扫完：生存人数最多的年份是 ' + ans,
+    [cellsPanel(pRow, '当年存活人数', doneMarks, ansIdx),
+     Viz.vars([{ name: 'ans', v: ans, cls: 'done' }, { name: '该年人数', v: best, cls: 'done' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

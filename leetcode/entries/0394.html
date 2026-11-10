@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字符串解码 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 61 / 1159</span>
+  <nav class="pn"><a href="0034.html">上一篇</a><a href="offer-22.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">394. </span>字符串解码</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 103</li><li class="algo">栈</li><li class="tag">栈</li><li class="tag">递归</li><li class="tag">字符串</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">双栈：遇 &#x27;[&#x27; 把重复次数和外层串压栈并清空 cur；遇 &#x27;]&#x27; 弹出，拼成「弹的串 + cur 重复 k 次」。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>cur</code> 是「正在收集的当前层串」，<code>num</code> 边读边 <code>num*10+d</code>（数字可能多位）。</li><li>遇 <code>[</code>：<code>num</code>、<code>cur</code> 分别压数字栈、字符串栈，再清空，专心收括号里的内容。</li><li>遇 <code>]</code>：弹出上层的串 <code>prev</code> 和次数 <code>k</code>，<code>prev</code> 接上 <code>k</code> 份 <code>cur</code>，结果作为新的 <code>cur</code>。</li><li>普通字母直接 <code>cur.append(c)</code>；扫完 <code>cur</code> 就是答案，嵌套靠栈自动处理。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(输出长度)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> decodeString(<span class="t">String</span> s) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 数字栈存重复次数，字符串栈存 '[' 外面的串</span></span><span class="ln"><span class="no">6</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; numStack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="t">Deque</span>&lt;<span class="t">StringBuilder</span>&gt; strStack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="t">StringBuilder</span> cur = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">9</span>        <span class="k">int</span> num = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) {</span><span class="ln"><span class="no">11</span>            <span class="k">char</span> c = s.charAt(i);</span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (c &gt;= <span class="s">'0'</span> &amp;&amp; c &lt;= <span class="s">'9'</span>) {</span><span class="ln"><span class="no">13</span>                num = num * <span class="n">10</span> + (c - <span class="s">'0'</span>);   <span class="c">// 数字可能不止一位</span></span><span class="ln"><span class="no">14</span>            } <span class="k">else</span> <span class="k">if</span> (c == <span class="s">'['</span>) {</span><span class="ln"><span class="no">15</span>                <span class="c">// 压下「次数」和「外面的串」，cur 清空专收括号里的</span></span><span class="ln"><span class="no">16</span>                numStack.push(num);</span><span class="ln"><span class="no">17</span>                strStack.push(cur);</span><span class="ln"><span class="no">18</span>                num = <span class="n">0</span>;</span><span class="ln"><span class="no">19</span>                cur = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">20</span>            } <span class="k">else</span> <span class="k">if</span> (c == <span class="s">']'</span>) {</span><span class="ln"><span class="no">21</span>                <span class="c">// 弹出，拼成「弹的串 + 当前串重复 k 次」</span></span><span class="ln"><span class="no">22</span>                <span class="t">StringBuilder</span> prev = strStack.pop();</span><span class="ln"><span class="no">23</span>                <span class="k">int</span> k = numStack.pop();</span><span class="ln"><span class="no">24</span>                <span class="k">while</span> (k-- &gt; <span class="n">0</span>) prev.append(cur);</span><span class="ln"><span class="no">25</span>                cur = prev;</span><span class="ln"><span class="no">26</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">27</span>                cur.append(c);                <span class="c">// 普通字母直接接在 cur 后面</span></span><span class="ln"><span class="no">28</span>            }</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> cur.toString();</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个经过编码的字符串，返回它解码后的字符串。</p>
+
+<p>编码规则为: <code>k[encoded_string]</code>，表示其中方括号内部的 <code>encoded_string</code> 正好重复 <code>k</code> 次。注意 <code>k</code> 保证为正整数。</p>
+
+<p>你可以认为输入字符串总是有效的；输入字符串中没有额外的空格，且输入的方括号总是符合格式要求的。</p>
+
+<p>此外，你可以认为原始数据不包含数字，所有的数字只表示重复的次数 <code>k</code> ，例如不会出现像&nbsp;<code>3a</code>&nbsp;或&nbsp;<code>2[4]</code>&nbsp;的输入。</p>
+
+<p>测试用例保证输出的长度不会超过&nbsp;<code>10<sup>5</sup></code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "3[a]2[bc]"
+<strong>输出：</strong>"aaabcbc"
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "3[a2[c]]"
+<strong>输出：</strong>"accaccacc"
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "2[abc]3[cd]ef"
+<strong>输出：</strong>"abcabccdcdcdef"
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "abc3[cd]xyz"
+<strong>输出：</strong>"abccdcdcdxyz"
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 30</code></li>
+	<li><meta charset="UTF-8" /><code>s</code>&nbsp;由小写英文字母、数字和方括号<meta charset="UTF-8" />&nbsp;<code>'[]'</code> 组成</li>
+	<li><code>s</code>&nbsp;保证是一个&nbsp;<strong>有效</strong>&nbsp;的输入。</li>
+	<li><code>s</code>&nbsp;中所有整数的取值范围为<meta charset="UTF-8" />&nbsp;<code>[1, 300]</code>&nbsp;</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String decodeString(String s) {", "        // 数字栈存重复次数，字符串栈存 '[' 外面的串", "        Deque<Integer> numStack = new ArrayDeque<>();", "        Deque<StringBuilder> strStack = new ArrayDeque<>();", "        StringBuilder cur = new StringBuilder();", "        int num = 0;", "        for (int i = 0; i < s.length(); i++) {", "            char c = s.charAt(i);", "            if (c >= '0' && c <= '9') {", "                num = num * 10 + (c - '0');   // 数字可能不止一位", "            } else if (c == '[') {", "                // 压下「次数」和「外面的串」，cur 清空专收括号里的", "                numStack.push(num);", "                strStack.push(cur);", "                num = 0;", "                cur = new StringBuilder();", "            } else if (c == ']') {", "                // 弹出，拼成「弹的串 + 当前串重复 k 次」", "                StringBuilder prev = strStack.pop();", "                int k = numStack.pop();", "                while (k-- > 0) prev.append(cur);", "                cur = prev;", "            } else {", "                cur.append(c);                // 普通字母直接接在 cur 后面", "            }", "        }", "        return cur.toString();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 394. 字符串解码 —— 图解：复刻 Solution.java 的「数字栈 + 字符串栈」，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: '3[a2[c]]' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+  var numStack = [];   // 数字栈：存 '[' 前的重复次数
+  var strStack = [];   // 字符串栈：存 '[' 前已拼好的串
+  var cur = '';
+  var num = 0;
+
+  function brief(t) { return t.length > 10 ? t.slice(0, 10) + '…' : t; }
+
+  function sPanel(i) {
+    var marks = {};
+    for (var k = 0; k < n; k++) marks[k] = k < i ? 'win' : '';
+    if (i < n) marks[i] = 'cur';
+    var pointers = i < n ? [{ at: i, label: 'i', cls: 'p-cur' }] : [];
+    return Viz.cells(s.split(''), { title: '编码串 s', marks: marks, pointers: pointers });
+  }
+  function stackPanel(arr, title) {
+    var items = arr.map(function (v) { return '"' + v + '"'; });
+    var marks = {};
+    var pointers = items.length ? [{ at: items.length - 1, label: 'top', cls: 'p-mid' }] : [];
+    if (items.length) marks[items.length - 1] = 'hit';
+    return Viz.cells(items, { title: title, marks: marks, pointers: pointers });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: 'num', v: num, cls: num ? 'chg' : '' },
+      { name: 'cur', v: '"' + brief(cur) + '"', cls: 'hit' }
+    ]);
+  }
+  function snap(at, key, i) {
+    frames.push(Viz.frame(at, key,
+      [sPanel(i), stackPanel(numStack, '数字栈 numStack'), stackPanel(strStack, '字符串栈 strStack'), varsPanel()]));
+  }
+
+  snap('int num = 0;', '开局：cur 空、两个栈都空，从左往右扫', 0);
+
+  for (var i = 0; i < n; i++) {
+    var c = s[i];
+    if (c >= '0' && c <= '9') {
+      num = num * 10 + (c.charCodeAt(0) - 48);
+    } else if (c === '[') {
+      var pushNum = num, pushCur = cur;
+      numStack.push(num);
+      strStack.push(cur);
+      num = 0;
+      cur = '';
+      snap('numStack.push(num);',
+        "「" + pushNum + "[」：" + pushNum + " 入数字栈、\"" + brief(pushCur) + "\" 入字符串栈，cur 清空专收括号里的", i);
+    } else if (c === ']') {
+      var prev = strStack.pop();
+      var k = numStack.pop();
+      var built = prev;
+      for (var t = 0; t < k; t++) built += cur;
+      cur = built;
+      snap('cur = prev;',
+        "「]」：弹出 \"" + brief(prev) + "\" 和 " + k + "，拼「弹的串 + cur 重复 " + k + " 次」",
+        i);
+    } else {
+      cur += c;
+    }
+  }
+
+  snap('return cur.toString();', '扫完，cur 就是答案（长 ' + cur.length + '）', n);
+  return { frames: frames, result: cur };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

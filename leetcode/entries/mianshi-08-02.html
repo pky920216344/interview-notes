@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>迷路的机器人 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 484 / 1159</span>
+  <nav class="pn"><a href="0796.html">上一篇</a><a href="1424.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 08.02. </span>迷路的机器人</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">回溯</li><li class="aux">深度优先搜索/递归</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">回溯</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">DFS 回溯：从 (0,0) 先右后下找一条到右下角的路；确认走不通的格子标记后不再重试。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每进一格先标记 <code>dead</code>：向右、向下都失败就把自己从 <code>path</code> 撤掉回溯；标记保证每个格子只试一次，复杂度才是 O(m·n)。</li><li>标记是安全的：只能向右/向下走，一个格子到不了终点，换条路来也到不了。</li><li>递归成功时路径已在 <code>path</code> 里（按题面顺序从 (0,0) 到右下角）；整体失败返回空数组。</li><li>起点或终点本身是障碍，自然返回空。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m·n)，空间复杂度 O(m·n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; pathWithObstacles(<span class="k">int</span>[][] obstacleGrid) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> m = obstacleGrid.length, n = obstacleGrid[<span class="n">0</span>].length;</span><span class="ln"><span class="no">6</span>        <span class="k">boolean</span>[][] dead = <span class="k">new</span> <span class="k">boolean</span>[m][n];</span><span class="ln"><span class="no">7</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; path = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="c">// 找到就返回 true，路径留在 path 里</span></span><span class="ln"><span class="no">9</span>        <span class="k">if</span> (find(obstacleGrid, dead, path, <span class="n">0</span>, <span class="n">0</span>)) <span class="k">return</span> path;</span><span class="ln"><span class="no">10</span>        <span class="k">return</span> <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="c">// 从 (r,c) 找一条到右下角的路：先右后下；走不通的格子记住，不再重试</span></span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="k">boolean</span> find(<span class="k">int</span>[][] g, <span class="k">boolean</span>[][] dead, <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; path, <span class="k">int</span> r, <span class="k">int</span> c) {</span><span class="ln"><span class="no">15</span>        <span class="k">int</span> m = g.length, n = g[<span class="n">0</span>].length;</span><span class="ln"><span class="no">16</span>        <span class="k">if</span> (r == m || c == n || g[r][c] == <span class="n">1</span> || dead[r][c]) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">17</span>        dead[r][c] = <span class="k">true</span>;</span><span class="ln"><span class="no">18</span>        path.add(<span class="t">Arrays</span>.asList(r, c));</span><span class="ln"><span class="no">19</span>        <span class="k">if</span> ((r == m - <span class="n">1</span> &amp;&amp; c == n - <span class="n">1</span>) || find(g, dead, path, r, c + <span class="n">1</span>) || find(g, dead, path, r + <span class="n">1</span>, c)) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">20</span>        <span class="c">// 两个方向都死：把自己从路径里撤掉（dead 已标记，不会再来第二次）</span></span><span class="ln"><span class="no">21</span>        path.remove(path.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>设想有个机器人坐在一个网格的左上角，网格 r 行 c 列。机器人只能向下或向右移动，但不能走到一些被禁止的网格（有障碍物）。设计一种算法，寻找机器人从左上角移动到右下角的路径。</p>
+
+<p><img src="../assets/img/504cdc79817f.png" style="height: 183px; width: 400px;" /></p>
+
+<p>网格中的障碍物和空位置分别用 <code>1</code> 和 <code>0</code> 来表示。</p>
+
+<p>返回一条可行的路径，路径由经过的网格的行号和列号组成。左上角为 0 行 0 列。如果没有可行的路径，返回空数组。</p>
+
+<p><strong>示例&nbsp;1：</strong></p>
+
+<pre>
+<strong>输入：</strong>[[0,0,0],[0,1,0],[0,0,0]]
+<strong>输出：</strong>[[0,0],[0,1],[0,2],[1,2],[2,2]]
+<strong>解释：
+</strong>输入中标粗的位置即为输出表示的路径，即
+0 行 0 列（左上角） -&gt; 0 行 1 列 -&gt; 0 行 2 列 -&gt; 1 行 2 列 -&gt; 2 行 2 列（右下角）</pre>
+
+<p><strong>说明：</strong><em>r</em>&nbsp;和 <em>c </em>的值均不超过 100。</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<Integer>> pathWithObstacles(int[][] obstacleGrid) {", "        int m = obstacleGrid.length, n = obstacleGrid[0].length;", "        boolean[][] dead = new boolean[m][n];", "        List<List<Integer>> path = new ArrayList<>();", "        // 找到就返回 true，路径留在 path 里", "        if (find(obstacleGrid, dead, path, 0, 0)) return path;", "        return new ArrayList<>();", "    }", "", "    // 从 (r,c) 找一条到右下角的路：先右后下；走不通的格子记住，不再重试", "    private boolean find(int[][] g, boolean[][] dead, List<List<Integer>> path, int r, int c) {", "        int m = g.length, n = g[0].length;", "        if (r == m || c == n || g[r][c] == 1 || dead[r][c]) return false;", "        dead[r][c] = true;", "        path.add(Arrays.asList(r, c));", "        if ((r == m - 1 && c == n - 1) || find(g, dead, path, r, c + 1) || find(g, dead, path, r + 1, c)) return true;", "        // 两个方向都死：把自己从路径里撤掉（dead 已标记，不会再来第二次）", "        path.remove(path.size() - 1);", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 08.02 迷路的机器人 —— 图解：复刻 Solution.java 的「DFS 先右后下 + 死路标记」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[0, 0, 1], [0, 1, 1], [0, 0, 0]] };
+
+function trace(input) {
+  var g = input.grid;
+  var m = g.length, n = g[0].length;
+  var dead = [];
+  var path = [];
+  var frames = [];
+  var fired = { start: false, back: false, recover: false, goal: false, nopass: false };
+
+  var ENTER = 'dead[r][c] = true;';
+  var STEP = 'if ((r == m - 1 && c == n - 1) || find(g, dead, path, r, c + 1) || find(g, dead, path, r + 1, c)) return true;';
+  var BACK = 'path.remove(path.size() - 1);';
+  var NOPASS = 'return new ArrayList<>();';
+
+  function gridPanel(curRC, allDone) {
+    var marks = {}, r, c, k;
+    for (r = 0; r < m; r++) {
+      for (c = 0; c < n; c++) {
+        if (g[r][c] === 1) marks[r + ',' + c] = 'bad';       // 障碍
+        else if (dead[r * n + c]) marks[r + ',' + c] = 'dim'; // 确认走不通
+      }
+    }
+    for (k = 0; k < path.length; k++) marks[path[k][0] + ',' + path[k][1]] = allDone ? 'done' : 'win';
+    if (curRC) marks[curRC[0] + ',' + curRC[1]] = allDone ? 'done' : 'cur';
+    var rowLabels = [], colLabels = [], i;
+    for (i = 0; i < m; i++) rowLabels.push(String(i));
+    for (i = 0; i < n; i++) colLabels.push(String(i));
+    return Viz.grid(g, { title: '网格（灰 = 确认走不通，黄 = 当前路径）', marks: marks, rowLabels: rowLabels, colLabels: colLabels, corner: 'r＼c' });
+  }
+
+  function pathPanel(allDone) {
+    var marks = {};
+    for (var k = 0; k < path.length; k++) marks[k] = allDone ? 'done' : 'win';
+    return Viz.cells(path.map(function (p) { return p[0] + ',' + p[1]; }),
+      { title: '当前路径 path（行,列）', marks: marks });
+  }
+
+  function find(r, c) {
+    if (r === m || c === n || g[r][c] === 1 || dead[r * n + c]) return false;
+    dead[r * n + c] = true;
+    path.push([r, c]);
+    if (!fired.start) {
+      fired.start = true;
+      frames.push(Viz.frame(ENTER, '从 (0,0) 出发：只能向右或向下，先试右边', [gridPanel([r, c]), pathPanel()]));
+    } else if (fired.back && !fired.recover) {
+      fired.recover = true;
+      frames.push(Viz.frame(ENTER, '换到 (' + r + ',' + c + ') 继续：死路已标记，不会重踩',
+        [gridPanel([r, c]), pathPanel()]));
+    }
+    if (r === m - 1 && c === n - 1) {
+      if (!fired.goal) {
+        fired.goal = true;
+        frames.push(Viz.frame(STEP, '到达右下角 (' + r + ',' + c + ')：路径找齐，共 ' + path.length + ' 格',
+          [gridPanel(null, true), pathPanel(true)]));
+      }
+      return true;
+    }
+    if (find(r, c + 1) || find(r + 1, c)) return true;
+    path.pop();
+    if (!fired.back) {
+      fired.back = true;
+      frames.push(Viz.frame(BACK, '(' + r + ',' + c + ') 的右和下都走不通：撤出路径并标记为死路',
+        [gridPanel(null), pathPanel()]));
+    }
+    return false;
+  }
+
+  var ok = find(0, 0);
+  if (!ok && !fired.nopass) {
+    fired.nopass = true;
+    frames.push(Viz.frame(NOPASS, '所有路都试过：没有可行路径 → 返回空数组',
+      [gridPanel(null), pathPanel()]));
+  }
+  return { frames: frames, result: ok ? path.map(function (p) { return [p[0], p[1]]; }) : [] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

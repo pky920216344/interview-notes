@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>删除重复的电子邮箱 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1049 / 1159</span>
+  <nav class="pn"><a href="0993.html">上一篇</a><a href="0390.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">196. </span>删除重复的电子邮箱</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 1</li><li class="algo">SQL</li><li class="tag">数据库</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">自连接把「同邮箱且 id 更大」的行配出来直接 DELETE，保住每组最小 id。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>DELETE p1 FROM Person p1 JOIN Person p2</code>：p1 是被删方，条件 <code>同邮箱 AND p1.id &gt; p2.id</code>——每组只留 id 最小者。</li><li><strong>MySQL 的 DELETE 必须用 <code>DELETE 别名 FROM 表 别名 JOIN…</code> 语法</strong>（不能直接 DELETE FROM Person WHERE … IN 子查询引用同表，会报「不能在 FROM 里重新指定目标表」）。</li><li>想用窗口函数版本：先 <code>SELECT id FROM (SELECT id, ROW_NUMBER() OVER (PARTITION BY email ORDER BY id) rn FROM Person) t WHERE rn &gt; 1</code> 再 DELETE IN——同样需要包一层派生表绕过同表限制。</li><li>保留「最小 id」由 <code>p1.id &gt; p2.id</code> 的方向保证；等号去掉（自己和自己相等时跳过）。</li></ul></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)（索引可优化到近似 O(n)），空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 SQL 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span>-- 196（codetop 0196）删除重复的电子邮箱（MySQL）</span><span class="ln"><span class="no">2</span>-- 题意：Person(id 主键, email)。删除所有重复邮箱，只保留每个邮箱里 id 最小的那一行（必须写 DELETE 语句）。</span><span class="ln"><span class="no">3</span>-- 自连接找「同邮箱且 id 更大」的行删掉；两处比较用不同别名防同 id 自删。</span><span class="ln"><span class="no">4</span>DELETE p1 FROM Person p1</span><span class="ln"><span class="no">5</span>JOIN Person p2</span><span class="ln"><span class="no">6</span>     ON p1.email = p2.email</span><span class="ln"><span class="no">7</span>    AND p1.id &gt; p2.id;</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>表:&nbsp;<code>Person</code></p>
+
+<pre>
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| id          | int     |
+| email       | varchar |
++-------------+---------+
+id 是该表的主键列(具有唯一值的列)。
+该表的每一行包含一封电子邮件。电子邮件将不包含大写字母。
+</pre>
+
+
+
+<p>编写解决方案<strong> 删除</strong> 所有重复的电子邮件，只保留一个具有最小 <code>id</code> 的唯一电子邮件。</p>
+
+<p>（对于 SQL 用户，请注意你应该编写一个 <code>DELETE</code> 语句而不是 <code>SELECT</code> 语句。）</p>
+
+<p>（对于 Pandas 用户，请注意你应该直接修改 <code>Person</code> 表。）</p>
+
+<p>运行脚本后，显示的答案是 <code>Person</code> 表。驱动程序将首先编译并运行您的代码片段，然后再显示 <code>Person</code> 表。<code>Person</code> 表的最终顺序 <strong>无关紧要</strong> 。</p>
+
+<p>返回结果格式如下示例所示。</p>
+
+
+
+<p><strong class="example">示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> 
+Person 表:
++----+------------------+
+| id | email            |
++----+------------------+
+| 1  | john@example.com |
+| 2  | bob@example.com  |
+| 3  | john@example.com |
++----+------------------+
+<strong>输出:</strong> 
++----+------------------+
+| id | email            |
++----+------------------+
+| 1  | john@example.com |
+| 2  | bob@example.com  |
++----+------------------+
+<strong>解释:</strong> john@example.com重复两次。我们保留最小的Id = 1。</pre>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["-- 196（codetop 0196）删除重复的电子邮箱（MySQL）", "-- 题意：Person(id 主键, email)。删除所有重复邮箱，只保留每个邮箱里 id 最小的那一行（必须写 DELETE 语句）。", "-- 自连接找「同邮箱且 id 更大」的行删掉；两处比较用不同别名防同 id 自删。", "DELETE p1 FROM Person p1", "JOIN Person p2", "     ON p1.email = p2.email", "    AND p1.id > p2.id;"]}</script>
+
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

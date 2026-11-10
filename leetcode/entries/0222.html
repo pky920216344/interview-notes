@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>完全二叉树的节点个数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 253 / 1159</span>
+  <nav class="pn"><a href="0426.html">上一篇</a><a href="offer-11.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">222. </span>完全二叉树的节点个数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 18</li><li class="algo">深度优先搜索/递归</li><li class="aux">数学</li><li class="tag">位运算</li><li class="tag">树</li><li class="tag">二分查找</li><li class="tag">二叉树</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">完全树只比高：左右子树沿最左链量高，同高则左子树是满树（2^lh 个含根），只递归另一边，O(log²n)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>普通遍历是 O(n)；完全树的妙处：<strong>比一下左、右子树的高（各沿最左链数层数）就能判断哪边是满树</strong>。</li><li><code>lh == rh</code>：右子树的最左链也够到了最底层，说明最底层已铺满左子树 → 左子树是满树，<code>2^lh - 1</code> 个加根正好 <code>2^lh</code> 个，只需递归右子树。</li><li><code>lh != rh</code>：右边够不到底 → 右子树是满树，<code>2^rh</code> 个（含根），只需递归左子树。</li><li>每层只递归一边、每次量高 O(log n)，总共 <strong>O(log²n)</strong>；<code>1 &lt;&lt; h</code> 就是 <code>2^h</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log²n)，空间复杂度 O(log n)（递归栈）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> countNodes(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">3</span>        <span class="k">if</span> (root == <span class="k">null</span>) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">4</span>        <span class="c">// 高 = 沿最左链数的层数：左、右子树各量一次，只差 O(log n)</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span> lh = height(root.left), rh = height(root.right);</span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (lh == rh) {</span><span class="ln"><span class="no">7</span>            <span class="c">// 两边同高：左子树是满树，2^lh - 1 个加根正好 2^lh，右子树递归</span></span><span class="ln"><span class="no">8</span>            <span class="k">return</span> (<span class="n">1</span> &lt;&lt; lh) + countNodes(root.right);</span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="c">// 左比右高：右子树是满树，2^rh - 1 个加根正好 2^rh，左子树递归</span></span><span class="ln"><span class="no">11</span>        <span class="k">return</span> (<span class="n">1</span> &lt;&lt; rh) + countNodes(root.left);</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="c">// 沿最左链一路数到底，数出的层数就是子树的高</span></span><span class="ln"><span class="no">15</span>    <span class="k">private</span> <span class="k">int</span> height(<span class="t">TreeNode</span> p) {</span><span class="ln"><span class="no">16</span>        <span class="k">int</span> h = <span class="n">0</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">for</span> (; p != <span class="k">null</span>; p = p.left) h++;</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> h;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一棵<strong> 完全二叉树</strong> 的根节点 <code>root</code> ，求出该树的节点个数。</p>
+
+<p><a href="https://baike.baidu.com/item/%E5%AE%8C%E5%85%A8%E4%BA%8C%E5%8F%89%E6%A0%91/7773232?fr=aladdin">完全二叉树</a> 的定义如下：在完全二叉树中，除了最底层节点可能没填满外，其余每层节点数都达到最大值，并且最下面一层的节点都集中在该层最左边的若干位置。若最底层为第 <code>h</code> 层（从第 0 层开始），则该层包含 <code>1~&nbsp;2<sup>h</sup></code>&nbsp;个节点。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/772171d8f095.jpg" style="width: 372px; height: 302px;" />
+<pre>
+<strong>输入：</strong>root = [1,2,3,4,5,6]
+<strong>输出：</strong>6
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = []
+<strong>输出：</strong>0
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [1]
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中节点的数目范围是<code>[0, 5 * 10<sup>4</sup>]</code></li>
+	<li><code>0 &lt;= Node.val &lt;= 5 * 10<sup>4</sup></code></li>
+	<li>题目数据保证输入的树是 <strong>完全二叉树</strong></li>
+</ul>
+
+
+
+<p><strong>进阶：</strong>遍历树来统计节点是一种时间复杂度为 <code>O(n)</code> 的简单解决方案。你可以设计一个更快的算法吗？</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int countNodes(TreeNode root) {", "        if (root == null) return 0;", "        // 高 = 沿最左链数的层数：左、右子树各量一次，只差 O(log n)", "        int lh = height(root.left), rh = height(root.right);", "        if (lh == rh) {", "            // 两边同高：左子树是满树，2^lh - 1 个加根正好 2^lh，右子树递归", "            return (1 << lh) + countNodes(root.right);", "        }", "        // 左比右高：右子树是满树，2^rh - 1 个加根正好 2^rh，左子树递归", "        return (1 << rh) + countNodes(root.left);", "    }", "", "    // 沿最左链一路数到底，数出的层数就是子树的高", "    private int height(TreeNode p) {", "        int h = 0;", "        for (; p != null; p = p.left) h++;", "        return h;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 222. 完全二叉树的节点个数 —— 图解：复刻 Solution.java 的「两边比高，满的一边用公式」，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, 2, 3, 4, 5, 6] };
+
+function trace(input) {
+  var arr = input.root;
+  var frames = [];
+
+  // 建树：结点带 val、left、right 和层序下标 idx
+  function build(a) {
+    if (!a.length) return null;
+    var root = { val: a[0], left: null, right: null, idx: 0 };
+    var q = [root], i = 1;
+    while (q.length && i < a.length) {
+      var nd = q.shift();
+      if (i < a.length) { nd.left = { val: a[i], left: null, right: null, idx: i }; q.push(nd.left); i++; }
+      if (i < a.length) { nd.right = { val: a[i], left: null, right: null, idx: i }; q.push(nd.right); i++; }
+    }
+    return root;
+  }
+
+  function height(p) { var h = 0; for (; p !== null; p = p.left) h++; return h; }
+
+  // 收集子树里所有结点的层序下标，画「满树」高亮用
+  function nodesOf(nd, out) {
+    if (!nd) return out;
+    out.push(nd.idx);
+    nodesOf(nd.left, out);
+    nodesOf(nd.right, out);
+    return out;
+  }
+
+  var root = build(arr);
+  if (!root) return { frames: frames, result: 0 };
+
+  var settled = {};   // idx -> true：已经用公式数清的结点
+  var total = 0;
+  var shot = { root: false, split: false, leaf: false };
+
+  function treePanel(cur, final) {
+    var marks = {};
+    for (var k in settled) marks[k] = final ? 'done' : 'win';
+    if (cur) marks[cur.idx] = 'cur';
+    return Viz.tree(arr, { title: '完全二叉树（黄 = 已数清，橙 = 当前根）', marks: marks });
+  }
+  function varsPanel(lh, rh) {
+    return Viz.vars([
+      { name: 'lh（左链层数）', v: lh == null ? '—' : lh, cls: '' },
+      { name: 'rh（右链层数）', v: rh == null ? '—' : rh, cls: '' },
+      { name: '已数清', v: total, cls: 'chg' }
+    ]);
+  }
+  function snap(at, key, cur, lh, rh) {
+    frames.push(Viz.frame(at, key, [treePanel(cur, false), varsPanel(lh, rh)]));
+  }
+
+  function count(nd) {
+    if (nd === null) return 0;
+    var lh = height(nd.left), rh = height(nd.right);
+    if (nd.idx === 0 && !shot.root) {
+      shot.root = true;
+      snap('int lh = height(root.left), rh = height(root.right);',
+        '在根上量高：沿最左链数层数，左 ' + lh + ' 层、右 ' + rh + ' 层', nd, lh, rh);
+    }
+    if (lh === rh) {
+      // 左子树是满树：2^lh - 1 个加根正好 2^lh，右子树才要递归
+      total += (1 << lh);
+      nodesOf(nd.left, [nd.idx]).forEach(function (x) { settled[x] = true; });
+      if (nd.idx === 0) {
+        snap('return (1 << lh) + countNodes(root.right);',
+          '同高 → 左子树是满树：满 ' + ((1 << lh) - 1) + ' 个 + 根 = ' + (1 << lh) + '，再数右边', null, lh, rh);
+      } else if (!shot.leaf) {
+        shot.leaf = true;
+        snap('return (1 << lh) + countNodes(root.right);',
+          '结点 ' + nd.val + '：左右同高 → 左满 ' + ((1 << lh) - 1) + ' 个 + 根 = ' + (1 << lh), null, lh, rh);
+      }
+      return (1 << lh) + count(nd.right);
+    }
+    // 左比右高：右子树是满树，2^rh - 1 个加根正好 2^rh，左子树才要递归
+    total += (1 << rh);
+    nodesOf(nd.right, [nd.idx]).forEach(function (x) { settled[x] = true; });
+    if (nd.idx === 0) {
+      snap('return (1 << rh) + countNodes(root.left);',
+        '左比右高 → 右子树是满树：满 ' + ((1 << rh) - 1) + ' 个 + 根 = ' + (1 << rh) + '，再数左边', nd, lh, rh);
+    } else if (!shot.split) {
+      shot.split = true;
+      snap('return (1 << rh) + countNodes(root.left);',
+        '结点 ' + nd.val + '：左链 ' + lh + ' 层右链 ' + rh + ' 层 → 右满 ' + ((1 << rh) - 1) + ' 个 + 根 = ' + (1 << rh), nd, lh, rh);
+    }
+    return (1 << rh) + count(nd.left);
+  }
+
+  var result = count(root);
+
+  // 收尾：整棵树都数清了
+  for (var i = 0; i < arr.length; i++) settled[i] = true;
+  frames.push(Viz.frame('return (1 << lh) + countNodes(root.right);',
+    '满的部分用公式，零散的只递归一条路：共 ' + result + ' 个结点',
+    [treePanel(null, true), varsPanel(null, null)]));
+
+  return { frames: frames, result: result };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

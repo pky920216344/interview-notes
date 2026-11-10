@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>不同路径 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 187 / 1159</span>
+  <nav class="pn"><a href="0253.html">上一篇</a><a href="0673.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">63. </span>不同路径 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 28</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">一维滚动 DP：逐行扫，障碍格 dp 清 0，普通格 dp[j] += dp[j-1]（旧 dp[j] 是上面来的，dp[j-1] 是左边来的）。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[j]</code> 滚动存「走到当前行第 j 列的路径数」；起点是障碍直接 0。</li><li>障碍格：<code>dp[j] = 0</code>，这一格走不通，后面靠它的路全断。</li><li>普通格：<code>dp[j] += dp[j-1]</code>——加号左边旧值是<strong>上</strong>来的路，<code>dp[j-1]</code> 是<strong>左</strong>来的路。</li><li>答案在 <code>dp[n-1]</code>；第一列永远只有一条路（没障碍时），靠初值 <code>dp[0]=1</code> 传下去。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> uniquePathsWithObstacles(<span class="k">int</span>[][] obstacleGrid) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = obstacleGrid[<span class="n">0</span>].length;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[n];   <span class="c">// dp[j]：走到当前行第 j 列的路径数</span></span><span class="ln"><span class="no">5</span>        dp[<span class="n">0</span>] = obstacleGrid[<span class="n">0</span>][<span class="n">0</span>] == <span class="n">1</span> ? <span class="n">0</span> : <span class="n">1</span>;   <span class="c">// 起点是障碍就无路可走</span></span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span>[] row : obstacleGrid) {</span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">8</span>                <span class="k">if</span> (row[j] == <span class="n">1</span>) dp[j] = <span class="n">0</span>;          <span class="c">// 障碍格：路径数清零</span></span><span class="ln"><span class="no">9</span>                <span class="k">else</span> <span class="k">if</span> (j &gt; <span class="n">0</span>) dp[j] += dp[j - <span class="n">1</span>];  <span class="c">// 上（旧值）+ 左（本行新值）</span></span><span class="ln"><span class="no">10</span>            }</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="k">return</span> dp[n - <span class="n">1</span>];</span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个&nbsp;<code>m x n</code>&nbsp;的整数数组&nbsp;<code>grid</code>。一个机器人初始位于 <strong>左上角</strong>（即 <code>grid[0][0]</code>）。机器人尝试移动到 <strong>右下角</strong>（即 <code>grid[m - 1][n - 1]</code>）。机器人每次只能向下或者向右移动一步。</p>
+
+<p>网格中的障碍物和空位置分别用 <code>1</code> 和 <code>0</code> 来表示。机器人的移动路径中不能包含 <strong>任何</strong>&nbsp;有障碍物的方格。</p>
+
+<p>返回机器人能够到达右下角的不同路径数量。</p>
+
+<p>测试用例保证答案小于等于 <code>2 * 10<sup>9</sup></code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/35580418906a.jpg" />
+<pre>
+<strong>输入：</strong>obstacleGrid = [[0,0,0],[0,1,0],[0,0,0]]
+<strong>输出：</strong>2
+<strong>解释：</strong>3x3 网格的正中间有一个障碍物。
+从左上角到右下角一共有 <code>2</code> 条不同的路径：
+1. 向右 -&gt; 向右 -&gt; 向下 -&gt; 向下
+2. 向下 -&gt; 向下 -&gt; 向右 -&gt; 向右
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/1e1c68c27492.jpg" />
+<pre>
+<strong>输入：</strong>obstacleGrid = [[0,1],[0,0]]
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m ==&nbsp;obstacleGrid.length</code></li>
+	<li><code>n ==&nbsp;obstacleGrid[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 100</code></li>
+	<li><code>obstacleGrid[i][j]</code> 为 <code>0</code> 或 <code>1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int uniquePathsWithObstacles(int[][] obstacleGrid) {", "        int n = obstacleGrid[0].length;", "        int[] dp = new int[n];   // dp[j]：走到当前行第 j 列的路径数", "        dp[0] = obstacleGrid[0][0] == 1 ? 0 : 1;   // 起点是障碍就无路可走", "        for (int[] row : obstacleGrid) {", "            for (int j = 0; j < n; j++) {", "                if (row[j] == 1) dp[j] = 0;          // 障碍格：路径数清零", "                else if (j > 0) dp[j] += dp[j - 1];  // 上（旧值）+ 左（本行新值）", "            }", "        }", "        return dp[n - 1];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 63. 不同路径 II —— 图解：复刻 Solution.java 的「一维滚动 DP」，在 4 个关键时刻拍快照。
+// 代码滚动一维：dp[j] += dp[j-1]（旧 dp[j] 是「上」，新 dp[j-1] 是「左」）；图解画完整二维表看依赖。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[0, 0, 0], [0, 1, 0], [0, 0, 0]] };
+
+function trace(input) {
+  var g = input.grid;
+  var m = g.length, n = g[0].length;
+  var frames = [];
+
+  var A_INIT = 'dp[0] = obstacleGrid[0][0] == 1 ? 0 : 1;';
+  var A_OBS = 'if (row[j] == 1) dp[j] = 0;';
+  var A_SUM = 'else if (j > 0) dp[j] += dp[j - 1];';
+  var A_RET = 'return dp[n - 1];';
+
+  var rowsLbl = [], colsLbl = [];
+  for (var i0 = 0; i0 < m; i0++) rowsLbl.push(String(i0));
+  for (var j0 = 0; j0 < n; j0++) colsLbl.push(String(j0));
+
+  // 完整二维表 f[i][j]：走到 (i,j) 的路径数，和滚动一维算出的值一致
+  var f = [];
+  for (var i1 = 0; i1 < m; i1++) { f[i1] = []; for (var j1 = 0; j1 < n; j1++) f[i1][j1] = ''; }
+
+  function gridPanel(marks) {
+    return Viz.grid(f, {
+      title: 'f[i][j]：走到 (i,j) 的路径数（× 是障碍）', marks: marks || {},
+      rowLabels: rowsLbl, colLabels: colsLbl, corner: 'i＼j'
+    });
+  }
+
+  // 和 Java 一致地逐格递推；障碍格直接 0，普通格 = 上 + 左
+  for (var i = 0; i < m; i++) {
+    for (var j = 0; j < n; j++) {
+      if (g[i][j] === 1) { f[i][j] = 0; continue; }
+      var up = i > 0 ? f[i - 1][j] : 0;
+      var left = j > 0 ? f[i][j - 1] : 0;
+      f[i][j] = (i === 0 && j === 0) ? 1 : up + left;
+    }
+  }
+
+  // 关键帧 1：起点不是障碍，第 0 行只能一路向右，整行都是 1
+  if (g[0][0] === 0) {
+    var m1 = {};
+    for (var a = 0; a < n; a++) m1['0,' + a] = 'win';
+    frames.push(Viz.frame(A_INIT, '起点不是障碍：第 0 行只能一路向右，每格都是 1 条路', [gridPanel(m1)]));
+  }
+
+  // 关键帧 2：扫到障碍格，路径数清 0
+  var obs = null;
+  outer:
+  for (var i2 = 0; i2 < m; i2++) for (var j2 = 0; j2 < n; j2++) {
+    if (g[i2][j2] === 1 && !(i2 === 0 && j2 === 0)) { obs = [i2, j2]; break outer; }
+  }
+  if (obs) {
+    var m2 = {};
+    m2[obs[0] + ',' + obs[1]] = 'bad';
+    frames.push(Viz.frame(A_OBS, '障碍格 (' + obs[0] + ',' + obs[1] + ')：路径数直接清 0，谁也过不去', [gridPanel(m2)]));
+  }
+
+  // 关键帧 3：障碍右侧的格子「上 + 左」——左是 0，只剩上面来的路
+  if (obs && obs[1] + 1 < n && g[obs[0]][obs[1] + 1] === 0) {
+    var j3 = obs[1] + 1, i3 = obs[0];
+    var m3 = {};
+    if (i3 > 0) m3[(i3 - 1) + ',' + j3] = 'hit';
+    if (j3 > 0) m3[i3 + ',' + (j3 - 1)] = 'hit';
+    m3[i3 + ',' + j3] = 'new';
+    frames.push(Viz.frame(A_SUM, '(' + i3 + ',' + j3 + ')：上 ' + (i3 > 0 ? f[i3 - 1][j3] : 0) + ' + 左 ' + (j3 > 0 ? f[i3][j3 - 1] : 0) + ' = ' + f[i3][j3] + '，一维滚动就是 dp[j] += dp[j-1]', [gridPanel(m3)]));
+  }
+
+  // 结果帧：右下角
+  var m4 = {};
+  for (var x = 0; x < m; x++) for (var y = 0; y < n; y++) if (f[x][y] !== '') m4[x + ',' + y] = 'win';
+  m4[(m - 1) + ',' + (n - 1)] = 'done';
+  var result = f[m - 1][n - 1];
+  frames.push(Viz.frame(A_RET, '右下角 (' + (m - 1) + ',' + (n - 1) + ') = ' + result + '：就是能到终点的路径总数', [gridPanel(m4)]));
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>数组中的第K个最大元素 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 4 / 1159</span>
+  <nav class="pn"><a href="0206.html">上一篇</a><a href="0025.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">215. </span>数组中的第K个最大元素</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 608</li><li class="algo">分治</li><li class="tag">数组</li><li class="tag">分治</li><li class="tag">快速选择</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">快速选择：随机选基准，三向划分成「小于 / 等于 / 大于」三段，只钻进含目标下标的那一段，平均 O(n)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>第 <code>k</code> 大就是升序排好后下标 <code>n - k</code> 的数，记作 <code>target</code>；不用真排序，只要把它「选」出来。</li><li>每轮随机选一个 <code>pivot</code>，三向划分：<code>[lo, lt)</code> 小于，<code>[lt, gt]</code> 等于，<code>(gt, hi]</code> 大于。</li><li><code>target &lt; lt</code> 就只留左段（<code>hi = lt - 1</code>），<code>target &gt; gt</code> 就只留右段（<code>lo = gt + 1</code>），落在中间段直接返回 <code>pivot</code>。</li><li>必须三向：大量重复值时两向划分每轮只缩小一点，会退化成 <code>O(n^2)</code>；随机基准让期望是 <code>O(n)</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 平均 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> findKthLargest(<span class="k">int</span>[] nums, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="t">Random</span> rnd = <span class="k">new</span> <span class="t">Random</span>();</span><span class="ln"><span class="no">6</span>        <span class="c">// 第 k 大 = 升序排好后下标为 n - k 的数</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> target = nums.length - k;</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> lo = <span class="n">0</span>, hi = nums.length - <span class="n">1</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">while</span> (<span class="k">true</span>) {</span><span class="ln"><span class="no">10</span>            <span class="c">// 随机选基准，避免有序数组退化</span></span><span class="ln"><span class="no">11</span>            <span class="k">int</span> pivot = nums[lo + rnd.nextInt(hi - lo + <span class="n">1</span>)];</span><span class="ln"><span class="no">12</span>            <span class="c">// 三向划分，i 从左往右扫：</span></span><span class="ln"><span class="no">13</span>            <span class="c">// [lo, lt) 小于，[lt, i) 等于，(gt, hi] 大于</span></span><span class="ln"><span class="no">14</span>            <span class="k">int</span> lt = lo, i = lo, gt = hi;</span><span class="ln"><span class="no">15</span>            <span class="k">while</span> (i &lt;= gt) {</span><span class="ln"><span class="no">16</span>                <span class="k">if</span> (nums[i] &lt; pivot) swap(nums, lt++, i++);</span><span class="ln"><span class="no">17</span>                <span class="k">else</span> <span class="k">if</span> (nums[i] &gt; pivot) swap(nums, i, gt--);</span><span class="ln"><span class="no">18</span>                <span class="k">else</span> i++;</span><span class="ln"><span class="no">19</span>            }</span><span class="ln"><span class="no">20</span>            <span class="c">// target 落在哪一段，就只在那一段继续找</span></span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (target &lt; lt) hi = lt - <span class="n">1</span>;</span><span class="ln"><span class="no">22</span>            <span class="k">else</span> <span class="k">if</span> (target &gt; gt) lo = gt + <span class="n">1</span>;</span><span class="ln"><span class="no">23</span>            <span class="k">else</span> <span class="k">return</span> pivot;</span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span> </span><span class="ln"><span class="no">27</span>    <span class="k">private</span> <span class="k">void</span> swap(<span class="k">int</span>[] a, <span class="k">int</span> i, <span class="k">int</span> j) {</span><span class="ln"><span class="no">28</span>        <span class="k">int</span> t = a[i];</span><span class="ln"><span class="no">29</span>        a[i] = a[j];</span><span class="ln"><span class="no">30</span>        a[j] = t;</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定整数数组 <code>nums</code> 和整数 <code>k</code>，请返回数组中第 <code><strong>k</strong></code> 个最大的元素。</p>
+
+<p>请注意，你需要找的是数组排序后的第 <code>k</code> 个最大的元素，而不是第 <code>k</code> 个不同的元素。</p>
+
+<p>你必须设计并实现时间复杂度为 <code>O(n)</code> 的算法解决此问题。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> <code>[3,2,1,5,6,4],</code> k = 2
+<strong>输出:</strong> 5
+</pre>
+
+<p><strong>示例&nbsp;2:</strong></p>
+
+<pre>
+<strong>输入:</strong> <code>[3,2,3,1,2,4,5,5,6], </code>k = 4
+<strong>输出:</strong> 4</pre>
+
+
+
+<p><strong>提示： </strong></p>
+
+<ul>
+	<li><code>1 &lt;= k &lt;= nums.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>-10<sup>4</sup>&nbsp;&lt;= nums[i] &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int findKthLargest(int[] nums, int k) {", "        Random rnd = new Random();", "        // 第 k 大 = 升序排好后下标为 n - k 的数", "        int target = nums.length - k;", "        int lo = 0, hi = nums.length - 1;", "        while (true) {", "            // 随机选基准，避免有序数组退化", "            int pivot = nums[lo + rnd.nextInt(hi - lo + 1)];", "            // 三向划分，i 从左往右扫：", "            // [lo, lt) 小于，[lt, i) 等于，(gt, hi] 大于", "            int lt = lo, i = lo, gt = hi;", "            while (i <= gt) {", "                if (nums[i] < pivot) swap(nums, lt++, i++);", "                else if (nums[i] > pivot) swap(nums, i, gt--);", "                else i++;", "            }", "            // target 落在哪一段，就只在那一段继续找", "            if (target < lt) hi = lt - 1;", "            else if (target > gt) lo = gt + 1;", "            else return pivot;", "        }", "    }", "", "    private void swap(int[] a, int i, int j) {", "        int t = a[i];", "        a[i] = a[j];", "        a[j] = t;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 215. 数组中的第 K 个最大元素 —— 图解：复刻 Solution.java 的快速选择（三向划分），在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [7, 4, 6, 6, 1, 3, 7, 9], k: 3 };
+
+function trace(input) {
+  var a = input.nums.slice();      // Java 里原地改动 nums，这里同样只改自己的拷贝
+  var n = a.length;
+  var target = n - input.k;
+  var lo = 0, hi = n - 1;
+  var frames = [];
+  var rounds = 0;
+  var LEGEND = '青 小于基准　黄 等于基准　红 大于基准　淡 已丢掉';
+
+  function swap(x, y) { var t = a[x]; a[x] = a[y]; a[y] = t; }
+
+  // 刚选出基准、还没划分：只标出基准那一格，和 target 要找的下标
+  function pickPanel(p) {
+    var marks = {};
+    marks[p] = 'cur';
+    return Viz.cells(a, {
+      title: 'nums（target = n - k = ' + n + ' - ' + input.k + ' = ' + target + '）',
+      marks: marks,
+      pointers: [{ at: target, label: 'target', cls: 'p-tail' }],
+      range: { from: lo, to: hi, label: '[lo, hi] = [' + lo + ', ' + hi + ']' }
+    });
+  }
+
+  // 划分完：范围外变淡，范围内按 小于 / 等于 / 大于 三色；dir 说明下一步 L 左段 / R 右段 / E 命中
+  function donePanel(lt, gt, dir) {
+    var marks = {};
+    for (var x = 0; x < n; x++) {
+      if (x < lo || x > hi) marks[x] = 'dim';
+      else if (x < lt) marks[x] = 'win';
+      else if (x <= gt) marks[x] = dir === 'E' ? 'done' : 'cur';
+      else marks[x] = 'bad';
+    }
+    var range = null;
+    if (dir === 'L') range = { from: lo, to: lt - 1, label: '继续' };
+    if (dir === 'R') range = { from: gt + 1, to: hi, label: '继续' };
+    return Viz.cells(a, {
+      title: LEGEND,
+      marks: marks,
+      pointers: [
+        { at: lt, label: 'lt', cls: 'p-left' },
+        { at: gt, label: 'gt', cls: 'p-right' },
+        { at: target, label: 'target', cls: 'p-tail' }
+      ],
+      range: range
+    });
+  }
+
+  while (true) {
+    var p = lo + ((hi - lo) >> 1);   // Java 里随机选；图解固定取中间那格，方便复现
+    var pivot = a[p];
+    if (rounds === 0) {
+      frames.push(Viz.frame('int pivot = nums[lo + rnd.nextInt(hi - lo + 1)];',
+        '第 ' + input.k + ' 大 = 升序下标 ' + target + ' 的数；在 [' + lo + ', ' + hi + '] 里先选基准 ' + pivot,
+        [pickPanel(p)]));
+    }
+
+    var lt = lo, i = lo, gt = hi;
+    while (i <= gt) {
+      if (a[i] < pivot) { swap(lt, i); lt++; i++; }
+      else if (a[i] > pivot) { swap(i, gt); gt--; }
+      else i++;
+    }
+    var dir = target < lt ? 'L' : target > gt ? 'R' : 'E';
+
+    rounds++;
+    if (rounds <= 3) {
+      var where = dir === 'L' ? '左段' : '右段';
+      var key, at;
+      if (dir === 'E') {
+        at = 'else return pivot;';
+        key = '[' + lo + ', ' + hi + '] 选基准 ' + pivot + '：下标 ' + target + ' 在「= 基准」段，答案就是 ' + pivot;
+      } else {
+        at = dir === 'L' ? 'if (target < lt) hi = lt - 1;' : 'else if (target > gt) lo = gt + 1;';
+        key = (rounds === 1 ? '三向划分：小于 | 等于 | 大于 ' + pivot + '；' : '[' + lo + ', ' + hi + '] 选基准 ' + pivot + '，') +
+          '下标 ' + target + ' 在' + where + '，只找它';
+      }
+      frames.push(Viz.frame(at, key, [donePanel(lt, gt, dir)]));
+    }
+
+    if (dir === 'L') hi = lt - 1;
+    else if (dir === 'R') lo = gt + 1;
+    else return { frames: frames, result: pivot };
+  }
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

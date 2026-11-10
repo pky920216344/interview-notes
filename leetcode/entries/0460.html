@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LFU 缓存 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 110 / 1159</span>
+  <nav class="pn"><a href="0047.html">上一篇</a><a href="0055.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">460. </span>LFU 缓存</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 58</li><li class="algo">设计</li><li class="aux">哈希表</li><li class="aux">链表</li><li class="tag">设计</li><li class="tag">哈希表</li><li class="tag">链表</li><li class="tag">双向链表</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">双哈希：key→结点 O(1) 定位，freq→双向链表桶按频次分桶、桶内按新近排序；维护 minFreq，满了取 minFreq 桶尾淘汰。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>keyMap[key] → 结点</code>；<code>freqMap[freq] → 桶（双向链表）</code>，<code>head.next</code> 最新、<code>tail.prev</code> 最久没用——平局淘汰取桶尾。</li><li><code>get</code>/<code>put</code> 命中：<code>freq + 1</code>，从旧桶摘下、头插新桶；旧桶空了删桶，若它正是 <code>minFreq</code> 桶则 <code>minFreq++</code>（新桶里必有它，不会指空）。</li><li><code>put</code> 新键且已满：从 <code>minFreq</code> 桶尾删结点，同步删 <code>keyMap</code>；新结点 <code>freq=1</code> 头插 1 号桶，<code>minFreq = 1</code>。</li><li>升频每次只 +1，所以 <code>minFreq</code> 只在这两处维护即可，全程 O(1)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1)，空间复杂度 O(capacity)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">LFUCache</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">class</span> <span class="t">Node</span> {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> key, val, freq;</span><span class="ln"><span class="no">6</span>        <span class="t">Node</span> prev, next;</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>        <span class="t">Node</span>(<span class="k">int</span> key, <span class="k">int</span> val) { <span class="k">this</span>.key = key; <span class="k">this</span>.val = val; }</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="c">// 一个频次一个桶（双向链表）：head.next 最新，tail.prev 最久没用</span></span><span class="ln"><span class="no">12</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">class</span> <span class="t">Bucket</span> {</span><span class="ln"><span class="no">13</span>        <span class="k">final</span> <span class="t">Node</span> head = <span class="k">new</span> <span class="t">Node</span>(<span class="n">0</span>, <span class="n">0</span>), tail = <span class="k">new</span> <span class="t">Node</span>(<span class="n">0</span>, <span class="n">0</span>);</span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span>        <span class="t">Bucket</span>() {</span><span class="ln"><span class="no">16</span>            head.next = tail;</span><span class="ln"><span class="no">17</span>            tail.prev = head;</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span> </span><span class="ln"><span class="no">20</span>        <span class="k">boolean</span> isEmpty() { <span class="k">return</span> head.next == tail; }</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>        <span class="k">void</span> addFirst(<span class="t">Node</span> node) {</span><span class="ln"><span class="no">23</span>            node.next = head.next;</span><span class="ln"><span class="no">24</span>            node.prev = head;</span><span class="ln"><span class="no">25</span>            head.next.prev = node;</span><span class="ln"><span class="no">26</span>            head.next = node;</span><span class="ln"><span class="no">27</span>        }</span><span class="ln"><span class="no">28</span> </span><span class="ln"><span class="no">29</span>        <span class="k">void</span> remove(<span class="t">Node</span> node) {</span><span class="ln"><span class="no">30</span>            node.prev.next = node.next;</span><span class="ln"><span class="no">31</span>            node.next.prev = node.prev;</span><span class="ln"><span class="no">32</span>        }</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span> </span><span class="ln"><span class="no">35</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span> capacity;</span><span class="ln"><span class="no">36</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Node</span>&gt; keyMap = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">37</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Bucket</span>&gt; freqMap = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">38</span>    <span class="k">private</span> <span class="k">int</span> minFreq;</span><span class="ln"><span class="no">39</span> </span><span class="ln"><span class="no">40</span>    <span class="k">public</span> <span class="t">LFUCache</span>(<span class="k">int</span> capacity) { <span class="k">this</span>.capacity = capacity; }</span><span class="ln"><span class="no">41</span> </span><span class="ln"><span class="no">42</span>    <span class="k">public</span> <span class="k">int</span> get(<span class="k">int</span> key) {</span><span class="ln"><span class="no">43</span>        <span class="t">Node</span> node = keyMap.get(key);</span><span class="ln"><span class="no">44</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">45</span>        promote(node);   <span class="c">// 摸一下就升频：摘出旧桶，头插进新桶</span></span><span class="ln"><span class="no">46</span>        <span class="k">return</span> node.val;</span><span class="ln"><span class="no">47</span>    }</span><span class="ln"><span class="no">48</span> </span><span class="ln"><span class="no">49</span>    <span class="k">public</span> <span class="k">void</span> put(<span class="k">int</span> key, <span class="k">int</span> value) {</span><span class="ln"><span class="no">50</span>        <span class="t">Node</span> node = keyMap.get(key);</span><span class="ln"><span class="no">51</span>        <span class="k">if</span> (node != <span class="k">null</span>) {</span><span class="ln"><span class="no">52</span>            node.val = value;</span><span class="ln"><span class="no">53</span>            promote(node);</span><span class="ln"><span class="no">54</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">55</span>        }</span><span class="ln"><span class="no">56</span>        <span class="k">if</span> (keyMap.size() == capacity) {</span><span class="ln"><span class="no">57</span>            <span class="c">// 满了：minFreq 桶的尾部 = 次数最少里最久没用的</span></span><span class="ln"><span class="no">58</span>            <span class="t">Bucket</span> bucket = freqMap.get(minFreq);</span><span class="ln"><span class="no">59</span>            <span class="t">Node</span> victim = bucket.tail.prev;</span><span class="ln"><span class="no">60</span>            bucket.remove(victim);</span><span class="ln"><span class="no">61</span>            <span class="k">if</span> (bucket.isEmpty()) freqMap.remove(minFreq);</span><span class="ln"><span class="no">62</span>            keyMap.remove(victim.key);</span><span class="ln"><span class="no">63</span>        }</span><span class="ln"><span class="no">64</span>        node = <span class="k">new</span> <span class="t">Node</span>(key, value);</span><span class="ln"><span class="no">65</span>        node.freq = <span class="n">1</span>;</span><span class="ln"><span class="no">66</span>        keyMap.put(key, node);</span><span class="ln"><span class="no">67</span>        bucketOf(<span class="n">1</span>).addFirst(node);</span><span class="ln"><span class="no">68</span>        minFreq = <span class="n">1</span>;</span><span class="ln"><span class="no">69</span>    }</span><span class="ln"><span class="no">70</span> </span><span class="ln"><span class="no">71</span>    <span class="c">// 频次 +1：旧桶空了就删桶；若它就是 minFreq 桶，minFreq 升到 freq+1（新桶里必有它，不会指空）</span></span><span class="ln"><span class="no">72</span>    <span class="k">private</span> <span class="k">void</span> promote(<span class="t">Node</span> node) {</span><span class="ln"><span class="no">73</span>        <span class="t">Bucket</span> old = freqMap.get(node.freq);</span><span class="ln"><span class="no">74</span>        old.remove(node);</span><span class="ln"><span class="no">75</span>        <span class="k">if</span> (old.isEmpty()) {</span><span class="ln"><span class="no">76</span>            freqMap.remove(node.freq);</span><span class="ln"><span class="no">77</span>            <span class="k">if</span> (minFreq == node.freq) minFreq++;</span><span class="ln"><span class="no">78</span>        }</span><span class="ln"><span class="no">79</span>        node.freq++;</span><span class="ln"><span class="no">80</span>        bucketOf(node.freq).addFirst(node);</span><span class="ln"><span class="no">81</span>    }</span><span class="ln"><span class="no">82</span> </span><span class="ln"><span class="no">83</span>    <span class="k">private</span> <span class="t">Bucket</span> bucketOf(<span class="k">int</span> freq) {</span><span class="ln"><span class="no">84</span>        <span class="k">return</span> freqMap.computeIfAbsent(freq, f -&gt; <span class="k">new</span> <span class="t">Bucket</span>());</span><span class="ln"><span class="no">85</span>    }</span><span class="ln"><span class="no">86</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>请你为 <a href="https://baike.baidu.com/item/%E7%BC%93%E5%AD%98%E7%AE%97%E6%B3%95">最不经常使用（LFU）</a>缓存算法设计并实现数据结构。</p>
+
+<p>实现 <code>LFUCache</code> 类：</p>
+
+<ul>
+	<li><code>LFUCache(int capacity)</code> - 用数据结构的容量&nbsp;<code>capacity</code> 初始化对象</li>
+	<li><code>int get(int key)</code>&nbsp;- 如果键&nbsp;<code>key</code> 存在于缓存中，则获取键的值，否则返回 <code>-1</code> 。</li>
+	<li><code>void put(int key, int value)</code>&nbsp;- 如果键&nbsp;<code>key</code> 已存在，则变更其值；如果键不存在，请插入键值对。当缓存达到其容量&nbsp;<code>capacity</code> 时，则应该在插入新项之前，移除最不经常使用的项。在此问题中，当存在平局（即两个或更多个键具有相同使用频率）时，应该去除 <strong>最久未使用</strong> 的键。</li>
+</ul>
+
+<p>为了确定最不常使用的键，可以为缓存中的每个键维护一个 <strong>使用计数器</strong> 。使用计数最小的键是最久未使用的键。</p>
+
+<p>当一个键首次插入到缓存中时，它的使用计数器被设置为 <code>1</code> (由于 put 操作)。对缓存中的键执行 <code>get</code> 或 <code>put</code> 操作，使用计数器的值将会递增。</p>
+
+<p>函数 <code>get</code> 和 <code>put</code> 必须以 <code>O(1)</code> 的平均时间复杂度运行。</p>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+["LFUCache", "put", "put", "get", "put", "get", "get", "put", "get", "get", "get"]
+[[2], [1, 1], [2, 2], [1], [3, 3], [2], [3], [4, 4], [1], [3], [4]]
+<strong>输出：</strong>
+[null, null, null, 1, null, -1, 3, null, -1, 3, 4]
+
+<strong>解释：</strong>
+// cnt(x) = 键 x 的使用计数
+// cache=[] 将显示最后一次使用的顺序（最左边的元素是最近的）
+LFUCache lfu = new LFUCache(2);
+lfu.put(1, 1);   // cache=[1,_], cnt(1)=1
+lfu.put(2, 2);   // cache=[2,1], cnt(2)=1, cnt(1)=1
+lfu.get(1);      // 返回 1
+                 // cache=[1,2], cnt(2)=1, cnt(1)=2
+lfu.put(3, 3);   // 去除键 2 ，因为 cnt(2)=1 ，使用计数最小
+                 // cache=[3,1], cnt(3)=1, cnt(1)=2
+lfu.get(2);      // 返回 -1（未找到）
+lfu.get(3);      // 返回 3
+                 // cache=[3,1], cnt(3)=2, cnt(1)=2
+lfu.put(4, 4);   // 去除键 1 ，1 和 3 的 cnt 相同，但 1 最久未使用
+                 // cache=[4,3], cnt(4)=1, cnt(3)=2
+lfu.get(1);      // 返回 -1（未找到）
+lfu.get(3);      // 返回 3
+                 // cache=[3,4], cnt(4)=1, cnt(3)=3
+lfu.get(4);      // 返回 4
+                 // cache=[3,4], cnt(4)=2, cnt(3)=3</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= capacity&nbsp;&lt;= 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= key &lt;= 10<sup>5</sup></code></li>
+	<li><code>0 &lt;= value &lt;= 10<sup>9</sup></code></li>
+	<li>最多调用 <code>2 * 10<sup>5</sup></code> 次 <code>get</code> 和 <code>put</code> 方法</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class LFUCache {", "    private static class Node {", "        int key, val, freq;", "        Node prev, next;", "", "        Node(int key, int val) { this.key = key; this.val = val; }", "    }", "", "    // 一个频次一个桶（双向链表）：head.next 最新，tail.prev 最久没用", "    private static class Bucket {", "        final Node head = new Node(0, 0), tail = new Node(0, 0);", "", "        Bucket() {", "            head.next = tail;", "            tail.prev = head;", "        }", "", "        boolean isEmpty() { return head.next == tail; }", "", "        void addFirst(Node node) {", "            node.next = head.next;", "            node.prev = head;", "            head.next.prev = node;", "            head.next = node;", "        }", "", "        void remove(Node node) {", "            node.prev.next = node.next;", "            node.next.prev = node.prev;", "        }", "    }", "", "    private final int capacity;", "    private final Map<Integer, Node> keyMap = new HashMap<>();", "    private final Map<Integer, Bucket> freqMap = new HashMap<>();", "    private int minFreq;", "", "    public LFUCache(int capacity) { this.capacity = capacity; }", "", "    public int get(int key) {", "        Node node = keyMap.get(key);", "        if (node == null) return -1;", "        promote(node);   // 摸一下就升频：摘出旧桶，头插进新桶", "        return node.val;", "    }", "", "    public void put(int key, int value) {", "        Node node = keyMap.get(key);", "        if (node != null) {", "            node.val = value;", "            promote(node);", "            return;", "        }", "        if (keyMap.size() == capacity) {", "            // 满了：minFreq 桶的尾部 = 次数最少里最久没用的", "            Bucket bucket = freqMap.get(minFreq);", "            Node victim = bucket.tail.prev;", "            bucket.remove(victim);", "            if (bucket.isEmpty()) freqMap.remove(minFreq);", "            keyMap.remove(victim.key);", "        }", "        node = new Node(key, value);", "        node.freq = 1;", "        keyMap.put(key, node);", "        bucketOf(1).addFirst(node);", "        minFreq = 1;", "    }", "", "    // 频次 +1：旧桶空了就删桶；若它就是 minFreq 桶，minFreq 升到 freq+1（新桶里必有它，不会指空）", "    private void promote(Node node) {", "        Bucket old = freqMap.get(node.freq);", "        old.remove(node);", "        if (old.isEmpty()) {", "            freqMap.remove(node.freq);", "            if (minFreq == node.freq) minFreq++;", "        }", "        node.freq++;", "        bucketOf(node.freq).addFirst(node);", "    }", "", "    private Bucket bucketOf(int freq) {", "        return freqMap.computeIfAbsent(freq, f -> new Bucket());", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 460. LFU 缓存 —— 图解：复刻 Solution.java 的「key→结点 + freq→双向链表桶」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { capacity: 2, ops: [['put', 1, 1], ['put', 2, 2], ['get', 1], ['put', 3, 3], ['get', 2], ['get', 3], ['put', 4, 4], ['get', 1], ['get', 3], ['get', 4]] };
+
+function trace(input) {
+  var cap = input.capacity, ops = input.ops;
+  var keyMap = {};    // key -> 结点 {key, val, freq}
+  var freqMap = {};   // freq -> 结点数组，[0] 最新，末尾最旧（对应桶的 head 侧 → tail 侧）
+  var minFreq = 0;
+  var out = [];
+  var frames = [];
+  var shown = { second: false, promote: false, evict: false, bump: false, evict2: false };
+  var inserts = 0, evictions = 0;
+
+  var NEW = 'minFreq = 1;';
+  var PROMOTE = 'bucketOf(node.freq).addFirst(node);';
+  var EVICT = 'keyMap.remove(victim.key);';
+  var BUMP = 'if (minFreq == node.freq) minFreq++;';
+
+  function bucketOf(f) {
+    if (!freqMap[f]) freqMap[f] = [];
+    return freqMap[f];
+  }
+
+  function keyTable() {
+    var keys = Object.keys(keyMap).map(Number).sort(function (a, b) { return a - b; });
+    return Viz.table('keyMap：key → 值（频次）', keys.map(function (k) {
+      return { k: String(k), v: keyMap[k].val + ' · f' + keyMap[k].freq };
+    }));
+  }
+  function bucketPanels(marksByFreq) {
+    var panels = [];
+    Object.keys(freqMap).map(Number).sort(function (a, b) { return a - b; }).forEach(function (f) {
+      var arr = freqMap[f];
+      var edges = [];
+      for (var i = 0; i + 1 < arr.length; i++) edges.push([i, i + 1]);
+      var pointers = [{ at: 0, label: 'head·新', cls: 'p-head' }];
+      if (arr.length > 1) pointers.push({ at: arr.length - 1, label: 'tail·旧', cls: 'p-tail' });
+      panels.push(Viz.list(arr.map(function (nd) { return String(nd.key); }), {
+        title: 'freq=' + f + ' 桶（左新右旧）', edges: edges, nulls: [arr.length - 1],
+        marks: (marksByFreq && marksByFreq[f]) || {}, pointers: pointers
+      }));
+    });
+    return panels;
+  }
+  function snap(at, key, marksByFreq) {
+    frames.push(Viz.frame(at, key, [keyTable()].concat(bucketPanels(marksByFreq))));
+  }
+
+  // 频次 +1：旧桶摘下（空了删桶、minFreq 可能升级），头插新桶
+  function promote(node) {
+    var oldF = node.freq;
+    var old = freqMap[oldF];
+    old.splice(old.indexOf(node), 1);
+    var bumped = false;
+    if (old.length === 0) {
+      delete freqMap[oldF];
+      if (minFreq === oldF) {
+        minFreq = oldF + 1;
+        bumped = true;
+      }
+    }
+    node.freq++;
+    bucketOf(node.freq).unshift(node);
+    if (!shown.promote) {
+      shown.promote = true;
+      snap(PROMOTE, 'get(' + node.key + ') 命中：freq 升到 ' + node.freq + '，头插进 freq=' + node.freq + ' 的桶', null);
+    }
+    if (bumped && !shown.bump) {
+      shown.bump = true;
+      snap(BUMP, 'freq=' + oldF + ' 的桶空了就删桶：minFreq 升到 ' + minFreq, null);
+    }
+  }
+
+  ops.forEach(function (op) {
+    var k = op[1];
+    if (op[0] === 'get') {
+      var node = keyMap[k];
+      if (!node) { out.push(-1); return; }
+      promote(node);
+      out.push(node.val);
+      return;
+    }
+    var v = op[2];
+    var node = keyMap[k];
+    if (node) {           // 已有：更新值并升频
+      node.val = v;
+      promote(node);
+      return;
+    }
+    if (keyMapSize() === cap) {   // 满了：minFreq 桶尾 = 次数最少里最久没用的
+      var bucket = freqMap[minFreq];
+      var victim = bucket[bucket.length - 1];
+      var vm = {};
+      vm[minFreq] = {};
+      vm[minFreq][bucket.length - 1] = 'bad';
+      evictions++;
+      if (!shown.evict || (evictions === 2 && !shown.evict2)) {
+        if (evictions === 1) shown.evict = true; else shown.evict2 = true;
+        snap(EVICT, evictions === 1
+          ? '再放就要超容量：从 minFreq=' + minFreq + ' 桶尾淘汰 ' + victim.key + '（同频里最久没用）'
+          : '又满了：minFreq=' + minFreq + '，桶尾的 ' + victim.key + ' 比同频的更旧，淘汰它', vm);
+      }
+      bucket.pop();
+      if (bucket.length === 0) delete freqMap[minFreq];
+      delete keyMap[victim.key];
+    }
+    var fresh = { key: k, val: v, freq: 1 };
+    keyMap[k] = fresh;
+    bucketOf(1).unshift(fresh);
+    minFreq = 1;
+    inserts++;
+    if (inserts === 2 && !shown.second) {
+      shown.second = true;
+      snap(NEW, '第二个新键也进了 freq=1 桶：同频桶里新放的排前面', null);
+    }
+  });
+
+  return { frames: frames, result: out };
+
+  function keyMapSize() { return Object.keys(keyMap).length; }
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

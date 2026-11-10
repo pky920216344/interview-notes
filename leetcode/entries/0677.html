@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>键值映射 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1075 / 1159</span>
+  <nav class="pn"><a href="0849.html">上一篇</a><a href="1361.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">677. </span>键值映射</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">字典树</li><li class="aux">哈希表</li><li class="tag">设计</li><li class="tag">字典树</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">Trie 结点存「经过它的 key 的值之和」：插入沿途累加，查前缀走到终点直接读 sum。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>insert</code> 沿路径给每个结点 <code>sum += val</code>：任何前缀的答案就挂在对应结点上，<code>sum</code> 查询只需下行。</li><li>重复插入是<strong>替换</strong>不是叠加：先算 <code>delta = 新值 − 旧值</code>（旧值查哈希表），沿途加的是 <code>delta</code>。</li><li><code>sum</code> 下行途中走到空孩子说明没有这个前缀，返回 0。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 insert/sum O(key 长度)，空间复杂度 O(所有 key 字符数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">MapSum</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 力扣模板把 sum 的参数写作小写 string（笔误），可编译签名是 String</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">class</span> <span class="t">Node</span> {</span><span class="ln"><span class="no">6</span>        <span class="t">Node</span>[] child = <span class="k">new</span> <span class="t">Node</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> sum;   <span class="c">// 经过（或落在）此结点的 key 的 value 总和</span></span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Node</span> root = <span class="k">new</span> <span class="t">Node</span>();</span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt; vals = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();   <span class="c">// 已收录 key → 值</span></span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="k">public</span> <span class="t">MapSum</span>() {</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="k">public</span> <span class="k">void</span> insert(<span class="t">String</span> key, <span class="k">int</span> val) {</span><span class="ln"><span class="no">17</span>        <span class="c">// 重复插入是「替换」：沿途补上新旧值的差，前缀和就仍然正确</span></span><span class="ln"><span class="no">18</span>        <span class="k">int</span> delta = val - vals.getOrDefault(key, <span class="n">0</span>);</span><span class="ln"><span class="no">19</span>        vals.put(key, val);</span><span class="ln"><span class="no">20</span>        <span class="t">Node</span> cur = root;</span><span class="ln"><span class="no">21</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; key.length(); i++) {</span><span class="ln"><span class="no">22</span>            <span class="k">int</span> c = key.charAt(i) - <span class="s">'a'</span>;</span><span class="ln"><span class="no">23</span>            <span class="k">if</span> (cur.child[c] == <span class="k">null</span>) cur.child[c] = <span class="k">new</span> <span class="t">Node</span>();</span><span class="ln"><span class="no">24</span>            cur = cur.child[c];</span><span class="ln"><span class="no">25</span>            cur.sum += delta;</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span> </span><span class="ln"><span class="no">29</span>    <span class="c">// 模板原文：public int sum(string prefix) {</span></span><span class="ln"><span class="no">30</span>    <span class="k">public</span> <span class="k">int</span> sum(<span class="t">String</span> prefix) {</span><span class="ln"><span class="no">31</span>        <span class="t">Node</span> cur = root;</span><span class="ln"><span class="no">32</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; prefix.length() &amp;&amp; cur != <span class="k">null</span>; i++)</span><span class="ln"><span class="no">33</span>            cur = cur.child[prefix.charAt(i) - <span class="s">'a'</span>];</span><span class="ln"><span class="no">34</span>        <span class="k">return</span> cur == <span class="k">null</span> ? <span class="n">0</span> : cur.sum;</span><span class="ln"><span class="no">35</span>    }</span><span class="ln"><span class="no">36</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>设计一个 map ，满足以下几点:</p>
+
+<ul>
+	<li>字符串表示键，整数表示值</li>
+	<li>返回具有前缀等于给定字符串的键的值的总和</li>
+</ul>
+
+<p>实现一个 <code>MapSum</code> 类：</p>
+
+<ul>
+	<li><code>MapSum()</code> 初始化 <code>MapSum</code> 对象</li>
+	<li><code>void insert(String key, int val)</code> 插入 <code>key-val</code> 键值对，字符串表示键 <code>key</code> ，整数表示值 <code>val</code> 。如果键 <code>key</code> 已经存在，那么原来的键值对&nbsp;<code>key-value</code>&nbsp;将被替代成新的键值对。</li>
+	<li><code>int sum(string prefix)</code> 返回所有以该前缀 <code>prefix</code> 开头的键 <code>key</code> 的值的总和。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+["MapSum", "insert", "sum", "insert", "sum"]
+[[], ["apple", 3], ["ap"], ["app", 2], ["ap"]]
+<strong>输出：</strong>
+[null, null, 3, null, 5]
+
+<strong>解释：</strong>
+MapSum mapSum = new MapSum();
+mapSum.insert("apple", 3);  
+mapSum.sum("ap");           // 返回 3 (<u>ap</u>ple = 3)
+mapSum.insert("app", 2);    
+mapSum.sum("ap");           // 返回 5 (<u>ap</u>ple + <u>ap</u>p = 3 + 2 = 5)
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= key.length, prefix.length &lt;= 50</code></li>
+	<li><code>key</code> 和 <code>prefix</code> 仅由小写英文字母组成</li>
+	<li><code>1 &lt;= val &lt;= 1000</code></li>
+	<li>最多调用 <code>50</code> 次 <code>insert</code> 和 <code>sum</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class MapSum {", "    // 力扣模板把 sum 的参数写作小写 string（笔误），可编译签名是 String", "    private class Node {", "        Node[] child = new Node[26];", "        int sum;   // 经过（或落在）此结点的 key 的 value 总和", "    }", "", "    private final Node root = new Node();", "    private final Map<String, Integer> vals = new HashMap<>();   // 已收录 key → 值", "", "    public MapSum() {", "    }", "", "    public void insert(String key, int val) {", "        // 重复插入是「替换」：沿途补上新旧值的差，前缀和就仍然正确", "        int delta = val - vals.getOrDefault(key, 0);", "        vals.put(key, val);", "        Node cur = root;", "        for (int i = 0; i < key.length(); i++) {", "            int c = key.charAt(i) - 'a';", "            if (cur.child[c] == null) cur.child[c] = new Node();", "            cur = cur.child[c];", "            cur.sum += delta;", "        }", "    }", "", "    // 模板原文：public int sum(string prefix) {", "    public int sum(String prefix) {", "        Node cur = root;", "        for (int i = 0; i < prefix.length() && cur != null; i++)", "            cur = cur.child[prefix.charAt(i) - 'a'];", "        return cur == null ? 0 : cur.sum;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 677. 键值映射 —— 图解：复刻 Solution.java 的「Trie 沿途累加 sum」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { ops: [['insert', 'apple', 3], ['sum', 'ap'], ['insert', 'app', 2], ['sum', 'ap']] };
+
+function trace(input) {
+  var root = { sum: 0, ch: {} };
+  var vals = {};        // 已收录 key → 值，重复插入时算差值
+  var nodes = [];       // 已存在的 Trie 结点（按路径串），表格展示用
+  var out = [];
+  var frames = [];
+  var INS = 'cur.sum += delta;';
+  var SUM = 'return cur == null ? 0 : cur.sum;';
+
+  function triePanel(marks) {
+    var rows = nodes.map(function (p) {
+      return { k: p, v: 'sum=' + get(root, p).sum, cls: marks && marks[p] ? marks[p] : '' };
+    });
+    return Viz.table('Trie 结点：路径前缀 → 该结点的 sum', rows, { hint: '沿途每个结点都存「经过它的 key 的值的和」' });
+  }
+  function get(node, path) {
+    for (var i = 0; i < path.length && node; i++) node = node.ch[path.charAt(i)];
+    return node || null;
+  }
+  function snap(at, key, marks) { frames.push(Viz.frame(at, key, [triePanel(marks)])); }
+
+  input.ops.forEach(function (op, i) {
+    if (op[0] === 'insert') {
+      var key = op[1], val = op[2];
+      var delta = val - (key in vals ? vals[key] : 0);
+      vals[key] = val;
+      var node = root, path = '', mk = {};
+      for (var j = 0; j < key.length; j++) {
+        path += key.charAt(j);
+        if (!node.ch[key.charAt(j)]) {
+          node.ch[key.charAt(j)] = { sum: 0, ch: {} };
+          nodes.push(path);
+        }
+        node = node.ch[key.charAt(j)];
+        node.sum += delta;
+        mk[path] = 'chg';
+      }
+      if (i === 0) snap(INS, '插入 apple：沿途 a、ap、app、appl、apple 各 +3', mk);
+      if (i === 2) snap(INS, '再插 app：已有结点补上新旧差值 2，不动更深的结点', mk);
+    } else {
+      var p = op[1];
+      var hit = get(root, p);
+      out.push(hit ? hit.sum : 0);
+      var mk2 = {};
+      mk2[p] = 'hit';
+      if (i === 1) snap(SUM, '查前缀 ap：走到 ap 结点取 sum，得 3', mk2);
+      if (i === 3) snap(SUM, '再查 ap：apple 和 app 的和都挂在路径上，得 5', mk2);
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

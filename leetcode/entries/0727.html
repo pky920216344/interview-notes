@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最小窗口子序列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 810 / 1159</span>
+  <nav class="pn"><a href="0880.html">上一篇</a><a href="0342.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">727. </span>最小窗口子序列</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">双指针</li><li class="aux">贪心</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="tag">滑动窗口</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">右端贪心扫 s 跟住 t，t 匹配完就从终点回缩找最晚起点，得到该终点的最短窗口；记录最优后从起点+1 重新起配。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>j</code> 是 t 里下一个要匹配的下标：<code>s[i]==t[j]</code> 才 <code>j++</code>——贪心保证第一次凑满的位置是<strong>最早的终点</strong>。</li><li>凑满后从终点往回走，<code>p</code> 从 t 尾往前<strong>双边同时回退</strong>：每段 t 字符都尽量靠右对上 → 找到结束在这点的<strong>最短窗口</strong>。</li><li>记录后<strong>从窗口起点重新起配</strong>（<code>i = start, j = 0</code>，循环再 <code>i++</code>）：更短的窗口只会结束在更右边。</li><li>整个过程每个字符只被少数几遍扫描；没有任何合法窗口时返回 <code>""</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·m) 最坏，通常近似 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">String</span> minWindow(<span class="t">String</span> s, <span class="t">String</span> t) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = s.length(), m = t.length();</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> bestL = -<span class="n">1</span>, bestLen = n + <span class="n">1</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> i = <span class="n">0</span>, j = <span class="n">0</span>;   <span class="c">// i 扫 s；j 是 t 里下一个要匹配的下标</span></span><span class="ln"><span class="no">6</span>        <span class="k">while</span> (i &lt; n) {</span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (s.charAt(i) == t.charAt(j)) {</span><span class="ln"><span class="no">8</span>                j++;</span><span class="ln"><span class="no">9</span>                <span class="k">if</span> (j == m) {              <span class="c">// t 在 i 处匹配完：回缩找最晚（最短）的起点</span></span><span class="ln"><span class="no">10</span>                    <span class="k">int</span> end = i;</span><span class="ln"><span class="no">11</span>                    <span class="k">int</span> p = m - <span class="n">1</span>;</span><span class="ln"><span class="no">12</span>                    <span class="k">while</span> (p &gt;= <span class="n">0</span>) {       <span class="c">// 从 t 尾往前贪心回配，起点尽量靠右</span></span><span class="ln"><span class="no">13</span>                        <span class="k">if</span> (s.charAt(i) == t.charAt(p)) p--;</span><span class="ln"><span class="no">14</span>                        i--;</span><span class="ln"><span class="no">15</span>                    }</span><span class="ln"><span class="no">16</span>                    <span class="k">int</span> start = i + <span class="n">1</span>;</span><span class="ln"><span class="no">17</span>                    <span class="k">if</span> (end - start + <span class="n">1</span> &lt; bestLen) { bestLen = end - start + <span class="n">1</span>; bestL = start; }</span><span class="ln"><span class="no">18</span>                    i = start;             <span class="c">// 从窗口起点重新起配（循环末尾 i++ 落到 start+1）</span></span><span class="ln"><span class="no">19</span>                    j = <span class="n">0</span>;</span><span class="ln"><span class="no">20</span>                }</span><span class="ln"><span class="no">21</span>            }</span><span class="ln"><span class="no">22</span>            i++;</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> bestL &lt; <span class="n">0</span> ? <span class="s">""</span> : s.substring(bestL, bestL + bestLen);</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public String minWindow(String s, String t) {", "        int n = s.length(), m = t.length();", "        int bestL = -1, bestLen = n + 1;", "        int i = 0, j = 0;   // i 扫 s；j 是 t 里下一个要匹配的下标", "        while (i < n) {", "            if (s.charAt(i) == t.charAt(j)) {", "                j++;", "                if (j == m) {              // t 在 i 处匹配完：回缩找最晚（最短）的起点", "                    int end = i;", "                    int p = m - 1;", "                    while (p >= 0) {       // 从 t 尾往前贪心回配，起点尽量靠右", "                        if (s.charAt(i) == t.charAt(p)) p--;", "                        i--;", "                    }", "                    int start = i + 1;", "                    if (end - start + 1 < bestLen) { bestLen = end - start + 1; bestL = start; }", "                    i = start;             // 从窗口起点重新起配（循环末尾 i++ 落到 start+1）", "                    j = 0;", "                }", "            }", "            i++;", "        }", "        return bestL < 0 ? \"\" : s.substring(bestL, bestL + bestLen);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 727. 最小窗口子序列 —— 图解：复刻 Solution.java 的「贪心匹配 + 回缩找起点」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'abcdebdde', t: 'bde' };
+
+function trace(input) {
+  var s = input.s, t = input.t;
+  var n = s.length, m = t.length;
+  var frames = [];
+
+  function sPanel(marks, si, label) {
+    var pointers = si == null ? [] : [{ at: si, label: label || 'i', cls: 'p-right' }];
+    return Viz.cells(s.split(''), { title: 's（扫主串）', marks: marks || {}, pointers: pointers });
+  }
+  function tPanel(pi, label) {
+    var pointers = pi == null ? [] : [{ at: pi, label: label || 'j', cls: 'p-cur' }];
+    return Viz.cells(t.split(''), { title: 't（要盖住的子序列）', pointers: pointers });
+  }
+  function vars(extra) {
+    var items = [];
+    (extra || []).forEach(function (e) { items.push(e); });
+    return Viz.vars(items);
+  }
+  function snap(at, key, sMarks, si, sLabel, tIdx, tLabel, extra) {
+    frames.push(Viz.frame(at, key, [sPanel(sMarks, si, sLabel), tPanel(tIdx, tLabel), vars(extra)]));
+  }
+
+  var bestL = -1, bestLen = n + 1;
+  var i = 0, j = 0;
+  var fired = { match: false, back: false, done: false };
+
+  snap('if (s.charAt(i) == t.charAt(j)) {',
+    '开局：i 从头扫 s，j 指着 t 的开头，s[i]==t[j] 时 j 才前进', {}, 0, null, 0, 'j');
+
+  while (i < n) {
+    if (s[i] === t[j]) {
+      j++;
+      if (j === m) {
+        var end = i;
+        if (!fired.match) {
+          fired.match = true;
+          var wm = {}; wm[end] = 'cur';
+          snap('if (j == m) {',
+            't 的最后一个字符在 i=' + end + ' 对上：贪心匹配完成，准备回缩找起点',
+            wm, end, 'end', j - 1, 'j');
+        }
+        var p = m - 1;
+        while (p >= 0) {
+          if (s[i] === t[p]) p--;
+          if (!fired.back && p === m - 2 && m >= 2) {
+            fired.back = true;
+            var bm = {}; bm[end] = 'win';
+            snap('while (p >= 0) {',
+              '回缩：p 从 t 尾往前、i 从 end 往回，双边同时退，t 的字符逐个对上',
+              bm, i, 'i', p + 1, 'p');
+          }
+          i--;
+        }
+        var start = i + 1;
+        if (end - start + 1 < bestLen) { bestLen = end - start + 1; bestL = start; }
+        if (!fired.done) {
+          fired.done = true;
+          var dm = {};
+          for (var k = start; k <= end; k++) dm[k] = 'done';
+          snap('if (end - start + 1 < bestLen) { bestLen = end - start + 1; bestL = start; }',
+            '起点定在 ' + start + '：窗口 [' + start + ', ' + end + '] = 「' + s.slice(start, end + 1) + '」，是结束在 ' + end + ' 的最短窗口',
+            dm, start, 'i', null, null);
+        }
+        i = start;   // 从窗口起点重新起配
+        j = 0;
+      }
+    }
+    i++;
+  }
+
+  snap('return bestL < 0 ? "" : s.substring(bestL, bestL + bestLen);',
+    bestL < 0 ? '扫完没凑出完整 t：返回空串'
+              : '扫完：最短窗口是下标 ' + bestL + ' 起、「' + s.slice(bestL, bestL + bestLen) + '」，长度 ' + bestLen,
+    (function () { var fm = {}; if (bestL >= 0) for (var k = bestL; k < bestL + bestLen; k++) fm[k] = 'done'; return fm; })(),
+    null, null, null, null);
+
+  return { frames: frames, result: bestL < 0 ? '' : s.slice(bestL, bestL + bestLen) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

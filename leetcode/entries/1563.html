@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>石子游戏 V · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1143 / 1159</span>
+  <nav class="pn"><a href="0717.html">上一篇</a><a href="0588.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1563. </span>石子游戏 V</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">动态规划</li><li class="aux">前缀和/差分</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">动态规划</li><li class="tag">博弈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">区间 DP：枚举切点 k，本轮得分为较小一侧的和，并在剩下的小侧继续博弈；前缀和 O(1) 求两侧和。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i][j]</code>：面对 <code>[i..j]</code> 的先手最大得分；只剩一块石子时为 0。</li><li>前缀和 <code>pre</code> 让两侧区间和 O(1) 可得；<code>len</code> 从 2 到 n 按长度递增填表。</li><li>切点 k：左小得 <code>left + dp[i][k]</code>，右小得 <code>right + dp[k+1][j]</code>，相等两边都试取最大。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n³)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> stoneGameV(<span class="k">int</span>[] stoneValue) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = stoneValue.length;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] pre = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];               <span class="c">// pre[i] = 前 i 个石子的和</span></span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) pre[i + <span class="n">1</span>] = pre[i] + stoneValue[i];</span><span class="ln"><span class="no">6</span>        <span class="c">// dp[i][j]：面对区间 [i..j] 的先手能拿到的最大得分</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[][] dp = <span class="k">new</span> <span class="k">int</span>[n][n];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> len = <span class="n">2</span>; len &lt;= n; len++) {</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i + len &lt;= n; i++) {</span><span class="ln"><span class="no">10</span>                <span class="k">int</span> j = i + len - <span class="n">1</span>;</span><span class="ln"><span class="no">11</span>                <span class="k">for</span> (<span class="k">int</span> k = i; k &lt; j; k++) {     <span class="c">// 左段 [i..k]，右段 [k+1..j]</span></span><span class="ln"><span class="no">12</span>                    <span class="k">int</span> left = pre[k + <span class="n">1</span>] - pre[i], right = pre[j + <span class="n">1</span>] - pre[k + <span class="n">1</span>];</span><span class="ln"><span class="no">13</span>                    <span class="c">// Bob 扔掉大的一侧：Alice 得小侧的和，在小侧继续博弈</span></span><span class="ln"><span class="no">14</span>                    <span class="k">int</span> best;</span><span class="ln"><span class="no">15</span>                    <span class="k">if</span> (left &lt; right) best = left + dp[i][k];</span><span class="ln"><span class="no">16</span>                    <span class="k">else</span> <span class="k">if</span> (left &gt; right) best = right + dp[k + <span class="n">1</span>][j];</span><span class="ln"><span class="no">17</span>                    <span class="k">else</span> best = <span class="t">Math</span>.max(left + dp[i][k], right + dp[k + <span class="n">1</span>][j]);</span><span class="ln"><span class="no">18</span>                    dp[i][j] = <span class="t">Math</span>.max(dp[i][j], best);</span><span class="ln"><span class="no">19</span>                }</span><span class="ln"><span class="no">20</span>            }</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> dp[<span class="n">0</span>][n - <span class="n">1</span>];</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>几块石子 <strong>排成一行</strong> ，每块石子都有一个关联值，关联值为整数，由数组 <code>stoneValue</code> 给出。</p>
+
+<p>游戏中的每一轮：Alice 会将这行石子分成两个 <strong>非空行</strong>（即，左侧行和右侧行）；Bob 负责计算每一行的值，即此行中所有石子的值的总和。Bob 会丢弃值最大的行，Alice 的得分为剩下那行的值（每轮累加）。如果两行的值相等，Bob 让 Alice 决定丢弃哪一行。下一轮从剩下的那一行开始。</p>
+
+<p>只 <strong>剩下一块石子</strong> 时，游戏结束。Alice 的分数最初为 <strong><code>0</code></strong> 。</p>
+
+<p>返回 <strong>Alice 能够获得的最大分数</strong><em> 。</em></p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>stoneValue = [6,2,3,4,5,5]
+<strong>输出：</strong>18
+<strong>解释：</strong>在第一轮中，Alice 将行划分为 [6，2，3]，[4，5，5] 。左行的值是 11 ，右行的值是 14 。Bob 丢弃了右行，Alice 的分数现在是 11 。
+在第二轮中，Alice 将行分成 [6]，[2，3] 。这一次 Bob 扔掉了左行，Alice 的分数变成了 16（11 + 5）。
+最后一轮 Alice 只能将行分成 [2]，[3] 。Bob 扔掉右行，Alice 的分数现在是 18（16 + 2）。游戏结束，因为这行只剩下一块石头了。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>stoneValue = [7,7,7,7,7,7,7]
+<strong>输出：</strong>28
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>stoneValue = [4]
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= stoneValue.length &lt;= 500</code></li>
+	<li><code>1 &lt;=&nbsp;stoneValue[i] &lt;= 10<sup>6</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int stoneGameV(int[] stoneValue) {", "        int n = stoneValue.length;", "        int[] pre = new int[n + 1];               // pre[i] = 前 i 个石子的和", "        for (int i = 0; i < n; i++) pre[i + 1] = pre[i] + stoneValue[i];", "        // dp[i][j]：面对区间 [i..j] 的先手能拿到的最大得分", "        int[][] dp = new int[n][n];", "        for (int len = 2; len <= n; len++) {", "            for (int i = 0; i + len <= n; i++) {", "                int j = i + len - 1;", "                for (int k = i; k < j; k++) {     // 左段 [i..k]，右段 [k+1..j]", "                    int left = pre[k + 1] - pre[i], right = pre[j + 1] - pre[k + 1];", "                    // Bob 扔掉大的一侧：Alice 得小侧的和，在小侧继续博弈", "                    int best;", "                    if (left < right) best = left + dp[i][k];", "                    else if (left > right) best = right + dp[k + 1][j];", "                    else best = Math.max(left + dp[i][k], right + dp[k + 1][j]);", "                    dp[i][j] = Math.max(dp[i][j], best);", "                }", "            }", "        }", "        return dp[0][n - 1];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1563. 石子游戏 V —— 图解：区间 DP，dp[i][j]=先手在 [i..j] 的最大得分，按切点拿小侧、在大侧继续。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { stoneValue: [6, 2, 3] };
+
+function trace(input) {
+  var v = input.stoneValue;
+  var n = v.length;
+  var pre = [0];
+  for (var i = 0; i < n; i++) pre.push(pre[i] + v[i]);
+
+  var dp = [];
+  for (var r = 0; r < n; r++) dp.push(new Array(n).fill(0));
+  var frames = [];
+
+  function prePanel() {
+    return Viz.cells(pre, { title: 'pre：前缀和（两侧区间和都能 O(1) 算）' });
+  }
+  function gridPanel(marks) {
+    var rl = [], cl = [];
+    for (var t = 0; t < n; t++) { rl.push('i=' + t); cl.push('j=' + t); }
+    var rows = dp.map(function (row) { return row.map(String); });
+    return Viz.grid(rows, { title: 'dp[i][j]：先手在 [i..j] 的最大得分', rowLabels: rl, colLabels: cl, marks: marks || {} });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+  function snap(at, key, marks, items) {
+    frames.push(Viz.frame(at, key, [prePanel(), gridPanel(marks), varsPanel(items)]));
+  }
+  function cellMark(r, c, cls) { var m = {}; m[r + ',' + c] = cls; return m; }
+
+  snap('pre[i + 1] = pre[i] + stoneValue[i];', '先备好前缀和；单块石子时无得分为 0，dp 对角线全是 0', null,
+    [{ name: 'n=' + n, v: '区间从 len=2 开始填', cls: '' }]);
+
+  for (var len = 2; len <= n; len++) {
+    for (var i2 = 0; i2 + len <= n; i2++) {
+      var j = i2 + len - 1;
+      var bestK = -1, bestVal = 0, info = '';
+      for (var k = i2; k < j; k++) {
+        var left = pre[k + 1] - pre[i2], right = pre[j + 1] - pre[k + 1];
+        var take;
+        if (left < right) take = left + dp[i2][k];
+        else if (left > right) take = right + dp[k + 1][j];
+        else take = Math.max(left + dp[i2][k], right + dp[k + 1][j]);
+        if (take > bestVal) {
+          bestVal = take;
+          info = 'k=' + k + '：小侧和 ' + Math.min(left, right) + ' + 剩下的小侧继续 ' + (left <= right ? dp[i2][k] : dp[k + 1][j]);
+        }
+      }
+      dp[i2][j] = bestVal;
+      if (len === 2 && i2 === 0) {
+        snap('int left = pre[k + 1] - pre[i], right = pre[j + 1] - pre[k + 1];',
+          'len=2 起步：[6|2] 左 6 大 → 只得右边的 2', cellMark(i2, j, 'new'),
+          [{ name: 'dp[0][1]', v: '2（Bob 扔大的，Alice 拿小的）', cls: 'chg' }]);
+      }
+      if (len === n && i2 === 0 && n >= 3) {
+        snap('if (left < right) best = left + dp[i][k];',
+          '整段 [0..' + j + ']：枚举切点 k，最优 ' + info + '，dp=' + bestVal, cellMark(i2, j, 'new'),
+          [{ name: 'dp[0][' + j + ']', v: String(bestVal), cls: 'done' }]);
+      }
+    }
+  }
+
+  snap('return dp[0][n - 1];', '整行石子的答案就在 dp[0][n-1]：' + dp[0][n - 1], cellMark(0, n - 1, 'done'),
+    [{ name: 'ans', v: String(dp[0][n - 1]), cls: 'done' }]);
+
+  return { frames: frames, result: dp[0][n - 1] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

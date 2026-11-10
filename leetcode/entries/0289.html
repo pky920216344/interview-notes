@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>生命游戏 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 993 / 1159</span>
+  <nav class="pn"><a href="1212.html">上一篇</a><a href="0741.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">289. </span>生命游戏</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">模拟</li><li class="aux">位运算</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="tag">模拟</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">原地双状态编码：下一代状态写进第二位，低位保留当前状态；扫完全部格子再统一右移一位结算。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>坑只有一个：所有细胞<strong>同时</strong>更新，直接覆盖会让后面的格子数到新状态。</li><li>用第二位存下一代：下代活就 <code>board[i][j] |= 2</code>，低位原样不动。</li><li>数邻居时 <code>&amp; 1</code> 只看低位，读到的永远是当前状态，互不干扰。</li><li>四条规则并成一句：活细胞有 2~3 个活邻居就活，死细胞恰好 3 个活邻居就复活；全写完 <code>&gt;&gt;= 1</code> 统一落位。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">void</span> gameOfLife(<span class="k">int</span>[][] board) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = board.length, n = board[<span class="n">0</span>].length;</span><span class="ln"><span class="no">4</span>        <span class="c">// 第一遍：下一代状态写进第二位，低位保留当前状态</span></span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">6</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">7</span>                <span class="k">int</span> live = countLive(board, i, j);</span><span class="ln"><span class="no">8</span>                <span class="k">boolean</span> next = board[i][j] == <span class="n">1</span> ? (live == <span class="n">2</span> || live == <span class="n">3</span>) : live == <span class="n">3</span>;</span><span class="ln"><span class="no">9</span>                <span class="k">if</span> (next) board[i][j] |= <span class="n">2</span>;</span><span class="ln"><span class="no">10</span>            }</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="c">// 第二遍：整体右移一位，第二代落位，原地完成</span></span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++)</span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++)</span><span class="ln"><span class="no">15</span>                board[i][j] &gt;&gt;= <span class="n">1</span>;</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="c">// 数八邻居的活细胞数：&amp; 1 只看低位，不受第二位干扰</span></span><span class="ln"><span class="no">19</span>    <span class="k">private</span> <span class="k">int</span> countLive(<span class="k">int</span>[][] b, <span class="k">int</span> i, <span class="k">int</span> j) {</span><span class="ln"><span class="no">20</span>        <span class="k">int</span> cnt = <span class="n">0</span>;</span><span class="ln"><span class="no">21</span>        <span class="k">for</span> (<span class="k">int</span> di = -<span class="n">1</span>; di &lt;= <span class="n">1</span>; di++)</span><span class="ln"><span class="no">22</span>            <span class="k">for</span> (<span class="k">int</span> dj = -<span class="n">1</span>; dj &lt;= <span class="n">1</span>; dj++) {</span><span class="ln"><span class="no">23</span>                <span class="k">if</span> (di == <span class="n">0</span> &amp;&amp; dj == <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">24</span>                <span class="k">int</span> r = i + di, c = j + dj;</span><span class="ln"><span class="no">25</span>                <span class="k">if</span> (r &gt;= <span class="n">0</span> &amp;&amp; r &lt; b.length &amp;&amp; c &gt;= <span class="n">0</span> &amp;&amp; c &lt; b[<span class="n">0</span>].length) cnt += b[r][c] &amp; <span class="n">1</span>;</span><span class="ln"><span class="no">26</span>            }</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> cnt;</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>根据&nbsp;<a href="https://baike.baidu.com/item/%E7%94%9F%E5%91%BD%E6%B8%B8%E6%88%8F/2926434?fr=aladdin" target="_blank">百度百科</a>&nbsp;，&nbsp;<strong>生命游戏</strong>&nbsp;，简称为 <strong>生命</strong> ，是英国数学家约翰·何顿·康威在 1970 年发明的细胞自动机。</p>
+
+<p>给定一个包含 <code>m × n</code>&nbsp;个格子的面板，每一个格子都可以看成是一个细胞。每个细胞都具有一个初始状态： <code>1</code> 即为 <strong>活细胞</strong> （live），或 <code>0</code> 即为 <strong>死细胞</strong> （dead）。每个细胞与其八个相邻位置（水平，垂直，对角线）的细胞都遵循以下四条生存定律：</p>
+
+<ol>
+	<li>如果活细胞周围八个位置的活细胞数少于两个，则该位置活细胞死亡；</li>
+	<li>如果活细胞周围八个位置有两个或三个活细胞，则该位置活细胞仍然存活；</li>
+	<li>如果活细胞周围八个位置有超过三个活细胞，则该位置活细胞死亡；</li>
+	<li>如果死细胞周围正好有三个活细胞，则该位置死细胞复活；</li>
+</ol>
+
+<p>下一个状态是通过将上述规则同时应用于当前状态下的每个细胞所形成的，其中细胞的出生和死亡是 <strong>同时</strong> 发生的。给你 <code>m x n</code> 网格面板 <code>board</code> 的当前状态，返回下一个状态。</p>
+
+<p>给定当前&nbsp;<code>board</code>&nbsp;的状态，<strong>更新</strong>&nbsp;<code>board</code>&nbsp;到下一个状态。</p>
+
+<p><strong>注意</strong> 你不需要返回任何东西。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/ee6b1ca64901.jpg" />
+<pre>
+<strong>输入：</strong>board = [[0,1,0],[0,0,1],[1,1,1],[0,0,0]]
+<strong>输出：</strong>[[0,0,0],[1,0,1],[0,1,1],[0,1,0]]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/0bd294dc477f.jpg" />
+<pre>
+<strong>输入：</strong>board = [[1,1],[1,0]]
+<strong>输出：</strong>[[1,1],[1,1]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == board.length</code></li>
+	<li><code>n == board[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 25</code></li>
+	<li><code>board[i][j]</code> 为 <code>0</code> 或 <code>1</code></li>
+</ul>
+
+
+
+<p><strong>进阶：</strong></p>
+
+<ul>
+	<li>你可以使用原地算法解决本题吗？请注意，面板上所有格子需要同时被更新：你不能先更新某些格子，然后使用它们的更新后的值再更新其他格子。</li>
+	<li>本题中，我们使用二维数组来表示面板。原则上，面板是无限的，但当活细胞侵占了面板边界时会造成问题。你将如何解决这些问题？</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public void gameOfLife(int[][] board) {", "        int m = board.length, n = board[0].length;", "        // 第一遍：下一代状态写进第二位，低位保留当前状态", "        for (int i = 0; i < m; i++) {", "            for (int j = 0; j < n; j++) {", "                int live = countLive(board, i, j);", "                boolean next = board[i][j] == 1 ? (live == 2 || live == 3) : live == 3;", "                if (next) board[i][j] |= 2;", "            }", "        }", "        // 第二遍：整体右移一位，第二代落位，原地完成", "        for (int i = 0; i < m; i++)", "            for (int j = 0; j < n; j++)", "                board[i][j] >>= 1;", "    }", "", "    // 数八邻居的活细胞数：& 1 只看低位，不受第二位干扰", "    private int countLive(int[][] b, int i, int j) {", "        int cnt = 0;", "        for (int di = -1; di <= 1; di++)", "            for (int dj = -1; dj <= 1; dj++) {", "                if (di == 0 && dj == 0) continue;", "                int r = i + di, c = j + dj;", "                if (r >= 0 && r < b.length && c >= 0 && c < b[0].length) cnt += b[r][c] & 1;", "            }", "        return cnt;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 289. 生命游戏 —— 图解：复刻 Solution.java 的「第二位编码 + 统一右移结算」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { board: [[0, 1, 0], [0, 0, 1], [1, 1, 1], [0, 0, 0]] };
+
+function trace(input) {
+  var board = input.board;
+  var m = board.length, n = board[0].length;
+  var orig = board.map(function (r) { return r.slice(); });   // 初始局面，画图用
+  var frames = [];
+  var isStory = m === 4 && n === 3;
+
+  function gridPanel(vals, marks, title) {
+    return Viz.grid(vals.map(function (r) { return r.map(String); }), { title: title, marks: marks || {} });
+  }
+  function liveMarks(r, c) {   // (r,c) 的活邻居高亮 win，自己高亮 cur
+    var marks = {};
+    for (var di = -1; di <= 1; di++)
+      for (var dj = -1; dj <= 1; dj++) {
+        if (di === 0 && dj === 0) continue;
+        var rr = r + di, cc = c + dj;
+        if (rr >= 0 && rr < m && cc >= 0 && cc < n && orig[rr][cc] === 1) marks[rr + ',' + cc] = 'win';
+      }
+    marks[r + ',' + c] = 'cur';
+    return marks;
+  }
+
+  var NEXT = 'boolean next = board[i][j] == 1 ? (live == 2 || live == 3) : live == 3;';
+  var WRITE = 'if (next) board[i][j] |= 2;';
+  var SHIFT = 'board[i][j] >>= 1;';
+
+  for (var i = 0; i < m; i++) {
+    for (var j = 0; j < n; j++) {
+      var live = 0;   // 与 Java 的 countLive 一致：只数低位
+      for (var di = -1; di <= 1; di++)
+        for (var dj = -1; dj <= 1; dj++) {
+          if (di === 0 && dj === 0) continue;
+          var r = i + di, c = j + dj;
+          if (r >= 0 && r < m && c >= 0 && c < n) live += board[r][c] & 1;
+        }
+      if (isStory && i === 1 && j === 0) {
+        frames.push(Viz.frame('int live = countLive(board, i, j);',
+          '数 (1,0) 八邻居的活细胞（低位）：共 3 个', [gridPanel(orig, liveMarks(1, 0), '初始局面'),
+          Viz.vars([{ name: 'i', v: String(i) }, { name: 'j', v: String(j) }, { name: 'live', v: String(live) }])]));
+      }
+      var next = board[i][j] === 1 ? (live === 2 || live === 3) : live === 3;
+      if (next) board[i][j] |= 2;
+      if (isStory && i === 1 && j === 0) {
+        frames.push(Viz.frame(WRITE,
+          '(1,0) 是死细胞、恰 3 个活邻居 → 复活：第二位写 1，值变 2',
+          [gridPanel(orig, liveMarks(1, 0), '初始局面'), gridPanel(board, { '1,0': 'new' }, '编码中：低位=现在，第二位=下一代')]));
+      }
+      if (isStory && i === 2 && j === 1) {
+        frames.push(Viz.frame(WRITE,
+          '(2,1) 是活细胞、恰 3 个活邻居 → 存活：第二位也写 1，值变 3',
+          [gridPanel(orig, liveMarks(2, 1), '初始局面'), gridPanel(board, { '2,1': 'new' }, '编码中：低位=现在，第二位=下一代')]));
+      }
+    }
+  }
+
+  frames.push(Viz.frame(SHIFT,
+    '全部写完：第二位齐了，逐格右移一位让下一代落位',
+    [gridPanel(board, {}, '编码完：第二位=下一代'), Viz.vars([{ name: '规则', v: '活2~3活，死3复活' }])]));
+  for (i = 0; i < m; i++)
+    for (j = 0; j < n; j++)
+      board[i][j] >>= 1;
+
+  var done = {};
+  for (i = 0; i < m; i++) for (j = 0; j < n; j++) done[i + ',' + j] = 'done';
+  frames.push(Viz.frame(SHIFT, '右移完成：面板更新成下一代，没动过一格之外的内存', [gridPanel(board, done, '下一代局面')]));
+
+  return { frames: frames, result: board };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>数组中两个数的最大异或值 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 416 / 1159</span>
+  <nav class="pn"><a href="offer-17.html">上一篇</a><a href="supp-07.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">421. </span>数组中两个数的最大异或值</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 7</li><li class="algo">贪心</li><li class="aux">位运算</li><li class="aux">哈希表</li><li class="tag">位运算</li><li class="tag">字典树</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">逐位贪心：从高位往低位试，把 ans 这一位补成 1；看前缀集合里有没有两个前缀能异或出 want=ans|1&lt;&lt;bit。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>高位定生死：从第 30 位往下试，<code>mask</code> 每轮多铺一位，<code>x &amp; mask</code> 只留已尝试的高位前缀。</li><li>想让这一位是 1：目标前缀 <code>want = ans | (1 &lt;&lt; bit)</code>；集合里存在 <code>p</code> 使 <code>p ^ want</code> 也在集合，就说明有两个原数的前缀异或出了 <code>want</code>。</li><li>试得成就 <code>ans = want</code> 把这一位固定下来；试不成就保持，继续往低位走。</li><li>全程只用前缀集合判断，不需要知道具体是哪两个数、也不用字典树。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(31n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> findMaximumXOR(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> ans = <span class="n">0</span>, mask = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="c">// 从最高位往低位试：这一位能不能是 1，试出来就固定下来</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> bit = <span class="n">30</span>; bit &gt;= <span class="n">0</span>; bit--) {</span><span class="ln"><span class="no">8</span>            mask |= <span class="n">1</span> &lt;&lt; bit;                     <span class="c">// 掩码扩一位，只留已尝试的高位</span></span><span class="ln"><span class="no">9</span>            <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; set = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> x : nums) set.add(x &amp; mask); <span class="c">// 收集所有数的高位前缀</span></span><span class="ln"><span class="no">11</span>            <span class="k">int</span> want = ans | (<span class="n">1</span> &lt;&lt; bit);          <span class="c">// 期望前缀：ans 的这一位再补成 1</span></span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> p : set) {</span><span class="ln"><span class="no">13</span>                <span class="c">// 有前缀 p 和 p^want 都在集合里，就说明能异或出 want</span></span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (set.contains(p ^ want)) {</span><span class="ln"><span class="no">15</span>                    ans = want;</span><span class="ln"><span class="no">16</span>                    <span class="k">break</span>;</span><span class="ln"><span class="no">17</span>                }</span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> ，返回<em> </em><code>nums[i] XOR nums[j]</code> 的最大运算结果，其中 <code>0 ≤ i ≤ j &lt; n</code> 。</p>
+
+
+
+<div class="original__bRMd">
+<div>
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [3,10,5,25,2,8]
+<strong>输出：</strong>28
+<strong>解释：</strong>最大运算结果是 5 XOR 25 = 28.</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [14,70,53,83,49,91,36,80,92,51,66,70]
+<strong>输出：</strong>127
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 2 * 10<sup>5</sup></code></li>
+	<li><code>0 &lt;= nums[i] &lt;= 2<sup>31</sup> - 1</code></li>
+</ul>
+</div>
+</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int findMaximumXOR(int[] nums) {", "        int ans = 0, mask = 0;", "        // 从最高位往低位试：这一位能不能是 1，试出来就固定下来", "        for (int bit = 30; bit >= 0; bit--) {", "            mask |= 1 << bit;                     // 掩码扩一位，只留已尝试的高位", "            Set<Integer> set = new HashSet<>();", "            for (int x : nums) set.add(x & mask); // 收集所有数的高位前缀", "            int want = ans | (1 << bit);          // 期望前缀：ans 的这一位再补成 1", "            for (int p : set) {", "                // 有前缀 p 和 p^want 都在集合里，就说明能异或出 want", "                if (set.contains(p ^ want)) {", "                    ans = want;", "                    break;", "                }", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 421. 数组中两个数的最大异或值 —— 图解：复刻 Solution.java 的「逐位贪心 + 前缀集合」，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [3, 10, 5, 25, 2, 8] };
+
+function trace(input) {
+  var nums = input.nums;
+  var frames = [];
+  var ans = 0, mask = 0;
+  var set = [], inSet = {}, srcOf = {};
+  var want = 0, hit = null;
+
+  // 前缀集合面板：k=前缀值，v=它来自哪些原数；命中的一对前缀高亮
+  function tablePanel() {
+    var rows = set.map(function (p) {
+      return { k: String(p), v: srcOf[p], cls: hit && (p === hit[0] || p === hit[1]) ? 'hit' : '' };
+    });
+    return Viz.table('前缀集合（x & mask）', rows, { hint: 'k=前缀，v=来自的原数' });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: 'bit 当前位', v: bit, cls: '' },
+      { name: 'ans 已确定', v: ans, cls: hit ? 'chg' : '' },
+      { name: 'want 试探', v: want, cls: '' }
+    ]);
+  }
+  var bit = 30;
+  function snap(at, key) { frames.push(Viz.frame(at, key, [tablePanel(), varsPanel()])); }
+
+  for (bit = 30; bit >= 0; bit--) {
+    mask |= 1 << bit;
+    set = []; inSet = {}; srcOf = {};
+    for (var k = 0; k < nums.length; k++) {
+      var p = nums[k] & mask;
+      if (!inSet[p]) { inSet[p] = true; set.push(p); srcOf[p] = String(nums[k]); }
+      else srcOf[p] += '、' + nums[k];
+    }
+    want = ans | (1 << bit);
+    hit = null;
+    for (var s = 0; s < set.length; s++) {
+      var q = set[s] ^ want;
+      if (inSet[q] === true) { hit = [set[s], q]; ans = want; break; }
+    }
+    if (bit === 30) snap('for (int bit = 30; bit >= 0; bit--) {',
+      '从最高位第 30 位往下试，一位一位定下 ans 的取值');
+    if (bit === 4 && hit) snap('ans = want;',
+      '第 4 位：' + hit[0] + '⊕' + hit[1] + '=' + want + ' 可达，这一位取 1');
+    if (bit === 3 && hit) snap('ans = want;',
+      '第 3 位：' + hit[0] + '⊕' + hit[1] + '=' + want + ' 可达，这一位取 1');
+    if (bit === 2 && hit) snap('ans = want;',
+      '第 2 位：' + hit[0] + '⊕' + hit[1] + '=' + want + ' 可达，这一位取 1');
+    if (bit === 1 && !hit) snap('int want = ans | (1 << bit);',
+      '第 1 位：试遍前缀凑不出 ' + want + '，只能取 0');
+  }
+
+  snap('return ans;', '从高位试到低位：ans=' + ans + ' 就是最大异或值');
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

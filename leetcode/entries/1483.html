@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>树节点的第 K 个祖先 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 770 / 1159</span>
+  <nav class="pn"><a href="1375.html">上一篇</a><a href="0754.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1483. </span>树节点的第 K 个祖先</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">动态规划</li><li class="aux">位运算</li><li class="aux">设计</li><li class="tag">位运算</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">设计</li><li class="tag">二分查找</li><li class="tag">动态规划</li><li class="tag">binary-lifting</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">倍增（binary lifting）：anc[j][i] 存「i 的 2^j 级祖先」，查询把 k 拆成二进制，是 1 的位就跳一次。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>预处理：<code>anc[0][i] = parent[i]</code>；<code>anc[j][i] = anc[j−1][anc[j−1][i]]</code>（跳 2^j = 先跳 2^(j−1) 再跳 2^(j−1)）。</li><li>行数取到 <code>2^log &gt; n</code>：<code>k ≤ n</code>，k 的每个二进制位都有对应行。</li><li>查询：k 从低位到高位，第 j 位是 1 就 <code>node = anc[j][node]</code>；中途变 −1 说明祖先不够，返回 −1。</li><li>一次查询只跳 O(log k) 次，把「逐级上爬 k 步」压成对数次。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 建 O(n log n)，每次查询 O(log k)，空间复杂度 O(n log n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">TreeAncestor</span> {</span><span class="ln"><span class="no">2</span>    <span class="c">// anc[j][i]：结点 i 的 2^j 级祖先；-1 表示跳出了树（到根之上）</span></span><span class="ln"><span class="no">3</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span> n;</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span>[][] anc;</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="t">TreeAncestor</span>(<span class="k">int</span> n, <span class="k">int</span>[] parent) {</span><span class="ln"><span class="no">7</span>        <span class="k">this</span>.n = n;</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> log = <span class="n">1</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">while</span> ((<span class="n">1</span> &lt;&lt; log) &lt;= n) log++;   <span class="c">// 保证 2^log &gt; n ≥ k，k 的每个二进制位都有对应行</span></span><span class="ln"><span class="no">10</span>        anc = <span class="k">new</span> <span class="k">int</span>[log][n];</span><span class="ln"><span class="no">11</span>        anc[<span class="n">0</span>] = parent.clone();         <span class="c">// 第 1 级祖先就是父结点</span></span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt; log; j++) {</span><span class="ln"><span class="no">13</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">14</span>                <span class="k">int</span> up = anc[j - <span class="n">1</span>][i];</span><span class="ln"><span class="no">15</span>                anc[j][i] = up &lt; <span class="n">0</span> ? -<span class="n">1</span> : anc[j - <span class="n">1</span>][up];</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span> </span><span class="ln"><span class="no">20</span>    <span class="k">public</span> <span class="k">int</span> getKthAncestor(<span class="k">int</span> node, <span class="k">int</span> k) {</span><span class="ln"><span class="no">21</span>        <span class="k">if</span> (k &gt;= n) <span class="k">return</span> -<span class="n">1</span>;   <span class="c">// 任何结点到根最多 n-1 步，k 达到 n 必然不存在</span></span><span class="ln"><span class="no">22</span>        <span class="c">// k 拆成二进制：第 j 位是 1 就跳 2^j 步；跳到 -1 说明祖先不够</span></span><span class="ln"><span class="no">23</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; node &gt;= <span class="n">0</span> &amp;&amp; k &gt; <span class="n">0</span>; j++, k &gt;&gt;= <span class="n">1</span>) {</span><span class="ln"><span class="no">24</span>            <span class="k">if</span> ((k &amp; <span class="n">1</span>) == <span class="n">1</span>) node = anc[j][node];</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> node;</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一棵树，树上有 <code>n</code> 个节点，按从 <code>0</code> 到 <code>n-1</code> 编号。树以父节点数组的形式给出，其中 <code>parent[i]</code> 是节点 <code>i</code> 的父节点。树的根节点是编号为 <code>0</code> 的节点。</p>
+
+<p>树节点的第 <em><code>k</code> </em>个祖先节点是从该节点到根节点路径上的第 <code>k</code> 个节点。</p>
+
+<p>实现 <code>TreeAncestor</code> 类：</p>
+
+<ul>
+	<li><code>TreeAncestor（int n， int[] parent）</code> 对树和父数组中的节点数初始化对象。</li>
+	<li><code>getKthAncestor</code><code>(int node, int k)</code> 返回节点 <code>node</code> 的第 <code>k</code> 个祖先节点。如果不存在这样的祖先节点，返回 <code>-1</code>&nbsp;。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/5e440ea775b6.png" /></strong></p>
+
+<pre>
+<strong>输入：</strong>
+["TreeAncestor","getKthAncestor","getKthAncestor","getKthAncestor"]
+[[7,[-1,0,0,1,1,2,2]],[3,1],[5,2],[6,3]]
+
+<strong>输出：</strong>
+[null,1,0,-1]
+
+<strong>解释：</strong>
+TreeAncestor treeAncestor = new TreeAncestor(7, [-1, 0, 0, 1, 1, 2, 2]);
+
+treeAncestor.getKthAncestor(3, 1);  // 返回 1 ，它是 3 的父节点
+treeAncestor.getKthAncestor(5, 2);  // 返回 0 ，它是 5 的祖父节点
+treeAncestor.getKthAncestor(6, 3);  // 返回 -1 因为不存在满足要求的祖先节点
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= k &lt;= n &lt;= 5 * 10<sup>4</sup></code></li>
+	<li><code>parent[0] == -1</code> 表示编号为 <code>0</code> 的节点是根节点。</li>
+	<li>对于所有的 <code>0 &lt;&nbsp;i &lt; n</code> ，<code>0 &lt;= parent[i] &lt; n</code> 总成立</li>
+	<li><code>0 &lt;= node &lt; n</code></li>
+	<li>至多查询&nbsp;<code>5 * 10<sup>4</sup></code> 次</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class TreeAncestor {", "    // anc[j][i]：结点 i 的 2^j 级祖先；-1 表示跳出了树（到根之上）", "    private final int n;", "    private final int[][] anc;", "", "    public TreeAncestor(int n, int[] parent) {", "        this.n = n;", "        int log = 1;", "        while ((1 << log) <= n) log++;   // 保证 2^log > n ≥ k，k 的每个二进制位都有对应行", "        anc = new int[log][n];", "        anc[0] = parent.clone();         // 第 1 级祖先就是父结点", "        for (int j = 1; j < log; j++) {", "            for (int i = 0; i < n; i++) {", "                int up = anc[j - 1][i];", "                anc[j][i] = up < 0 ? -1 : anc[j - 1][up];", "            }", "        }", "    }", "", "    public int getKthAncestor(int node, int k) {", "        if (k >= n) return -1;   // 任何结点到根最多 n-1 步，k 达到 n 必然不存在", "        // k 拆成二进制：第 j 位是 1 就跳 2^j 步；跳到 -1 说明祖先不够", "        for (int j = 0; node >= 0 && k > 0; j++, k >>= 1) {", "            if ((k & 1) == 1) node = anc[j][node];", "        }", "        return node;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1483. 树节点的第 K 个祖先 —— 图解：复刻 Solution.java 的「倍增表跳二进制位」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 注意：Viz.tree 只画二叉形态；一般树（有结点多于 2 个孩子）退化为只用倍增表 + 变量面板。
+
+var STORY_INPUT = { parent: [-1, 0, 0, 1, 1, 2, 2], queries: [[3, 1], [5, 2], [6, 3]] };
+
+function trace(input) {
+  var parent = input.parent;
+  var n = parent.length;
+  var queries = input.queries || [];
+
+  // 建倍增表（与 Java 相同）：anc[j][i] = 结点 i 的 2^j 级祖先
+  var log = 1;
+  while ((1 << log) <= n) log++;
+  var anc = [];
+  for (var j0 = 0; j0 < log; j0++) anc.push(new Array(n).fill(-1));
+  for (var i0 = 0; i0 < n; i0++) anc[0][i0] = parent[i0];
+  for (var j1 = 1; j1 < log; j1++) {
+    for (var i1 = 0; i1 < n; i1++) {
+      var up = anc[j1 - 1][i1];
+      anc[j1][i1] = up < 0 ? -1 : anc[j1 - 1][up];
+    }
+  }
+
+  // 画树用的层序数组：从根 BFS，缺的孩子补 null（力扣层序约定）；树不是二叉形态就不画树
+  var childCount = new Array(n).fill(0);
+  for (var i2 = 1; i2 < n; i2++) childCount[parent[i2]]++;
+  var binaryShaped = true;
+  for (var c0 = 0; c0 < n; c0++) if (childCount[c0] > 2) binaryShaped = false;
+
+  var level = [];        // 层序数组（含 null 占位）
+  var idxOf = {};        // 结点号 → 层序数组下标
+  if (n > 0 && binaryShaped) {
+    var queue = [0];
+    idxOf[0] = 0;
+    level.push(0);
+    for (var h = 0; h < queue.length; h++) {
+      var x = queue[h];
+      var kids = [];
+      for (var i3 = 1; i3 < n; i3++) if (parent[i3] === x) kids.push(i3);
+      for (var side = 0; side < 2; side++) {
+        if (side < kids.length) {
+          idxOf[kids[side]] = level.length;
+          level.push(kids[side]);
+          queue.push(kids[side]);
+        } else {
+          level.push(null);
+        }
+      }
+    }
+    while (level.length && level[level.length - 1] === null) level.pop();
+  }
+
+  // 跑所有查询，记录关键事件（带当时的 out 快照）
+  var out = [];
+  var firstStart = null, firstBig = null, firstDead = null;
+  for (var qi = 0; qi < queries.length; qi++) {
+    var startNode = queries[qi][0], k0 = queries[qi][1];
+    var node = startNode, k = k0;
+    var jumps = [];
+    if (k >= n) {
+      node = -1;   // 与 Java 一致：任何结点到根最多 n-1 步，k ≥ n 必然不存在
+    } else {
+      for (var j = 0; node >= 0 && k > 0; j++, k >>= 1) {
+        if ((k & 1) === 1) {
+          var to = anc[j][node];
+          jumps.push({ j: j, from: node, to: to });
+          node = to;
+        }
+      }
+    }
+    var dead = node < 0;
+    if (!firstStart) firstStart = { qi: qi, node: startNode, k: k0, outNow: out.slice() };
+    for (var jm = 0; jm < jumps.length; jm++) {
+      if (jumps[jm].j >= 1 && !firstBig) firstBig = { qi: qi, k: k0, jump: jumps[jm], outNow: out.slice() };
+    }
+    out.push(node);
+    if (dead && !firstDead) firstDead = { qi: qi, node: startNode, k: k0, jumps: jumps, outNow: out.slice() };
+  }
+
+  function treePanel(marks, labels) {
+    return Viz.tree(level, { title: '树（0 是根，parent 给出父结点）', marks: marks || {}, labels: labels || [] });
+  }
+  function gridPanel(marks) {
+    var rows = [];
+    for (var j = 0; j < log; j++) rows.push(anc[j].map(String));
+    var rowLabels = [], colLabels = [];
+    for (var j2 = 0; j2 < log; j2++) rowLabels.push('跳' + (1 << j2) + '步');
+    for (var i = 0; i < n; i++) colLabels.push(String(i));
+    return Viz.grid(rows, { title: '倍增表 anc[j][i]：结点 i 的 2^j 级祖先', marks: marks || {}, rowLabels: rowLabels, colLabels: colLabels, corner: 'i=' });
+  }
+  function varsPanel(o, fresh) {
+    return Viz.vars([{ name: '各次查询的答案', v: '[' + o.join(',') + ']', cls: fresh ? 'new' : '' }]);
+  }
+
+  var frames = [];
+  if (firstStart) {
+    var m1 = {}, lab1 = [];
+    m1[idxOf[firstStart.node]] = 'cur';
+    lab1.push({ at: idxOf[firstStart.node], label: 'k=' + firstStart.k, cls: 'cur' });
+    var p1 = binaryShaped ? [treePanel(m1, lab1), gridPanel({}), varsPanel(firstStart.outNow, false)]
+                          : [gridPanel({}), varsPanel(firstStart.outNow, false)];
+    frames.push(Viz.frame('public int getKthAncestor(int node, int k) {',
+      '第 ' + (firstStart.qi + 1) + ' 问：从结点 ' + firstStart.node + ' 往根的方向跳 k=' + firstStart.k + ' 步', p1));
+  }
+  if (firstBig) {
+    var jp = firstBig.jump;
+    var gm = {};
+    gm[jp.j + ',' + jp.from] = 'cur';
+    var p2;
+    if (binaryShaped) {
+      var m2 = {}, lab2 = [];
+      m2[idxOf[jp.from]] = 'dim';
+      if (jp.to >= 0) {
+        m2[idxOf[jp.to]] = 'cur';
+        lab2.push({ at: idxOf[jp.to], label: '跳到 ' + jp.to, cls: 'cur' });
+      }
+      p2 = [treePanel(m2, lab2), gridPanel(gm), varsPanel(firstBig.outNow, false)];
+    } else {
+      p2 = [gridPanel(gm), varsPanel(firstBig.outNow, false)];
+    }
+    frames.push(Viz.frame('if ((k & 1) == 1) node = anc[j][node];',
+      '第 ' + (firstBig.qi + 1) + ' 问：k=' + firstBig.k + ' 的二进制第 ' + jp.j + ' 位是 1，查表一次跳 ' + (1 << jp.j) + ' 步：' + jp.from + ' → ' + (jp.to < 0 ? -1 : jp.to), p2));
+  }
+  if (firstDead) {
+    var gm3 = {};
+    if (firstDead.jumps.length) {
+      var last = firstDead.jumps[firstDead.jumps.length - 1];
+      gm3[last.j + ',' + last.from] = 'bad';
+    }
+    var p3 = binaryShaped
+      ? [(function () { var m3 = {}; m3[idxOf[firstDead.node]] = 'bad'; return treePanel(m3, []); })(), gridPanel(gm3), varsPanel(firstDead.outNow, true)]
+      : [gridPanel(gm3), varsPanel(firstDead.outNow, true)];
+    frames.push(Viz.frame('return node;',
+      '第 ' + (firstDead.qi + 1) + ' 问：查结点 ' + firstDead.node + ' 的第 ' + firstDead.k + ' 个祖先，跳到 -1 出了树，返回 -1', p3));
+  }
+  var p4 = binaryShaped ? [treePanel({}, []), varsPanel(out, true)] : [varsPanel(out, true)];
+  frames.push(Viz.frame('return node;', '全部查询完成：答案依次是 [' + out.join(',') + ']', p4));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

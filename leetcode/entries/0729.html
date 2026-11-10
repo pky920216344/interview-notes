@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>我的日程安排表 I · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 986 / 1159</span>
+  <nav class="pn"><a href="0419.html">上一篇</a><a href="1228.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">729. </span>我的日程安排表 I</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">二分查找</li><li class="aux">设计</li><li class="tag">设计</li><li class="tag">线段树</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">有序集合</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">已订日程按开始排序（互不相交故结束也递增）；二分定位新日程的右邻，只需和左邻的结束时间比一次。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>日程是半开区间 <code>[start, end)</code>：<code>[10,20)</code> 和 <code>[20,30)</code> 首尾相接<strong>不算</strong>重叠，比较时用严格大于。</li><li>二分找第一个 <code>start ≥ endTime</code> 的日程，它左边所有的 <code>start &lt; endTime</code>；其中结束最晚的正是<strong>紧邻的左邻</strong>（日程互不相交 ⇒ 结束时间也递增）。</li><li>左邻的 <code>end &gt; startTime</code> 才冲突；不冲突就插到下标 <code>lo</code> 处，保持有序。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 每次 book O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">MyCalendar</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 已订日程按开始时间排序；它们互不相交，所以结束时间也随之递增</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; starts = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ends = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">MyCalendar</span>() {</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="k">boolean</span> book(<span class="k">int</span> startTime, <span class="k">int</span> endTime) {</span><span class="ln"><span class="no">12</span>        <span class="c">// 二分找第一个 start ≥ endTime 的日程，它就是新日程的右邻</span></span><span class="ln"><span class="no">13</span>        <span class="k">int</span> lo = <span class="n">0</span>, hi = starts.size();</span><span class="ln"><span class="no">14</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">15</span>            <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (starts.get(mid) &lt; endTime) lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">17</span>            <span class="k">else</span> hi = mid;</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="c">// 只需查左邻：它结束得最晚，越过新日程的开始才算重叠（半开区间，相等不冲突）</span></span><span class="ln"><span class="no">20</span>        <span class="k">if</span> (lo &gt; <span class="n">0</span> &amp;&amp; ends.get(lo - <span class="n">1</span>) &gt; startTime) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">21</span>        starts.add(lo, startTime);</span><span class="ln"><span class="no">22</span>        ends.add(lo, endTime);</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>实现一个 <code>MyCalendar</code> 类来存放你的日程安排。如果要添加的日程安排不会造成 <strong>重复预订</strong> ，则可以存储这个新的日程安排。</p>
+
+<p>当两个日程安排有一些时间上的交叉时（例如两个日程安排都在同一时间内），就会产生 <strong>重复预订</strong> 。</p>
+
+<p>日程可以用一对整数 <code>startTime</code> 和 <code>endTime</code> 表示，这里的时间是半开区间，即 <code>[startTime, endTime)</code>, 实数&nbsp;<code>x</code> 的范围为， &nbsp;<code>startTime &lt;= x &lt; endTime</code> 。</p>
+
+<p>实现 <code>MyCalendar</code> 类：</p>
+
+<ul>
+	<li><code>MyCalendar()</code> 初始化日历对象。</li>
+	<li><code>boolean book(int startTime, int endTime)</code> 如果可以将日程安排成功添加到日历中而不会导致重复预订，返回 <code>true</code> 。否则，返回 <code>false</code>&nbsp;并且不要将该日程安排添加到日历中。</li>
+</ul>
+
+
+
+<p><strong class="example">示例：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+["MyCalendar", "book", "book", "book"]
+[[], [10, 20], [15, 25], [20, 30]]
+<strong>输出：</strong>
+[null, true, false, true]
+
+<strong>解释：</strong>
+MyCalendar myCalendar = new MyCalendar();
+myCalendar.book(10, 20); // return True
+myCalendar.book(15, 25); // return False ，这个日程安排不能添加到日历中，因为时间 15 已经被另一个日程安排预订了。
+myCalendar.book(20, 30); // return True ，这个日程安排可以添加到日历中，因为第一个日程安排预订的每个时间都小于 20 ，且不包含时间 20 。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= start &lt; end &lt;= 10<sup>9</sup></code></li>
+	<li>每个测试用例，调用 <code>book</code> 方法的次数最多不超过 <code>1000</code> 次。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class MyCalendar {", "    // 已订日程按开始时间排序；它们互不相交，所以结束时间也随之递增", "    private final List<Integer> starts = new ArrayList<>();", "    private final List<Integer> ends = new ArrayList<>();", "", "    public MyCalendar() {", "    }", "", "    public boolean book(int startTime, int endTime) {", "        // 二分找第一个 start ≥ endTime 的日程，它就是新日程的右邻", "        int lo = 0, hi = starts.size();", "        while (lo < hi) {", "            int mid = (lo + hi) >>> 1;", "            if (starts.get(mid) < endTime) lo = mid + 1;", "            else hi = mid;", "        }", "        // 只需查左邻：它结束得最晚，越过新日程的开始才算重叠（半开区间，相等不冲突）", "        if (lo > 0 && ends.get(lo - 1) > startTime) return false;", "        starts.add(lo, startTime);", "        ends.add(lo, endTime);", "        return true;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 729. 我的日程安排表 I —— 图解：复刻「有序列表 + 二分找右邻，只查左邻」，在前 3 次 book 拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { ops: [['book', 10, 20], ['book', 15, 25], ['book', 20, 30]] };
+
+function trace(input) {
+  var ops = input.ops;
+  var frames = [];
+  var starts = [], ends = [];
+  var out = [];
+
+  var maxEnd = 31;
+  ops.forEach(function (op) { if (op[2] > maxEnd) maxEnd = op[2]; });
+
+  var CHECK = 'if (lo > 0 && ends.get(lo - 1) > startTime) return false;';
+  var ADD = 'starts.add(lo, startTime);';
+
+  function timePanel(marks) {
+    var cells = [];
+    for (var t = 0; t <= maxEnd; t++) cells.push(String(t % 10));
+    return Viz.cells(cells, { title: '时间轴 0~' + maxEnd + '（win 已订 · bad 冲突 · cur 新日程）', marks: marks || {}, hideIndex: true });
+  }
+  function bookedPanel(hint) {
+    var rows = starts.map(function (s, i) { return { k: s + ' → ' + ends[i], v: '长度 ' + (ends[i] - s), cls: '' }; });
+    return Viz.table('已订日程（按 start 排序）', rows, { hint: hint || '' });
+  }
+  function varsPanel(lo, ok) {
+    var items = [{ name: 'lo（右邻下标）', v: String(lo), cls: '' }];
+    items.push({ name: '左邻的 end', v: lo > 0 ? String(ends[lo - 1]) : '无', cls: '' });
+    if (ok != null) items.push({ name: 'book 结果', v: ok ? 'true' : 'false', cls: ok ? '' : 'bad' });
+    return Viz.vars(items);
+  }
+  function rangeMarks(from, to, cls, marks) {
+    for (var t = from; t < to; t++) marks[t] = cls;
+  }
+
+  ops.forEach(function (op, oi) {
+    var opStart = op[1], opEnd = op[2];
+    var lo = 0, hi = starts.length;
+    while (lo < hi) {
+      var mid = (lo + hi) >> 1;
+      if (starts[mid] < opEnd) lo = mid + 1;
+      else hi = mid;
+    }
+    var conflict = lo > 0 && ends[lo - 1] > opStart;
+    if (oi <= 2) {
+      var marks = {};
+      for (var b = 0; b < starts.length; b++) rangeMarks(starts[b], ends[b], 'win', marks);
+      rangeMarks(opStart, opEnd, conflict ? 'bad' : 'cur', marks);
+      var key = conflict
+        ? 'book(' + opStart + ',' + opEnd + ')：左邻 end=' + ends[lo - 1] + ' 越过 ' + opStart + '，冲突'
+        : (lo === 0
+          ? 'book(' + opStart + ',' + opEnd + ')：没有左邻，直接订上'
+          : 'book(' + opStart + ',' + opEnd + ')：左邻 end=' + ends[lo - 1] + ' ≤ ' + opStart + '，不重叠');
+      frames.push(Viz.frame(conflict ? CHECK : ADD, key, [timePanel(marks), bookedPanel(), varsPanel(lo, conflict ? false : true)]));
+    }
+    if (conflict) { out.push(false); return; }
+    starts.splice(lo, 0, opStart);
+    ends.splice(lo, 0, opEnd);
+    out.push(true);
+  });
+
+  var finalMarks = {};
+  for (var b2 = 0; b2 < starts.length; b2++) rangeMarks(starts[b2], ends[b2], 'win', finalMarks);
+  frames.push(Viz.frame('return true;', '预订结束：日历上留下互不重叠的 ' + starts.length + ' 段日程', [timePanel(finalMarks), bookedPanel()]));
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>元素和小于等于阈值的正方形的最大边长 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 971 / 1159</span>
+  <nav class="pn"><a href="1204.html">上一篇</a><a href="0163.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1292. </span>元素和小于等于阈值的正方形的最大边长</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">二分查找</li><li class="aux">前缀和/差分</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">矩阵</li><li class="tag">前缀和</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">二维前缀和让任意方块和 O(1) 可查；边长对答案单调（可行则更小也可行），二分最大可行边长。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>P[i][j]</code> = 从 <code>(0,0)</code> 到 <code>(i-1,j-1)</code> 的矩形和，外圈补 0 当哨兵，省掉全部边界判断。</li><li>右下角 <code>(i,j)</code>、边长 <code>s</code> 的方块和 = <code>P[i][j] − P[i-s][j] − P[i][j-s] + P[i-s][j-s]</code>（容斥）。</li><li>边长 <code>s</code> 可行 ⇒ 更小的都可行，答案有单调性：<code>hasSquare(s)</code> 二分，<code>mid</code> 可行就 <code>lo = mid</code>，否则 <code>hi = mid - 1</code>。</li><li><code>mid</code> 用<strong>上取整</strong> <code>(lo+hi+1)/2</code>：可行侧收缩方向是 <code>lo = mid</code>，上取整才不会卡死循环。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn × log min(m,n))，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maxSideLength(<span class="k">int</span>[][] mat, <span class="k">int</span> threshold) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = mat.length, n = mat[<span class="n">0</span>].length;</span><span class="ln"><span class="no">4</span>        <span class="c">// P[i][j] = 左上角 (0,0) 到 (i-1,j-1) 的矩形和，方块和可 O(1) 容斥出来</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[][] P = <span class="k">new</span> <span class="k">int</span>[m + <span class="n">1</span>][n + <span class="n">1</span>];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= m; i++)</span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt;= n; j++)</span><span class="ln"><span class="no">8</span>                P[i][j] = P[i - <span class="n">1</span>][j] + P[i][j - <span class="n">1</span>] - P[i - <span class="n">1</span>][j - <span class="n">1</span>] + mat[i - <span class="n">1</span>][j - <span class="n">1</span>];</span><span class="ln"><span class="no">9</span>        <span class="c">// 二分边长：s 可行则更小的也可行，单调，可二分</span></span><span class="ln"><span class="no">10</span>        <span class="k">int</span> lo = <span class="n">0</span>, hi = <span class="t">Math</span>.min(m, n);</span><span class="ln"><span class="no">11</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">12</span>            <span class="k">int</span> mid = (lo + hi + <span class="n">1</span>) / <span class="n">2</span>;</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (hasSquare(P, mid, threshold)) lo = mid;</span><span class="ln"><span class="no">14</span>            <span class="k">else</span> hi = mid - <span class="n">1</span>;</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> lo;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    <span class="c">// 是否存在某个 s×s 方块的和 ≤ threshold</span></span><span class="ln"><span class="no">20</span>    <span class="k">private</span> <span class="k">boolean</span> hasSquare(<span class="k">int</span>[][] P, <span class="k">int</span> s, <span class="k">int</span> threshold) {</span><span class="ln"><span class="no">21</span>        <span class="k">for</span> (<span class="k">int</span> i = s; i &lt; P.length; i++)</span><span class="ln"><span class="no">22</span>            <span class="k">for</span> (<span class="k">int</span> j = s; j &lt; P[<span class="n">0</span>].length; j++) {</span><span class="ln"><span class="no">23</span>                <span class="k">int</span> sum = P[i][j] - P[i - s][j] - P[i][j - s] + P[i - s][j - s];</span><span class="ln"><span class="no">24</span>                <span class="k">if</span> (sum &lt;= threshold) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">25</span>            }</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个大小为&nbsp;<code>m x n</code>&nbsp;的矩阵&nbsp;<code>mat</code>&nbsp;和一个整数阈值&nbsp;<code>threshold</code>。</p>
+
+<p>请你返回元素总和小于或等于阈值的正方形区域的最大边长；如果没有这样的正方形区域，则返回 <strong>0&nbsp;</strong>。<br />
+&nbsp;</p>
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/318764f3f669.png" style="height: 186px; width: 335px;" /></p>
+
+<pre>
+<strong>输入：</strong>mat = [[1,1,3,2,4,3,2],[1,1,3,2,4,3,2],[1,1,3,2,4,3,2]], threshold = 4
+<strong>输出：</strong>2
+<strong>解释：</strong>总和小于或等于 4 的正方形的最大边长为 2，如图所示。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>mat = [[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2]], threshold = 1
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == mat.length</code></li>
+	<li><code>n == mat[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 300</code></li>
+	<li><code>0 &lt;= mat[i][j] &lt;= 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= threshold &lt;= 10<sup>5</sup></code><sup>&nbsp;</sup></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maxSideLength(int[][] mat, int threshold) {", "        int m = mat.length, n = mat[0].length;", "        // P[i][j] = 左上角 (0,0) 到 (i-1,j-1) 的矩形和，方块和可 O(1) 容斥出来", "        int[][] P = new int[m + 1][n + 1];", "        for (int i = 1; i <= m; i++)", "            for (int j = 1; j <= n; j++)", "                P[i][j] = P[i - 1][j] + P[i][j - 1] - P[i - 1][j - 1] + mat[i - 1][j - 1];", "        // 二分边长：s 可行则更小的也可行，单调，可二分", "        int lo = 0, hi = Math.min(m, n);", "        while (lo < hi) {", "            int mid = (lo + hi + 1) / 2;", "            if (hasSquare(P, mid, threshold)) lo = mid;", "            else hi = mid - 1;", "        }", "        return lo;", "    }", "", "    // 是否存在某个 s×s 方块的和 ≤ threshold", "    private boolean hasSquare(int[][] P, int s, int threshold) {", "        for (int i = s; i < P.length; i++)", "            for (int j = s; j < P[0].length; j++) {", "                int sum = P[i][j] - P[i - s][j] - P[i][j - s] + P[i - s][j - s];", "                if (sum <= threshold) return true;", "            }", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1292. 元素和小于等于阈值的正方形的最大边长 —— 图解：二维前缀和 + 二分边长。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { mat: [[1, 1, 3, 2], [1, 1, 3, 2], [1, 1, 3, 2]], threshold: 4 };
+
+function trace(input) {
+  var mat = input.mat, threshold = input.threshold;
+  var m = mat.length, n = mat[0].length;
+  var frames = [];
+
+  // 与 Java 相同的二维前缀和
+  var P = [];
+  var i, j;
+  for (i = 0; i <= m; i++) { P.push([]); for (j = 0; j <= n; j++) P[i].push(0); }
+  for (i = 1; i <= m; i++)
+    for (j = 1; j <= n; j++)
+      P[i][j] = P[i - 1][j] + P[i][j - 1] - P[i - 1][j - 1] + mat[i - 1][j - 1];
+
+  function pPanel(marks) {
+    return Viz.grid(P.map(function (r) { return r; }), {
+      title: '二维前缀和 P（0 行 0 列是哨兵）',
+      marks: marks || {},
+      rowLabels: ['0', '1', '2', '3', '4', '5', '6', '7'].slice(0, m + 1),
+      colLabels: ['0', '1', '2', '3', '4', '5', '6', '7'].slice(0, n + 1),
+      corner: 'P'
+    });
+  }
+  function matPanel(marks) {
+    return Viz.grid(mat, { title: '矩阵 mat', marks: marks || {} });
+  }
+  function varsPanel(lo, hi, mid, extra) {
+    var items = [
+      { name: 'lo（已确认可行）', v: String(lo) },
+      { name: 'hi（还未排除）', v: String(hi) }
+    ];
+    if (mid != null) items.push({ name: 'mid（正在试）', v: String(mid), cls: 'cur' });
+    if (extra) items = items.concat(extra);
+    return Viz.vars(items);
+  }
+
+  // 方块和：右下角 (i, j)、边长 s
+  function squareSum(i, j, s) {
+    return P[i][j] - P[i - s][j] - P[i][j - s] + P[i - s][j - s];
+  }
+  function squareMarks(i, j, s, cls) {
+    var m = {};
+    for (var a = i - s; a < i; a++) for (var b = j - s; b < j; b++) m[a + ',' + b] = cls;
+    return m;
+  }
+  // 与 Java 相同的检查：枚举右下角，找到即返回
+  function hasSquare(s, probe) {
+    for (var a = s; a <= m; a++)
+      for (var b = s; b <= n; b++) {
+        var sum = squareSum(a, b, s);
+        if (sum <= threshold) {
+          if (probe) probe.found = { i: a, j: b, sum: sum };
+          return true;
+        }
+      }
+    return false;
+  }
+
+  var state = { lo: 0, hi: Math.min(m, n), mid: null };
+  frames.push(Viz.frame('P[i][j] = P[i - 1][j] + P[i][j - 1] - P[i - 1][j - 1] + mat[i - 1][j - 1];',
+    '先造前缀和 P：任意方块和 = 四角矩形加减，O(1) 查询',
+    [pPanel(), matPanel(), varsPanel(state.lo, state.hi, null)]));
+
+  var sawTrue = null, sawFalse = null, firstMid = null;
+  while (state.lo < state.hi) {
+    state.mid = Math.floor((state.lo + state.hi + 1) / 2);   // 与 Java 整除一致
+    if (!firstMid) firstMid = { mid: state.mid, lo: state.lo, hi: state.hi };
+    var probe = {};
+    var ok = hasSquare(state.mid, probe);
+    if (ok && !sawTrue) sawTrue = { mid: state.mid, sq: probe.found };
+    if (!ok && !sawFalse) sawFalse = { mid: state.mid };
+    if (ok) state.lo = state.mid; else state.hi = state.mid - 1;
+  }
+  state.mid = null;
+
+  if (firstMid) {
+    frames.push(Viz.frame('int mid = (lo + hi + 1) / 2;',
+      '二分边长：区间 [0, ' + firstMid.hi + ']，先猜 mid=' + firstMid.mid + '（上取整防死循环）',
+      [varsPanel(firstMid.lo, firstMid.hi, firstMid.mid)]));
+  }
+  if (sawTrue) {
+    frames.push(Viz.frame('if (sum <= threshold) return true;',
+      '边长 ' + sawTrue.mid + '：方块 (左上 ' + (sawTrue.sq.i - sawTrue.mid) + ',' + (sawTrue.sq.j - sawTrue.mid) + ') 和 = ' + sawTrue.sq.sum + ' ≤ ' + threshold + ' → 可行',
+      [matPanel(squareMarks(sawTrue.sq.i, sawTrue.sq.j, sawTrue.mid, 'win'))]));
+  }
+  if (sawFalse) {
+    frames.push(Viz.frame('else hi = mid - 1;',
+      '边长 ' + sawFalse.mid + ' 全部方块都超阈值 → hi=' + (sawFalse.mid - 1) + '，往小的试',
+      [matPanel((function () {
+        var mm = {};
+        for (var a = 0; a < m; a++) for (var b = 0; b < n; b++) mm[a + ',' + b] = 'bad';
+        return mm;
+      })())]));
+  }
+
+  frames.push(Viz.frame('return lo;',
+    '二分收敛：最大可行边长 = ' + state.lo,
+    [varsPanel(state.lo, state.lo, null, [{ name: '答案', v: String(state.lo), cls: 'done' }])]));
+
+  return { frames: frames, result: state.lo };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

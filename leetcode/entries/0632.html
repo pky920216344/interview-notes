@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最小区间 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 469 / 1159</span>
+  <nav class="pn"><a href="0687.html">上一篇</a><a href="0814.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">632. </span>最小区间</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 5</li><li class="algo">堆</li><li class="aux">贪心</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">排序</li><li class="tag">滑动窗口</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">每列表一个指针入最小堆，记下当前最大；区间 = [堆顶最小, 当前最大]，每次只把最小值的指针右移，直到某列表耗尽。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>堆里放每个列表当前的数，<code>curMax</code> 记全体当前最大；区间就是 <code>[堆顶, curMax]</code>。</li><li><strong>想变窄只能挪最小值</strong>——挪最大值只会更宽；所以每次弹出堆顶，把它在其列表里的指针右移一位再入堆。</li><li>某个列表耗尽就停：最小值再也无法右移，区间没法更窄了。</li><li>过程中每个 <code>[堆顶, curMax]</code> 都试一次，更窄就记下（同宽时先到的 a 更小，正好符合题面平局规则）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·log k)，空间复杂度 O(k)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] smallestRange(<span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; nums) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 堆里是每个列表当前的数：{值, 列表号, 列表内下标}</span></span><span class="ln"><span class="no">6</span>        <span class="t">PriorityQueue</span>&lt;<span class="k">int</span>[]&gt; heap = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;((a, b) -&gt; a[<span class="n">0</span>] - b[<span class="n">0</span>]);</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> curMax = <span class="t">Integer</span>.MIN_VALUE;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; nums.size(); i++) {</span><span class="ln"><span class="no">9</span>            heap.add(<span class="k">new</span> <span class="k">int</span>[]{nums.get(i).get(<span class="n">0</span>), i, <span class="n">0</span>});</span><span class="ln"><span class="no">10</span>            curMax = <span class="t">Math</span>.max(curMax, nums.get(i).get(<span class="n">0</span>));</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="k">int</span>[] ans = {heap.peek()[<span class="n">0</span>], curMax};</span><span class="ln"><span class="no">13</span>        <span class="c">// 贪心：想变窄只能挪最小值（挪最大值只会更宽），挪到某列表耗尽为止</span></span><span class="ln"><span class="no">14</span>        <span class="k">while</span> (heap.size() == nums.size()) {</span><span class="ln"><span class="no">15</span>            <span class="k">int</span>[] top = heap.poll();</span><span class="ln"><span class="no">16</span>            <span class="k">int</span> i = top[<span class="n">1</span>], j = top[<span class="n">2</span>] + <span class="n">1</span>;</span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (j == nums.get(i).size()) <span class="k">break</span>;</span><span class="ln"><span class="no">18</span>            <span class="k">int</span> v = nums.get(i).get(j);</span><span class="ln"><span class="no">19</span>            curMax = <span class="t">Math</span>.max(curMax, v);</span><span class="ln"><span class="no">20</span>            heap.add(<span class="k">new</span> <span class="k">int</span>[]{v, i, j});</span><span class="ln"><span class="no">21</span>            <span class="c">// 区间始终 = [当前最小, 当前最大]，更窄就记下来</span></span><span class="ln"><span class="no">22</span>            <span class="k">if</span> (curMax - heap.peek()[<span class="n">0</span>] &lt; ans[<span class="n">1</span>] - ans[<span class="n">0</span>]) ans = <span class="k">new</span> <span class="k">int</span>[]{heap.peek()[<span class="n">0</span>], curMax};</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你有&nbsp;<code>k</code>&nbsp;个 <strong>非递减排列</strong> 的整数列表。找到一个 <strong>最小 </strong>区间，使得&nbsp;<code>k</code>&nbsp;个列表中的每个列表至少有一个数包含在其中。</p>
+
+<p>我们定义如果&nbsp;<code>b-a &lt; d-c</code>&nbsp;或者在&nbsp;<code>b-a == d-c</code>&nbsp;时&nbsp;<code>a &lt; c</code>，则区间 <code>[a,b]</code> 比 <code>[c,d]</code> 小。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [[4,10,15,24,26], [0,9,12,20], [5,18,22,30]]
+<strong>输出：</strong>[20,24]
+<strong>解释：</strong> 
+列表 1：[4, 10, 15, 24, 26]，24 在区间 [20,24] 中。
+列表 2：[0, 9, 12, 20]，20 在区间 [20,24] 中。
+列表 3：[5, 18, 22, 30]，22 在区间 [20,24] 中。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [[1,2,3],[1,2,3],[1,2,3]]
+<strong>输出：</strong>[1,1]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>nums.length == k</code></li>
+	<li><code>1 &lt;= k &lt;= 3500</code></li>
+	<li><code>1 &lt;= nums[i].length &lt;= 50</code></li>
+	<li><code>-10<sup>5</sup> &lt;= nums[i][j] &lt;= 10<sup>5</sup></code></li>
+	<li><code>nums[i]</code> 按非递减顺序排列</li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] smallestRange(List<List<Integer>> nums) {", "        // 堆里是每个列表当前的数：{值, 列表号, 列表内下标}", "        PriorityQueue<int[]> heap = new PriorityQueue<>((a, b) -> a[0] - b[0]);", "        int curMax = Integer.MIN_VALUE;", "        for (int i = 0; i < nums.size(); i++) {", "            heap.add(new int[]{nums.get(i).get(0), i, 0});", "            curMax = Math.max(curMax, nums.get(i).get(0));", "        }", "        int[] ans = {heap.peek()[0], curMax};", "        // 贪心：想变窄只能挪最小值（挪最大值只会更宽），挪到某列表耗尽为止", "        while (heap.size() == nums.size()) {", "            int[] top = heap.poll();", "            int i = top[1], j = top[2] + 1;", "            if (j == nums.get(i).size()) break;", "            int v = nums.get(i).get(j);", "            curMax = Math.max(curMax, v);", "            heap.add(new int[]{v, i, j});", "            // 区间始终 = [当前最小, 当前最大]，更窄就记下来", "            if (curMax - heap.peek()[0] < ans[1] - ans[0]) ans = new int[]{heap.peek()[0], curMax};", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 632. 最小区间 —— 图解：复刻 Solution.java 的「最小堆 + 当前最大，滑窗式收缩」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [[4, 10, 15, 24, 26], [0, 9, 12, 20], [5, 18, 22, 30]] };
+
+function trace(input) {
+  var nums = input.nums;
+  var k = nums.length;
+  var frames = [];
+
+  var INIT = 'curMax = Math.max(curMax, nums.get(i).get(0));';
+  var UPD = 'if (curMax - heap.peek()[0] < ans[1] - ans[0]) ans = new int[]{heap.peek()[0], curMax};';
+  var BREAK = 'if (j == nums.get(i).size()) break;';
+  var RET = 'return ans;';
+
+  // 最小堆：元素 [值, 列表号, 列表内下标]，和 Java 的 PriorityQueue 同为按值取最小
+  var heap = [];
+  function hpush(x) {
+    heap.push(x);
+    var i = heap.length - 1;
+    while (i > 0) {
+      var p = (i - 1) >> 1;
+      if (heap[i][0] < heap[p][0]) { var t = heap[i]; heap[i] = heap[p]; heap[p] = t; i = p; } else break;
+    }
+  }
+  function hpop() {
+    var top = heap[0], last = heap.pop();
+    if (heap.length) {
+      heap[0] = last;
+      var i = 0;
+      for (;;) {
+        var l = 2 * i + 1, r = l + 1, m = i;
+        if (l < heap.length && heap[l][0] < heap[m][0]) m = l;
+        if (r < heap.length && heap[r][0] < heap[m][0]) m = r;
+        if (m === i) break;
+        var t2 = heap[i]; heap[i] = heap[m]; heap[m] = t2; i = m;
+      }
+    }
+    return top;
+  }
+
+  var curMax = -Infinity;
+  for (var i = 0; i < k; i++) { hpush([nums[i][0], i, 0]); curMax = Math.max(curMax, nums[i][0]); }
+  var ans = [heap[0][0], curMax];
+
+  // 每个列表的当前指针在堆里（k 个）；marks：走过的格子 dim，当前指针 win，再叠加 min/max
+  function marksWith(extra) {
+    var m = extra || {};
+    heap.forEach(function (e) {
+      for (var c = 0; c < e[2]; c++) m[e[1] + ',' + c] = 'dim';
+      m[e[1] + ',' + e[2]] = m[e[1] + ',' + e[2]] || 'win';
+    });
+    return m;
+  }
+  function gridPanel(marks) {
+    var labels = [];
+    for (var i = 0; i < k; i++) labels.push('列表 ' + (i + 1));
+    var w = 0;
+    for (var r = 0; r < k; r++) w = Math.max(w, nums[r].length);
+    var rows = nums.map(function (l) { return l.concat(Array(w - l.length).fill('')); });  // 补齐成矩形
+    return Viz.grid(rows, { title: 'k 个非递减列表（dim = 已滑过）', marks: marks || {}, rowLabels: labels });
+  }
+  function varsPanel(chg) {
+    return Viz.vars([
+      { name: 'curMax（当前最大）', v: curMax, cls: chg === 'max' ? 'chg' : '' },
+      { name: 'ans（当前最优区间）', v: ans[0] + ' ~ ' + ans[1], cls: chg === 'ans' ? 'chg' : '' }
+    ]);
+  }
+  function snap(at, key, marks, chg) {
+    frames.push(Viz.frame(at, key, [gridPanel(marks), varsPanel(chg)]));
+  }
+
+  // 开局：每个列表第一个数入堆
+  var m0 = marksWith({});
+  heap.forEach(function (e) { m0[e[1] + ',0'] = 'win'; });
+  m0[heap[0][1] + ',0'] = 'cur';
+  var maxIdx = 0;
+  for (var i2 = 0; i2 < k; i2++) if (nums[i2][0] === curMax) maxIdx = i2;
+  m0[maxIdx + ',0'] = 'new';
+  snap(INIT, '开局：每个列表各出第一个数，区间 [当前最小, 当前最大] = [' + ans[0] + ', ' + ans[1] + ']', m0);
+
+  var steps = 0, showedFlat = false, showedImprove = false;
+  while (heap.length === k) {
+    var top = hpop();
+    var li = top[1], j = top[2] + 1;
+    if (j === nums[li].length) {
+      var m4 = marksWith({});
+      for (var c4 = 0; c4 < nums[li].length; c4++) m4[li + ',' + c4] = 'dim';
+      snap(BREAK, '列表 ' + (li + 1) + ' 耗尽：最小值没法再右移，收缩结束', m4);
+      break;
+    }
+    var v = nums[li][j];
+    var wasMax = v > curMax;
+    curMax = Math.max(curMax, v);
+    hpush([v, li, j]);
+    var better = curMax - heap[0][0] < ans[1] - ans[0];
+    if (better) ans = [heap[0][0], curMax];
+
+    var m3 = marksWith({});
+    m3[heap[0][1] + ',' + heap[0][2]] = 'cur';
+    m3[li + ',' + j] = wasMax ? 'new' : 'win';
+    var chg = null;
+    if (better) chg = 'ans'; else if (wasMax) chg = 'max';
+    if (!showedFlat && steps === 0 && !better) {
+      showedFlat = true;
+      snap(UPD, '最小 ' + top[0] + ' 出堆、列表 ' + (li + 1) + ' 移到 ' + v + '：宽 ' + (v - heap[0][0]) + ' 没比 ' + (ans[1] - ans[0]) + ' 小，不更新', m3, chg);
+    }
+    if (better && !showedImprove) {
+      showedImprove = true;
+      snap(UPD, '最小 ' + top[0] + ' 出堆、列表 ' + (li + 1) + ' 移到 ' + v + '：区间 [' + ans[0] + ', ' + ans[1] + '] 宽 ' + (ans[1] - ans[0]) + '，刷新最优', m3, 'ans');
+    }
+    steps++;
+  }
+
+  // 结果：每个列表在 [ans0, ans1] 里各找一个数
+  var m5 = {};
+  for (var r5 = 0; r5 < k; r5++) {
+    for (var c5 = 0; c5 < nums[r5].length; c5++) m5[r5 + ',' + c5] = 'dim';
+  }
+  for (var r6 = 0; r6 < k; r6++) {
+    for (var c6 = 0; c6 < nums[r6].length; c6++) {
+      var v6 = nums[r6][c6];
+      if (v6 >= ans[0] && v6 <= ans[1]) { m5[r6 + ',' + c6] = 'done'; break; }
+    }
+  }
+  snap(RET, '答案 [' + ans[0] + ', ' + ans[1] + ']：宽 ' + (ans[1] - ans[0]) + '，每个列表都有一个数在里面', m5);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>翻转子数组得到最大的数组值 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 677 / 1159</span>
+  <nav class="pn"><a href="0219.html">上一篇</a><a href="1401.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1330. </span>翻转子数组得到最大的数组值</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">数学</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">数学</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">翻转只影响左右两条边界，把边界增益用 |x−y| 拆符号后取到 2*(maxMin−minMax)，端点翻转单独枚举，整体 O(n)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>base</code> = 相邻差之和；翻 <code>[l,r]</code> 只改 <code>(l−1,l)</code> 和 <code>(r,r+1)</code> 两条边界，中间的差翻转后不变。</li><li>端点情形（翻前缀 <code>[0,i]</code> / 翻后缀 <code>[i+1,n−1]</code>）只动一条边界：<code>base − cut + |新差|</code>，逐条边试。</li><li>内部翻转动两条边界：对增益式用 <code>|x−y| = max(x−y, y−x)</code> 拆符号，混合符号的候选恒 ≤ 0，有用的只剩 <code>2*min(某边) − 2*max(另一边)</code>，取到最大就是 <code>2*(maxMin − minMax)</code>，其中 <code>maxMin</code>/<code>minMax</code> 是每条边 <code>min</code> 的最大值 / 每条边 <code>max</code> 的最小值。</li><li>答案 = <code>max(base, base + 端点增益, base + 2*(maxMin − minMax))</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maxValueAfterReverse(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> base = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i + <span class="n">1</span> &lt; n; i++) {</span><span class="ln"><span class="no">6</span>            base += <span class="t">Math</span>.abs(nums[i] - nums[i + <span class="n">1</span>]);   <span class="c">// 原始数组值</span></span><span class="ln"><span class="no">7</span>        }</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> ans = base;</span><span class="ln"><span class="no">9</span>        <span class="c">// 翻前缀 [0,i] / 翻后缀 [i+1,n-1]：只动一条边界，逐个试</span></span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i + <span class="n">1</span> &lt; n; i++) {</span><span class="ln"><span class="no">11</span>            <span class="k">int</span> cut = <span class="t">Math</span>.abs(nums[i] - nums[i + <span class="n">1</span>]);</span><span class="ln"><span class="no">12</span>            ans = <span class="t">Math</span>.max(ans, base - cut + <span class="t">Math</span>.abs(nums[<span class="n">0</span>] - nums[i + <span class="n">1</span>]));</span><span class="ln"><span class="no">13</span>            ans = <span class="t">Math</span>.max(ans, base - cut + <span class="t">Math</span>.abs(nums[i] - nums[n - <span class="n">1</span>]));</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="c">// 内部翻转动左右两条边界，增益拆成 2*(min 较大边 − max 较小边)</span></span><span class="ln"><span class="no">16</span>        <span class="k">int</span> maxMin = <span class="t">Integer</span>.MIN_VALUE, minMax = <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">17</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i + <span class="n">1</span> &lt; n; i++) {</span><span class="ln"><span class="no">18</span>            maxMin = <span class="t">Math</span>.max(maxMin, <span class="t">Math</span>.min(nums[i], nums[i + <span class="n">1</span>]));</span><span class="ln"><span class="no">19</span>            minMax = <span class="t">Math</span>.min(minMax, <span class="t">Math</span>.max(nums[i], nums[i + <span class="n">1</span>]));</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        ans = <span class="t">Math</span>.max(ans, base + <span class="n">2</span> * (maxMin - minMax));</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组&nbsp;<code>nums</code> 。「数组值」定义为所有满足&nbsp;<code>0 &lt;= i &lt; nums.length-1</code>&nbsp;的&nbsp;<code>|nums[i]-nums[i+1]|</code>&nbsp;的和。</p>
+
+<p>你可以选择给定数组的任意子数组，并将该子数组翻转。但你只能执行这个操作&nbsp;<strong>一次</strong> 。</p>
+
+<p>请你找到可行的最大 <strong>数组值&nbsp;</strong>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [2,3,1,5,4]
+<strong>输出：</strong>10
+<strong>解释：</strong>通过翻转子数组 [3,1,5] ，数组变成 [2,5,1,3,4] ，数组值为 10 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [2,4,9,24,2,1,10]
+<strong>输出：</strong>68
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= nums.length &lt;= 3*10<sup>4</sup></code></li>
+	<li><code>-10<sup>5</sup> &lt;= nums[i] &lt;= 10<sup>5</sup></code></li>
+	<li>答案保证在 32 位整数范围内。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maxValueAfterReverse(int[] nums) {", "        int n = nums.length;", "        int base = 0;", "        for (int i = 0; i + 1 < n; i++) {", "            base += Math.abs(nums[i] - nums[i + 1]);   // 原始数组值", "        }", "        int ans = base;", "        // 翻前缀 [0,i] / 翻后缀 [i+1,n-1]：只动一条边界，逐个试", "        for (int i = 0; i + 1 < n; i++) {", "            int cut = Math.abs(nums[i] - nums[i + 1]);", "            ans = Math.max(ans, base - cut + Math.abs(nums[0] - nums[i + 1]));", "            ans = Math.max(ans, base - cut + Math.abs(nums[i] - nums[n - 1]));", "        }", "        // 内部翻转动左右两条边界，增益拆成 2*(min 较大边 − max 较小边)", "        int maxMin = Integer.MIN_VALUE, minMax = Integer.MAX_VALUE;", "        for (int i = 0; i + 1 < n; i++) {", "            maxMin = Math.max(maxMin, Math.min(nums[i], nums[i + 1]));", "            minMax = Math.min(minMax, Math.max(nums[i], nums[i + 1]));", "        }", "        ans = Math.max(ans, base + 2 * (maxMin - minMax));", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1330. 翻转子数组得到最大的数组值 —— 图解：复刻 Solution.java 的「base + 边界候选 + 2*(maxMin−minMax)」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [2, 3, 1, 5, 4] };
+
+function trace(input) {
+  var a = input.nums, n = a.length;
+  var frames = [];
+
+  var base = 0;
+  for (var i = 0; i + 1 < n; i++) base += Math.abs(a[i] - a[i + 1]);
+  var ans = base;
+
+  // 第 1 帧：base 是相邻差之和
+  var marks = [];
+  for (var k = 0; k < n; k++) marks[k] = '';
+  frames.push(Viz.frame('base += Math.abs(nums[i] - nums[i + 1]);',
+    '数组值 = 相邻两数差的绝对值之和：base = ' + base,
+    [Viz.cells(a, { title: '数组 nums', marks: marks }),
+     Viz.vars([{ name: 'base（原数组值）', v: base }, { name: 'ans', v: ans }])]));
+
+  // 翻前缀/后缀：只动一条边界
+  var bestEdge = -1, bestGain = 0, bestSide = '';
+  for (var i2 = 0; i2 + 1 < n; i2++) {
+    var cut = Math.abs(a[i2] - a[i2 + 1]);
+    var g1 = Math.abs(a[0] - a[i2 + 1]) - cut;
+    var g2 = Math.abs(a[i2] - a[n - 1]) - cut;
+    if (g1 > bestGain) { bestGain = g1; bestEdge = i2; bestSide = '前缀'; }
+    if (g2 > bestGain) { bestGain = g2; bestEdge = i2; bestSide = '后缀'; }
+  }
+  ans = base + bestGain;
+  var m1 = [];
+  for (var k1 = 0; k1 < n; k1++) m1[k1] = k1 <= bestEdge ? 'win' : '';
+  frames.push(Viz.frame('ans = Math.max(ans, base - cut + Math.abs(nums[0] - nums[i + 1]));',
+    bestEdge < 0 ? '翻任何前缀/后缀都只亏不赚，最好的增益是 0'
+      : '翻' + bestSide + '只动一条边界：最好情况把边界差换成 |a[0]−a[' + (bestEdge + 1) + ']|，增益 +' + bestGain,
+    [Viz.cells(a, { title: '数组 nums', marks: m1 }),
+     Viz.vars([{ name: '最优增益（端点）', v: bestGain }, { name: 'ans', v: ans }])]));
+
+  // 内部翻转：找 min 最大的边、max 最小的边
+  var maxMin = -Infinity, minMax = Infinity, mmAt = -1, mMAt = -1;
+  for (var i3 = 0; i3 + 1 < n; i3++) {
+    var lo = Math.min(a[i3], a[i3 + 1]), hi = Math.max(a[i3], a[i3 + 1]);
+    if (lo > maxMin) { maxMin = lo; mmAt = i3; }
+    if (hi < minMax) { minMax = hi; mMAt = i3; }
+  }
+  var m2 = [];
+  for (var k2 = 0; k2 < n; k2++) m2[k2] = '';
+  if (mmAt >= 0) { m2[mmAt] = m2[mmAt + 1] = 'win'; }
+  if (mMAt >= 0) { if (m2[mMAt] === '') m2[mMAt] = 'cur'; if (m2[mMAt + 1] === '') m2[mMAt + 1] = 'cur'; }
+  frames.push(Viz.frame('minMax = Math.min(minMax, Math.max(nums[i], nums[i + 1]));',
+    '内部翻转动两条边界：min 最大的一条边（win）和 max 最小的一条边（cur）决定增益',
+    [Viz.cells(a, { title: '数组 nums', marks: m2 }),
+     Viz.vars([{ name: 'maxMin', v: maxMin }, { name: 'minMax', v: minMax }])]));
+
+  var gain = 2 * (maxMin - minMax);
+  ans = Math.max(ans, base + gain);
+  frames.push(Viz.frame('ans = Math.max(ans, base + 2 * (maxMin - minMax));',
+    '翻它们之间的一段：两头的差各翻倍一次，增益 2×(' + maxMin + '−' + minMax + ')=' + gain + '，ans=' + ans,
+    [Viz.cells(a, { title: '数组 nums', marks: m2 }),
+     Viz.vars([{ name: '内部增益', v: gain }, { name: 'ans', v: ans }])]));
+
+  frames.push(Viz.frame('return ans;', '翻一次能得到的最大数组值是 ' + ans,
+    [Viz.vars([{ name: 'base', v: base }, { name: '答案', v: ans }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

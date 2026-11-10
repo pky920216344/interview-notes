@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>交错字符串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 165 / 1159</span>
+  <nav class="pn"><a href="offer-04.html">上一篇</a><a href="0210.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">97. </span>交错字符串</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 34</li><li class="algo">动态规划</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">DP：dp[i][j] = s1 前 i 个与 s2 前 j 个能否交错成 s3 前 i+j 个；s3 这一位来自 s1 就看上方、来自 s2 就看左边，滚动一维。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先判长度：<code>|s1| + |s2| ≠ |s3|</code> 直接 <code>false</code>。</li><li><code>dp[i][j]</code>：<code>s3[i+j−1]</code> 要么来自 <code>s1[i−1]</code>（继承上方 <code>dp[i−1][j]</code>），要么来自 <code>s2[j−1]</code>（继承左边 <code>dp[i][j−1]</code>），字符对得上才能继承。</li><li>第 0 行/第 0 列是「只用一个串拼前缀」，一断全断；正文按行填，用一维滚动：<code>dp[j]</code>（未更新时正好是上一行的值）当上方、<code>dp[j−1]</code> 当左边。</li><li>为什么不能贪心：两个串常有相同字符，当前匹配不代表后面走得通，必须保留所有可达状态。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> isInterleave(<span class="t">String</span> s1, <span class="t">String</span> s2, <span class="t">String</span> s3) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = s1.length(), n = s2.length();</span><span class="ln"><span class="no">4</span>        <span class="c">// 长度对不上，直接不可能</span></span><span class="ln"><span class="no">5</span>        <span class="k">if</span> (m + n != s3.length()) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">6</span>        <span class="c">// dp[j]：s1 前 i 个、s2 前 j 个能否交错成 s3 前 i+j 个</span></span><span class="ln"><span class="no">7</span>        <span class="k">boolean</span>[] dp = <span class="k">new</span> <span class="k">boolean</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">8</span>        dp[<span class="n">0</span>] = <span class="k">true</span>;</span><span class="ln"><span class="no">9</span>        <span class="c">// 第 0 行：只用 s2 的前 j 个拼 s3 的前 j 个</span></span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt;= n; j++) dp[j] = dp[j - <span class="n">1</span>] &amp;&amp; s2.charAt(j - <span class="n">1</span>) == s3.charAt(j - <span class="n">1</span>);</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= m; i++) {</span><span class="ln"><span class="no">12</span>            <span class="c">// 第 i 行开头：只用 s1 的前 i 个</span></span><span class="ln"><span class="no">13</span>            dp[<span class="n">0</span>] = dp[<span class="n">0</span>] &amp;&amp; s1.charAt(i - <span class="n">1</span>) == s3.charAt(i - <span class="n">1</span>);</span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt;= n; j++) {</span><span class="ln"><span class="no">15</span>                <span class="k">char</span> c = s3.charAt(i + j - <span class="n">1</span>);</span><span class="ln"><span class="no">16</span>                <span class="c">// s3 这位来自 s1（上方）或 s2（左边），字符对上才继承</span></span><span class="ln"><span class="no">17</span>                dp[j] = (dp[j] &amp;&amp; s1.charAt(i - <span class="n">1</span>) == c) || (dp[j - <span class="n">1</span>] &amp;&amp; s2.charAt(j - <span class="n">1</span>) == c);</span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> dp[n];</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定三个字符串&nbsp;<code>s1</code>、<code>s2</code>、<code>s3</code>，请你帮忙验证&nbsp;<code>s3</code>&nbsp;是否是由&nbsp;<code>s1</code>&nbsp;和&nbsp;<code>s2</code><em> </em><strong>交错 </strong>组成的。</p>
+
+<p>两个字符串 <code>s</code> 和 <code>t</code> <strong>交错</strong> 的定义与过程如下，其中每个字符串都会被分割成若干 <strong>非空</strong> <span>子字符串</span>：</p>
+
+<ul>
+	<li><code>s = s<sub>1</sub> + s<sub>2</sub> + ... + s<sub>n</sub></code></li>
+	<li><code>t = t<sub>1</sub> + t<sub>2</sub> + ... + t<sub>m</sub></code></li>
+	<li><code>|n - m| &lt;= 1</code></li>
+	<li><strong>交错</strong> 是 <code>s<sub>1</sub> + t<sub>1</sub> + s<sub>2</sub> + t<sub>2</sub> + s<sub>3</sub> + t<sub>3</sub> + ...</code> 或者 <code>t<sub>1</sub> + s<sub>1</sub> + t<sub>2</sub> + s<sub>2</sub> + t<sub>3</sub> + s<sub>3</sub> + ...</code></li>
+</ul>
+
+<p><strong>注意：</strong><code>a + b</code> 意味着字符串 <code>a</code> 和 <code>b</code> 连接。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/b9c3c007164c.jpg" />
+<pre>
+<strong>输入：</strong>s1 = "aabcc", s2 = "dbbca", s3 = "aadbbcbcac"
+<strong>输出：</strong>true
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s1 = "aabcc", s2 = "dbbca", s3 = "aadbbbaccc"
+<strong>输出：</strong>false
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s1 = "", s2 = "", s3 = ""
+<strong>输出：</strong>true
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= s1.length, s2.length &lt;= 100</code></li>
+	<li><code>0 &lt;= s3.length &lt;= 200</code></li>
+	<li><code>s1</code>、<code>s2</code>、和 <code>s3</code> 都由小写英文字母组成</li>
+</ul>
+
+
+
+<p><strong>进阶：</strong>您能否仅使用 <code>O(s2.length)</code> 额外的内存空间来解决它?</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean isInterleave(String s1, String s2, String s3) {", "        int m = s1.length(), n = s2.length();", "        // 长度对不上，直接不可能", "        if (m + n != s3.length()) return false;", "        // dp[j]：s1 前 i 个、s2 前 j 个能否交错成 s3 前 i+j 个", "        boolean[] dp = new boolean[n + 1];", "        dp[0] = true;", "        // 第 0 行：只用 s2 的前 j 个拼 s3 的前 j 个", "        for (int j = 1; j <= n; j++) dp[j] = dp[j - 1] && s2.charAt(j - 1) == s3.charAt(j - 1);", "        for (int i = 1; i <= m; i++) {", "            // 第 i 行开头：只用 s1 的前 i 个", "            dp[0] = dp[0] && s1.charAt(i - 1) == s3.charAt(i - 1);", "            for (int j = 1; j <= n; j++) {", "                char c = s3.charAt(i + j - 1);", "                // s3 这位来自 s1（上方）或 s2（左边），字符对上才继承", "                dp[j] = (dp[j] && s1.charAt(i - 1) == c) || (dp[j - 1] && s2.charAt(j - 1) == c);", "            }", "        }", "        return dp[n];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 97. 交错字符串 —— 图解：复刻 Solution.java 的二维 DP（Java 滚动一维，图里画全表），在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s1: 'aab', s2: 'bc', s3: 'ababc' };
+
+function trace(input) {
+  var s1 = input.s1, s2 = input.s2, s3 = input.s3;
+  var m = s1.length, n = s2.length;
+  var frames = [];
+
+  var MISMATCH = 'if (m + n != s3.length()) return false;';
+  var ROW0 = 'for (int j = 1; j <= n; j++) dp[j] = dp[j - 1] && s2.charAt(j - 1) == s3.charAt(j - 1);';
+  var STEP = 'dp[j] = (dp[j] && s1.charAt(i - 1) == c) || (dp[j - 1] && s2.charAt(j - 1) == c);';
+  var RET = 'return dp[n];';
+
+  // 长度对不上：连表都不用建
+  if (m + n !== s3.length) {
+    frames.push(Viz.frame(MISMATCH, 's1、s2 共 ' + (m + n) + ' 个字符，s3 有 ' + s3.length + ' 个，直接 false',
+      [Viz.vars([{ name: '|s1|+|s2|', v: m + n }, { name: '|s3|', v: s3.length, cls: 'bad' }])]));
+    return { frames: frames, result: false };
+  }
+
+  // 完整 DP 表：dp[i][j] = s1 前 i 个与 s2 前 j 个能否交错成 s3 前 i+j 个
+  var table = [];
+  for (var i = 0; i <= m; i++) table.push(new Array(n + 1).fill(false));
+  table[0][0] = true;
+
+  function gridPanel(rowDone, cur, doneCell) {
+    var rows = [], marks = {};
+    for (var a = 0; a <= m; a++) {
+      var row = [];
+      for (var b = 0; b <= n; b++) {
+        row.push(table[a][b] ? '✓' : '×');
+        if (a < rowDone) marks[a + ',' + b] = 'dim';
+        else if (a === cur[0] && b === cur[1]) marks[a + ',' + b] = 'cur';
+        else if (doneCell && a === doneCell[0] && b === doneCell[1]) marks[a + ',' + b] = 'done';
+        else if (a < rowDone || (a === rowDone && rowDone > 0)) marks[a + ',' + b] = 'win';
+      }
+      rows.push(row);
+    }
+    return Viz.grid(rows, { title: 'dp[i][j]：s1 前 i + s2 前 j → s3 前 i+j', marks: marks,
+      rowLabels: range(0, m, 'i='), colLabels: range(0, n, 'j='), corner: '' });
+  }
+  function range(from, to, p) {
+    var out = [];
+    for (var k = from; k <= to; k++) out.push(p + k);
+    return out;
+  }
+  function s3Panel(at) {
+    var ps = at >= 0 && at < s3.length ? [{ at: at, label: 's3 这一位', cls: 'p-cur' }] : [];
+    return Viz.cells(s3.split(''), { title: 's3（指针 = 正在解释的字符）', pointers: ps });
+  }
+
+  // 第 0 行：只用 s2 拼 s3 前缀，字符不匹配就断
+  for (var j0 = 1; j0 <= n; j0++) table[0][j0] = table[0][j0 - 1] && s2.charAt(j0 - 1) === s3.charAt(j0 - 1);
+  frames.push(Viz.frame(ROW0,
+    n > 0 ? '开局：第 0 行只用 s2——' + (table[0][1] ? 's2 开头对得上 s3' : 's2[0]=' + s2[0] + ' ≠ s3[0]=' + s3[0] + '，一断全断'
+      ) : '开局：s2 为空，第 0 行只剩 dp[0][0] = true',
+    [gridPanel(0, [0, 0], null), s3Panel(n > 0 ? 0 : -1)]));
+
+  for (var i = 1; i <= m; i++) {
+    table[i][0] = table[i - 1][0] && s1.charAt(i - 1) === s3.charAt(i - 1);
+    for (var j = 1; j <= n; j++) {
+      var c = s3.charAt(i + j - 1);
+      table[i][j] = (table[i - 1][j] && s1.charAt(i - 1) === c) || (table[i][j - 1] && s2.charAt(j - 1) === c);
+    }
+    // 第 1 行详细讲继承来源，第 2 行往后只拍表格推进
+    if (i === 1 && n > 0) {
+      var c1 = s3.charAt(i + 1 - 1);
+      var top = table[0][1] && s1.charAt(0) === c1, left = table[1][0] && s2.charAt(0) === c1;
+      frames.push(Viz.frame(STEP,
+        'dp[1][1]：s3 这位是 ' + c1 + (top && left ? '，s1、s2 都对得上，任一边继承' :
+          top ? '由 s1 对上，从上方继承' : left ? '由 s2 对上，从左边继承' : '，两边都接不上'),
+        [gridPanel(1, [1, 1], null), s3Panel(1)]));
+    } else if (i === 2 && m > 2) {
+      frames.push(Viz.frame(STEP, '一行行往下填：每格看上方（s1）和左边（s2），字符对上才继承 true',
+        [gridPanel(2, [2, Math.min(1, n)], null), s3Panel(2 + Math.min(1, n) - 1)]));
+    }
+  }
+
+  frames.push(Viz.frame(RET,
+    table[m][n] ? 'dp[m][n] = ✓：s3 能由 s1、s2 交错组成' : 'dp[m][n] = ×：怎么拼都差一步，false',
+    [gridPanel(m, [m, n], [m, n]), s3Panel(m + n - 1)]));
+
+  return { frames: frames, result: table[m][n] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

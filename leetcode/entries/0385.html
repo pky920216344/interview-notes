@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>迷你语法分析器 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1016 / 1159</span>
+  <nav class="pn"><a href="mianshi-01-03.html">上一篇</a><a href="0801.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">385. </span>迷你语法分析器</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">深度优先搜索/递归</li><li class="tag">栈</li><li class="tag">深度优先搜索</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">递归下降：当前位置是 [ 就开列表递归读元素（逗号分隔），是带符号数字就整段读出，读到 ] 收尾。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>全局下标 <code>i</code> 指向当前字符；<code>parse</code> 遇 <code>[</code> 就新建列表，循环「解析一个元素 + 跳过逗号」，遇 <code>]</code> 收尾返回。</li><li>整数：负号记符号，连续数字 <code>v = v*10 + 位</code>；值可达 ±10^6，<code>int</code> 够用。</li><li>递归深度 = 嵌套深度，天然处理任意层级的嵌套。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(嵌套深度)（递归栈）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span> i;   <span class="c">// 当前读到的下标</span></span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="t">NestedInteger</span> deserialize(<span class="t">String</span> s) {</span><span class="ln"><span class="no">7</span>        i = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">return</span> parse(s);</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="c">// 递归下降：当前位置要么是「[ 列表 ]」，要么是「带符号整数」</span></span><span class="ln"><span class="no">12</span>    <span class="k">private</span> <span class="t">NestedInteger</span> parse(<span class="t">String</span> s) {</span><span class="ln"><span class="no">13</span>        <span class="k">if</span> (s.charAt(i) != <span class="s">'['</span>) {</span><span class="ln"><span class="no">14</span>            <span class="k">return</span> number(s);</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        i++;                                  <span class="c">// 跳过 '['</span></span><span class="ln"><span class="no">17</span>        <span class="t">NestedInteger</span> list = <span class="k">new</span> <span class="t">NestedInteger</span>();</span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (s.charAt(i) != <span class="s">']'</span>) {</span><span class="ln"><span class="no">19</span>            list.add(parse(s));               <span class="c">// 递归解析一个元素</span></span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (s.charAt(i) == <span class="s">','</span>) i++;      <span class="c">// 跳过逗号，继续读下一个元素</span></span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        i++;                                  <span class="c">// 跳过 ']'</span></span><span class="ln"><span class="no">23</span>        <span class="k">return</span> list;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span> </span><span class="ln"><span class="no">26</span>    <span class="k">private</span> <span class="t">NestedInteger</span> number(<span class="t">String</span> s) {</span><span class="ln"><span class="no">27</span>        <span class="k">int</span> sign = <span class="n">1</span>;</span><span class="ln"><span class="no">28</span>        <span class="k">if</span> (s.charAt(i) == <span class="s">'-'</span>) {</span><span class="ln"><span class="no">29</span>            sign = -<span class="n">1</span>;</span><span class="ln"><span class="no">30</span>            i++;</span><span class="ln"><span class="no">31</span>        }</span><span class="ln"><span class="no">32</span>        <span class="k">int</span> v = <span class="n">0</span>;</span><span class="ln"><span class="no">33</span>        <span class="k">while</span> (i &lt; s.length() &amp;&amp; <span class="t">Character</span>.isDigit(s.charAt(i))) {</span><span class="ln"><span class="no">34</span>            v = v * <span class="n">10</span> + (s.charAt(i++) - <span class="s">'0'</span>);</span><span class="ln"><span class="no">35</span>        }</span><span class="ln"><span class="no">36</span>        <span class="k">return</span> <span class="k">new</span> <span class="t">NestedInteger</span>(v * sign);</span><span class="ln"><span class="no">37</span>    }</span><span class="ln"><span class="no">38</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个字符串 s 表示一个整数嵌套列表，实现一个解析它的语法分析器并返回解析的结果&nbsp;<code>NestedInteger</code> 。</p>
+
+<p>列表中的每个元素只可能是整数或整数嵌套列表</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "324",
+<strong>输出：</strong>324
+<strong>解释：</strong>你应该返回一个 NestedInteger 对象，其中只包含整数值 324。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "[123,[456,[789]]]",
+<strong>输出：</strong>[123,[456,[789]]]
+<strong>解释：</strong>返回一个 NestedInteger 对象包含一个有两个元素的嵌套列表：
+1. 一个 integer 包含值 123
+2. 一个包含两个元素的嵌套列表：
+    i.  一个 integer 包含值 456
+    ii. 一个包含一个元素的嵌套列表
+         a. 一个 integer 包含值 789
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 5 * 10<sup>4</sup></code></li>
+	<li><code>s</code> 由数字、方括号&nbsp;<code>"[]"</code>、负号&nbsp;<code>'-'</code>&nbsp;、逗号&nbsp;<code>','</code>组成</li>
+	<li>用例保证&nbsp;<code>s</code> 是可解析的&nbsp;<code>NestedInteger</code></li>
+	<li>输入中的所有值的范围是&nbsp;<code>[-10<sup>6</sup>, 10<sup>6</sup>]</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private int i;   // 当前读到的下标", "", "    public NestedInteger deserialize(String s) {", "        i = 0;", "        return parse(s);", "    }", "", "    // 递归下降：当前位置要么是「[ 列表 ]」，要么是「带符号整数」", "    private NestedInteger parse(String s) {", "        if (s.charAt(i) != '[') {", "            return number(s);", "        }", "        i++;                                  // 跳过 '['", "        NestedInteger list = new NestedInteger();", "        while (s.charAt(i) != ']') {", "            list.add(parse(s));               // 递归解析一个元素", "            if (s.charAt(i) == ',') i++;      // 跳过逗号，继续读下一个元素", "        }", "        i++;                                  // 跳过 ']'", "        return list;", "    }", "", "    private NestedInteger number(String s) {", "        int sign = 1;", "        if (s.charAt(i) == '-') {", "            sign = -1;", "            i++;", "        }", "        int v = 0;", "        while (i < s.length() && Character.isDigit(s.charAt(i))) {", "            v = v * 10 + (s.charAt(i++) - '0');", "        }", "        return new NestedInteger(v * sign);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 385. 迷你语法分析器 —— 图解：复刻 Solution.java 的递归下降解析，在开列表/读数/收列表处拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: '[-1,[2]]' };
+
+function trace(input) {
+  var s = input.s;
+  var frames = [];
+  var i = 0;
+  var stack = [];        // 正在构建的列表，外层在前
+  var didOpen = false, didNum = false, didClose = false;
+
+  function strPanel() {
+    var marks = {}, pointers = [];
+    if (i < s.length) {
+      marks[i] = 'cur';
+      pointers.push({ at: i, label: 'i', cls: 'p-cur' });
+    }
+    return Viz.cells(s.split(''), { title: '字符串 s（i 指向下一个要读的字符）', marks: marks, pointers: pointers });
+  }
+  function stackPanel() {
+    var rows = stack.map(function (partial, d) {
+      return { k: '第 ' + (d + 1) + ' 层', v: JSON.stringify(partial) + ' …', cls: d === stack.length - 1 ? 'cur' : '' };
+    });
+    return Viz.table('正在构建的列表（栈，内层在下面）', rows, { hint: '（读到 ] 收尾弹出，返回后由父层收下）' });
+  }
+
+  function parse() {
+    if (s.charAt(i) !== '[') return number();
+    i++;                                   // 跳过 '['
+    var list = [];
+    stack.push(list);
+    if (!didOpen) {
+      didOpen = true;
+      frames.push(Viz.frame("// 跳过 '['", '读到 [ ：开一个新列表压栈，继续读它的元素',
+        [strPanel(), stackPanel()]));
+    }
+    while (s.charAt(i) !== ']') {
+      list.push(parse());
+      if (s.charAt(i) === ',') i++;        // 跳过逗号，读下一个元素
+    }
+    i++;                                   // 跳过 ']'
+    stack.pop();
+    if (!didClose) {
+      didClose = true;
+      frames.push(Viz.frame("// 跳过 ']'", '读到 ] ：这个列表收尾、弹栈，返回后由父层收下',
+        [strPanel(), stackPanel()]));
+    }
+    return list;
+  }
+
+  function number() {
+    var sign = 1;
+    if (s.charAt(i) === '-') { sign = -1; i++; }
+    var v = 0;
+    while (i < s.length && s.charAt(i) >= '0' && s.charAt(i) <= '9') {
+      v = v * 10 + (s.charAt(i++) - '0');
+    }
+    if (!didNum) {
+      didNum = true;
+      frames.push(Viz.frame("v = v * 10 + (s.charAt(i++) - '0');",
+        '读整数：负号记符号、连续数字拼成 ' + (v * sign) + '，放进当前列表',
+        [strPanel(), stackPanel()]));
+    }
+    return v * sign;
+  }
+
+  var result = parse();
+  frames.push(Viz.frame('return parse(s);', '解析完：结果就是最外层的那份嵌套结构',
+    [strPanel(), stackPanel()]));
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

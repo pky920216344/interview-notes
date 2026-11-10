@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>从前序与中序遍历序列构造二叉树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 56 / 1159</span>
+  <nav class="pn"><a href="0002.html">上一篇</a><a href="0041.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">105. </span>从前序与中序遍历序列构造二叉树</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 118</li><li class="algo">分治</li><li class="aux">哈希表</li><li class="tag">树</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">分治</li><li class="tag">二叉树</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">哈希表存「中序值→下标」；前序第一个值是根，中序里定位后切出左右子树区间，递归分治建树。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>前序的下一个值 <code>preorder[pre]</code> 就是当前子树的根，全局下标 <code>pre</code> 依次往下取。</li><li>哈希表 <code>pos</code> 存「中序值 → 下标」，根一查就定位到切分点 <code>mid</code>。</li><li>中序区间 <code>[lo, hi]</code>：<code>[lo, mid-1]</code> 是左子树，<code>[mid+1, hi]</code> 是右子树；<code>lo &gt; hi</code> 返回 <code>null</code>。</li><li>先递归左、后递归右，恰好按前序顺序消费 <code>pre</code>；每次调用开头先复位 <code>pre</code> 和 <code>pos</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// pos：值 -&gt; 中序下标；pre：前序里下一个该当根的位置</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; pos = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">int</span> pre;</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">TreeNode</span> buildTree(<span class="k">int</span>[] preorder, <span class="k">int</span>[] inorder) {</span><span class="ln"><span class="no">9</span>        <span class="c">// 每次调用先复位，防上一次调用的残留</span></span><span class="ln"><span class="no">10</span>        pre = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        pos.clear();</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; inorder.length; i++) pos.put(inorder[i], i);</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> build(preorder, <span class="n">0</span>, inorder.length - <span class="n">1</span>);</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="c">// 中序区间 [lo, hi] 建树：先取前序的值当根，再切左右</span></span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="t">TreeNode</span> build(<span class="k">int</span>[] preorder, <span class="k">int</span> lo, <span class="k">int</span> hi) {</span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (lo &gt; hi) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">19</span>        <span class="t">TreeNode</span> root = <span class="k">new</span> <span class="t">TreeNode</span>(preorder[pre++]);</span><span class="ln"><span class="no">20</span>        <span class="k">int</span> mid = pos.get(root.val);</span><span class="ln"><span class="no">21</span>        <span class="c">// mid 左边是左子树，右边是右子树</span></span><span class="ln"><span class="no">22</span>        root.left = build(preorder, lo, mid - <span class="n">1</span>);</span><span class="ln"><span class="no">23</span>        <span class="c">// 先左后右，pre 恰好按前序推进</span></span><span class="ln"><span class="no">24</span>        root.right = build(preorder, mid + <span class="n">1</span>, hi);</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> root;</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定两个整数数组&nbsp;<code>preorder</code> 和 <code>inorder</code>&nbsp;，其中&nbsp;<code>preorder</code> 是二叉树的<strong>先序遍历</strong>， <code>inorder</code>&nbsp;是同一棵树的<strong>中序遍历</strong>，请构造二叉树并返回其根节点。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+<img alt="" src="../assets/img/77bf13b30de2.jpg" style="height: 302px; width: 277px;" />
+<pre>
+<strong>输入</strong><strong>:</strong> preorder = [3,9,20,15,7], inorder = [9,3,15,20,7]
+<strong>输出:</strong> [3,9,20,null,null,15,7]
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> preorder = [-1], inorder = [-1]
+<strong>输出:</strong> [-1]
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= preorder.length &lt;= 3000</code></li>
+	<li><code>inorder.length == preorder.length</code></li>
+	<li><code>-3000 &lt;= preorder[i], inorder[i] &lt;= 3000</code></li>
+	<li><code>preorder</code>&nbsp;和&nbsp;<code>inorder</code>&nbsp;均 <strong>无重复</strong> 元素</li>
+	<li><code>inorder</code>&nbsp;均出现在&nbsp;<code>preorder</code></li>
+	<li><code>preorder</code>&nbsp;<strong>保证</strong> 为二叉树的前序遍历序列</li>
+	<li><code>inorder</code>&nbsp;<strong>保证</strong> 为二叉树的中序遍历序列</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    // pos：值 -> 中序下标；pre：前序里下一个该当根的位置", "    private final Map<Integer, Integer> pos = new HashMap<>();", "    private int pre;", "", "    public TreeNode buildTree(int[] preorder, int[] inorder) {", "        // 每次调用先复位，防上一次调用的残留", "        pre = 0;", "        pos.clear();", "        for (int i = 0; i < inorder.length; i++) pos.put(inorder[i], i);", "        return build(preorder, 0, inorder.length - 1);", "    }", "", "    // 中序区间 [lo, hi] 建树：先取前序的值当根，再切左右", "    private TreeNode build(int[] preorder, int lo, int hi) {", "        if (lo > hi) return null;", "        TreeNode root = new TreeNode(preorder[pre++]);", "        int mid = pos.get(root.val);", "        // mid 左边是左子树，右边是右子树", "        root.left = build(preorder, lo, mid - 1);", "        // 先左后右，pre 恰好按前序推进", "        root.right = build(preorder, mid + 1, hi);", "        return root;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 105. 从前序与中序遍历序列构造二叉树 —— 图解：复刻 Solution.java 的「哈希定位 + 前序指针 + 区间切分」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { preorder: [3, 9, 20, 15, 7], inorder: [9, 3, 15, 20, 7] };
+
+function trace(input) {
+  var frames = [];
+  var preArr = input.preorder, inArr = input.inorder;
+  var pos = {};   // 值 -> 中序下标，对应 Java 的 pos 表
+  var order = []; // 按出现顺序存值，哈希表面板才稳定
+  for (var i0 = 0; i0 < inArr.length; i0++) { pos[inArr[i0]] = i0; order.push(inArr[i0]); }
+  var pre = 0;    // 对应 Java 的全局下标 pre
+  var treeRoot = null;
+
+  // 建到一半的树 -> 力扣层序数组；at 顺便记录每个已建结点在数组里的下标
+  function snapshot() {
+    if (!treeRoot) return { arr: [], at: [] };
+    var arr = [], q = [treeRoot], at = [];
+    while (q.length) {
+      var n = q.shift();
+      arr.push(n === null ? null : n.val);
+      if (n !== null) { at.push([n, arr.length - 1]); q.push(n.left); q.push(n.right); }
+    }
+    while (arr.length && arr[arr.length - 1] === null) arr.pop();
+    return { arr: arr, at: at };
+  }
+
+  function treePanel(title, ctxNode, fresh) {
+    var s = snapshot();
+    var marks = {};
+    s.at.forEach(function (p) {
+      if (p[0] === ctxNode) marks[p[1]] = 'cur';
+      else if (p[0] === fresh) marks[p[1]] = 'win';
+      else marks[p[1]] = 'done';
+    });
+    return Viz.tree(s.arr, { title: title, marks: marks });
+  }
+
+  function prePanel() {
+    var marks = {}, i;
+    for (i = 0; i < pre; i++) marks[i] = 'done';
+    if (pre < preArr.length) marks[pre] = 'cur';
+    return Viz.cells(preArr, { title: '前序 preorder（黄 = 下一个根）', marks: marks,
+      pointers: pre < preArr.length ? [{ at: pre, label: 'pre', cls: 'p-cur' }] : [] });
+  }
+
+  // 中序面板：高亮区间 [lo, hi]，cur 是这次要当根的值在中序里的下标
+  function inPanel(lo, hi, cur, rangeLabel) {
+    var marks = {}, i;
+    for (i = lo; i <= hi; i++) marks[i] = 'win';
+    if (cur !== null && cur !== undefined) marks[cur] = 'cur';
+    return Viz.cells(inArr, { title: '中序 inorder', marks: marks,
+      range: rangeLabel ? { from: lo, to: hi, label: rangeLabel } : null });
+  }
+
+  function posPanel(hit) {
+    return Viz.table('pos：中序值 → 下标', order.map(function (v) {
+      return { k: String(v), v: String(pos[v]), cls: v === hit ? 'hit' : '' };
+    }), { hint: '（一次建好，之后 O(1) 定位）' });
+  }
+
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  // 第 1 帧：开局 —— 存哈希表，前序第一个就是根
+  snap('for (int i = 0; i < inorder.length; i++) pos.put(inorder[i], i);',
+    preArr.length ? '把「中序值→下标」存进哈希表；前序第一个 ' + preArr[0] + ' 就是整棵树的根' : '空输入：返回 null',
+    [prePanel(), inPanel(0, inArr.length - 1, null, null)]);
+
+  function build(lo, hi) {
+    if (lo > hi) return null;
+    var node = { val: preArr[pre], left: null, right: null };
+    pre++;
+    var mid = pos[node.val];
+    var isRoot = treeRoot === null;
+    if (isRoot) treeRoot = node;
+
+    if (isRoot) {
+      snap('int mid = pos.get(root.val);',
+        '哈希表一查：根 ' + node.val + ' 在中序下标 ' + mid + '，左边是左子树，右边是右子树',
+        [prePanel(), inPanel(lo, hi, mid, '当前区间'), posPanel(node.val)]);
+    }
+    if (lo < mid) {
+      if (isRoot) snap('root.left = build(preorder, lo, mid - 1);',
+        '递归左子树：区间 [' + lo + ', ' + (mid - 1) + ']，前序下一个 ' + preArr[pre] + ' 当它的根',
+        [prePanel(), inPanel(lo, mid - 1, pos[preArr[pre]], '左子树区间'), treePanel('建到一半的树', node, null)]);
+      node.left = build(lo, mid - 1);
+    }
+    if (mid < hi) {
+      if (isRoot) snap('root.right = build(preorder, mid + 1, hi);',
+        '递归右子树：区间 [' + (mid + 1) + ', ' + hi + ']，前序下一个 ' + preArr[pre] + ' 当根，同样再切分',
+        [prePanel(), inPanel(mid + 1, hi, pos[preArr[pre]], '右子树区间'), treePanel('建到一半的树', node, node.left)]);
+      node.right = build(mid + 1, hi);
+    }
+    return node;
+  }
+
+  var result = build(0, inArr.length - 1);
+  treeRoot = result;
+
+  function levelOf(rt) {
+    if (!rt) return [];
+    var arr = [], q = [rt];
+    while (q.length) {
+      var n = q.shift();
+      arr.push(n === null ? null : n.val);
+      if (n !== null) { q.push(n.left); q.push(n.right); }
+    }
+    while (arr.length && arr[arr.length - 1] === null) arr.pop();
+    return arr;
+  }
+
+  snap('return root;', '每个结点都这样「取根 → 定位 → 切分」一次，整棵树建好了',
+    [treePanel('建好的二叉树', null, null)]);
+  return { frames: frames, result: levelOf(result) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

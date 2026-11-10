@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>排列序列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 309 / 1159</span>
+  <nav class="pn"><a href="0164.html">上一篇</a><a href="0312.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">60. </span>排列序列</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 13</li><li class="algo">数学</li><li class="tag">递归</li><li class="tag">数学</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">阶乘进制：k−1 逐位除以「剩余位数的阶乘」，商决定当前位取候选里第几个数，余数继续往下。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>以某数开头的排列每组有 <code>(n−1)!</code> 个：<code>k−1</code> 除以它，商 = 跳过几组 = 当前位在候选里的下标。</li><li><code>k %= (n−1)!</code> 后继续确定下一位（组数变成 <code>(n−2)!</code>…），候选取走一个就少一个。</li><li><code>k</code> 先减 1 转成 0 起始；<code>n ≤ 9</code>，阶乘表用 <code>int</code> 就够。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n^2)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> getPermutation(<span class="k">int</span> n, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="c">// fact[i] = i!：第 i 位后面还有 i 个位置，每组排列有 i! 个</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] fact = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">7</span>        fact[<span class="n">0</span>] = <span class="n">1</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; n; i++) fact[i] = fact[i - <span class="n">1</span>] * i;</span><span class="ln"><span class="no">9</span>        <span class="c">// 候选数字 1..n，用有序表：取走一个后剩下的仍有序</span></span><span class="ln"><span class="no">10</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; cand = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= n; i++) cand.add(i);</span><span class="ln"><span class="no">12</span>        k--;   <span class="c">// 题目从 1 数起，转成 0 起始的序号</span></span><span class="ln"><span class="no">13</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">14</span>        <span class="c">// 逐位确定：第一位看 k 落在哪个「以某数开头的组」里</span></span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> i = n - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">16</span>            <span class="k">int</span> idx = k / fact[i];      <span class="c">// 当前位应取候选里第 idx 个（0 起始）</span></span><span class="ln"><span class="no">17</span>            sb.append(cand.remove(idx));</span><span class="ln"><span class="no">18</span>            k %= fact[i];               <span class="c">// 组内还剩多少，继续确定下一位</span></span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给出集合 <code>[1,2,3,...,n]</code>，其所有元素共有 <code>n!</code> 种排列。</p>
+
+<p>按大小顺序列出所有排列情况，并一一标记，当 <code>n = 3</code> 时, 所有排列如下：</p>
+
+<ol>
+	<li><code>"123"</code></li>
+	<li><code>"132"</code></li>
+	<li><code>"213"</code></li>
+	<li><code>"231"</code></li>
+	<li><code>"312"</code></li>
+	<li><code>"321"</code></li>
+</ol>
+
+<p>给定 <code>n</code> 和 <code>k</code>，返回第 <code>k</code> 个排列。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 3, k = 3
+<strong>输出：</strong>"213"
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 4, k = 9
+<strong>输出：</strong>"2314"
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 3, k = 1
+<strong>输出：</strong>"123"
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= n <= 9</code></li>
+	<li><code>1 <= k <= n!</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String getPermutation(int n, int k) {", "        // fact[i] = i!：第 i 位后面还有 i 个位置，每组排列有 i! 个", "        int[] fact = new int[n];", "        fact[0] = 1;", "        for (int i = 1; i < n; i++) fact[i] = fact[i - 1] * i;", "        // 候选数字 1..n，用有序表：取走一个后剩下的仍有序", "        List<Integer> cand = new ArrayList<>();", "        for (int i = 1; i <= n; i++) cand.add(i);", "        k--;   // 题目从 1 数起，转成 0 起始的序号", "        StringBuilder sb = new StringBuilder();", "        // 逐位确定：第一位看 k 落在哪个「以某数开头的组」里", "        for (int i = n - 1; i >= 0; i--) {", "            int idx = k / fact[i];      // 当前位应取候选里第 idx 个（0 起始）", "            sb.append(cand.remove(idx));", "            k %= fact[i];               // 组内还剩多少，继续确定下一位", "        }", "        return sb.toString();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 60. 排列序列 —— 图解：复刻 Solution.java 的阶乘进制逐位确定，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 4, k: 9 };
+
+function trace(input) {
+  var n = input.n, k = input.k;
+  var frames = [];
+  var IDX = 'int idx = k / fact[i];';
+  var PICK = 'sb.append(cand.remove(idx));';
+  var RET = 'return sb.toString();';
+
+  var fact = [1];
+  for (var i = 1; i < n; i++) fact[i] = fact[i - 1] * i;
+  var cand = [];
+  for (i = 1; i <= n; i++) cand.push(i);
+  k--;
+  var sb = '';
+  var firedIdx = 0, firedPick = 0;
+
+  function candPanel(marks) {
+    return Viz.cells(cand.slice(), { title: '候选数字（还没用过的）', marks: marks || {}, hideIndex: true });
+  }
+  function varsPanel(extra) {
+    var items = [{ name: 'k（0 起始序号）', v: k }, { name: '已拼出', v: sb || '（空）', cls: sb ? 'chg' : '' }];
+    return Viz.vars(items.concat(extra || []));
+  }
+
+  frames.push(Viz.frame('k--', 'k 从 1 数起：转成 0 起始的序号 k=' + k + '，再备好阶乘表和候选',
+    [candPanel(), varsPanel([{ name: 'fact', v: '[' + fact.join(',') + ']' }])]));
+
+  for (i = n - 1; i >= 0; i--) {
+    var idx = Math.floor(k / fact[i]);
+    if (firedIdx < 2) {
+      firedIdx++;
+      var m = {};
+      m[idx] = 'cur';
+      frames.push(Viz.frame(IDX, '第 ' + (n - i) + ' 位：k=' + k + ' ÷ ' + fact[i] + '! = ' + idx +
+        ' → 前面跳过 ' + idx + ' 组（每组 ' + fact[i] + '! 个排列），取候选第 ' + idx + ' 个',
+        [candPanel(m), varsPanel([{ name: 'idx', v: idx, cls: 'chg' }, { name: 'fact[i]', v: fact[i] }])]));
+    }
+    var picked = cand.splice(idx, 1)[0];
+    sb += picked;
+    if (firedPick < 2) {
+      firedPick++;
+      frames.push(Viz.frame(PICK, '取走 ' + picked + ' 拼进结果，k %= ' + fact[i] + '! 后 k=' + (k % fact[i]) +
+        '，继续在下一位里找',
+        [candPanel((function () { return {}; })()), varsPanel([{ name: 'k（更新后）', v: k % fact[i], cls: 'chg' }])]));
+    }
+    k %= fact[i];
+  }
+
+  frames.push(Viz.frame(RET, '候选取空：第 ' + input.k + ' 个排列就是 ' + sb,
+    [candPanel(), varsPanel([{ name: '答案', v: sb, cls: 'done' }])]));
+
+  return { frames: frames, result: sb };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

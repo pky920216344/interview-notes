@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>交换字符串中的元素 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 941 / 1159</span>
+  <nav class="pn"><a href="0803.html">上一篇</a><a href="1489.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1202. </span>交换字符串中的元素</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">并查集</li><li class="aux">哈希表</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">并查集把「能互相交换」的下标并成组——组内能摆成任意排列；每组字符升序、下标升序，一一对应放回。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>交换关系可传递：<code>(a,b)</code>、<code>(b,c)</code> 意味着 a、b、c 互通，用并查集求连通分量。</li><li>连通分量内可达成<strong>任意排列</strong>，字典序最小的摆法唯一：把组内字符升序排、下标升序排，逐位对应。</li><li>用 <code>Map&lt;根, 下标列表&gt;</code> 收组；注意 <code>pairs</code> 可能有自环、重复对，并查集天然免疫。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n + α·pairs)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">ArrayList</span>;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.<span class="t">Collections</span>;</span><span class="ln"><span class="no">3</span><span class="k">import</span> java.util.<span class="t">HashMap</span>;</span><span class="ln"><span class="no">4</span><span class="k">import</span> java.util.<span class="t">List</span>;</span><span class="ln"><span class="no">5</span><span class="k">import</span> java.util.<span class="t">Map</span>;</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">8</span>    <span class="k">private</span> <span class="k">int</span>[] parent;</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">public</span> <span class="t">String</span> smallestStringWithSwaps(<span class="t">String</span> s, <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; pairs) {</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">12</span>        parent = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) parent[i] = i;</span><span class="ln"><span class="no">14</span>        <span class="c">// 能互相交换的下标并成一个组：组内可以摆成任意排列</span></span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="t">List</span>&lt;<span class="t">Integer</span>&gt; p : pairs) union(p.get(<span class="n">0</span>), p.get(<span class="n">1</span>));</span><span class="ln"><span class="no">16</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; groups = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">17</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) groups.computeIfAbsent(find(i), k -&gt; <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;()).add(i);</span><span class="ln"><span class="no">18</span>        <span class="c">// 每组内：最小的字符放到最小的下标，次小放次小……</span></span><span class="ln"><span class="no">19</span>        <span class="k">char</span>[] res = s.toCharArray();</span><span class="ln"><span class="no">20</span>        <span class="k">for</span> (<span class="t">List</span>&lt;<span class="t">Integer</span>&gt; idx : groups.values()) {</span><span class="ln"><span class="no">21</span>            <span class="t">List</span>&lt;<span class="t">Character</span>&gt; chs = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">22</span>            <span class="k">for</span> (<span class="k">int</span> i : idx) chs.add(res[i]);</span><span class="ln"><span class="no">23</span>            <span class="t">Collections</span>.sort(idx);</span><span class="ln"><span class="no">24</span>            <span class="t">Collections</span>.sort(chs);</span><span class="ln"><span class="no">25</span>            <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; idx.size(); k++) res[idx.get(k)] = chs.get(k);</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> <span class="k">new</span> <span class="t">String</span>(res);</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span> </span><span class="ln"><span class="no">30</span>    <span class="k">private</span> <span class="k">int</span> find(<span class="k">int</span> x) {</span><span class="ln"><span class="no">31</span>        <span class="k">while</span> (parent[x] != x) {</span><span class="ln"><span class="no">32</span>            parent[x] = parent[parent[x]];   <span class="c">// 路径压缩</span></span><span class="ln"><span class="no">33</span>            x = parent[x];</span><span class="ln"><span class="no">34</span>        }</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> x;</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span> </span><span class="ln"><span class="no">38</span>    <span class="k">private</span> <span class="k">void</span> union(<span class="k">int</span> a, <span class="k">int</span> b) {</span><span class="ln"><span class="no">39</span>        a = find(a);</span><span class="ln"><span class="no">40</span>        b = find(b);</span><span class="ln"><span class="no">41</span>        <span class="k">if</span> (a != b) parent[a] = b;</span><span class="ln"><span class="no">42</span>    }</span><span class="ln"><span class="no">43</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串&nbsp;<code>s</code>，以及该字符串中的一些「索引对」数组&nbsp;<code>pairs</code>，其中&nbsp;<code>pairs[i] =&nbsp;[a, b]</code>&nbsp;表示字符串中的两个索引（编号从 0 开始）。</p>
+
+<p>你可以 <strong>任意多次交换</strong> 在&nbsp;<code>pairs</code>&nbsp;中任意一对索引处的字符。</p>
+
+<p>返回在经过若干次交换后，<code>s</code>&nbsp;可以变成的按字典序最小的字符串。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre><strong>输入：</strong>s = &quot;dcab&quot;, pairs = [[0,3],[1,2]]
+<strong>输出：</strong>&quot;bacd&quot;
+<strong>解释：</strong> 
+交换 s[0] 和 s[3], s = &quot;bcad&quot;
+交换 s[1] 和 s[2], s = &quot;bacd&quot;
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>s = &quot;dcab&quot;, pairs = [[0,3],[1,2],[0,2]]
+<strong>输出：</strong>&quot;abcd&quot;
+<strong>解释：</strong>
+交换 s[0] 和 s[3], s = &quot;bcad&quot;
+交换 s[0] 和 s[2], s = &quot;acbd&quot;
+交换 s[1] 和 s[2], s = &quot;abcd&quot;</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>s = &quot;cba&quot;, pairs = [[0,1],[1,2]]
+<strong>输出：</strong>&quot;abc&quot;
+<strong>解释：</strong>
+交换 s[0] 和 s[1], s = &quot;bca&quot;
+交换 s[1] 和 s[2], s = &quot;bac&quot;
+交换 s[0] 和 s[1], s = &quot;abc&quot;
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 10^5</code></li>
+	<li><code>0 &lt;= pairs.length &lt;= 10^5</code></li>
+	<li><code>0 &lt;= pairs[i][0], pairs[i][1] &lt;&nbsp;s.length</code></li>
+	<li><code>s</code>&nbsp;中只含有小写英文字母</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.ArrayList;", "import java.util.Collections;", "import java.util.HashMap;", "import java.util.List;", "import java.util.Map;", "", "class Solution {", "    private int[] parent;", "", "    public String smallestStringWithSwaps(String s, List<List<Integer>> pairs) {", "        int n = s.length();", "        parent = new int[n];", "        for (int i = 0; i < n; i++) parent[i] = i;", "        // 能互相交换的下标并成一个组：组内可以摆成任意排列", "        for (List<Integer> p : pairs) union(p.get(0), p.get(1));", "        Map<Integer, List<Integer>> groups = new HashMap<>();", "        for (int i = 0; i < n; i++) groups.computeIfAbsent(find(i), k -> new ArrayList<>()).add(i);", "        // 每组内：最小的字符放到最小的下标，次小放次小……", "        char[] res = s.toCharArray();", "        for (List<Integer> idx : groups.values()) {", "            List<Character> chs = new ArrayList<>();", "            for (int i : idx) chs.add(res[i]);", "            Collections.sort(idx);", "            Collections.sort(chs);", "            for (int k = 0; k < idx.size(); k++) res[idx.get(k)] = chs.get(k);", "        }", "        return new String(res);", "    }", "", "    private int find(int x) {", "        while (parent[x] != x) {", "            parent[x] = parent[parent[x]];   // 路径压缩", "            x = parent[x];", "        }", "        return x;", "    }", "", "    private void union(int a, int b) {", "        a = find(a);", "        b = find(b);", "        if (a != b) parent[a] = b;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1202. 交换字符串中的元素 —— 图解：并查集分组，组内字符升序对齐下标升序放回。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'dcab', pairs: [[0, 3], [1, 2]] };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var pairs = input.pairs;
+  var frames = [];
+
+  var parent = [];
+  for (var i = 0; i < n; i++) parent[i] = i;
+  function find(x) { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; }
+  function union(a, b) { a = find(a); b = find(b); if (a !== b) parent[a] = b; }
+
+  function cellsPanel(marks) {
+    return Viz.cells(s.split(''), { title: '字符串 s 的每个字符（按下标排开）', marks: marks || {} });
+  }
+  function groupsTable() {
+    var byRoot = {}, roots = [], i;
+    for (i = 0; i < n; i++) {
+      var rt = find(i);
+      if (!(rt in byRoot)) { byRoot[rt] = []; roots.push(rt); }
+      byRoot[rt].push(i);
+    }
+    roots.sort(function (a, b) { return Math.min.apply(null, byRoot[a]) - Math.min.apply(null, byRoot[b]); });
+    var rows = [];
+    roots.forEach(function (rt) {
+      var idx = byRoot[rt].slice().sort(function (a, b) { return a - b; });
+      if (idx.length < 2) return;   // 单独一个下标成不了一组，跳过不画
+      var chs = idx.map(function (x) { return s[x]; }).sort();
+      rows.push({ k: '组 {' + idx.join(',') + '}', v: '字符 ' + chs.join('') + ' 按升序放回这些下标', cls: '' });
+    });
+    return Viz.table('并查集分出的组（组内可任意重排）', rows, { hint: rows.length ? '' : '（没有可交换的对）' });
+  }
+
+  // 并查集合并
+  pairs.forEach(function (p) { union(p[0], p[1]); });
+  var grouped = {};
+  for (i = 0; i < n; i++) if (hasPair(i)) grouped[i] = 'win';
+  function hasPair(x) {
+    for (var k = 0; k < pairs.length; k++) if (pairs[k][0] === x || pairs[k][1] === x) return true;
+    return false;
+  }
+
+  frames.push(Viz.frame('for (List<Integer> p : pairs) union(p.get(0), p.get(1));',
+    '把能互相交换的下标并成一组：组内想怎么换就怎么换',
+    [cellsPanel(grouped), groupsTable()]));
+
+  frames.push(Viz.frame('Map<Integer, List<Integer>> groups = new HashMap<>();',
+    '分组完成：每一组里字符可以摆成任意排列，取字典序最小的摆法',
+    [cellsPanel(grouped), groupsTable()]));
+
+  // 组内升序对齐下标升序
+  var res = s.split('');
+  var byRoot = {};
+  for (i = 0; i < n; i++) {
+    var rt = find(i);
+    if (!(rt in byRoot)) byRoot[rt] = [];
+    byRoot[rt].push(i);
+  }
+  var assigned = {};
+  for (var root in byRoot) {
+    var idx = byRoot[root].slice().sort(function (a, b) { return a - b; });
+    var chs = idx.map(function (x) { return s[x]; }).sort();
+    for (var k = 0; k < idx.length; k++) {
+      res[idx[k]] = chs[k];
+      if (chs[k] !== s[idx[k]]) assigned[idx[k]] = 'new';
+    }
+  }
+  frames.push(Viz.frame('for (int k = 0; k < idx.size(); k++) res[idx.get(k)] = chs.get(k);',
+    '每组内：最小的字符放最小的下标，依次放回（变动的格子标绿）',
+    [cellsPanel(assigned), groupsTable()]));
+
+  var out = res.join('');
+  var doneMarks = {};
+  for (i = 0; i < n; i++) doneMarks[i] = res[i] === s[i] ? 'dim' : 'done';
+  frames.push(Viz.frame('return new String(res);',
+    out === s ? '没有可交换的对，字符串不变' : '拼回字符串：' + s + ' → ' + out,
+    [cellsPanel(doneMarks), groupsTable()]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

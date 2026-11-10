@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>丑数 III · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 844 / 1159</span>
+  <nav class="pn"><a href="offer-58-ii.html">上一篇</a><a href="0693.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1201. </span>丑数 III</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">二分查找</li><li class="aux">数学</li><li class="tag">数学</li><li class="tag">二分查找</li><li class="tag">组合数学</li><li class="tag">greatest-common-divisor</li><li class="tag">数论</li><li class="tag">inclusion-exclusion-principle</li><li class="tag">euclidean-algorithm</li><li class="tag">least-common-multiple</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">二分答案 x：count(x) = ≤x 中能被 a 或 b 或 c 整除的个数（容斥），单调不减，找最小 count(x) ≥ n。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>第 n 个丑数 = 最小的 <code>x</code> 使 <code>count(x) ≥ n</code>（<code>count</code> 只在丑数处 +1，答案本身必是丑数）。</li><li><code>count(x)</code> 用容斥：<code>x/a + x/b + x/c − x/lcm(ab) − x/lcm(ac) − x/lcm(bc) + x/lcm(abc)</code>。</li><li><code>count</code> 单调不减 → 二分 <code>x</code>，<code>count(mid) ≥ n</code> 收 <code>hi</code>，否则收 <code>lo</code>；范围 <code>[1, 2×10⁹]</code>（题面保证）。</li><li><code>lcm</code> 用 <code>long</code>：<code>a*b*c ≤ 10¹⁸</code> 不会溢出，<code>lcm(x,y) = x/gcd(x,y)*y</code> 先除后乘。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log(2×10⁹) × log V)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> nthUglyNumber(<span class="k">int</span> n, <span class="k">int</span> a, <span class="k">int</span> b, <span class="k">int</span> c) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 二分答案 x：count(x) = ≤x 的丑数个数，单调不减，找最小的 count(x) ≥ n</span></span><span class="ln"><span class="no">4</span>        <span class="k">long</span> lo = <span class="n">1</span>, hi = <span class="n">2_000_000_000L</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">6</span>            <span class="k">long</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (count(mid, a, b, c) &gt;= n) hi = mid; <span class="k">else</span> lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">8</span>        }</span><span class="ln"><span class="no">9</span>        <span class="k">return</span> (<span class="k">int</span>) lo;</span><span class="ln"><span class="no">10</span>    }</span><span class="ln"><span class="no">11</span> </span><span class="ln"><span class="no">12</span>    <span class="c">// 容斥：能被 a 或 b 或 c 整除的 x 以内正整数个数</span></span><span class="ln"><span class="no">13</span>    <span class="k">private</span> <span class="k">long</span> count(<span class="k">long</span> x, <span class="k">int</span> a, <span class="k">int</span> b, <span class="k">int</span> c) {</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> x / a + x / b + x / c</span><span class="ln"><span class="no">15</span>                - x / lcm(a, b) - x / lcm(a, c) - x / lcm(b, c)</span><span class="ln"><span class="no">16</span>                + x / lcm(lcm(a, b), c);</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    <span class="k">private</span> <span class="k">long</span> lcm(<span class="k">long</span> x, <span class="k">long</span> y) {</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> x / gcd(x, y) * y;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span> </span><span class="ln"><span class="no">23</span>    <span class="k">private</span> <span class="k">long</span> gcd(<span class="k">long</span> x, <span class="k">long</span> y) {</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> y == <span class="n">0</span> ? x : gcd(y, x % y);</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>丑数是可以被&nbsp;<code>a</code>&nbsp;<strong>或</strong>&nbsp;<code>b</code>&nbsp;<strong>或</strong> <code>c</code>&nbsp;整除的 <strong>正整数</strong> 。</p>
+
+<p>给你四个整数：<code>n</code> 、<code>a</code> 、<code>b</code> 、<code>c</code> ，请你设计一个算法来找出第&nbsp;<code>n</code>&nbsp;个丑数。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 3, a = 2, b = 3, c = 5
+<strong>输出：</strong>4
+<strong>解释：</strong>丑数序列为 2, 3, 4, 5, 6, 8, 9, 10... 其中第 3 个是 4。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 4, a = 2, b = 3, c = 4
+<strong>输出：</strong>6
+<strong>解释：</strong>丑数序列为 2, 3, 4, 6, 8, 9, 10, 12... 其中第 4 个是 6。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 5, a = 2, b = 11, c = 13
+<strong>输出：</strong>10
+<strong>解释：</strong>丑数序列为 2, 4, 6, 8, 10, 11, 12, 13... 其中第 5 个是 10。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n, a, b, c &lt;= 10<sup>9</sup></code></li>
+	<li><code>1 &lt;= a * b * c &lt;= 10<sup>18</sup></code></li>
+	<li>本题结果在&nbsp;<code>[1,&nbsp;2 * 10<sup>9</sup>]</code>&nbsp;的范围内</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int nthUglyNumber(int n, int a, int b, int c) {", "        // 二分答案 x：count(x) = ≤x 的丑数个数，单调不减，找最小的 count(x) ≥ n", "        long lo = 1, hi = 2_000_000_000L;", "        while (lo < hi) {", "            long mid = (lo + hi) >>> 1;", "            if (count(mid, a, b, c) >= n) hi = mid; else lo = mid + 1;", "        }", "        return (int) lo;", "    }", "", "    // 容斥：能被 a 或 b 或 c 整除的 x 以内正整数个数", "    private long count(long x, int a, int b, int c) {", "        return x / a + x / b + x / c", "                - x / lcm(a, b) - x / lcm(a, c) - x / lcm(b, c)", "                + x / lcm(lcm(a, b), c);", "    }", "", "    private long lcm(long x, long y) {", "        return x / gcd(x, y) * y;", "    }", "", "    private long gcd(long x, long y) {", "        return y == 0 ? x : gcd(y, x % y);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1201. 丑数 III —— 图解：二分答案 x，容斥算 count(x)，收敛到最小的 count(x) ≥ n。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 3, a: 2, b: 3, c: 5 };
+
+function trace(input) {
+  var n = input.n, a = input.a, b = input.b, c = input.c;
+  var frames = [];
+  var INIT = 'long lo = 1, hi = 2_000_000_000L;';
+  var MID = 'long mid = (lo + hi) >>> 1;';
+  var CNT = 'return x / a + x / b + x / c';
+  var BR = 'if (count(mid, a, b, c) >= n) hi = mid; else lo = mid + 1;';
+  var RET = 'return (int) lo;';
+
+  function gcd(x, y) { return y === 0 ? x : gcd(y, x % y); }
+  function lcm(x, y) { return x / gcd(x, y) * y; }
+  function countOf(x) {
+    var ab = lcm(a, b), ac = lcm(a, c), bc = lcm(b, c), abc = lcm(ab, c);
+    // JS 的 / 是浮点除，必须逐项 Math.floor 模拟 Java 整除
+    return Math.floor(x / a) + Math.floor(x / b) + Math.floor(x / c)
+        - Math.floor(x / ab) - Math.floor(x / ac) - Math.floor(x / bc) + Math.floor(x / abc);
+  }
+  function cntTerms(x) {
+    var ab = lcm(a, b), ac = lcm(a, c), bc = lcm(b, c), abc = lcm(ab, c);
+    return [
+      { k: '+x/' + a, v: String(Math.floor(x / a)), cls: '' },
+      { k: '+x/' + b, v: String(Math.floor(x / b)), cls: '' },
+      { k: '+x/' + c, v: String(Math.floor(x / c)), cls: '' },
+      { k: '−x/lcm(' + a + ',' + b + ')', v: '−' + Math.floor(x / ab), cls: '' },
+      { k: '−x/lcm(' + a + ',' + c + ')', v: '−' + Math.floor(x / ac), cls: '' },
+      { k: '−x/lcm(' + b + ',' + c + ')', v: '−' + Math.floor(x / bc), cls: '' },
+      { k: '+x/lcm(lcm(' + a + ',' + b + '),' + c + ')', v: '+' + Math.floor(x / abc), cls: '' }
+    ];
+  }
+
+  // 与 Solution.java 相同的二分，先无声跑一遍记录迭代
+  var iters = [], ans = 0;
+  for (var lo = 1, hi = 2000000000; lo < hi;) {
+    var mid = Math.floor((lo + hi) / 2);   // 同 Java 的 (lo+hi)>>>1（JS 加法不会溢出，直接除 2 取整）
+    iters.push({ lo: lo, mid: mid, hi: hi, cnt: countOf(mid) });
+    if (countOf(mid) >= n) hi = mid; else lo = mid + 1;
+  }
+  ans = lo;
+  var lastIdx = -1;
+  for (var t = 0; t < iters.length; t++) if (iters[t].mid === ans) lastIdx = t;
+  if (lastIdx < 0) lastIdx = iters.length - 1;
+
+  var first = iters[0], last = iters[lastIdx];
+  frames.push(Viz.frame(INIT, '二分范围 [1, 2×10⁹]（题面保证答案在内），找最小的 count(x) ≥ ' + n, [
+    Viz.vars([{ name: 'lo', v: '1' }, { name: 'hi', v: '2000000000' }, { name: 'count(x)', v: '≤x 的丑数个数，单调不减' }])
+  ]));
+  frames.push(Viz.frame(MID, '第 1 步取中点 mid = ' + first.mid + '：count(mid) 决定往左还是往右', [
+    Viz.vars([
+      { name: 'lo', v: String(first.lo) },
+      { name: 'mid', v: String(first.mid), cls: 'new' },
+      { name: 'hi', v: String(first.hi) }
+    ])
+  ]));
+  frames.push(Viz.frame(CNT, '容斥数 count(' + first.mid + ')：被 a/b/c 整除的个数，两两 lcm 重复的扣回，三者补回', [
+    Viz.table('count(x) 的 7 项（x = ' + first.mid + '）', cntTerms(first.mid), { hint: '答案 x 一定本身是丑数（count 只在丑数处跳变）' }),
+    Viz.vars([{ name: 'count(' + first.mid + ')', v: String(first.cnt), cls: 'chg' }, { name: 'n', v: String(n) }])
+  ]));
+  frames.push(Viz.frame(BR, '最后一步：mid = ' + last.mid + '，count = ' + last.cnt + (last.cnt >= n ? ' ≥ ' + n + ' → hi = mid，收敛' : ' < ' + n + ' → lo = mid+1，收敛'), [
+    Viz.vars([
+      { name: 'lo', v: String(last.lo) },
+      { name: 'mid', v: String(last.mid), cls: 'chg' },
+      { name: 'hi', v: String(last.hi) }
+    ])
+  ]));
+
+  var retPanels = [Viz.vars([{ name: 'lo = hi', v: String(ans), cls: 'done' }, { name: '第 ' + n + ' 个丑数', v: String(ans), cls: 'done' }])];
+  if (a <= 20 && b <= 20 && c <= 20) {
+    var seq = [], x = 0;
+    while (seq.length < 6) {
+      x++;
+      if (x % a === 0 || x % b === 0 || x % c === 0) seq.push(x);
+    }
+    var marks = {};
+    for (var k = 0; k < seq.length; k++) if (seq[k] === ans) marks[k] = 'done';
+    retPanels.unshift(Viz.cells(seq, { title: '丑数序列（a=' + a + ', b=' + b + ', c=' + c + '）', marks: marks }));
+  }
+  frames.push(Viz.frame(RET, 'lo == hi = ' + ans + '：最小的 count(x) ≥ ' + n + ' 的 x，即第 ' + n + ' 个丑数', retPanels));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

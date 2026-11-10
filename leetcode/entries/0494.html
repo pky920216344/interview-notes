@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>目标和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 194 / 1159</span>
+  <nav class="pn"><a href="0084.html">上一篇</a><a href="0264.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">494. </span>目标和</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 25</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">回溯</li><li class="tag">knapsack-problem</li><li class="tag">0-1-knapsack</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">转化成子集和：取正号的子集和 P = (sum + target) / 2，答案就是从 nums 里凑出 P 的方案数，0/1 背包一维倒序计数。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>设取正子集和为 <code>P</code>：<code>P − (sum − P) = target</code> → <code>P = (sum + target) / 2</code>，问题变成「凑出 P 的子集有几个」。</li><li>先排除无解：<code>sum + target</code> 是奇数，或 <code>|target| &gt; sum</code>（含 <code>sum + target &lt; 0</code>）时直接返回 0。</li><li>计数版 0/1 背包：<code>dp[j] += dp[j - num]</code>，<code>j</code> 要从大到小循环，保证每个数只选一次；<code>dp[0] = 1</code> 是空集那一方案。</li><li><code>nums</code> 里的 0 照常走循环：<code>dp[j] += dp[j]</code> 恰好把方案数翻倍（<code>+0</code>、<code>-0</code> 都是合法表达式）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n · P)，空间复杂度 O(P)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> findTargetSumWays(<span class="k">int</span>[] nums, <span class="k">int</span> target) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> sum = <span class="n">0</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">for</span> (<span class="k">int</span> num : nums) sum += num;</span><span class="ln"><span class="no">5</span>        <span class="c">// 取正号的子集和 P = (sum + target) / 2；越界或奇数就无解</span></span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (sum + target &lt; <span class="n">0</span> || (sum + target) % <span class="n">2</span> != <span class="n">0</span>) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> p = (sum + target) / <span class="n">2</span>;</span><span class="ln"><span class="no">8</span>        <span class="c">// dp[j]：从 nums 里选出和为 j 的子集方案数；0/1 背包，一维倒序</span></span><span class="ln"><span class="no">9</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[p + <span class="n">1</span>];</span><span class="ln"><span class="no">10</span>        dp[<span class="n">0</span>] = <span class="n">1</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> num : nums) {</span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> j = p; j &gt;= num; j--) {</span><span class="ln"><span class="no">13</span>                dp[j] += dp[j - num];</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> dp[p];</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个非负整数数组 <code>nums</code> 和一个整数 <code>target</code> 。</p>
+
+<p>向数组中的每个整数前添加&nbsp;<code>'+'</code> 或 <code>'-'</code> ，然后串联起所有整数，可以构造一个 <strong>表达式</strong> ：</p>
+
+<ul>
+	<li>例如，<code>nums = [2, 1]</code> ，可以在 <code>2</code> 之前添加 <code>'+'</code> ，在 <code>1</code> 之前添加 <code>'-'</code> ，然后串联起来得到表达式 <code>"+2-1"</code> 。</li>
+</ul>
+
+<p>返回可以通过上述方法构造的、运算结果等于 <code>target</code> 的不同 <strong>表达式</strong> 的数目。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,1,1,1,1], target = 3
+<strong>输出：</strong>5
+<strong>解释：</strong>一共有 5 种方法让最终目标和为 3 。
+-1 + 1 + 1 + 1 + 1 = 3
++1 - 1 + 1 + 1 + 1 = 3
++1 + 1 - 1 + 1 + 1 = 3
++1 + 1 + 1 - 1 + 1 = 3
++1 + 1 + 1 + 1 - 1 = 3
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1], target = 1
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 20</code></li>
+	<li><code>0 &lt;= nums[i] &lt;= 1000</code></li>
+	<li><code>0 &lt;= sum(nums[i]) &lt;= 1000</code></li>
+	<li><code>-1000 &lt;= target &lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int findTargetSumWays(int[] nums, int target) {", "        int sum = 0;", "        for (int num : nums) sum += num;", "        // 取正号的子集和 P = (sum + target) / 2；越界或奇数就无解", "        if (sum + target < 0 || (sum + target) % 2 != 0) return 0;", "        int p = (sum + target) / 2;", "        // dp[j]：从 nums 里选出和为 j 的子集方案数；0/1 背包，一维倒序", "        int[] dp = new int[p + 1];", "        dp[0] = 1;", "        for (int num : nums) {", "            for (int j = p; j >= num; j--) {", "                dp[j] += dp[j - num];", "            }", "        }", "        return dp[p];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 494. 目标和 —— 图解：复刻 Solution.java 的「子集和转化 + 一维 0/1 背包」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 1, 1, 1, 1], target: 3 };
+
+function trace(input) {
+  var nums = input.nums, target = input.target;
+  var frames = [];
+  var sum = 0;
+  nums.forEach(function (x) { sum += x; });
+  var noSolution = sum + target < 0 || (sum + target) % 2 !== 0;
+  var p = noSolution ? 0 : (sum + target) / 2;
+
+  function varsPanel(extra) {
+    var items = [
+      { name: 'sum', v: sum },
+      { name: 'target', v: target },
+      { name: 'P', v: noSolution ? '无解' : p, cls: noSolution ? 'bad' : 'chg' }
+    ];
+    if (extra) items = items.concat(extra);
+    return Viz.vars(items);
+  }
+
+  if (noSolution) {
+    frames.push(Viz.frame('if (sum + target < 0 || (sum + target) % 2 != 0) return 0;',
+      'sum + target = ' + (sum + target) + '：奇数或越界，P 不存在，直接返回 0',
+      [Viz.cells(nums, { title: 'nums' }), varsPanel()]));
+    return { frames: frames, result: 0 };
+  }
+
+  function dpPanel(o) {
+    var marks = {};
+    var j;
+    if (o.chg) for (j = 0; j < o.dp.length; j++) if (o.chg[j]) marks[j] = 'chg';
+    if (o.done != null) marks[o.done] = 'done';
+    return Viz.cells(o.dp, { title: 'dp[j]：凑出 j 的取正方案数', marks: marks, pointers: o.ptr || [] });
+  }
+
+  var dp = [];
+  for (var j = 0; j <= p; j++) dp.push(0);
+  frames.push(Viz.frame('int p = (sum + target) / 2;',
+    '转化：取正子集和 P = (' + sum + '+' + target + ')/2 = ' + p + '，问题变成数子集',
+    [Viz.cells(nums, { title: 'nums' }), varsPanel()]));
+  dp[0] = 1;
+  frames.push(Viz.frame('dp[0] = 1;',
+    'dp[j] = 凑出 j 的方案数；开局只有空集凑 0 这一条路',
+    [dpPanel({ dp: dp }), varsPanel()]));
+
+  var itemIdx = -1;
+  nums.forEach(function (num) {
+    itemIdx++;
+    var before = dp.slice();
+    for (var jj = p; jj >= num; jj--) dp[jj] += dp[jj - num];
+    if (itemIdx === 2) {
+      var chg = {}, hit = [];
+      for (var j2 = 0; j2 <= p; j2++) if (dp[j2] !== before[j2]) { chg[j2] = 1; hit.push(j2); }
+      frames.push(Viz.frame('dp[j] += dp[j - num];',
+        '第 ' + (itemIdx + 1) + ' 个 ' + num + ' 处理完：凑 ' + hit[hit.length - 1] + ' 现在有 ' + dp[hit[hit.length - 1]] + ' 种',
+        [dpPanel({ dp: dp, chg: chg, ptr: [{ at: hit[hit.length - 1], label: 'j', cls: 'p-cur' }] }),
+          varsPanel([{ name: 'num', v: num }, { name: '已处理', v: (itemIdx + 1) + '/' + nums.length }])]));
+    }
+  });
+
+  frames.push(Viz.frame('return dp[p];',
+    'dp[' + p + '] = ' + dp[p] + '：取正子集和为 ' + p + ' 的方案数就是答案',
+    [dpPanel({ dp: dp, done: p, ptr: [{ at: p, label: 'P', cls: 'p-right' }] }), varsPanel()]));
+
+  return { frames: frames, result: dp[p] };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

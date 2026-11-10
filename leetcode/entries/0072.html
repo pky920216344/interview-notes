@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>编辑距离 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 29 / 1159</span>
+  <nav class="pn"><a href="0415.html">上一篇</a><a href="1143.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">72. </span>编辑距离</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 208</li><li class="algo">动态规划</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">DP：dp[i][j] 是前缀变前缀的最少步数；字符相等取左上，不等取左上、上、左的最小值 + 1；滚动成一行。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i][j]</code>：<code>word1</code> 前 <code>i</code> 个字符变成 <code>word2</code> 前 <code>j</code> 个字符的最少操作数。边界：第 0 行 <code>dp[0][j] = j</code>（全插入），第 0 列 <code>dp[i][0] = i</code>（全删除）。</li><li>末尾字符相等：<code>dp[i][j] = dp[i-1][j-1]</code>（左上，不用操作）；不相等：<code>dp[i][j] = 1 + min(左上, 上, 左)</code>，分别是替换、删除、插入。</li><li>图解画的是完整二维表，代码把它压成一行：<code>dp[j]</code> 是当前行，<code>diag</code> 暂存左上角，<code>up</code> 暂存上方，<code>dp[j-1]</code> 是刚算好的左边。</li><li>编辑距离对两个串对称，短串放第二个（递归交换一次），<code>dp</code> 数组只要 <code>min(m, n) + 1</code> 格。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(min(m, n))</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> minDistance(<span class="t">String</span> word1, <span class="t">String</span> word2) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 短串放第二个，dp 数组就只有 min(m, n) + 1 格</span></span><span class="ln"><span class="no">4</span>        <span class="k">if</span> (word1.length() &lt; word2.length()) {</span><span class="ln"><span class="no">5</span>            <span class="k">return</span> minDistance(word2, word1);</span><span class="ln"><span class="no">6</span>        }</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> m = word1.length(), n = word2.length();</span><span class="ln"><span class="no">8</span>        <span class="c">// dp[j]：word1 前 i 个字符变成 word2 前 j 个字符的最少步数</span></span><span class="ln"><span class="no">9</span>        <span class="c">// i 是当前行，上一行的值被逐格覆盖</span></span><span class="ln"><span class="no">10</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt;= n; j++) dp[j] = j;   <span class="c">// 第 0 行：全靠插入</span></span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= m; i++) {</span><span class="ln"><span class="no">13</span>            <span class="k">int</span> diag = dp[<span class="n">0</span>];     <span class="c">// 左上角 dp[i-1][j-1]</span></span><span class="ln"><span class="no">14</span>            dp[<span class="n">0</span>] = i;            <span class="c">// 第 0 列：全靠删除</span></span><span class="ln"><span class="no">15</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt;= n; j++) {</span><span class="ln"><span class="no">16</span>                <span class="k">int</span> up = dp[j];   <span class="c">// 上方 dp[i-1][j]，被覆盖前先存下</span></span><span class="ln"><span class="no">17</span>                <span class="k">if</span> (word1.charAt(i - <span class="n">1</span>) == word2.charAt(j - <span class="n">1</span>)) dp[j] = diag;</span><span class="ln"><span class="no">18</span>                <span class="k">else</span> dp[j] = <span class="n">1</span> + <span class="t">Math</span>.min(diag, <span class="t">Math</span>.min(up, dp[j - <span class="n">1</span>]));</span><span class="ln"><span class="no">19</span>                diag = up;</span><span class="ln"><span class="no">20</span>            }</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> dp[n];</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你两个单词&nbsp;<code>word1</code> 和&nbsp;<code>word2</code>， <em>请返回将&nbsp;<code>word1</code>&nbsp;转换成&nbsp;<code>word2</code> 所使用的最少操作数</em> &nbsp;。</p>
+
+<p>你可以对一个单词进行如下三种操作：</p>
+
+<ul>
+	<li>插入一个字符</li>
+	<li>删除一个字符</li>
+	<li>替换一个字符</li>
+</ul>
+
+
+
+<p><strong>示例&nbsp;1：</strong></p>
+
+<pre>
+<strong>输入：</strong>word1 = "horse", word2 = "ros"
+<strong>输出：</strong>3
+<strong>解释：</strong>
+horse -&gt; rorse (将 'h' 替换为 'r')
+rorse -&gt; rose (删除 'r')
+rose -&gt; ros (删除 'e')
+</pre>
+
+<p><strong>示例&nbsp;2：</strong></p>
+
+<pre>
+<strong>输入：</strong>word1 = "intention", word2 = "execution"
+<strong>输出：</strong>5
+<strong>解释：</strong>
+intention -&gt; inention (删除 't')
+inention -&gt; enention (将 'i' 替换为 'e')
+enention -&gt; exention (将 'n' 替换为 'x')
+exention -&gt; exection (将 'n' 替换为 'c')
+exection -&gt; execution (插入 'u')
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= word1.length, word2.length &lt;= 500</code></li>
+	<li><code>word1</code> 和 <code>word2</code> 由小写英文字母组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int minDistance(String word1, String word2) {", "        // 短串放第二个，dp 数组就只有 min(m, n) + 1 格", "        if (word1.length() < word2.length()) {", "            return minDistance(word2, word1);", "        }", "        int m = word1.length(), n = word2.length();", "        // dp[j]：word1 前 i 个字符变成 word2 前 j 个字符的最少步数", "        // i 是当前行，上一行的值被逐格覆盖", "        int[] dp = new int[n + 1];", "        for (int j = 0; j <= n; j++) dp[j] = j;   // 第 0 行：全靠插入", "        for (int i = 1; i <= m; i++) {", "            int diag = dp[0];     // 左上角 dp[i-1][j-1]", "            dp[0] = i;            // 第 0 列：全靠删除", "            for (int j = 1; j <= n; j++) {", "                int up = dp[j];   // 上方 dp[i-1][j]，被覆盖前先存下", "                if (word1.charAt(i - 1) == word2.charAt(j - 1)) dp[j] = diag;", "                else dp[j] = 1 + Math.min(diag, Math.min(up, dp[j - 1]));", "                diag = up;", "            }", "        }", "        return dp[n];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 72. 编辑距离 —— 图解：复刻 Solution.java 的一维滚动 DP，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 图画的是完整的二维 dp 表（好看清「左、上、左上」三个来源）；代码里只留一行 dp，按行覆盖。
+
+var STORY_INPUT = { word1: 'horse', word2: 'ros' };
+
+function trace(input) {
+  var a = input.word1, b = input.word2;
+  if (a.length < b.length) { var swap = a; a = b; b = swap; }   // 对应 Java：短串放第二个
+  var m = a.length, n = b.length;
+  var frames = [];
+  var INIT = 'for (int j = 0; j <= n; j++) dp[j] = j;';
+  var MATCH = 'dp[j] = diag;';
+  var MISS = 'else dp[j] = 1 + Math.min(diag, Math.min(up, dp[j - 1]));';
+
+  var dp = [];                                  // 和 Java 一样只有一行
+  for (var j0 = 0; j0 <= n; j0++) dp.push(j0);
+  var table = [];                               // 完整的二维表，只用来画图；null 表示还没算到
+  for (var i0 = 0; i0 <= m; i0++) {
+    table.push([]);
+    for (var j1 = 0; j1 <= n; j1++) table[i0].push(i0 === 0 ? j1 : (j1 === 0 ? i0 : null));
+  }
+  var rowLabels = ['空'].concat(a.split(''));
+  var colLabels = ['空'].concat(b.split(''));
+
+  function gridPanel(marks) {
+    var rows = table.map(function (row) { return row.map(function (v) { return v === null ? '' : v; }); });
+    return Viz.grid(rows, {
+      title: 'dp 表：行 = word1 的前 i 个字符，列 = word2 的前 j 个字符',
+      rowLabels: rowLabels, colLabels: colLabels, marks: marks
+    });
+  }
+
+  // 第 0 行：空串变成 word2 前 j 个字符，插入 j 次；第 0 列：word1 前 i 个字符变成空串，删除 i 次
+  var base = {};
+  for (var k = 0; k <= m; k++) base[k + ',0'] = 'win';
+  for (var q = 0; q <= n; q++) base[0 + ',' + q] = 'win';
+  frames.push(Viz.frame(INIT, '边界：第 0 行要插入 j 次，第 0 列要删除 i 次', [gridPanel(base)]));
+
+  var matchFrame = null, missFrame = null;
+  for (var i = 1; i <= m; i++) {
+    var diag = dp[0];
+    dp[0] = i;
+    table[i][0] = i;
+    for (var j = 1; j <= n; j++) {
+      var up = dp[j];
+      var left = dp[j - 1];
+      var same = a[i - 1] === b[j - 1];
+      if (same) dp[j] = diag;
+      else dp[j] = 1 + Math.min(diag, Math.min(up, dp[j - 1]));
+      table[i][j] = dp[j];
+
+      var target = {};
+      target[i + ',' + j] = 'cur';
+      if (same && !matchFrame && diag >= 1) {
+        // 字符相等：直接取左上角
+        target[(i - 1) + ',' + (j - 1)] = 'win';
+        matchFrame = Viz.frame(MATCH, a[i - 1] + ' = ' + b[j - 1] + '：字符相等，直接取左上角 diag = ' + diag,
+          [gridPanel(target), Viz.vars([{ name: 'diag', v: diag }, { name: 'dp[j]', v: dp[j], cls: 'chg' }])]);
+        frames.push(matchFrame);
+      } else if (!same && matchFrame && !missFrame) {
+        // 字符不等：左上（替换）、上（删除）、左（插入）取最小，再 +1
+        target[(i - 1) + ',' + (j - 1)] = 'win';
+        target[(i - 1) + ',' + j] = 'win';
+        target[i + ',' + (j - 1)] = 'win';
+        missFrame = Viz.frame(MISS, a[i - 1] + ' ≠ ' + b[j - 1] + '：左上 ' + diag + '、上 ' + up + '、左 ' + left + '，取最小 ' + Math.min(diag, up, left) + ' 再 +1 = ' + dp[j],
+          [gridPanel(target), Viz.vars([{ name: 'diag', v: diag }, { name: 'up', v: up }, { name: 'dp[j-1]', v: left }, { name: 'dp[j]', v: dp[j], cls: 'chg' }])]);
+        frames.push(missFrame);
+      }
+      diag = up;
+    }
+  }
+
+  var last = {};
+  last[m + ',' + n] = 'done';
+  frames.push(Viz.frame('return dp[n];', '填完表：右下角 dp[' + m + '][' + n + '] = ' + dp[n] + '，就是答案',
+    [gridPanel(last), Viz.vars([{ name: 'dp[n]', v: dp[n], cls: 'chg' }])]));
+
+  return { frames: frames, result: dp[n] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>贪吃蛇 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 766 / 1159</span>
+  <nav class="pn"><a href="0707.html">上一篇</a><a href="1124.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">353. </span>贪吃蛇</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">模拟</li><li class="aux">哈希表</li><li class="aux">设计</li><li class="tag">设计</li><li class="tag">队列</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">模拟</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">双端队列存蛇身（队头尾、队尾头）+ 哈希集合判占位；走一步：头入队，没吃到食物就先弹尾，再判撞墙撞身。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>蛇身用双端队列：头进队尾、尾从队头出；占位集合让「这格有没有蛇」O(1) 可查。</li><li>先判撞墙；<strong>没吃到食物就先把尾巴弹出</strong>——这样头走进原尾尖的格子不算撞（尾巴这一步正好挪走）。</li><li>头的目标格还在占位集合里 → 撞身，游戏结束；吃到食物则尾巴不缩、<code>score+1</code>、食物指针后移。</li><li>游戏结束后再调用 <code>move</code> 一律返回 <code>-1</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1) 每步，空间复杂度 O(蛇长 + 食物数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">SnakeGame</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span> width, height;</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span>[][] food;</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">int</span> foodIdx, score;</span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="k">boolean</span> dead;</span><span class="ln"><span class="no">8</span>    <span class="c">// 双端队列存蛇身格子：队头是尾、队尾是头；格子编码成 r * width + c</span></span><span class="ln"><span class="no">9</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; body = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">10</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; occupied = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span> </span><span class="ln"><span class="no">12</span>    <span class="k">public</span> <span class="t">SnakeGame</span>(<span class="k">int</span> width, <span class="k">int</span> height, <span class="k">int</span>[][] food) {</span><span class="ln"><span class="no">13</span>        <span class="k">this</span>.width = width;</span><span class="ln"><span class="no">14</span>        <span class="k">this</span>.height = height;</span><span class="ln"><span class="no">15</span>        <span class="k">this</span>.food = food;</span><span class="ln"><span class="no">16</span>        body.addLast(<span class="n">0</span>);</span><span class="ln"><span class="no">17</span>        occupied.add(<span class="n">0</span>);</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span> </span><span class="ln"><span class="no">20</span>    <span class="k">public</span> <span class="k">int</span> move(<span class="t">String</span> direction) {</span><span class="ln"><span class="no">21</span>        <span class="k">if</span> (dead) <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">22</span>        <span class="k">int</span> head = body.peekLast();</span><span class="ln"><span class="no">23</span>        <span class="k">int</span> r = head / width, c = head % width;</span><span class="ln"><span class="no">24</span>        <span class="k">if</span> (direction.equals(<span class="s">"U"</span>)) r--;</span><span class="ln"><span class="no">25</span>        <span class="k">else</span> <span class="k">if</span> (direction.equals(<span class="s">"D"</span>)) r++;</span><span class="ln"><span class="no">26</span>        <span class="k">else</span> <span class="k">if</span> (direction.equals(<span class="s">"L"</span>)) c--;</span><span class="ln"><span class="no">27</span>        <span class="k">else</span> c++;</span><span class="ln"><span class="no">28</span>        <span class="c">// 撞墙：游戏结束</span></span><span class="ln"><span class="no">29</span>        <span class="k">if</span> (r &lt; <span class="n">0</span> || r &gt;= height || c &lt; <span class="n">0</span> || c &gt;= width) {</span><span class="ln"><span class="no">30</span>            dead = <span class="k">true</span>;</span><span class="ln"><span class="no">31</span>            <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">32</span>        }</span><span class="ln"><span class="no">33</span>        <span class="k">int</span> next = r * width + c;</span><span class="ln"><span class="no">34</span>        <span class="k">boolean</span> eat = foodIdx &lt; food.length &amp;&amp; food[foodIdx][<span class="n">0</span>] == r &amp;&amp; food[foodIdx][<span class="n">1</span>] == c;</span><span class="ln"><span class="no">35</span>        <span class="c">// 不吃就先把尾巴挪走：头才能进「原尾尖」的格子而不算撞身</span></span><span class="ln"><span class="no">36</span>        <span class="k">if</span> (!eat) occupied.remove(body.pollFirst());</span><span class="ln"><span class="no">37</span>        <span class="k">if</span> (occupied.contains(next)) {</span><span class="ln"><span class="no">38</span>            dead = <span class="k">true</span>;</span><span class="ln"><span class="no">39</span>            <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">40</span>        }</span><span class="ln"><span class="no">41</span>        body.addLast(next);</span><span class="ln"><span class="no">42</span>        occupied.add(next);</span><span class="ln"><span class="no">43</span>        <span class="k">if</span> (eat) {</span><span class="ln"><span class="no">44</span>            foodIdx++;</span><span class="ln"><span class="no">45</span>            score++;</span><span class="ln"><span class="no">46</span>        }</span><span class="ln"><span class="no">47</span>        <span class="k">return</span> score;</span><span class="ln"><span class="no">48</span>    }</span><span class="ln"><span class="no">49</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class SnakeGame {", "    private final int width, height;", "    private final int[][] food;", "    private int foodIdx, score;", "    private boolean dead;", "    // 双端队列存蛇身格子：队头是尾、队尾是头；格子编码成 r * width + c", "    private final Deque<Integer> body = new ArrayDeque<>();", "    private final Set<Integer> occupied = new HashSet<>();", "", "    public SnakeGame(int width, int height, int[][] food) {", "        this.width = width;", "        this.height = height;", "        this.food = food;", "        body.addLast(0);", "        occupied.add(0);", "    }", "", "    public int move(String direction) {", "        if (dead) return -1;", "        int head = body.peekLast();", "        int r = head / width, c = head % width;", "        if (direction.equals(\"U\")) r--;", "        else if (direction.equals(\"D\")) r++;", "        else if (direction.equals(\"L\")) c--;", "        else c++;", "        // 撞墙：游戏结束", "        if (r < 0 || r >= height || c < 0 || c >= width) {", "            dead = true;", "            return -1;", "        }", "        int next = r * width + c;", "        boolean eat = foodIdx < food.length && food[foodIdx][0] == r && food[foodIdx][1] == c;", "        // 不吃就先把尾巴挪走：头才能进「原尾尖」的格子而不算撞身", "        if (!eat) occupied.remove(body.pollFirst());", "        if (occupied.contains(next)) {", "            dead = true;", "            return -1;", "        }", "        body.addLast(next);", "        occupied.add(next);", "        if (eat) {", "            foodIdx++;", "            score++;", "        }", "        return score;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 353. 贪吃蛇（会员题，本地验证）—— 图解：复刻 Solution.java 的「双端队列蛇身 + 占位集合」，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { width: 3, height: 2, food: [[1, 2], [0, 1]], moves: ['R', 'D', 'R', 'U', 'L', 'U'] };
+
+function trace(input) {
+  var w = input.width, h = input.height;
+  var food = input.food || [];
+  var moves = input.moves || [];
+  var body = [[0, 0]];          // 队头是尾、队尾是头
+  var occ = { '0,0': true };
+  var foodIdx = 0, score = 0, dead = false, deadReason = '';
+  var frames = [], out = [];
+
+  function gridPanel() {
+    var rows = [];
+    for (var r = 0; r < h; r++) {
+      var row = [];
+      for (var c = 0; c < w; c++) row.push(occ[r + ',' + c] ? '●' : '·');
+      rows.push(row);
+    }
+    var marks = {};
+    var head = body[body.length - 1];
+    marks[head[0] + ',' + head[1]] = 'cur';
+    if (foodIdx < food.length && !occ[food[foodIdx][0] + ',' + food[foodIdx][1]]) {
+      marks[food[foodIdx][0] + ',' + food[foodIdx][1]] = 'chg';
+    }
+    return Viz.grid(rows, { title: '棋盘（● 蛇身，cur 是蛇头，chg 是下一个食物）', marks: marks });
+  }
+  function foodPanel() {
+    var rows = [];
+    for (var f = foodIdx; f < Math.min(food.length, foodIdx + 3); f++) {
+      rows.push({ k: '第 ' + (f - foodIdx + 1) + ' 个', v: '(' + food[f][0] + ',' + food[f][1] + ')', cls: f === foodIdx ? 'cur' : '' });
+    }
+    if (!rows.length) rows.push({ k: '没有了', v: '食物已吃光', cls: '' });
+    return Viz.table('食物队列（按出现顺序）', rows);
+  }
+  function varsPanel(fresh) {
+    return Viz.vars([
+      { name: 'score（吃到的食物数）', v: score, cls: fresh ? 'new' : '' },
+      { name: '游戏状态', v: dead ? '已结束' : '进行中', cls: dead ? 'bad' : '' },
+    ]);
+  }
+
+  frames.push(Viz.frame('public SnakeGame(int width, int height, int[][] food) {',
+    '开局：蛇长 1 趴在 (0,0)；每走一步返回当时的得分', [gridPanel(), foodPanel(), varsPanel(false)]));
+
+  var eatShown = false;
+  for (var i = 0; i < moves.length; i++) {
+    var d = moves[i];
+    var scoreBefore = score, deadBefore = dead;
+    var v = doMove(d);
+    out.push(v);
+    var ate = score > scoreBefore;
+    var head = body[body.length - 1];
+    if (i === 0 && !ate && !dead) {
+      frames.push(Viz.frame('if (!eat) occupied.remove(body.pollFirst());',
+        '第 1 步 ' + d + '：没吃到食物，尾巴缩一格、头挪到 (' + head[0] + ',' + head[1] + ')',
+        [gridPanel(), foodPanel(), varsPanel(false)]));
+    }
+    if (ate && !eatShown) {
+      eatShown = true;
+      frames.push(Viz.frame('body.addLast(next);',
+        '走到 (' + head[0] + ',' + head[1] + ') 吃到食物：尾巴不缩、蛇变长，score 加到 ' + score,
+        [gridPanel(), foodPanel(), varsPanel(true)]));
+    }
+    if (dead && !deadBefore) {
+      var wall = deadReason === 'wall';
+      var at = wall ? 'if (r < 0 || r >= height || c < 0 || c >= width) {' : 'if (occupied.contains(next)) {';
+      frames.push(Viz.frame(at,
+        '第 ' + (i + 1) + ' 步 ' + d + '：' + (wall ? '头撞到边界' : '头撞到自己（这一步尾巴没缩）') + '，游戏结束，之后每步都返回 -1',
+        [gridPanel(), foodPanel(), varsPanel(true)]));
+    }
+  }
+
+  frames.push(Viz.frame('return score;',
+    '移动结束：共 ' + out.length + ' 步，每次 move 的返回值见变量面板',
+    [gridPanel(), foodPanel(), varsPanel(true)]));
+
+  function doMove(d) {
+    if (dead) return -1;
+    var head = body[body.length - 1];
+    var r = head[0], c = head[1];
+    if (d === 'U') r--;
+    else if (d === 'D') r++;
+    else if (d === 'L') c--;
+    else c++;
+    if (r < 0 || r >= h || c < 0 || c >= w) { dead = true; deadReason = 'wall'; return -1; }
+    var eat = foodIdx < food.length && food[foodIdx][0] === r && food[foodIdx][1] === c;
+    if (!eat) {
+      var t = body.shift();
+      delete occ[t[0] + ',' + t[1]];
+    }
+    if (occ[r + ',' + c]) { dead = true; deadReason = 'self'; return -1; }
+    body.push([r, c]);
+    occ[r + ',' + c] = true;
+    if (eat) { foodIdx++; score++; }
+    return score;
+  }
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

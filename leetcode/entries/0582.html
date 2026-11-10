@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>杀掉进程 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 560 / 1159</span>
+  <nav class="pn"><a href="0922.html">上一篇</a><a href="supp-19.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">582. </span>杀掉进程</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">广度优先搜索</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">建「父进程 → 子进程列表」邻接表，从 kill 号开始 BFS/DFS，进队的每个进程连同整棵子树一起被杀。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>扫一遍 <code>ppid</code> 建邻接表：<code>children[ppid[i]]</code> 收下 <code>pid[i]</code>；父进程号 <code>0</code> 表示顶层。</li><li>从 <code>kill</code> 出发 BFS（或 DFS）：每弹出一个进程就记入名单，再把它的直接孩子入队。</li><li>队列空时名单恰好是 <code>kill</code> 及其全部后代；题目对输出顺序不限。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; killProcess(<span class="t">List</span>&lt;<span class="t">Integer</span>&gt; pid, <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ppid, <span class="k">int</span> kill) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 邻接表：父进程号 → 直接子进程列表；ppid 里出现 0 表示它的父进程已不在列表里</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; children = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; pid.size(); i++) {</span><span class="ln"><span class="no">8</span>            children.computeIfAbsent(ppid.get(i), k -&gt; <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;()).add(pid.get(i));</span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="c">// 从 kill 出发 BFS：进队的每个进程连同它的整棵子树一起被杀</span></span><span class="ln"><span class="no">11</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; out = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">12</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">13</span>        queue.add(kill);</span><span class="ln"><span class="no">14</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">15</span>            <span class="k">int</span> cur = queue.poll();</span><span class="ln"><span class="no">16</span>            out.add(cur);</span><span class="ln"><span class="no">17</span>            <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; cs = children.get(cur);</span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (cs != <span class="k">null</span>) <span class="k">for</span> (<span class="k">int</span> ch : cs) queue.add(ch);</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> killProcess(List<Integer> pid, List<Integer> ppid, int kill) {", "        // 邻接表：父进程号 → 直接子进程列表；ppid 里出现 0 表示它的父进程已不在列表里", "        Map<Integer, List<Integer>> children = new HashMap<>();", "        for (int i = 0; i < pid.size(); i++) {", "            children.computeIfAbsent(ppid.get(i), k -> new ArrayList<>()).add(pid.get(i));", "        }", "        // 从 kill 出发 BFS：进队的每个进程连同它的整棵子树一起被杀", "        List<Integer> out = new ArrayList<>();", "        Deque<Integer> queue = new ArrayDeque<>();", "        queue.add(kill);", "        while (!queue.isEmpty()) {", "            int cur = queue.poll();", "            out.add(cur);", "            List<Integer> cs = children.get(cur);", "            if (cs != null) for (int ch : cs) queue.add(ch);", "        }", "        return out;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 582. 杀死进程（会员题）—— 图解：复刻 Solution.java 的「邻接表 + BFS 整棵子树」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { pid: [1, 3, 10, 5], ppid: [3, 0, 5, 3], kill: 5 };
+
+function trace(input) {
+  var pid = input.pid || [], ppid = input.ppid || [], kill = input.kill;
+  var frames = [];
+  var children = {};    // 父进程号 → 直接子进程数组，对应 Java 的邻接表
+  for (var i = 0; i < pid.length; i++) {
+    var p = ppid[i];
+    if (!children[p]) children[p] = [];
+    children[p].push(pid[i]);
+  }
+  var out = [];
+  var queue = [kill];
+  var popSeen = 0;
+
+  var BUILD = 'children.computeIfAbsent(ppid.get(i), k -> new ArrayList<>()).add(pid.get(i));';
+  var POP = 'int cur = queue.poll();';
+  var RET = 'return out;';
+
+  function childrenPanel(hotParent) {
+    var keys = Object.keys(children).map(Number).sort(function (a, b) { return a - b; });
+    var rows = keys.map(function (k) {
+      return { k: String(k), v: '→ [' + children[k].join(', ') + ']', cls: k === hotParent ? 'hit' : '' };
+    });
+    return Viz.table('邻接表：父进程 → 直接子进程', rows);
+  }
+  function outPanel(marks) {
+    return Viz.cells(out.map(String), { title: '杀掉名单 out（出队顺序）', marks: marks || {}, hideIndex: true });
+  }
+  function cut(s, n) { return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+  function snap(at, key, o) {
+    frames.push(Viz.frame(at, cut(key, 60), [
+      childrenPanel(o.hotParent),
+      outPanel(o.marks),
+      Viz.vars([{ name: 'queue 待处理', v: o.queue.length ? '[' + o.queue.join(', ') + ']' : '（空）', cls: 'chg' }])
+    ]));
+  }
+
+  // 第 1 帧：邻接表建好
+  var keys = Object.keys(children).map(Number).sort(function (a, b) { return a - b; });
+  var desc = keys.map(function (k) { return k + '→[' + children[k].join(',') + ']'; }).join('，');
+  if (desc.length > 38) {
+    desc = keys.length + ' 个父进程各挂着若干子进程';
+  }
+  snap(BUILD, '把每个进程挂到父进程名下：' + desc, { hotParent: null, marks: {}, queue: [] });
+
+  while (queue.length) {
+    var cur = queue.shift();
+    out.push(cur);
+    popSeen++;
+    var mk = {};
+    mk[out.length - 1] = 'new';
+    var cs = children[cur] || [];
+    for (var d = 0; d < cs.length; d++) queue.push(cs[d]);
+    if (popSeen === 1) {
+      snap(POP, '从 kill=' + kill + ' 出发 BFS：' + cur + ' 出队进名单，它的孩子 ' + (cs.join('、') || '（无）') + ' 入队',
+        { hotParent: cur, marks: mk, queue: queue.slice() });
+    } else if (popSeen === 2) {
+      snap(POP, cur + ' 出队：它' + (cs.length ? '的孩子也接着入队' : '没有孩子，子树收完'),
+        { hotParent: cur, marks: mk, queue: queue.slice() });
+    }
+  }
+
+  var done = {};
+  for (var k = 0; k < out.length; k++) done[k] = 'done';
+  snap(RET, '队列空了：名单 [' + out.join(', ') + '] 就是 kill 及其整棵子树（题目不限顺序）', { hotParent: null, marks: done, queue: [] });
+
+  var sorted = out.slice().sort(function (a, b) { return a - b; });
+  return { frames: frames, result: sorted };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

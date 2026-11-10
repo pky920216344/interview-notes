@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>在系统中查找重复文件 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1147 / 1159</span>
+  <nav class="pn"><a href="0549.html">上一篇</a><a href="mianshi-17-21.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">609. </span>在系统中查找重复文件</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按文件内容哈希分组：每行解析成「目录 + 若干 名字(内容)」，内容相同的完整路径归为一组，取 size≥2 的组。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每行按空格切开：第一段是目录，其余每段是 <code>文件名(内容)</code>，在首个 <code>(</code> 处切成名字和内容。</li><li>哈希表 <code>内容 → 完整路径列表</code>，路径 = <code>目录/文件名</code>；一条 <code>computeIfAbsent</code> 完成收集。</li><li>最后把表中长度 ≥ 2 的组依次返回；只有一份的文件不构成重复。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(总字符数)，空间复杂度 O(总字符数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; findDuplicate(<span class="t">String</span>[] paths) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 内容 → 拥有这个内容的全部完整路径</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; byContent = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="t">String</span> line : paths) {</span><span class="ln"><span class="no">8</span>            <span class="t">String</span>[] parts = line.split(<span class="s">" "</span>);</span><span class="ln"><span class="no">9</span>            <span class="t">String</span> dir = parts[<span class="n">0</span>];</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; parts.length; i++) {</span><span class="ln"><span class="no">11</span>                <span class="k">int</span> cut = parts[i].indexOf(<span class="s">'('</span>);   <span class="c">// 文件名里没有 '('，在这里切开</span></span><span class="ln"><span class="no">12</span>                <span class="t">String</span> name = parts[i].substring(<span class="n">0</span>, cut);</span><span class="ln"><span class="no">13</span>                <span class="t">String</span> content = parts[i].substring(cut + <span class="n">1</span>, parts[i].length() - <span class="n">1</span>);</span><span class="ln"><span class="no">14</span>                byContent.computeIfAbsent(content, x -&gt; <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;()).add(dir + <span class="s">"/"</span> + name);</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="t">List</span>&lt;<span class="t">String</span>&gt; group : byContent.values()) {</span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (group.size() &gt; <span class="n">1</span>) ans.add(group);  <span class="c">// 至少两份内容相同才算重复</span></span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个目录信息列表&nbsp;<code>paths</code> ，包括目录路径，以及该目录中的所有文件及其内容，请你按路径返回文件系统中的所有重复文件。答案可按 <strong>任意顺序</strong> 返回。</p>
+
+<p>一组重复的文件至少包括 <strong>两个 </strong>具有完全相同内容的文件。</p>
+
+<p><strong>输入 </strong>列表中的单个目录信息字符串的格式如下：</p>
+
+<ul>
+	<li><code>"root/d1/d2/.../dm f1.txt(f1_content) f2.txt(f2_content) ... fn.txt(fn_content)"</code></li>
+</ul>
+
+<p>这意味着，在目录&nbsp;<code>root/d1/d2/.../dm</code>&nbsp;下，有 <code>n</code> 个文件 ( <code>f1.txt</code>,&nbsp;<code>f2.txt</code>&nbsp;...&nbsp;<code>fn.txt</code> ) 的内容分别是 ( <code>f1_content</code>,&nbsp;<code>f2_content</code>&nbsp;...&nbsp;<code>fn_content</code> ) 。注意：<code>n &gt;= 1</code> 且 <code>m &gt;= 0</code> 。如果 <code>m = 0</code> ，则表示该目录是根目录。</p>
+
+<p><strong>输出 </strong>是由 <strong>重复文件路径组</strong> 构成的列表。其中每个组由所有具有相同内容文件的文件路径组成。文件路径是具有下列格式的字符串：</p>
+
+<ul>
+	<li><code>"directory_path/file_name.txt"</code></li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>paths = ["root/a 1.txt(abcd) 2.txt(efgh)","root/c 3.txt(abcd)","root/c/d 4.txt(efgh)","root 4.txt(efgh)"]
+<strong>输出：</strong>[["root/a/2.txt","root/c/d/4.txt","root/4.txt"],["root/a/1.txt","root/c/3.txt"]]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>paths = ["root/a 1.txt(abcd) 2.txt(efgh)","root/c 3.txt(abcd)","root/c/d 4.txt(efgh)"]
+<strong>输出：</strong>[["root/a/2.txt","root/c/d/4.txt"],["root/a/1.txt","root/c/3.txt"]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= paths.length &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= paths[i].length &lt;= 3000</code></li>
+	<li><code>1 &lt;= sum(paths[i].length) &lt;= 5 * 10<sup>5</sup></code></li>
+	<li><code>paths[i]</code> 由英文字母、数字、字符 <code>'/'</code>、<code>'.'</code>、<code>'('</code>、<code>')'</code> 和 <code>' '</code> 组成</li>
+	<li>你可以假设在同一目录中没有任何文件或目录共享相同的名称。</li>
+	<li>你可以假设每个给定的目录信息代表一个唯一的目录。目录路径和文件信息用单个空格分隔。</li>
+</ul>
+
+
+
+<p><strong>进阶：</strong></p>
+
+<ul>
+	<li>假设您有一个真正的文件系统，您将如何搜索文件？广度搜索还是宽度搜索？</li>
+	<li>如果文件内容非常大（GB级别），您将如何修改您的解决方案？</li>
+	<li>如果每次只能读取 1 kb 的文件，您将如何修改解决方案？</li>
+	<li>修改后的解决方案的时间复杂度是多少？其中最耗时的部分和消耗内存的部分是什么？如何优化？</li>
+	<li>如何确保您发现的重复文件不是误报？</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<String>> findDuplicate(String[] paths) {", "        // 内容 → 拥有这个内容的全部完整路径", "        Map<String, List<String>> byContent = new HashMap<>();", "        for (String line : paths) {", "            String[] parts = line.split(\" \");", "            String dir = parts[0];", "            for (int i = 1; i < parts.length; i++) {", "                int cut = parts[i].indexOf('(');   // 文件名里没有 '('，在这里切开", "                String name = parts[i].substring(0, cut);", "                String content = parts[i].substring(cut + 1, parts[i].length() - 1);", "                byContent.computeIfAbsent(content, x -> new ArrayList<>()).add(dir + \"/\" + name);", "            }", "        }", "        List<List<String>> ans = new ArrayList<>();", "        for (List<String> group : byContent.values()) {", "            if (group.size() > 1) ans.add(group);  // 至少两份内容相同才算重复", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 609. 在系统中查找重复文件 —— 图解：按内容哈希分组，收完取 size≥2 的组。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { paths: ['root/a 1.txt(abcd) 2.txt(efgh)', 'root/c 3.txt(abcd)', 'root/c/d 4.txt(efgh)', 'root 4.txt(efgh)', 'root/x 5.txt(zzzz)'] };
+
+function trace(input) {
+  var groups = {};   // 内容 → 完整路径数组
+  var order = [];    // 内容首次出现的顺序，表格显示才稳定
+  var frames = [];
+
+  function tablePanel(hi) {
+    var rows = order.slice().sort().map(function (c) {
+      return { k: c, v: groups[c].join(' '), cls: c === hi ? 'hit' : '' };
+    });
+    return Viz.table('哈希表：内容 → 完整路径列表', rows, { hint: '（同一内容挤进同一格）' });
+  }
+  var ADD = 'byContent.computeIfAbsent(content, x -> new ArrayList<>()).add(dir + "/" + name);';
+
+  input.paths.forEach(function (line, li) {
+    var parts = line.split(' ');
+    var dir = parts[0];
+    for (var i = 1; i < parts.length; i++) {
+      var cut = parts[i].indexOf('(');
+      var name = parts[i].slice(0, cut);
+      var content = parts[i].slice(cut + 1, parts[i].length - 1);
+      if (!(content in groups)) { groups[content] = []; order.push(content); }
+      groups[content].push(dir + '/' + name);
+    }
+    if (li === 0) {
+      frames.push(Viz.frame(ADD, '第 1 行：目录 root/a 下两个文件，各自按内容挤进表的格子', [tablePanel('abcd')]));
+    } else if (li === 1) {
+      frames.push(Viz.frame(ADD, '第 2 行：3.txt 的内容还是 abcd，路径并进同一组', [tablePanel('abcd')]));
+    }
+  });
+
+  frames.push(Viz.frame('if (group.size() > 1) ans.add(group);',
+    '收完了：abcd 组 2 份、efgh 组 3 份；zzzz 只有一份，不算重复',
+    [tablePanel('zzzz')]));
+
+  // 输出与 Java 导出的 out 一致：组内按字典序、组间按首路径排序（判题对顺序不限）
+  var ans = [];
+  order.slice().sort().forEach(function (c) {
+    if (groups[c].length > 1) ans.push(groups[c].slice().sort());
+  });
+  ans.sort(function (a, b) { return a[0] < b[0] ? -1 : 1; });
+
+  frames.push(Viz.frame('return ans;',
+    '输出 size≥2 的组；组内按字典序摆（判题对顺序不限）',
+    [Viz.vars(ans.map(function (g, i) {
+      return { name: '重复组 ' + (i + 1), v: g.join(' '), cls: 'done' };
+    }))]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>通配符匹配 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 172 / 1159</span>
+  <nav class="pn"><a href="0230.html">上一篇</a><a href="0096.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">44. </span>通配符匹配</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 32</li><li class="algo">动态规划</li><li class="tag">贪心</li><li class="tag">递归</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">DP：dp[i][j] = s 前 i 个与 p 前 j 个是否匹配；&#x27;*&#x27; 抄上格或左格，&#x27;?&#x27; 与普通字符抄左上角。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i][j]</code>：<code>s</code> 前 <code>i</code> 个字符与 <code>p</code> 前 <code>j</code> 个字符能否完全匹配；答案在 <code>dp[m][n]</code>。</li><li><code>p[j]=='*'</code>：<code>dp[i][j] = dp[i-1][j] || dp[i][j-1]</code>——<code>*</code> 再吃一个字符，或当空串。</li><li><code>p[j]=='?'</code> 或等于 <code>s[i]</code>：<code>dp[i][j] = dp[i-1][j-1]</code>，一对一后看前面。</li><li>第 0 行只有开头连续 <code>*</code> 为真；代码用一维数组滚动，靠 <code>prev</code> 变量保住左上角。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> isMatch(<span class="t">String</span> s, <span class="t">String</span> p) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = s.length(), n = p.length();</span><span class="ln"><span class="no">4</span>        <span class="c">// dp[j]：s 前 i 个字符与 p 前 j 个字符是否匹配，随 i 滚动</span></span><span class="ln"><span class="no">5</span>        <span class="k">boolean</span>[] dp = <span class="k">new</span> <span class="k">boolean</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">6</span>        dp[<span class="n">0</span>] = <span class="k">true</span>;</span><span class="ln"><span class="no">7</span>        <span class="c">// 空串只能被开头的连续 * 匹配</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt;= n; j++)</span><span class="ln"><span class="no">9</span>            dp[j] = p.charAt(j - <span class="n">1</span>) == <span class="s">'*'</span> &amp;&amp; dp[j - <span class="n">1</span>];</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= m; i++) {</span><span class="ln"><span class="no">11</span>            <span class="k">boolean</span> prev = dp[<span class="n">0</span>];   <span class="c">// 左上角 dp[i-1][j-1]，随列滚动</span></span><span class="ln"><span class="no">12</span>            dp[<span class="n">0</span>] = <span class="k">false</span>;          <span class="c">// 非空 s 匹配不了空 p</span></span><span class="ln"><span class="no">13</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt;= n; j++) {</span><span class="ln"><span class="no">14</span>                <span class="k">char</span> pc = p.charAt(j - <span class="n">1</span>), sc = s.charAt(i - <span class="n">1</span>);</span><span class="ln"><span class="no">15</span>                <span class="k">boolean</span> cur;</span><span class="ln"><span class="no">16</span>                <span class="k">if</span> (pc == <span class="s">'*'</span>) cur = dp[j] || dp[j - <span class="n">1</span>];      <span class="c">// * 吃掉 s[i-1] 或当空串</span></span><span class="ln"><span class="no">17</span>                <span class="k">else</span> <span class="k">if</span> (pc == <span class="s">'?'</span> || pc == sc) cur = prev;   <span class="c">// 一对一，抄左上角</span></span><span class="ln"><span class="no">18</span>                <span class="k">else</span> cur = <span class="k">false</span>;</span><span class="ln"><span class="no">19</span>                prev = dp[j];   <span class="c">// 旧 dp[j] 滚下去，是下一列的左上角</span></span><span class="ln"><span class="no">20</span>                dp[j] = cur;</span><span class="ln"><span class="no">21</span>            }</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> dp[n];</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><div class="title__3Vvk">给你一个输入字符串 (<code>s</code>) 和一个字符模式 (<code>p</code>) ，请你实现一个支持 <code>'?'</code> 和 <code>'*'</code> 匹配规则的通配符匹配：</div>
+
+<ul>
+	<li class="title__3Vvk"><code>'?'</code> 可以匹配任何单个字符。</li>
+	<li class="title__3Vvk"><code>'*'</code> 可以匹配任意字符序列（包括空字符序列）。</li>
+</ul>
+
+<div class="original__bRMd">
+<div>
+<p>判定匹配成功的充要条件是：字符模式必须能够 <strong>完全匹配</strong> 输入字符串（而不是部分匹配）。</p>
+</div>
+</div>
+&nbsp;
+
+<p><strong class="example">示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "aa", p = "a"
+<strong>输出：</strong>false
+<strong>解释：</strong>"a" 无法匹配 "aa" 整个字符串。
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "aa", p = "*"
+<strong>输出：</strong>true
+<strong>解释：</strong>'*' 可以匹配任意字符串。
+</pre>
+
+<p><strong class="example">示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "cb", p = "?a"
+<strong>输出：</strong>false
+<strong>解释：</strong>'?' 可以匹配 'c', 但第二个 'a' 无法匹配 'b'。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= s.length, p.length &lt;= 2000</code></li>
+	<li><code>s</code> 仅由小写英文字母组成</li>
+	<li><code>p</code> 仅由小写英文字母、<code>'?'</code> 或 <code>'*'</code> 组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean isMatch(String s, String p) {", "        int m = s.length(), n = p.length();", "        // dp[j]：s 前 i 个字符与 p 前 j 个字符是否匹配，随 i 滚动", "        boolean[] dp = new boolean[n + 1];", "        dp[0] = true;", "        // 空串只能被开头的连续 * 匹配", "        for (int j = 1; j <= n; j++)", "            dp[j] = p.charAt(j - 1) == '*' && dp[j - 1];", "        for (int i = 1; i <= m; i++) {", "            boolean prev = dp[0];   // 左上角 dp[i-1][j-1]，随列滚动", "            dp[0] = false;          // 非空 s 匹配不了空 p", "            for (int j = 1; j <= n; j++) {", "                char pc = p.charAt(j - 1), sc = s.charAt(i - 1);", "                boolean cur;", "                if (pc == '*') cur = dp[j] || dp[j - 1];      // * 吃掉 s[i-1] 或当空串", "                else if (pc == '?' || pc == sc) cur = prev;   // 一对一，抄左上角", "                else cur = false;", "                prev = dp[j];   // 旧 dp[j] 滚下去，是下一列的左上角", "                dp[j] = cur;", "            }", "        }", "        return dp[n];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 44. 通配符匹配 —— 图解：复刻 Solution.java 的 DP。Java 是一维滚动，图上画完整二维表（结果一致）。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'abcde', p: 'a*de' };
+
+function trace(input) {
+  var s = input.s, p = input.p;
+  var m = s.length, n = p.length;
+  var frames = [];
+
+  // 完整二维表：dp[i][j] = s 前 i 个 ↔ p 前 j 个
+  var dp = [];
+  for (var i = 0; i <= m; i++) {
+    var row = [];
+    for (var j = 0; j <= n; j++) row.push(false);
+    dp.push(row);
+  }
+  dp[0][0] = true;
+  for (var j0 = 1; j0 <= n; j0++) dp[0][j0] = p[j0 - 1] === '*' && dp[0][j0 - 1];
+
+  function gridPanel(marks) {
+    var rows = [];
+    for (var i = 0; i <= m; i++) {
+      var r = [];
+      for (var j = 0; j <= n; j++) r.push(dp[i][j] ? '✓' : '·');
+      rows.push(r);
+    }
+    var colLabels = ['∅'], rowLabels = ['∅'];
+    for (var j = 0; j < n; j++) colLabels.push(p[j]);
+    for (var i = 0; i < m; i++) rowLabels.push(s[i]);
+    return Viz.grid(rows, { title: 'dp[i][j]：s 前 i 个 ↔ p 前 j 个', marks: marks || {}, rowLabels: rowLabels, colLabels: colLabels, corner: 's\\p' });
+  }
+
+  // 第 0 行：空串只能被开头的 * 匹配
+  var m0 = { '0,0': 'done' };
+  for (var j1 = 1; j1 <= n; j1++) if (dp[0][j1]) m0['0,' + j1] = 'win';
+  frames.push(Viz.frame("dp[j] = p.charAt(j - 1) == '*' && dp[j - 1];",
+    '第 0 行：空串只被开头的 * 匹配，其它全是 false', [gridPanel(m0)]));
+
+  var snappedStar = false, snappedChar = false;
+  for (var i = 1; i <= m; i++) {
+    for (var j = 1; j <= n; j++) {
+      if (p[j - 1] === '*') {
+        dp[i][j] = dp[i - 1][j] || dp[i][j - 1];
+        // 展示 * 的两种用法：抄上格（再吃一个字符）或抄左格（当空串）
+        if (!snappedStar && i === 2 && j === 2 && p[j - 1] === '*') {
+          snappedStar = true;
+          var ms = {};
+          ms[i + ',' + j] = 'cur';
+          ms[(i - 1) + ',' + j] = 'win';
+          ms[i + ',' + (j - 1)] = 'win';
+          frames.push(Viz.frame("if (pc == '*') cur = dp[j] || dp[j - 1];",
+            "p[j]='*'：抄上格（* 再吃一个字符）或抄左格（* 当空串）", [gridPanel(ms)]));
+        }
+      } else if (p[j - 1] === '?' || p[j - 1] === s[i - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+        // 展示一对一匹配：抄左上角
+        if (!snappedChar && i === 4 && j === 3 && p[j - 1] === s[i - 1]) {
+          snappedChar = true;
+          var mc = {};
+          mc[i + ',' + j] = 'cur';
+          mc[(i - 1) + ',' + (j - 1)] = 'win';
+          frames.push(Viz.frame('else if (pc == \'?\' || pc == sc) cur = prev;',
+            "p[j] 与 s[i] 相同（或 '?'）：直接抄左上角", [gridPanel(mc)]));
+        }
+      }
+    }
+  }
+  var fin = {};
+  fin[m + ',' + n] = dp[m][n] ? 'done' : 'bad';
+  frames.push(Viz.frame('return dp[n];',
+    '整表算完：dp[' + m + '][' + n + '] = ' + (dp[m][n] ? 'true' : 'false'), [gridPanel(fin)]));
+  return { frames: frames, result: dp[m][n] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>两球之间的磁力 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1084 / 1159</span>
+  <nav class="pn"><a href="mianshi-16-10.html">上一篇</a><a href="0612.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1552. </span>两球之间的磁力</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">二分查找</li><li class="aux">贪心</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">二分最小间距 d：排序后贪心「能放就放」检查 d 是否放得下 m 球，收缩到最大可行 d。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>答案有单调性：间距 <code>d</code> 放得满，比它小的都能 → 二分 <code>d</code>。</li><li>上界 <code>(最大−最小)/(m−1)</code>：m 个球的间距总和至少要跨满整个范围。</li><li>贪心检查：第一球放最左篮子，往右遇到第一个 <code>≥ last + d</code> 的位置就放球——「能放就放」不会让后面更难。</li><li>二分取上取整 <code>mid = (lo+hi+1)/2</code>：可行时 <code>lo = mid</code>，不可行时 <code>hi = mid − 1</code>，不会死循环。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n + n log V)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> maxDistance(<span class="k">int</span>[] position, <span class="k">int</span> m) {</span><span class="ln"><span class="no">5</span>        <span class="t">Arrays</span>.sort(position);</span><span class="ln"><span class="no">6</span>        <span class="c">// 二分「最小间距 d」：d 越大越难放满 m 个球，可行性随 d 单调递减</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> lo = <span class="n">1</span>, hi = (position[position.length - <span class="n">1</span>] - position[<span class="n">0</span>]) / (m - <span class="n">1</span>);</span><span class="ln"><span class="no">8</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">9</span>            <span class="k">int</span> mid = (lo + hi + <span class="n">1</span>) &gt;&gt;&gt; <span class="n">1</span>;   <span class="c">// 上取整：走 lo = mid 分支才不会死循环</span></span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (fit(position, m, mid)) lo = mid;</span><span class="ln"><span class="no">11</span>            <span class="k">else</span> hi = mid - <span class="n">1</span>;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> lo;</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="c">// 间距至少 d 能否放满 m 个：最左篮子放第一球，往右能放就放</span></span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="k">boolean</span> fit(<span class="k">int</span>[] a, <span class="k">int</span> m, <span class="k">int</span> d) {</span><span class="ln"><span class="no">18</span>        <span class="k">int</span> cnt = <span class="n">1</span>, last = a[<span class="n">0</span>];</span><span class="ln"><span class="no">19</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; a.length &amp;&amp; cnt &lt; m; i++) {</span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (a[i] - last &gt;= d) {</span><span class="ln"><span class="no">21</span>                cnt++;</span><span class="ln"><span class="no">22</span>                last = a[i];</span><span class="ln"><span class="no">23</span>            }</span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> cnt &gt;= m;</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>在代号为 C-137 的地球上，Rick 发现如果他将两个球放在他新发明的篮子里，它们之间会形成特殊形式的磁力。Rick 有&nbsp;<code>n</code>&nbsp;个空的篮子，第&nbsp;<code>i</code>&nbsp;个篮子的位置在&nbsp;<code>position[i]</code>&nbsp;，Morty&nbsp;想把&nbsp;<code>m</code>&nbsp;个球放到这些篮子里，使得任意两球间&nbsp;<strong>最小磁力</strong>&nbsp;最大。</p>
+
+<p>已知两个球如果分别位于&nbsp;<code>x</code>&nbsp;和&nbsp;<code>y</code>&nbsp;，那么它们之间的磁力为&nbsp;<code>|x - y|</code>&nbsp;。</p>
+
+<p>给你一个整数数组&nbsp;<code>position</code>&nbsp;和一个整数&nbsp;<code>m</code>&nbsp;，请你返回最大化的最小磁力。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/874ffe51e199.jpg" style="height: 195px; width: 562px;"></p>
+
+<pre><strong>输入：</strong>position = [1,2,3,4,7], m = 3
+<strong>输出：</strong>3
+<strong>解释：</strong>将 3 个球分别放入位于 1，4 和 7 的三个篮子，两球间的磁力分别为 [3, 3, 6]。最小磁力为 3 。我们没办法让最小磁力大于 3 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>position = [5,4,3,2,1,1000000000], m = 2
+<strong>输出：</strong>999999999
+<strong>解释：</strong>我们使用位于 1 和 1000000000 的篮子时最小磁力最大。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == position.length</code></li>
+	<li><code>2 &lt;= n &lt;= 10^5</code></li>
+	<li><code>1 &lt;= position[i] &lt;= 10^9</code></li>
+	<li>所有&nbsp;<code>position</code>&nbsp;中的整数 <strong>互不相同</strong>&nbsp;。</li>
+	<li><code>2 &lt;= m &lt;= position.length</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int maxDistance(int[] position, int m) {", "        Arrays.sort(position);", "        // 二分「最小间距 d」：d 越大越难放满 m 个球，可行性随 d 单调递减", "        int lo = 1, hi = (position[position.length - 1] - position[0]) / (m - 1);", "        while (lo < hi) {", "            int mid = (lo + hi + 1) >>> 1;   // 上取整：走 lo = mid 分支才不会死循环", "            if (fit(position, m, mid)) lo = mid;", "            else hi = mid - 1;", "        }", "        return lo;", "    }", "", "    // 间距至少 d 能否放满 m 个：最左篮子放第一球，往右能放就放", "    private boolean fit(int[] a, int m, int d) {", "        int cnt = 1, last = a[0];", "        for (int i = 1; i < a.length && cnt < m; i++) {", "            if (a[i] - last >= d) {", "                cnt++;", "                last = a[i];", "            }", "        }", "        return cnt >= m;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1552. 两球之间的磁力 —— 图解：复刻 Solution.java 的「二分间距 + 贪心放球」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { position: [1, 2, 3, 4, 7], m: 3 };
+
+function trace(input) {
+  var a = input.position.slice().sort(function (x, y) { return x - y; });
+  var m = input.m;
+  var n = a.length;
+  var lo = 1, hi = Math.floor((a[n - 1] - a[0]) / (m - 1));
+  var frames = [];
+  var fits = 0;        // 已拍过快照的二分轮数
+  var ans = lo;
+
+  // 位置面板：new=这一轮放了球，win=上一轮放的球；last 指针 = 最近放球处
+  function posPanel(marks, lastIdx, ok) {
+    var pointers = [];
+    if (lastIdx >= 0) pointers.push({ at: lastIdx, label: 'last', cls: 'p-prev' });
+    return Viz.cells(a, { title: '排序后的篮子位置', marks: marks || {}, pointers: pointers,
+      range: null });
+  }
+  function varsPanel(d, cnt, ok) {
+    return Viz.vars([
+      { name: '二分区间 [lo, hi]', v: '[' + lo + ', ' + hi + ']' },
+      { name: d == null ? '—' : '试 d = ' + d, v: d == null ? '—' : (ok ? '放满 ' + cnt + ' 球 ✓' : '只放下 ' + cnt + ' 球 ✗'), cls: d == null ? '' : (ok ? 'chg' : 'bad') },
+      { name: 'm', v: m }
+    ]);
+  }
+
+  var marks0 = {};
+  frames.push(Viz.frame('int lo = 1, hi = (position[position.length - 1] - position[0]) / (m - 1);',
+    '排序后二分最小间距 d：上界 = (最大−最小)/(m−1) = ' + hi,
+    [posPanel(marks0, -1), varsPanel(null)]));
+
+  function fit(d) {
+    var cnt = 1, last = a[0], marks = {}, lastIdx = 0;
+    marks[0] = 'new';
+    for (var i = 1; i < n && cnt < m; i++) {
+      if (a[i] - last >= d) {
+        cnt++;
+        last = a[i];
+        lastIdx = i;
+        marks[i] = 'new';
+      }
+    }
+    return { ok: cnt >= m, cnt: cnt, marks: marks, lastIdx: lastIdx };
+  }
+
+  while (lo < hi) {
+    var mid = Math.floor((lo + hi + 1) / 2);   // 上取整，与 Java 的 (lo + hi + 1) >>> 1 一致
+    var r = fit(mid);
+    if (fits < 2) {
+      fits++;
+      var key = '试 d = ' + mid + '：从最左起「能放就放」，' +
+        (r.ok ? '放满 ' + m + ' 球 → lo 抬到 ' + mid : '只放 ' + r.cnt + ' 球 → hi 降到 ' + (mid - 1));
+      frames.push(Viz.frame('if (fit(position, m, mid)) lo = mid;', key,
+        [posPanel(r.marks, r.lastIdx, r.ok), varsPanel(mid, r.cnt, r.ok)]));
+    }
+    if (r.ok) lo = mid; else hi = mid - 1;
+  }
+  ans = lo;
+
+  var marks2 = {};
+  var rr = fit(ans);
+  frames.push(Viz.frame('return cnt >= m;', 'lo = hi = ' + ans + '：最大的最小磁力就是 ' + ans,
+    [posPanel(rr.marks, rr.lastIdx, true),
+     Viz.vars([{ name: '答案', v: ans, cls: 'done' }])]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

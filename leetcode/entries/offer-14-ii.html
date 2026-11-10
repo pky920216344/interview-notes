@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>砍竹子 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 786 / 1159</span>
+  <nav class="pn"><a href="0501.html">上一篇</a><a href="mianshi-08-01.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 14- II. </span>砍竹子 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">贪心</li><li class="aux">数学</li><li class="tag">数学</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">贪心切段：尽量多切 3；余 1 就少切一个 3、改切成 2+2（乘 4）；余 2 就补一个 2。大数用快速幂取模。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>切出的段越长乘积未必越大：同样的长度，3×3 &gt; 2×2×2 &gt; 4×1，所以每段尽量是 3，不够再补 2。</li><li><code>n % 3 == 0</code>：答案 <code>3^(n/3)</code>；<code>== 2</code>：<code>3^(n/3) × 2</code>；<code>== 1</code>：剩一个孤 1 太亏，收回一个 3 凑成 4，答案 <code>3^(n/3−1) × 4</code>。</li><li><code>n ≤ 3</code> 是特例：必须切成两段，2→1×1、3→1×2，答案 <code>n − 1</code>。</li><li><code>3^q</code> 远超 <code>long</code>，用快速幂边乘边对 <code>1e9+7</code> 取模；乘 2 或乘 4 之后仍在 <code>long</code> 范围内，再取一次模。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">int</span> MOD = <span class="n">1000000007</span>;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> cuttingBamboo(<span class="k">int</span> bamboo_len) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 长 ≤ 3 时必须切成两段：2→1×1，3→1×2，乘积都是 n−1</span></span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (bamboo_len &lt;= <span class="n">3</span>) <span class="k">return</span> bamboo_len - <span class="n">1</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> q = bamboo_len / <span class="n">3</span>, r = bamboo_len % <span class="n">3</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">long</span> ans;</span><span class="ln"><span class="no">9</span>        <span class="k">if</span> (r == <span class="n">0</span>) ans = pow(<span class="n">3</span>, q);</span><span class="ln"><span class="no">10</span>        <span class="k">else</span> <span class="k">if</span> (r == <span class="n">1</span>) ans = pow(<span class="n">3</span>, q - <span class="n">1</span>) * <span class="n">4</span> % MOD;   <span class="c">// 剩 1 时少切一个 3，把它和 1 一起改成 2+2</span></span><span class="ln"><span class="no">11</span>        <span class="k">else</span> ans = pow(<span class="n">3</span>, q) * <span class="n">2</span> % MOD;</span><span class="ln"><span class="no">12</span>        <span class="k">return</span> (<span class="k">int</span>) ans;</span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span>    <span class="c">// 快速幂：base 的 e 次方对 MOD 取模，边乘边取模不溢出</span></span><span class="ln"><span class="no">16</span>    <span class="k">private</span> <span class="k">long</span> pow(<span class="k">long</span> base, <span class="k">int</span> e) {</span><span class="ln"><span class="no">17</span>        <span class="k">long</span> out = <span class="n">1</span>;</span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (e &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">19</span>            <span class="k">if</span> ((e &amp; <span class="n">1</span>) == <span class="n">1</span>) out = out * base % MOD;</span><span class="ln"><span class="no">20</span>            base = base * base % MOD;</span><span class="ln"><span class="no">21</span>            e &gt;&gt;= <span class="n">1</span>;</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>现需要将一根长为正整数 <code>bamboo_len</code> 的竹子砍为若干段，每段长度均为 <strong>正整数</strong>。请返回每段竹子长度的 <strong>最大乘积</strong> 是多少。</p>
+
+<p>答案需要取模 1e9+7（1000000007），如计算初始结果为：1000000008，请返回 1。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>bamboo_len = 12
+<strong>输出：</strong>81
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= bamboo_len &lt;= 1000</code></li>
+</ul>
+
+<p>注意：本题与主站 343 题相同：<a href="https://leetcode.cn/problems/integer-break/">https://leetcode.cn/problems/integer-break/</a></p>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private static final int MOD = 1000000007;", "", "    public int cuttingBamboo(int bamboo_len) {", "        // 长 ≤ 3 时必须切成两段：2→1×1，3→1×2，乘积都是 n−1", "        if (bamboo_len <= 3) return bamboo_len - 1;", "        int q = bamboo_len / 3, r = bamboo_len % 3;", "        long ans;", "        if (r == 0) ans = pow(3, q);", "        else if (r == 1) ans = pow(3, q - 1) * 4 % MOD;   // 剩 1 时少切一个 3，把它和 1 一起改成 2+2", "        else ans = pow(3, q) * 2 % MOD;", "        return (int) ans;", "    }", "", "    // 快速幂：base 的 e 次方对 MOD 取模，边乘边取模不溢出", "    private long pow(long base, int e) {", "        long out = 1;", "        while (e > 0) {", "            if ((e & 1) == 1) out = out * base % MOD;", "            base = base * base % MOD;", "            e >>= 1;", "        }", "        return out;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 剑指 14-II. 砍竹子 II —— 图解：复刻 Solution.java 的贪心切段 + 快速幂，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { bamboo_len: 12 };
+
+function trace(input) {
+  var n = input.bamboo_len;
+  var MOD = 1000000007;
+  var frames = [];
+  var SPLIT = 'int q = bamboo_len / 3, r = bamboo_len % 3;';
+  var SMALL = 'if (bamboo_len <= 3) return bamboo_len - 1;';
+  var POW = 'if ((e & 1) == 1) out = out * base % MOD;';
+  var RET = 'return (int) ans;';
+
+  // JS 的大数用 BigInt：3^q 的精确值会超出 Number 的安全范围；quiet 时不拍帧
+  function powMod(b, e, quiet) {
+    var m = BigInt(MOD), r = 1n, bb = BigInt(b) % m;
+    var first = true;
+    while (e > 0) {
+      if (!quiet && first) {
+        frames.push(Viz.frame(POW, '快速幂开始算 3^' + e + '：底数自乘翻倍、指数减半，指数末位是 1 时把底数乘进结果',
+          [Viz.vars([
+            { name: 'out（已累乘的结果）', v: Number(r) },
+            { name: 'base（当前底数）', v: Number(bb) },
+            { name: 'e（剩余指数）', v: e }
+          ])]));
+        first = false;
+      }
+      if (e & 1) r = r * bb % m;
+      bb = bb * bb % m;
+      e >>= 1;
+      if (!quiet && e === 1 && !first) {
+        frames.push(Viz.frame(POW, '最后一轮：e=1，把最终底数乘进 out，得到取模后的 3 的幂',
+          [Viz.vars([
+            { name: 'out（已累乘的结果）', v: Number(r) },
+            { name: 'base（当前底数）', v: Number(bb) },
+            { name: 'e（剩余指数）', v: e }
+          ])]));
+      }
+    }
+    return r;
+  }
+
+  // 按贪心规则推每段的长度，画成格子
+  function pieces(q, r) {
+    var ps = [];
+    for (var i = 0; i < q; i++) ps.push(3);
+    if (r === 1 && q > 0) { ps.pop(); ps.push(4); }
+    else if (r === 2) ps.push(2);
+    return ps;
+  }
+
+  if (n <= 3) {
+    frames.push(Viz.frame(SMALL, 'n=' + n + '：必须切成两段，最大乘积只有 ' + (n - 1),
+      [Viz.vars([{ name: 'bamboo_len', v: n }, { name: 'ans', v: n - 1, cls: 'new' }])]));
+    return { frames: frames, result: n - 1 };
+  }
+
+  var q = Math.floor(n / 3), r = n % 3;
+  var ps = pieces(q, r);
+  frames.push(Viz.frame(SPLIT, n + ' ÷ 3 = ' + q + ' 余 ' + r + '：尽量多切 3' + (r === 1 ? '，但余 1 时少切一个 3 改成 2+2' : r === 2 ? '，余 2 补一段 2' : '，正好全切 3'),
+    [Viz.cells(ps, { title: '切法（每段长度）', marks: ps.map(function (v, i) { return i === ps.length - 1 && r !== 0 ? 'new' : 'win'; }) }),
+     Viz.vars([{ name: 'q（3 的段数）', v: q }, { name: 'r（余数）', v: r }])]));
+
+  var ans;
+  if (r === 0) ans = Number(powMod(3, q));
+  else if (r === 1) ans = Number(powMod(3, q - 1) * 4n % BigInt(MOD));
+  else ans = Number(powMod(3, q) * 2n % BigInt(MOD));
+
+  var exact = r === 0 ? powMod(3, q, true) : r === 1 ? powMod(3, q - 1, true) * 4n : powMod(3, q, true) * 2n;
+  var shape = ps.length <= 8 ? ps.join('×') : q + ' 个 3' + (r === 1 ? ' 和一个 4' : r === 2 ? ' 和一个 2' : '');
+  var eq = exact <= 1000000000000n ? shape + ' = ' + ans : shape + '，精确值取模后 = ' + ans;
+  frames.push(Viz.frame(RET, eq,
+    [Viz.cells(ps, { title: '切法（每段长度）', marks: ps.map(function () { return 'done'; }) }),
+     Viz.vars([{ name: 'ans（对 1e9+7 取模）', v: ans, cls: 'new' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

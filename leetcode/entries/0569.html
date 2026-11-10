@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>员工薪水中位数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1149 / 1159</span>
+  <nav class="pn"><a href="mianshi-17-21.html">上一篇</a><a href="0307.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">569. </span>员工薪水中位数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">SQL</li><li class="tag">数据库</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">ROW_NUMBER 排序 + COUNT 总数，奇数取正中一位、偶数取中间两位求平均（两个中位下标用 IN 一次框住）。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>中位数下标通式：<code>(cnt+1)/2</code> 与 <code>(cnt+2)/2</code>——奇数时两者相等（同一位），偶数时是中间两位；<code>WHERE rn IN (两值)</code> 一次框住。</li><li>偶数个时外层 <code>AVG(salary)</code> 天然求两中位数的平均；奇数个时 AVG 只作用一行，结果不变。</li><li>窗口函数算完包一层再过滤（窗口结果不能直接进 WHERE）。</li><li>⚠️ 会员题未经力扣验证：题面不可见，是否要求舍入、列名口径以你实际看到的题面为准。</li></ul></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 SQL 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span>-- 569（codetop 0569）员工薪水中位数（MySQL，会员题）</span><span class="ln"><span class="no">2</span>-- 题意（通行版本，题面不可见）：Employee(id, company, salary)。</span><span class="ln"><span class="no">3</span>-- 报告每个公司的薪水「中位数」：奇数个取正中，偶数个取中间两个的平均；列名 median。</span><span class="ln"><span class="no">4</span>-- ⚠️ 本条为会员题：力扣与 codetop 快照均不可见题面，以下按社区通行版本实现，未经力扣验证。</span><span class="ln"><span class="no">5</span>SELECT company,</span><span class="ln"><span class="no">6</span>       AVG(salary) AS median</span><span class="ln"><span class="no">7</span>FROM (</span><span class="ln"><span class="no">8</span>    SELECT company,</span><span class="ln"><span class="no">9</span>           salary,</span><span class="ln"><span class="no">10</span>           ROW_NUMBER() OVER (PARTITION BY company ORDER BY salary) AS rn,</span><span class="ln"><span class="no">11</span>           COUNT(*) OVER (PARTITION BY company) AS cnt</span><span class="ln"><span class="no">12</span>    FROM Employee</span><span class="ln"><span class="no">13</span>) t</span><span class="ln"><span class="no">14</span>WHERE rn IN ((cnt + 1) / 2, (cnt + 2) / 2)</span><span class="ln"><span class="no">15</span>GROUP BY company;</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["-- 569（codetop 0569）员工薪水中位数（MySQL，会员题）", "-- 题意（通行版本，题面不可见）：Employee(id, company, salary)。", "-- 报告每个公司的薪水「中位数」：奇数个取正中，偶数个取中间两个的平均；列名 median。", "-- ⚠️ 本条为会员题：力扣与 codetop 快照均不可见题面，以下按社区通行版本实现，未经力扣验证。", "SELECT company,", "       AVG(salary) AS median", "FROM (", "    SELECT company,", "           salary,", "           ROW_NUMBER() OVER (PARTITION BY company ORDER BY salary) AS rn,", "           COUNT(*) OVER (PARTITION BY company) AS cnt", "    FROM Employee", ") t", "WHERE rn IN ((cnt + 1) / 2, (cnt + 2) / 2)", "GROUP BY company;"]}</script>
+
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

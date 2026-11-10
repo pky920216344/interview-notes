@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>迷宫 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 615 / 1159</span>
+  <nav class="pn"><a href="0474.html">上一篇</a><a href="0524.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">505. </span>迷宫 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">图算法</li><li class="aux">堆</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="tag">最短路</li><li class="tag">dijkstra</li><li class="tag">堆（优先队列）</li><li class="tag">a-search</li><li class="tag">heuristic-search</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">还是「滚到撞墙」的停点图，但边权=滚过的格数长短不一，用 Dijkstra（小顶堆）求到终点的最短滚动距离。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>与 490 同款滚动：从停点沿一个方向 <code>while</code> 滚到撞墙，滚过的格数 <code>len</code> 就是这条边的权。</li><li>距离按「格数」算而不是「滚动次数」，各边不等长，普通 BFS 会错，要用 Dijkstra。</li><li><code>dist</code> 表记每个停点的最短距离；堆顶弹出时若 <code>d &gt; dist[r][c]</code> 是过期条目，跳过。</li><li>弹出终点即可返回 <code>dist</code>；堆空没到终点返回 <code>-1</code>（终点可能只是路过格，不是停点）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m × n × max(m, n) × log(m × n))，空间复杂度 O(m × n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> shortestDistance(<span class="k">int</span>[][] maze, <span class="k">int</span>[] start, <span class="k">int</span>[] destination) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> m = maze.length, n = maze[<span class="n">0</span>].length;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[][] dist = <span class="k">new</span> <span class="k">int</span>[m][n];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span>[] row : dist) <span class="t">Arrays</span>.fill(row, <span class="t">Integer</span>.MAX_VALUE);</span><span class="ln"><span class="no">8</span>        dist[start[<span class="n">0</span>]][start[<span class="n">1</span>]] = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="t">PriorityQueue</span>&lt;<span class="k">int</span>[]&gt; pq = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;((a, b) -&gt; a[<span class="n">0</span>] - b[<span class="n">0</span>]);</span><span class="ln"><span class="no">10</span>        pq.add(<span class="k">new</span> <span class="k">int</span>[]{<span class="n">0</span>, start[<span class="n">0</span>], start[<span class="n">1</span>]});</span><span class="ln"><span class="no">11</span>        <span class="k">int</span>[][] dirs = {{<span class="n">1</span>, <span class="n">0</span>}, {-<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">0</span>, <span class="n">1</span>}, {<span class="n">0</span>, -<span class="n">1</span>}};</span><span class="ln"><span class="no">12</span>        <span class="k">while</span> (!pq.isEmpty()) {</span><span class="ln"><span class="no">13</span>            <span class="k">int</span>[] top = pq.poll();</span><span class="ln"><span class="no">14</span>            <span class="k">int</span> d = top[<span class="n">0</span>], r = top[<span class="n">1</span>], c = top[<span class="n">2</span>];</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (d &gt; dist[r][c]) <span class="k">continue</span>;   <span class="c">// 堆里的过期条目，跳过</span></span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (r == destination[<span class="n">0</span>] &amp;&amp; c == destination[<span class="n">1</span>]) <span class="k">return</span> d;</span><span class="ln"><span class="no">17</span>            <span class="k">for</span> (<span class="k">int</span>[] dir : dirs) {</span><span class="ln"><span class="no">18</span>                <span class="k">int</span> nr = r, nc = c, len = <span class="n">0</span>;</span><span class="ln"><span class="no">19</span>                <span class="k">while</span> (open(maze, nr + dir[<span class="n">0</span>], nc + dir[<span class="n">1</span>])) {</span><span class="ln"><span class="no">20</span>                    nr += dir[<span class="n">0</span>];</span><span class="ln"><span class="no">21</span>                    nc += dir[<span class="n">1</span>];</span><span class="ln"><span class="no">22</span>                    len++;</span><span class="ln"><span class="no">23</span>                }</span><span class="ln"><span class="no">24</span>                <span class="c">// 这条边的权 = 滚过的格数；Dijkstra 松弛到每个停点</span></span><span class="ln"><span class="no">25</span>                <span class="k">if</span> (d + len &lt; dist[nr][nc]) {</span><span class="ln"><span class="no">26</span>                    dist[nr][nc] = d + len;</span><span class="ln"><span class="no">27</span>                    pq.add(<span class="k">new</span> <span class="k">int</span>[]{d + len, nr, nc});</span><span class="ln"><span class="no">28</span>                }</span><span class="ln"><span class="no">29</span>            }</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>        <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span> </span><span class="ln"><span class="no">34</span>    <span class="c">// (r, c) 在界内且是空格，球就能滚过去</span></span><span class="ln"><span class="no">35</span>    <span class="k">private</span> <span class="k">boolean</span> open(<span class="k">int</span>[][] maze, <span class="k">int</span> r, <span class="k">int</span> c) {</span><span class="ln"><span class="no">36</span>        <span class="k">return</span> r &gt;= <span class="n">0</span> &amp;&amp; r &lt; maze.length &amp;&amp; c &gt;= <span class="n">0</span> &amp;&amp; c &lt; maze[<span class="n">0</span>].length &amp;&amp; maze[r][c] == <span class="n">0</span>;</span><span class="ln"><span class="no">37</span>    }</span><span class="ln"><span class="no">38</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int shortestDistance(int[][] maze, int[] start, int[] destination) {", "        int m = maze.length, n = maze[0].length;", "        int[][] dist = new int[m][n];", "        for (int[] row : dist) Arrays.fill(row, Integer.MAX_VALUE);", "        dist[start[0]][start[1]] = 0;", "        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[0] - b[0]);", "        pq.add(new int[]{0, start[0], start[1]});", "        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};", "        while (!pq.isEmpty()) {", "            int[] top = pq.poll();", "            int d = top[0], r = top[1], c = top[2];", "            if (d > dist[r][c]) continue;   // 堆里的过期条目，跳过", "            if (r == destination[0] && c == destination[1]) return d;", "            for (int[] dir : dirs) {", "                int nr = r, nc = c, len = 0;", "                while (open(maze, nr + dir[0], nc + dir[1])) {", "                    nr += dir[0];", "                    nc += dir[1];", "                    len++;", "                }", "                // 这条边的权 = 滚过的格数；Dijkstra 松弛到每个停点", "                if (d + len < dist[nr][nc]) {", "                    dist[nr][nc] = d + len;", "                    pq.add(new int[]{d + len, nr, nc});", "                }", "            }", "        }", "        return -1;", "    }", "", "    // (r, c) 在界内且是空格，球就能滚过去", "    private boolean open(int[][] maze, int r, int c) {", "        return r >= 0 && r < maze.length && c >= 0 && c < maze[0].length && maze[r][c] == 0;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 505. 迷宫 II —— 图解：Dijkstra 跑「停点图」，一条滚动边的权 = 滚过的格数。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { maze: [[0, 0, 1, 0], [0, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]], start: [0, 0], destination: [3, 3] };
+
+function trace(input) {
+  var maze = input.maze, start = input.start, dest = input.destination;
+  var m = maze.length, n = maze[0].length;
+  var frames = [];
+  var DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  var INF = Infinity;
+
+  var INIT = 'dist[start[0]][start[1]] = 0;';
+  var ROLL = 'while (open(maze, nr + dir[0], nc + dir[1])) {';
+  var RELAX = 'if (d + len < dist[nr][nc]) {';
+  var DEST = 'if (r == destination[0] && c == destination[1]) return d;';
+  var NEG = 'return -1;';
+
+  var dist = [];
+  for (var i = 0; i < m; i++) {
+    dist.push([]);
+    for (var j = 0; j < n; j++) dist[i].push(INF);
+  }
+  dist[start[0]][start[1]] = 0;
+
+  var open = function (r, c) { return r >= 0 && r < m && c >= 0 && c < n && maze[r][c] === 0; };
+  var dirName = function (d) {
+    if (d[0] === 1) return '下';
+    if (d[0] === -1) return '上';
+    if (d[1] === 1) return '右';
+    return '左';
+  };
+
+  function mazePanel(poll, path, land) {
+    var marks = {};
+    for (var r = 0; r < m; r++) {
+      for (var c = 0; c < n; c++) {
+        if (maze[r][c] === 1) marks[r + ',' + c] = 'dim';
+      }
+    }
+    (path || []).forEach(function (p) { marks[p[0] + ',' + p[1]] = 'chg'; });
+    if (land) marks[land[0] + ',' + land[1]] = 'new';
+    if (poll) marks[poll[0] + ',' + poll[1]] = 'cur';
+    return Viz.grid(maze.map(function (row) { return row.slice(); }), {
+      title: '迷宫（cur = 堆顶停点，chg = 本轮滚过）',
+      marks: marks,
+      rowLabels: maze.map(function (_, r) { return 'r=' + r; }),
+      colLabels: maze[0].map(function (_, c) { return 'c=' + c; })
+    });
+  }
+
+  function distPanel(marks) {
+    var rows = dist.map(function (row) {
+      return row.map(function (v) { return v === INF ? '∞' : String(v); });
+    });
+    return Viz.grid(rows, {
+      title: 'dist：到每个停点的最短滚动距离',
+      marks: marks || {},
+      rowLabels: rows.map(function (_, r) { return 'r=' + r; }),
+      colLabels: rows[0].map(function (_, c) { return 'c=' + c; })
+    });
+  }
+
+  function varsPanel(extra) {
+    var items = [
+      { name: '起点 / 终点', v: '(' + start + ') / (' + dest + ')', cls: '' },
+      { name: '终点当前 dist', v: dist[dest[0]][dest[1]] === INF ? '∞' : dist[dest[0]][dest[1]], cls: '' }
+    ];
+    if (extra) items.push(extra);
+    return Viz.vars(items);
+  }
+
+  // 简易小顶堆：每次取 dist 最小的条目，配合过期检查等价于 Java 的 PriorityQueue
+  var heap = [[0, start[0], start[1]]];
+  function poll() {
+    var bi = 0;
+    for (var i = 1; i < heap.length; i++) if (heap[i][0] < heap[bi][0]) bi = i;
+    return heap.splice(bi, 1)[0];
+  }
+
+  frames.push(Viz.frame(INIT, '开局：起点 dist=0 入堆，其余停点都是 ∞', [mazePanel(null, null, null), varsPanel(null)]));
+
+  var found = -1, sawRoll = false, sawReject = false;
+  while (heap.length) {
+    var top = poll();
+    var d = top[0], r = top[1], c = top[2];
+    if (d > dist[r][c]) continue;
+    if (r === dest[0] && c === dest[1]) {
+      found = d;
+      frames.push(Viz.frame(DEST, '堆顶就是终点：dist=' + d + ' 已是最短，直接返回',
+        [distPanel((function () { var mk = {}; mk[r + ',' + c] = 'done'; return mk; })()),
+         varsPanel({ name: '答案', v: d, cls: 'done' })]));
+      break;
+    }
+    for (var di = 0; di < 4; di++) {
+      var dir = DIRS[di];
+      var nr = r, nc = c, len = 0;
+      var path = [];
+      while (open(nr + dir[0], nc + dir[1])) {
+        nr += dir[0];
+        nc += dir[1];
+        len++;
+        path.push([nr, nc]);
+      }
+      if (d + len < dist[nr][nc]) {
+        var hadOld = dist[nr][nc] !== INF;
+        dist[nr][nc] = d + len;
+        heap.push([d + len, nr, nc]);
+        if (!sawRoll && len > 0) {
+          sawRoll = true;
+          frames.push(Viz.frame(ROLL, '堆顶 (' + r + ',' + c + ') dist=' + d + '：向' + dirName(dir) + '滚 ' + len
+              + ' 格撞墙，边权 = ' + len,
+            [mazePanel([r, c], path, [nr, nc]),
+             varsPanel({ name: '新 dist(' + nr + ',' + nc + ')', v: d + len, cls: 'new' })]));
+        }
+      } else if (!sawReject && len > 0 && dist[nr][nc] !== INF) {
+        sawReject = true;
+        frames.push(Viz.frame(RELAX, '向' + dirName(dir) + '滚到 (' + nr + ',' + nc + ')：' + d + '+' + len + '=' + (d + len)
+            + ' 不比已有 dist=' + dist[nr][nc] + ' 短，放弃',
+          [distPanel((function () { var mk = {}; mk[nr + ',' + nc] = 'bad'; return mk; })()),
+           varsPanel({ name: '候选 ' + (d + len) + ' vs 现值 ' + dist[nr][nc], v: '不更新', cls: 'bad' })]));
+      }
+    }
+  }
+
+  if (found < 0) {
+    frames.push(Viz.frame(NEG, '堆空了还没弹出终点：终点不是停点或不可达，返回 -1',
+      [distPanel(null), varsPanel({ name: '答案', v: -1, cls: 'bad' })]));
+  }
+
+  return { frames: frames, result: dist[dest[0]][dest[1]] === INF ? -1 : dist[dest[0]][dest[1]] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

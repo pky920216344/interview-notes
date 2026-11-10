@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>序列化和反序列化 N 叉树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 497 / 1159</span>
+  <nav class="pn"><a href="offer-59-ii.html">上一篇</a><a href="offer-58-i.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">428. </span>序列化和反序列化 N 叉树</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 5</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">字符串</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">递归序列化成「值(孩子1,孩子2,…)」：有孩子就写一对括号，没有就只写值；反序列化按同样顺序读，括号就是孩子层的进出。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>序列化：先序递归，写 <code>val</code> 后若有孩子就写 <code>(</code>、逗号分隔地递归每个孩子、再写 <code>)</code>；叶子只写值。空树是空串。</li><li>反序列化：<code>pos</code> 指针读一个整数（支持负号），后面跟 <code>(</code> 就递归读到配对的 <code>)</code>，把每段建成孩子。</li><li>格式自含边界：<code>)</code> 和 <code>,</code> 天然分隔兄弟，不需要额外的 null 占位；往返一遍即校验。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">ArrayList</span>;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.<span class="t">List</span>;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span><span class="c">// 结点定义力扣已给出；本地验证需要真的编译运行，这里按力扣的定义原样给出</span></span><span class="ln"><span class="no">5</span><span class="k">class</span> <span class="t">Node</span> {</span><span class="ln"><span class="no">6</span>    <span class="k">int</span> val;</span><span class="ln"><span class="no">7</span>    <span class="t">List</span>&lt;<span class="t">Node</span>&gt; children;</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="t">Node</span>(<span class="k">int</span> val) { <span class="k">this</span>.val = val; children = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(); }</span><span class="ln"><span class="no">10</span>}</span><span class="ln"><span class="no">11</span> </span><span class="ln"><span class="no">12</span><span class="k">class</span> <span class="t">Codec</span> {</span><span class="ln"><span class="no">13</span>    <span class="c">// 序列化：值(孩子1,孩子2,…)；没有孩子就只写值；空树是空串</span></span><span class="ln"><span class="no">14</span>    <span class="k">public</span> <span class="t">String</span> serialize(<span class="t">Node</span> root) {</span><span class="ln"><span class="no">15</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">16</span>        ser(root, sb);</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span> </span><span class="ln"><span class="no">20</span>    <span class="k">private</span> <span class="k">void</span> ser(<span class="t">Node</span> node, <span class="t">StringBuilder</span> sb) {</span><span class="ln"><span class="no">21</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span>;</span><span class="ln"><span class="no">22</span>        sb.append(node.val);</span><span class="ln"><span class="no">23</span>        <span class="k">if</span> (!node.children.isEmpty()) {</span><span class="ln"><span class="no">24</span>            sb.append(<span class="s">'('</span>);</span><span class="ln"><span class="no">25</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; node.children.size(); i++) {</span><span class="ln"><span class="no">26</span>                <span class="k">if</span> (i &gt; <span class="n">0</span>) sb.append(<span class="s">','</span>);</span><span class="ln"><span class="no">27</span>                ser(node.children.get(i), sb);</span><span class="ln"><span class="no">28</span>            }</span><span class="ln"><span class="no">29</span>            sb.append(<span class="s">')'</span>);</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span> </span><span class="ln"><span class="no">33</span>    <span class="k">public</span> <span class="t">Node</span> deserialize(<span class="t">String</span> data) {</span><span class="ln"><span class="no">34</span>        pos = <span class="n">0</span>;</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> data.isEmpty() ? <span class="k">null</span> : parse(data);</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span> </span><span class="ln"><span class="no">38</span>    <span class="k">private</span> <span class="k">int</span> pos;   <span class="c">// parse 的读取进度</span></span><span class="ln"><span class="no">39</span> </span><span class="ln"><span class="no">40</span>    <span class="c">// 反序列化：读一个值；后面跟 ( 就把到配对 ) 前的每段递归建成孩子</span></span><span class="ln"><span class="no">41</span>    <span class="k">private</span> <span class="t">Node</span> parse(<span class="t">String</span> s) {</span><span class="ln"><span class="no">42</span>        <span class="k">boolean</span> neg = s.charAt(pos) == <span class="s">'-'</span>;</span><span class="ln"><span class="no">43</span>        <span class="k">if</span> (neg) pos++;</span><span class="ln"><span class="no">44</span>        <span class="k">int</span> v = <span class="n">0</span>;</span><span class="ln"><span class="no">45</span>        <span class="k">while</span> (pos &lt; s.length() &amp;&amp; <span class="t">Character</span>.isDigit(s.charAt(pos))) v = v * <span class="n">10</span> + (s.charAt(pos++) - <span class="s">'0'</span>);</span><span class="ln"><span class="no">46</span>        <span class="t">Node</span> node = <span class="k">new</span> <span class="t">Node</span>(neg ? -v : v);</span><span class="ln"><span class="no">47</span>        <span class="k">if</span> (pos &lt; s.length() &amp;&amp; s.charAt(pos) == <span class="s">'('</span>) {</span><span class="ln"><span class="no">48</span>            pos++;</span><span class="ln"><span class="no">49</span>            <span class="k">while</span> (s.charAt(pos) != <span class="s">')'</span>) {</span><span class="ln"><span class="no">50</span>                <span class="k">if</span> (s.charAt(pos) == <span class="s">','</span>) pos++;</span><span class="ln"><span class="no">51</span>                node.children.add(parse(s));</span><span class="ln"><span class="no">52</span>            }</span><span class="ln"><span class="no">53</span>            pos++;   <span class="c">// 跳过配对的 )</span></span><span class="ln"><span class="no">54</span>        }</span><span class="ln"><span class="no">55</span>        <span class="k">return</span> node;</span><span class="ln"><span class="no">56</span>    }</span><span class="ln"><span class="no">57</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.ArrayList;", "import java.util.List;", "", "// 结点定义力扣已给出；本地验证需要真的编译运行，这里按力扣的定义原样给出", "class Node {", "    int val;", "    List<Node> children;", "", "    Node(int val) { this.val = val; children = new ArrayList<>(); }", "}", "", "class Codec {", "    // 序列化：值(孩子1,孩子2,…)；没有孩子就只写值；空树是空串", "    public String serialize(Node root) {", "        StringBuilder sb = new StringBuilder();", "        ser(root, sb);", "        return sb.toString();", "    }", "", "    private void ser(Node node, StringBuilder sb) {", "        if (node == null) return;", "        sb.append(node.val);", "        if (!node.children.isEmpty()) {", "            sb.append('(');", "            for (int i = 0; i < node.children.size(); i++) {", "                if (i > 0) sb.append(',');", "                ser(node.children.get(i), sb);", "            }", "            sb.append(')');", "        }", "    }", "", "    public Node deserialize(String data) {", "        pos = 0;", "        return data.isEmpty() ? null : parse(data);", "    }", "", "    private int pos;   // parse 的读取进度", "", "    // 反序列化：读一个值；后面跟 ( 就把到配对 ) 前的每段递归建成孩子", "    private Node parse(String s) {", "        boolean neg = s.charAt(pos) == '-';", "        if (neg) pos++;", "        int v = 0;", "        while (pos < s.length() && Character.isDigit(s.charAt(pos))) v = v * 10 + (s.charAt(pos++) - '0');", "        Node node = new Node(neg ? -v : v);", "        if (pos < s.length() && s.charAt(pos) == '(') {", "            pos++;", "            while (s.charAt(pos) != ')') {", "                if (s.charAt(pos) == ',') pos++;", "                node.children.add(parse(s));", "            }", "            pos++;   // 跳过配对的 )", "        }", "        return node;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 428 序列化和反序列化 N 叉树 —— 图解：值(孩子1,孩子2,…) 的递归写读，() 就是孩子层的一进一出。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { tree: [1, null, 3, 2, 4, null, 5, 6] };
+
+function trace(input) {
+  var level = input.tree;
+  var frames = [];
+  var uid = 0;
+
+  function mk(v) { return { val: v, children: [], id: ++uid }; }
+  // 力扣层序数组建树：每个出队结点先跳过它孩子组前面的 null，再连续读孩子
+  function build(arr) {
+    if (!arr.length || arr[0] === null) return null;
+    var root = mk(arr[0]);
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var p = q.shift();
+      if (arr[i] === null) i++;
+      while (i < arr.length && arr[i] !== null) { var c = mk(arr[i]); p.children.push(c); q.push(c); i++; }
+    }
+    return root;
+  }
+  // 树 → 层序数组，顺便给出每个结点的层序下标（画树面板用）
+  function toLevel2(t) {
+    var arr = [], idx = {};
+    if (!t) return { arr: arr, idx: idx };
+    arr.push(t.val);
+    idx[t.id] = 0;
+    var q = [t];
+    while (q.length) {
+      var p = q.shift();
+      arr.push(null);
+      p.children.forEach(function (c) { arr.push(c.val); idx[c.id] = arr.length - 1; q.push(c); });
+    }
+    while (arr.length && arr[arr.length - 1] === null) arr.pop();
+    return { arr: arr, idx: idx };
+  }
+  function markAll(t, cls) {
+    var m = {}, lv = toLevel2(t);
+    for (var k in lv.idx) m[lv.idx[k]] = cls;
+    return m;
+  }
+
+  var root = build(level);
+  var buf = '';       // 当前序列化正在写的串
+  var s1 = '';        // 第一次序列化的结果
+  var t2 = null, s2 = '';
+  var pos = 0;
+  var parseRoot = null;
+  var phase = 'ser1'; // ser1 / parse / ser2
+
+  var OPEN = "sb.append('(');";
+  var LEAF = 'if (!node.children.isEmpty()) {';
+  var CLOSE = "sb.append(')');";
+  var DONE = 'return sb.toString();';
+  var PARSE = 'node.children.add(parse(s));';
+
+  function strPanel(p) {
+    var txt = phase === 'parse' ? s1 : buf;
+    var cells = txt === '' ? ['（空）'] : txt.split('');
+    var pointers = [];
+    if (p != null && txt !== '' && p >= 0 && p < cells.length)
+      pointers.push({ at: p, label: 'pos', cls: 'p-cur' });
+    return Viz.cells(cells, { title: '序列化串', pointers: pointers });
+  }
+  function snap(at, key, t, marks, p) {
+    frames.push(Viz.frame(at, key, [treePanelOf(t, marks), strPanel(p)]));
+  }
+  function treePanelOf(t, marks) {
+    return Viz.tree(toLevel2(t).arr, { title: '树（力扣层序，null 是空位）', marks: marks || {} });
+  }
+
+  var snapOpen = false, snapLeaf = false, snapClose = false, snapS1 = false, snapParse = false;
+
+  function ser(node) {
+    if (node === null) return;
+    buf += String(node.val);
+    if (node.children.length > 0) {
+      if (!snapOpen) {
+        snapOpen = true;
+        var m = {};
+        m[toLevel2(root).idx[node.id]] = 'cur';
+        snap(OPEN, '根 ' + node.val + ' 有 ' + node.children.length + ' 个孩子：写 ( 括住它们，先递归第一个', root, m, buf.length);
+      }
+      buf += '(';
+      node.children.forEach(function (c, ci) {
+        if (ci > 0) buf += ',';
+        ser(c);
+      });
+      if (!snapClose) {
+        snapClose = true;
+        var m2 = {};
+        m2[toLevel2(root).idx[node.id]] = 'cur';
+        snap(CLOSE, node.val + ' 的孩子层结束：写 ) 封口，这个子树就完整了', root, m2, buf.length);
+      }
+      buf += ')';
+    } else if (!snapLeaf) {
+      snapLeaf = true;
+      var m3 = {};
+      m3[toLevel2(root).idx[node.id]] = 'cur';
+      snap(LEAF, node.val + ' 是叶子：没有孩子，只写值、不写括号', root, m3, buf.length);
+    }
+  }
+
+  function parse(s, depth) {
+    var neg = s.charAt(pos) === '-';
+    if (neg) pos++;
+    var v = 0;
+    while (pos < s.length && s.charAt(pos) >= '0' && s.charAt(pos) <= '9') { v = v * 10 + (s.charCodeAt(pos) - 48); pos++; }
+    var node = mk(neg ? -v : v);
+    if (depth === 0) parseRoot = node;
+    if (pos < s.length && s.charAt(pos) === '(') {
+      pos++;
+      while (s.charAt(pos) !== ')') {
+        if (s.charAt(pos) === ',') pos++;
+        node.children.push(parse(s, depth + 1));
+        if (depth === 0 && !snapParse) {
+          snapParse = true;
+          snap(PARSE, '反序列化：读 ' + parseRoot.val + ' 后遇 ( 进孩子层，解析完的 ' + node.children[0].val + ' 子树挂回根', parseRoot, markAll(parseRoot, 'new'), pos);
+        }
+      }
+      pos++;
+    }
+    return node;
+  }
+
+  // 完整跑一遍最优解：序列化 → 反序列化 → 再序列化（往返无损）
+  phase = 'ser1';
+  buf = '';
+  ser(root);
+  s1 = buf;
+  if (!snapS1) {
+    snapS1 = true;
+    snap(DONE, '序列化完成：' + s1, root, markAll(root, 'done'), null);
+  }
+  if (s1 !== '') { pos = 0; phase = 'parse'; t2 = parse(s1, 0); }
+  phase = 'ser2';
+  buf = '';
+  ser(t2);
+  s2 = buf;
+  snap(DONE, '重建的树再序列化一遍还是「' + s2 + '」：往返无损', t2 || root, markAll(t2 || root, 'done'), null);
+
+  return { frames: frames, result: s2 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

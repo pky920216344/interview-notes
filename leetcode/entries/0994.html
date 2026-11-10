@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>腐烂的橘子 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 279 / 1159</span>
+  <nav class="pn"><a href="0523.html">上一篇</a><a href="0540.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">994. </span>腐烂的橘子</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 15</li><li class="algo">广度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">多源 BFS：所有烂橘子一开始就一起入队当火种，一轮扩散一分钟；扫完还有鲜橘就是 -1。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>这是「多个起点同时扩散」的最短时间问题 → 多源 BFS：把<strong>所有</strong>初始烂橘子一起入队，距离场天然正确。</li><li>一轮 = 弹空当前队列（同一分钟的火种一起扩散），<code>minutes++</code>；新烂的在入队前就改成 2，防重复入队。</li><li>循环条件 <code>队列非空 &amp;&amp; fresh &gt; 0</code>：鲜橘清零就提前停，少算无用轮次。</li><li>结束时 <code>fresh &gt; 0</code> 说明有鲜橘被空格隔开 → 返回 -1；本来就没鲜橘则返回 0。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m·n)，空间复杂度 O(m·n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> orangesRotting(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> m = grid.length, n = grid[<span class="n">0</span>].length, fresh = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="t">Queue</span>&lt;<span class="t">Integer</span>&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="c">// 多源 BFS：所有烂橘子一起入队，都是第 0 分钟的火种</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; m; r++) {</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; n; c++) {</span><span class="ln"><span class="no">10</span>                <span class="k">if</span> (grid[r][c] == <span class="n">2</span>) queue.offer(r * n + c);</span><span class="ln"><span class="no">11</span>                <span class="k">else</span> <span class="k">if</span> (grid[r][c] == <span class="n">1</span>) fresh++;</span><span class="ln"><span class="no">12</span>            }</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">int</span>[][] dirs = {{<span class="n">1</span>, <span class="n">0</span>}, {-<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">0</span>, <span class="n">1</span>}, {<span class="n">0</span>, -<span class="n">1</span>}};</span><span class="ln"><span class="no">15</span>        <span class="k">int</span> minutes = <span class="n">0</span>;</span><span class="ln"><span class="no">16</span>        <span class="c">// 一轮 = 当前队列里的烂橘子同时扩散一步</span></span><span class="ln"><span class="no">17</span>        <span class="k">while</span> (!queue.isEmpty() &amp;&amp; fresh &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">18</span>            minutes++;</span><span class="ln"><span class="no">19</span>            <span class="k">for</span> (<span class="k">int</span> sz = queue.size(); sz &gt; <span class="n">0</span>; sz--) {</span><span class="ln"><span class="no">20</span>                <span class="k">int</span> p = queue.poll();</span><span class="ln"><span class="no">21</span>                <span class="k">int</span> r = p / n, c = p % n;</span><span class="ln"><span class="no">22</span>                <span class="k">for</span> (<span class="k">int</span>[] d : dirs) {</span><span class="ln"><span class="no">23</span>                    <span class="k">int</span> nr = r + d[<span class="n">0</span>], nc = c + d[<span class="n">1</span>];</span><span class="ln"><span class="no">24</span>                    <span class="k">if</span> (nr &gt;= <span class="n">0</span> &amp;&amp; nr &lt; m &amp;&amp; nc &gt;= <span class="n">0</span> &amp;&amp; nc &lt; n &amp;&amp; grid[nr][nc] == <span class="n">1</span>) {</span><span class="ln"><span class="no">25</span>                        grid[nr][nc] = <span class="n">2</span>;   <span class="c">// 入队前先变烂，防止重复入队</span></span><span class="ln"><span class="no">26</span>                        fresh--;</span><span class="ln"><span class="no">27</span>                        queue.offer(nr * n + nc);</span><span class="ln"><span class="no">28</span>                    }</span><span class="ln"><span class="no">29</span>                }</span><span class="ln"><span class="no">30</span>            }</span><span class="ln"><span class="no">31</span>        }</span><span class="ln"><span class="no">32</span>        <span class="c">// 还有鲜橘够不着 → -1；否则分钟数就是答案（本来就没鲜橘时是 0）</span></span><span class="ln"><span class="no">33</span>        <span class="k">return</span> fresh &gt; <span class="n">0</span> ? -<span class="n">1</span> : minutes;</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>在给定的&nbsp;<code>m x n</code>&nbsp;网格<meta charset="UTF-8" />&nbsp;<code>grid</code>&nbsp;中，每个单元格可以有以下三个值之一：</p>
+
+<ul>
+	<li>值&nbsp;<code>0</code>&nbsp;代表空单元格；</li>
+	<li>值&nbsp;<code>1</code>&nbsp;代表新鲜橘子；</li>
+	<li>值&nbsp;<code>2</code>&nbsp;代表腐烂的橘子。</li>
+</ul>
+
+<p>每分钟，腐烂的橘子&nbsp;<strong>周围&nbsp;4 个方向上相邻</strong> 的新鲜橘子都会腐烂。</p>
+
+<p>返回 <em>直到单元格中没有新鲜橘子为止所必须经过的最小分钟数。如果不可能，返回&nbsp;<code>-1</code></em>&nbsp;。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/7687c4e3e623.png" style="height: 137px; width: 650px;" /></strong></p>
+
+<pre>
+<strong>输入：</strong>grid = [[2,1,1],[1,1,0],[0,1,1]]
+<strong>输出：</strong>4
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>grid = [[2,1,1],[0,1,1],[1,0,1]]
+<strong>输出：</strong>-1
+<strong>解释：</strong>左下角的橘子（第 2 行， 第 0 列）永远不会腐烂，因为腐烂只会发生在 4 个方向上。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>grid = [[0,2]]
+<strong>输出：</strong>0
+<strong>解释：</strong>因为 0 分钟时已经没有新鲜橘子了，所以答案就是 0 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == grid.length</code></li>
+	<li><code>n == grid[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 10</code></li>
+	<li><code>grid[i][j]</code> 仅为&nbsp;<code>0</code>、<code>1</code>&nbsp;或&nbsp;<code>2</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int orangesRotting(int[][] grid) {", "        int m = grid.length, n = grid[0].length, fresh = 0;", "        Queue<Integer> queue = new ArrayDeque<>();", "        // 多源 BFS：所有烂橘子一起入队，都是第 0 分钟的火种", "        for (int r = 0; r < m; r++) {", "            for (int c = 0; c < n; c++) {", "                if (grid[r][c] == 2) queue.offer(r * n + c);", "                else if (grid[r][c] == 1) fresh++;", "            }", "        }", "        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};", "        int minutes = 0;", "        // 一轮 = 当前队列里的烂橘子同时扩散一步", "        while (!queue.isEmpty() && fresh > 0) {", "            minutes++;", "            for (int sz = queue.size(); sz > 0; sz--) {", "                int p = queue.poll();", "                int r = p / n, c = p % n;", "                for (int[] d : dirs) {", "                    int nr = r + d[0], nc = c + d[1];", "                    if (nr >= 0 && nr < m && nc >= 0 && nc < n && grid[nr][nc] == 1) {", "                        grid[nr][nc] = 2;   // 入队前先变烂，防止重复入队", "                        fresh--;", "                        queue.offer(nr * n + nc);", "                    }", "                }", "            }", "        }", "        // 还有鲜橘够不着 → -1；否则分钟数就是答案（本来就没鲜橘时是 0）", "        return fresh > 0 ? -1 : minutes;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 994. 腐烂的橘子 —— 图解：复刻 Solution.java 的「多源 BFS 逐轮扩散」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[2, 1, 1], [1, 1, 0], [0, 1, 1]] };
+
+function trace(input) {
+  var rows = (input.grid || []).map(function (r) { return r.slice(); });
+  var m = rows.length, n = rows[0].length;
+  var g = rows.map(function (r) { return r.slice(); });    // 会原地变烂的网格
+  var orig = rows.map(function (r) { return r.slice(); }); // 原始网格，用来区分「本来空」和「烂过」
+  var DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  var queue = [];          // 等扩散的烂橘子 [r, c]
+  var fresh = 0, minutes = 0;
+  var frames = [];
+  var seen = { round1: false, round2: false, last: false };
+
+  var INIT = 'int minutes = 0;';
+  var ROT = 'grid[nr][nc] = 2;';
+  var END = 'return fresh > 0 ? -1 : minutes;';
+
+  // 网格面板：橙 = 原始烂橘，青 = 鲜橘，绿 = 这轮新烂的（也在队列里），橙框 = 正在扩散
+  function gridPanel(curCell) {
+    var marks = {};
+    var r, c;
+    for (r = 0; r < m; r++) {
+      for (c = 0; c < n; c++) {
+        if (g[r][c] === 1) marks[r + ',' + c] = 'win';
+        else if (g[r][c] === 2 && orig[r][c] === 2) marks[r + ',' + c] = 'bad';
+      }
+    }
+    queue.forEach(function (p) { if (marks[p[0] + ',' + p[1]] !== 'bad') marks[p[0] + ',' + p[1]] = 'new'; });
+    if (curCell) marks[curCell[0] + ',' + curCell[1]] = 'cur';
+    var rl = [], cl = [];
+    for (r = 0; r < m; r++) rl.push(String(r));
+    for (c = 0; c < n; c++) cl.push(String(c));
+    return Viz.grid(g, {
+      title: 'grid（红：火种烂橘，青：鲜橘，蓝：在队列里待扩散，灰：空格）', marks: marks, rowLabels: rl, colLabels: cl
+    });
+  }
+
+  function queuePanel() {
+    var items = queue.map(function (p) { return p[0] + ',' + p[1]; });
+    return Viz.cells(items, {
+      title: items.length ? '队列 queue（这一轮一起扩散）' : '队列 queue（空）',
+      marks: {}, hideIndex: true,
+      pointers: items.length ? [{ at: 0, label: '队首', cls: 'p-head' }] : []
+    });
+  }
+
+  function varsPanel(chgMin, chgFresh) {
+    return Viz.vars([
+      { name: 'minutes', v: minutes, cls: chgMin ? 'chg' : '' },
+      { name: 'fresh', v: fresh, cls: chgFresh ? 'chg' : '' }
+    ]);
+  }
+
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  for (var r = 0; r < m; r++) {
+    for (var c = 0; c < n; c++) {
+      if (g[r][c] === 2) queue.push([r, c]);
+      else if (g[r][c] === 1) fresh++;
+    }
+  }
+
+  snap(INIT, '开局：所有烂橘子一起入队当火种，鲜橘还有 ' + fresh + ' 个',
+    [gridPanel(null), queuePanel(), varsPanel(false, false)]);
+
+  while (queue.length && fresh > 0) {
+    minutes++;
+    var size = queue.length, infected = 0;
+    while (size-- > 0) {
+      var p = queue.shift();
+      for (var d = 0; d < 4; d++) {
+        var nr = p[0] + DIRS[d][0], nc = p[1] + DIRS[d][1];
+        if (nr >= 0 && nr < m && nc >= 0 && nc < n && g[nr][nc] === 1) {
+          g[nr][nc] = 2;
+          fresh--;
+          infected++;
+          queue.push([nr, nc]);
+          if ((minutes === 1 && !seen.round1) || (minutes === 2 && !seen.round2) || (fresh === 0 && !seen.last)) {
+            var isFirst = (minutes === 1 && !seen.round1);
+            var isSecond = (minutes === 2 && !seen.round2);
+            if (isFirst) seen.round1 = true;
+            if (isSecond) seen.round2 = true;
+            if (fresh === 0) seen.last = true;
+            var tag = fresh === 0 ? '最后一分钟' : '第 ' + minutes + ' 分钟';
+            snap(ROT, tag + '：队列里的烂橘子一起扩散，刚感染 (' + nr + ',' + nc + ')' + (fresh === 0 ? '，鲜橘清零' : ''),
+              [gridPanel([nr, nc]), queuePanel(), varsPanel(true, true)]);
+          }
+        }
+      }
+    }
+  }
+
+  snap(END, fresh > 0
+    ? '队列空了还有 ' + fresh + ' 个鲜橘够不着 → 返回 -1'
+    : '第 ' + minutes + ' 分钟全部烂完（本来就没鲜橘时是 0）',
+    [gridPanel(null), queuePanel(), varsPanel(true, true)]);
+
+  return { frames: frames, result: fresh > 0 ? -1 : minutes };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

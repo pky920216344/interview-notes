@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>下一个更大元素 III · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 242 / 1159</span>
+  <nav class="pn"><a href="0567.html">上一篇</a><a href="0862.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">556. </span>下一个更大元素 III</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 20</li><li class="algo">双指针</li><li class="tag">数学</li><li class="tag">双指针</li><li class="tag">字符串</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">同「下一个排列」：从右找第一个升阶位，右侧找刚大的交换，后缀反转成最小；long 防溢出。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>转成 <code>char[]</code>；从右往左找第一个 <code>a[i] &lt; a[i+1]</code>，找不到说明整体已是最大排列，返回 -1。</li><li>i 右边的后缀是非升序的：从右往左第一个 <code>&gt; a[i]</code> 的就是「刚大」的数，交换它（增量最小）。</li><li>交换后后缀仍是降序，反转成升序 = 后缀能排出的最小值，整体就是下一个排列。</li><li>位数最多 10 个：<code>long</code> 解析后和 <code>Integer.MAX_VALUE</code> 比较，超界返回 -1。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(d)，d 是十进制位数，空间复杂度 O(d)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> nextGreaterElement(<span class="k">int</span> n) {</span><span class="ln"><span class="no">3</span>        <span class="k">char</span>[] a = <span class="t">String</span>.valueOf(n).toCharArray();</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> i = a.length - <span class="n">2</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">while</span> (i &gt;= <span class="n">0</span> &amp;&amp; a[i] &gt;= a[i + <span class="n">1</span>]) i--;   <span class="c">// 从右找第一个 a[i] &lt; a[i+1] 的位置</span></span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (i &lt; <span class="n">0</span>) <span class="k">return</span> -<span class="n">1</span>;                     <span class="c">// 整体已是最大排列，无解</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> j = a.length - <span class="n">1</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">while</span> (a[j] &lt;= a[i]) j--;                 <span class="c">// 后缀降序：从右第一个 &gt; a[i] 的刚好大一点</span></span><span class="ln"><span class="no">9</span>        <span class="k">char</span> t = a[i]; a[i] = a[j]; a[j] = t;     <span class="c">// 交换，i 左边的前缀保持不变</span></span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> l = i + <span class="n">1</span>, r = a.length - <span class="n">1</span>; l &lt; r; l++, r--) {   <span class="c">// 后缀反转成升序 = 最小</span></span><span class="ln"><span class="no">11</span>            t = a[l]; a[l] = a[r]; a[r] = t;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">long</span> v = <span class="t">Long</span>.parseLong(<span class="k">new</span> <span class="t">String</span>(a));   <span class="c">// 结果可能超 int，用 long 接住再比</span></span><span class="ln"><span class="no">14</span>        <span class="k">return</span> v &gt; <span class="t">Integer</span>.MAX_VALUE ? -<span class="n">1</span> : (<span class="k">int</span>) v;</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个正整数 <code>n</code> ，请你找出符合条件的最小整数，其由重新排列 <code>n</code>中存在的每位数字组成，并且其值大于 <code>n</code> 。如果不存在这样的正整数，则返回 <code>-1</code> 。</p>
+
+<p><strong>注意</strong> ，返回的整数应当是一个 <strong>32 位整数</strong> ，如果存在满足题意的答案，但不是 <strong>32 位整数</strong> ，同样返回 <code>-1</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 12
+<strong>输出：</strong>21
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 21
+<strong>输出：</strong>-1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= n <= 2<sup>31</sup> - 1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int nextGreaterElement(int n) {", "        char[] a = String.valueOf(n).toCharArray();", "        int i = a.length - 2;", "        while (i >= 0 && a[i] >= a[i + 1]) i--;   // 从右找第一个 a[i] < a[i+1] 的位置", "        if (i < 0) return -1;                     // 整体已是最大排列，无解", "        int j = a.length - 1;", "        while (a[j] <= a[i]) j--;                 // 后缀降序：从右第一个 > a[i] 的刚好大一点", "        char t = a[i]; a[i] = a[j]; a[j] = t;     // 交换，i 左边的前缀保持不变", "        for (int l = i + 1, r = a.length - 1; l < r; l++, r--) {   // 后缀反转成升序 = 最小", "            t = a[l]; a[l] = a[r]; a[r] = t;", "        }", "        long v = Long.parseLong(new String(a));   // 结果可能超 int，用 long 接住再比", "        return v > Integer.MAX_VALUE ? -1 : (int) v;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 556. 下一个更大元素 III —— 图解：复刻 Solution.java 的「下一个排列」三步，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 124433 };
+
+function trace(input) {
+  var a = String(input.n).split('');
+  var frames = [];
+
+  function digPanel(marks, pointers) {
+    return Viz.cells(a, { title: 'n 的数位（下标从 0 起）', marks: marks || {}, pointers: pointers || [] });
+  }
+
+  // 第 1 步：从右往左找第一个 a[i] < a[i+1]
+  var i = a.length - 2;
+  while (i >= 0 && +a[i] >= +a[i + 1]) i--;
+
+  if (i < 0) {
+    // 整体已是最大排列（如 21、10）：无解
+    var allMarks = {};
+    for (var k = 0; k < a.length; k++) allMarks[k] = 'dim';
+    frames.push(Viz.frame('if (i < 0) return -1;',
+      '数位从右到左一直非升（整体是最大排列），重排不出更大的数 → -1',
+      [digPanel(allMarks), Viz.vars([{ name: 'i', v: i }])]));
+    return { frames: frames, result: -1 };
+  }
+
+  var suffix = a.slice(i + 1).join('');
+  var m1 = {}; m1[i] = 'cur';
+  for (k = i + 1; k < a.length; k++) m1[k] = 'win';
+  frames.push(Viz.frame('while (i >= 0 && a[i] >= a[i + 1]) i--;',
+    '从右找第一个比后一位小的：下标 ' + i + ' 的 ' + a[i] + ' 要变大；右边「' + suffix + '」已是降序（能排出的最大后缀）',
+    [digPanel(m1, [{ at: i, label: 'i', cls: 'p-left' }])]));
+
+  // 第 2 步：后缀里从右找第一个 > a[i] 的（「刚大」的数）
+  var j = a.length - 1;
+  while (+a[j] <= +a[i]) j--;
+  var m2 = {}; m2[i] = 'cur'; m2[j] = 'hit';
+  for (k = i + 1; k < a.length; k++) if (k !== j) m2[k] = 'win';
+  frames.push(Viz.frame('while (a[j] <= a[i]) j--;',
+    '后缀从右往左第一个 > ' + a[i] + ' 的是下标 ' + j + ' 的 ' + a[j] + '：换成它增量最小',
+    [digPanel(m2, [{ at: i, label: 'i', cls: 'p-left' }, { at: j, label: 'j', cls: 'p-right' }])]));
+
+  // 第 3 步：交换
+  var t = a[i]; a[i] = a[j]; a[j] = t;
+  var m3 = {}; m3[i] = 'chg'; m3[j] = 'chg';
+  frames.push(Viz.frame('char t = a[i]; a[i] = a[j]; a[j] = t;',
+    '交换后是 ' + a.join('') + '：前缀更大了，但后缀还是降序（偏大）',
+    [digPanel(m3)]));
+
+  // 第 4 步：反转后缀
+  for (var l = i + 1, r = a.length - 1; l < r; l++, r--) {
+    t = a[l]; a[l] = a[r]; a[r] = t;
+  }
+  var m4 = {};
+  for (k = 0; k < a.length; k++) m4[k] = k <= i ? 'done' : 'new';
+  var val = Number(a.join(''));
+  var ok = val <= 2147483647;
+  frames.push(Viz.frame('long v = Long.parseLong(new String(a));',
+    '后缀反转成升序（后缀能排出的最小值）→ ' + a.join('') + (ok ? '，在 int 范围内' : '，超过 int 上界 → -1'),
+    [digPanel(m4), Viz.vars([{ name: '结果', v: ok ? String(val) : '-1（超 int）', cls: 'done' }])]));
+
+  return { frames: frames, result: ok ? val : -1 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

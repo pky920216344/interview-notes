@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>填充每个节点的下一个右侧节点指针 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 341 / 1159</span>
+  <nav class="pn"><a href="0171.html">上一篇</a><a href="1206.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">117. </span>填充每个节点的下一个右侧节点指针 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 11</li><li class="algo">广度优先搜索</li><li class="aux">链表</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">链表</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">逐层推进：用上一层的 next 链横扫当前层，把下一层的孩子用 dummy 头串成链，再跳到链头进入下一层，额外空间 O(1)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>第 0 层只有根；处理第 k 层时，这一层的 <code>next</code> 链已经串好，<code>cur</code> 就是层头。</li><li>沿 <code>p = p.next</code> 横扫当前层，把每个结点的非空孩子依次接到 <code>dummy</code> 后面，串出下一层的链。</li><li>串完令 <code>cur = dummy.next</code>（下一层层头），循环到 <code>cur</code> 为空。</li><li>关键：<strong>下一层的 <code>next</code> 靠当前层的 <code>left</code>/<code>right</code> 建立</strong>，所以不需要队列，空间就是两个指针。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="c">/*</span></span><span class="ln"><span class="no">2</span><span class="c">// Definition for a Node.</span></span><span class="ln"><span class="no">3</span><span class="c">class Node {</span></span><span class="ln"><span class="no">4</span><span class="c">    public int val;</span></span><span class="ln"><span class="no">5</span><span class="c">    public Node left;</span></span><span class="ln"><span class="no">6</span><span class="c">    public Node right;</span></span><span class="ln"><span class="no">7</span><span class="c">    public Node next;</span></span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span><span class="c">    public Node() {}</span></span><span class="ln"><span class="no">10</span><span class="c">    </span></span><span class="ln"><span class="no">11</span><span class="c">    public Node(int _val) {</span></span><span class="ln"><span class="no">12</span><span class="c">        val = _val;</span></span><span class="ln"><span class="no">13</span><span class="c">    }</span></span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span><span class="c">    public Node(int _val, Node _left, Node _right, Node _next) {</span></span><span class="ln"><span class="no">16</span><span class="c">        val = _val;</span></span><span class="ln"><span class="no">17</span><span class="c">        left = _left;</span></span><span class="ln"><span class="no">18</span><span class="c">        right = _right;</span></span><span class="ln"><span class="no">19</span><span class="c">        next = _next;</span></span><span class="ln"><span class="no">20</span><span class="c">    }</span></span><span class="ln"><span class="no">21</span><span class="c">};</span></span><span class="ln"><span class="no">22</span><span class="c">*/</span></span><span class="ln"><span class="no">23</span> </span><span class="ln"><span class="no">24</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">25</span>    <span class="k">public</span> <span class="t">Node</span> connect(<span class="t">Node</span> root) {</span><span class="ln"><span class="no">26</span>        <span class="c">// cur：当前层正在找孩子的结点，沿 next 一路往右走</span></span><span class="ln"><span class="no">27</span>        <span class="t">Node</span> cur = root;</span><span class="ln"><span class="no">28</span>        <span class="k">while</span> (cur != <span class="k">null</span>) {</span><span class="ln"><span class="no">29</span>            <span class="c">// dummy 串起下一层从左到右的孩子链</span></span><span class="ln"><span class="no">30</span>            <span class="t">Node</span> dummy = <span class="k">new</span> <span class="t">Node</span>(<span class="n">0</span>), tail = dummy;</span><span class="ln"><span class="no">31</span>            <span class="k">for</span> (<span class="t">Node</span> p = cur; p != <span class="k">null</span>; p = p.next) {</span><span class="ln"><span class="no">32</span>                <span class="k">if</span> (p.left != <span class="k">null</span>) { tail.next = p.left; tail = tail.next; }</span><span class="ln"><span class="no">33</span>                <span class="k">if</span> (p.right != <span class="k">null</span>) { tail.next = p.right; tail = tail.next; }</span><span class="ln"><span class="no">34</span>            }</span><span class="ln"><span class="no">35</span>            <span class="c">// 下一层的头就是 dummy 后面第一个孩子</span></span><span class="ln"><span class="no">36</span>            cur = dummy.next;</span><span class="ln"><span class="no">37</span>        }</span><span class="ln"><span class="no">38</span>        <span class="k">return</span> root;</span><span class="ln"><span class="no">39</span>    }</span><span class="ln"><span class="no">40</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个二叉树：</p>
+
+<pre>
+struct Node {
+  int val;
+  Node *left;
+  Node *right;
+  Node *next;
+}</pre>
+
+<p>填充它的每个 next 指针，让这个指针指向其下一个右侧节点。如果找不到下一个右侧节点，则将 next 指针设置为 <code>NULL</code> 。</p>
+
+<p>初始状态下，所有&nbsp;next 指针都被设置为 <code>NULL</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/63b95e576c18.png" style="width: 500px; height: 171px;" />
+<pre>
+<strong>输入</strong>：root = [1,2,3,4,5,null,7]
+<strong>输出：</strong>[1,#,2,3,#,4,5,7,#]
+<strong>解释：</strong>给定二叉树如图 A 所示，你的函数应该填充它的每个 next 指针，以指向其下一个右侧节点，如图 B 所示。序列化输出按层序遍历顺序（由 next 指针连接），'#' 表示每层的末尾。</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = []
+<strong>输出：</strong>[]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中的节点数在范围 <code>[0, 6000]</code> 内</li>
+	<li><code>-100 &lt;= Node.val &lt;= 100</code></li>
+</ul>
+
+<p><strong>进阶：</strong></p>
+
+<ul>
+	<li>你只能使用常量级额外空间。</li>
+	<li>使用递归解题也符合要求，本题中递归程序的隐式栈空间不计入额外空间复杂度。</li>
+</ul>
+
+<ul>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["/*", "// Definition for a Node.", "class Node {", "    public int val;", "    public Node left;", "    public Node right;", "    public Node next;", "", "    public Node() {}", "    ", "    public Node(int _val) {", "        val = _val;", "    }", "", "    public Node(int _val, Node _left, Node _right, Node _next) {", "        val = _val;", "        left = _left;", "        right = _right;", "        next = _next;", "    }", "};", "*/", "", "class Solution {", "    public Node connect(Node root) {", "        // cur：当前层正在找孩子的结点，沿 next 一路往右走", "        Node cur = root;", "        while (cur != null) {", "            // dummy 串起下一层从左到右的孩子链", "            Node dummy = new Node(0), tail = dummy;", "            for (Node p = cur; p != null; p = p.next) {", "                if (p.left != null) { tail.next = p.left; tail = tail.next; }", "                if (p.right != null) { tail.next = p.right; tail = tail.next; }", "            }", "            // 下一层的头就是 dummy 后面第一个孩子", "            cur = dummy.next;", "        }", "        return root;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 117. 填充每个节点的下一个右侧节点指针 II —— 图解：用已建立的 next 逐层推进，dummy 串下一层孩子链。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, 2, 3, 4, 5, null, 7] };
+
+function trace(input) {
+  var arr = input.root || [];
+  var frames = [];
+
+  // 建树：结点带 val、left、right、next 和层序数组下标 idx
+  var nodes = [];
+  function build() {
+    if (!arr.length || arr[0] == null) return null;
+    var root = { val: arr[0], left: null, right: null, next: null, idx: 0 };
+    nodes[0] = root;
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var nd = q.shift();
+      if (i < arr.length) { if (arr[i] != null) { nd.left = { val: arr[i], left: null, right: null, next: null, idx: i }; nodes[i] = nd.left; q.push(nd.left); } i++; }
+      if (i < arr.length) { if (arr[i] != null) { nd.right = { val: arr[i], left: null, right: null, next: null, idx: i }; nodes[i] = nd.right; q.push(nd.right); } i++; }
+    }
+    return root;
+  }
+  var root = build();
+
+  function treePanel(marks, curNd) {
+    var labels = curNd ? [{ at: curNd.idx, label: 'cur', cls: 'p-cur' }] : [];
+    return Viz.tree(arr, { title: '二叉树', marks: marks || {}, labels: labels });
+  }
+
+  // 下一层孩子链：'H' 是 dummy 哨兵，链上值从左到右
+  function chainPanel(chain, marks) {
+    var items = ['H'].concat(chain);
+    var edges = [];
+    for (var k = 0; k + 1 < items.length; k++) edges.push([k, k + 1]);
+    var m = {};
+    for (k = 0; k < chain.length; k++) if (marks && marks[k]) m[k + 1] = marks[k];
+    return Viz.list(items, {
+      title: 'dummy 头串出的下一层孩子链',
+      edges: edges, nulls: items.length ? [items.length - 1] : [],
+      marks: m, pointers: []
+    });
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  if (root === null) return { frames: frames, result: [] };
+
+  var cur = root;
+  var levels = [];
+  var built = 0;   // 已串过几条孩子链，用来限制快照次数
+
+  snap('Node cur = root;',
+    '开局：第 0 层只有根，它的 next 链天然就绪',
+    [treePanel({ 0: 'cur' }, root), chainPanel([], {})]);
+
+  while (cur !== null) {
+    // 沿 next 横扫当前层，收集孩子
+    var lv = [];
+    for (var p = cur; p !== null; p = p.next) lv.push(p.val);
+    levels.push(lv);
+
+    var chain = [];
+    for (p = cur; p !== null; p = p.next) {
+      if (p.left) chain.push(p.left);
+      if (p.right) chain.push(p.right);
+    }
+    for (var k = 0; k + 1 < chain.length; k++) chain[k].next = chain[k + 1];
+
+    if (chain.length && built < 2) {
+      var marks = {};
+      for (p = cur; p !== null; p = p.next) marks[p.idx] = 'win';
+      marks[cur.idx] = 'cur';
+      var cm = {};
+      var names = chain.map(function (n) { return n.val; });
+      var shown = names.slice(0, 3).join('、') + (names.length > 3 ? ' 等' : '');
+      for (k = 0; k < chain.length; k++) cm[k] = 'new';
+      snap('if (p.left != null) { tail.next = p.left; tail = tail.next; }',
+        '沿 next 扫第 ' + (levels.length) + ' 层：把 ' + shown + ' 串到 dummy 后',
+        [treePanel(marks, cur), chainPanel(names, cm)]);
+      built++;
+    }
+
+    cur = chain.length ? chain[0] : null;
+    if (cur === null) {
+      var done = {};
+      for (var i = 0; i < arr.length; i++) if (nodes[i]) done[i] = 'done';
+      snap('cur = dummy.next;',
+        '下一层没有孩子了：' + levels.length + ' 层全部串好、按序读出',
+        [treePanel(done, null),
+         Viz.table('按 next 逐层读出的结果', levels.map(function (l, i) {
+           return { k: '第 ' + (i + 1) + ' 层', v: l.join(' → '), cls: '' };
+         }))]);
+    }
+  }
+
+  return { frames: frames, result: levels };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

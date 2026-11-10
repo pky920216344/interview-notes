@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>删除二叉搜索树中的节点 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 152 / 1159</span>
+  <nav class="pn"><a href="0045.html">上一篇</a><a href="offer-54.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">450. </span>删除二叉搜索树中的节点</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 39</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">二叉搜索树</li><li class="tag">二叉树</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">递归删：小往左、大往右；找到后右子树空就拿左子树顶上，否则用右子树最小结点（后继）顶替值，再递归删掉那个后继。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>用返回值接住子树：<code>root.left/right = deleteNode(child, key)</code>，删成 <code>null</code> 就自然断链。</li><li>找到目标：右子树空直接 <code>return root.left</code>（左空时就是 <code>null</code>，一并处理）；否则一路向左找右子树最小结点。</li><li>把后继的值<strong>抄到当前结点</strong>，再递归从右子树删掉这个值——「借值顶替」比搬指针好写且不易错。</li><li>值互不相同，所以递归删后继时一定会精确命中那个结点。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(h)，空间复杂度 O(h)（递归栈）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">TreeNode</span> deleteNode(<span class="t">TreeNode</span> root, <span class="k">int</span> key) {</span><span class="ln"><span class="no">3</span>        <span class="k">if</span> (root == <span class="k">null</span>) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">4</span>        <span class="c">// key 小于当前值去左子树删，大于去右子树删，BST 的性质不变</span></span><span class="ln"><span class="no">5</span>        <span class="k">if</span> (key &lt; root.val) root.left = deleteNode(root.left, key);</span><span class="ln"><span class="no">6</span>        <span class="k">else</span> <span class="k">if</span> (key &gt; root.val) root.right = deleteNode(root.right, key);</span><span class="ln"><span class="no">7</span>        <span class="k">else</span> {</span><span class="ln"><span class="no">8</span>            <span class="c">// 找到了：右子树为空，直接拿左子树顶上来（左也空就顶个 null）</span></span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (root.right == <span class="k">null</span>) <span class="k">return</span> root.left;</span><span class="ln"><span class="no">10</span>            <span class="c">// 右子树不空：它的最小结点（一路向左）是中序后继，拿来顶替要删的值</span></span><span class="ln"><span class="no">11</span>            <span class="t">TreeNode</span> succ = root.right;</span><span class="ln"><span class="no">12</span>            <span class="k">while</span> (succ.left != <span class="k">null</span>) succ = succ.left;</span><span class="ln"><span class="no">13</span>            root.val = succ.val;</span><span class="ln"><span class="no">14</span>            <span class="c">// 这个值是从右子树「借」的，再递归把右子树里的它删掉</span></span><span class="ln"><span class="no">15</span>            root.right = deleteNode(root.right, succ.val);</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> root;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个二叉搜索树的根节点 <strong>root </strong>和一个值 <strong>key</strong>，删除二叉搜索树中的&nbsp;<strong>key&nbsp;</strong>对应的节点，并保证二叉搜索树的性质不变。返回二叉搜索树（有可能被更新）的根节点的引用。</p>
+
+<p>一般来说，删除节点可分为两个步骤：</p>
+
+<ol>
+	<li>首先找到需要删除的节点；</li>
+	<li>如果找到了，删除它。</li>
+</ol>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<p><img src="../assets/img/2984d4433812.jpg" style="width: 800px;" /></p>
+
+<pre>
+<strong>输入：</strong>root = [5,3,6,2,4,null,7], key = 3
+<strong>输出：</strong>[5,4,6,2,null,null,7]
+<strong>解释：</strong>给定需要删除的节点值是 3，所以我们首先找到 3 这个节点，然后删除它。
+一个正确的答案是 [5,4,6,2,null,null,7], 如下图所示。
+另一个正确答案是 [5,2,6,null,4,null,7]。
+
+<img src="../assets/img/3c991dea37f1.jpg" style="width: 350px;" />
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> root = [5,3,6,2,4,null,7], key = 0
+<strong>输出:</strong> [5,3,6,2,4,null,7]
+<strong>解释:</strong> 二叉树不包含值为 0 的节点
+</pre>
+
+<p><strong>示例 3:</strong></p>
+
+<pre>
+<strong>输入:</strong> root = [], key = 0
+<strong>输出:</strong> []</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li>节点数的范围&nbsp;<code>[0, 10<sup>4</sup>]</code>.</li>
+	<li><code>-10<sup>5</sup>&nbsp;&lt;= Node.val &lt;= 10<sup>5</sup></code></li>
+	<li>节点值唯一</li>
+	<li><code>root</code>&nbsp;是合法的二叉搜索树</li>
+	<li><code>-10<sup>5</sup>&nbsp;&lt;= key &lt;= 10<sup>5</sup></code></li>
+</ul>
+
+
+
+<p><strong>进阶：</strong> 要求算法时间复杂度为&nbsp;O(h)，h 为树的高度。</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public TreeNode deleteNode(TreeNode root, int key) {", "        if (root == null) return null;", "        // key 小于当前值去左子树删，大于去右子树删，BST 的性质不变", "        if (key < root.val) root.left = deleteNode(root.left, key);", "        else if (key > root.val) root.right = deleteNode(root.right, key);", "        else {", "            // 找到了：右子树为空，直接拿左子树顶上来（左也空就顶个 null）", "            if (root.right == null) return root.left;", "            // 右子树不空：它的最小结点（一路向左）是中序后继，拿来顶替要删的值", "            TreeNode succ = root.right;", "            while (succ.left != null) succ = succ.left;", "            root.val = succ.val;", "            // 这个值是从右子树「借」的，再递归把右子树里的它删掉", "            root.right = deleteNode(root.right, succ.val);", "        }", "        return root;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 450. 删除二叉搜索树中的节点 —— 图解：复刻 Solution.java 的递归删除，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [5, 3, 6, 2, 4, null, 7], key: 3 };
+
+function trace(input) {
+  var arr = input.root || [];
+  var frames = [];
+  var key = input.key;
+
+  // 力扣层序数组 -> 结点；idx 是层序下标，面板高亮靠结点对象上的临时 _m 标记
+  var root = null;
+  if (arr.length && arr[0] != null) {
+    root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var nd = q.shift();
+      if (i < arr.length) { if (arr[i] != null) { nd.left = { idx: i, val: arr[i], left: null, right: null }; q.push(nd.left); } i++; }
+      if (i < arr.length) { if (arr[i] != null) { nd.right = { idx: i, val: arr[i], left: null, right: null }; q.push(nd.right); } i++; }
+    }
+  }
+
+  // 当前树结构 -> 力扣层序数组（带 null 占位，去掉末尾多余 null），与 Java 的 Trees.toLevel 一致
+  function levelArray(cur) {
+    var out = [];
+    if (cur === null) return out;
+    var qq = [cur];
+    while (qq.length) {
+      var nd = qq.shift();
+      if (nd === null) { out.push(null); continue; }
+      out.push(nd.val);
+      qq.push(nd.left);
+      qq.push(nd.right);
+    }
+    while (out.length && out[out.length - 1] === null) out.pop();
+    return out;
+  }
+
+  // 画当前树：nd._m 是这帧的高亮类，按渲染出来的层序位置落 marks
+  function treePanel(cur, title) {
+    var level = [], marks = {};
+    if (cur !== null) {
+      var qq = [cur];
+      while (qq.length) {
+        var nd = qq.shift();
+        if (nd === null) { level.push(null); continue; }
+        if (nd._m) marks[level.length] = nd._m;
+        level.push(nd.val);
+        qq.push(nd.left);
+        qq.push(nd.right);
+      }
+      while (level.length && level[level.length - 1] === null) level.pop();
+    }
+    return Viz.tree(level, { title: title || '二叉搜索树', marks: marks });
+  }
+
+  var LEFT = 'if (key < root.val) root.left = deleteNode(root.left, key);';
+  var FOUND = 'if (root.right == null) return root.left;';
+  var REPLACE = 'root.val = succ.val;';
+  var RET = 'return root;';
+  var origRoot = root;
+  var firedRoot = false, firedFound = false, firedReplace = false, firedCut = false;
+
+  function del(node, k) {
+    if (node === null) return null;
+    // 第 1 帧：第一次比较，从根开始往一边走
+    if (node === origRoot && !firedRoot) {
+      firedRoot = true;
+      node._m = 'cur';
+      var dir = k < node.val ? '小于 ' + node.val + '，往左子树找'
+        : k > node.val ? '大于 ' + node.val + '，往右子树找' : '正好等于根，就在根上删';
+      frames.push(Viz.frame(LEFT, '从根开始比较：key=' + k + '，' + dir, [treePanel(root)]));
+      node._m = null;
+    }
+    if (k < node.val) {
+      node.left = del(node.left, k);
+    } else if (k > node.val) {
+      node.right = del(node.right, k);
+    } else {
+      // 第 2 帧：找到了 key
+      if (!firedFound) {
+        firedFound = true;
+        node._m = 'cur';
+        var situ = node.left !== null && node.right !== null ? '左右子树都在，要用后继顶替'
+          : node.right === null ? '右子树是空的，拿左子树顶上来' : '左子树是空的，直接拿右子树顶上来';
+        frames.push(Viz.frame(FOUND, '找到 key=' + k + '：' + situ, [treePanel(root)]));
+        node._m = null;
+      }
+      if (node.right === null) return node.left;
+      // 第 3 帧：右子树最小结点顶替
+      var succ = node.right;
+      while (succ.left !== null) succ = succ.left;
+      var borrowed = succ.val;
+      node.val = borrowed;
+      if (!firedReplace) {
+        firedReplace = true;
+        node._m = 'new';
+        succ._m = 'bad';
+        frames.push(Viz.frame(REPLACE, '右子树最小结点 ' + borrowed + ' 顶替 ' + k + '；右子树里这个 ' + borrowed + ' 还欠着要删',
+          [treePanel(root), Viz.vars([{ name: 'key', v: k }, { name: '后继', v: borrowed, cls: 'chg' }])]));
+        node._m = null;
+        succ._m = null;
+      }
+      // 第 4 帧：递归删掉借来的值（值唯一，进到它就是它）
+      if (!firedCut) {
+        firedCut = true;
+        node._m = 'cur';
+        succ._m = 'bad';
+        frames.push(Viz.frame(FOUND, '递归来删右子树里的 ' + borrowed + (succ.right === null ? '：右子树空，摘掉后左孩子顶上' : '：继续用它的后继顶替'),
+          [treePanel(root)]));
+        node._m = null;
+        succ._m = null;
+      }
+      node.right = del(node.right, borrowed);
+    }
+    return node;
+  }
+
+  var res = del(root, key);
+
+  // 第 5 帧：删完的树，全部标绿
+  var fin = levelArray(res);
+  var markQ = res === null ? [] : [res];
+  while (markQ.length) {
+    var m = markQ.shift();
+    if (m === null) continue;
+    m._m = 'done';
+    markQ.push(m.left);
+    markQ.push(m.right);
+  }
+  frames.push(Viz.frame(RET, fin.length ? '删完了：剩 ' + fin.length + ' 个结点，中序仍有序，还是 BST'
+    : '删完了：树空了，返回 null', [treePanel(res, '删完的二叉搜索树')]));
+
+  return { frames: frames, result: res === null ? null : fin };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

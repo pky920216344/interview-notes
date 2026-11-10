@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>你能从盒子里获得的最大糖果数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 868 / 1159</span>
+  <nav class="pn"><a href="0568.html">上一篇</a><a href="1561.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1298. </span>你能从盒子里获得的最大糖果数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">广度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="tag">数组</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">BFS 开盒：手里能开的入队；开盒时收糖、钥匙让「在手锁着」的盒子入队、翻出的盒子登记在手。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每个盒子盯三件事：<strong>在不在手</strong>（<code>hasBox</code>）、<strong>开没开</strong>（<code>opened</code>）、<strong>能不能开</strong>（<code>status</code> 被钥匙改成 1）。</li><li>队列里放「在手且能开」的盒子；开盒时三步：收糖、<code>status[k]=1</code> 发钥匙、<code>hasBox[c]=true</code> 登记翻出的盒子——每一步都可能让新盒子满足「在手且能开」。</li><li>用 <code>opened</code> 防止重复入队重复收糖；钥匙和盒子到达顺序无关，BFS 自然处理。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> maxCandies(<span class="k">int</span>[] status, <span class="k">int</span>[] candies, <span class="k">int</span>[][] keys, <span class="k">int</span>[][] containedBoxes, <span class="k">int</span>[] initialBoxes) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = status.length;</span><span class="ln"><span class="no">6</span>        <span class="k">boolean</span>[] hasBox = <span class="k">new</span> <span class="k">boolean</span>[n], opened = <span class="k">new</span> <span class="k">boolean</span>[n];</span><span class="ln"><span class="no">7</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="c">// 最初持有的盒子：能开的直接入队，锁着的等钥匙或等被发现</span></span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> b : initialBoxes) {</span><span class="ln"><span class="no">11</span>            hasBox[b] = <span class="k">true</span>;</span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (status[b] == <span class="n">1</span> &amp;&amp; !opened[b]) { opened[b] = <span class="k">true</span>; queue.offer(b); }</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">15</span>            <span class="k">int</span> b = queue.poll();</span><span class="ln"><span class="no">16</span>            ans += candies[b];</span><span class="ln"><span class="no">17</span>            <span class="c">// 钥匙让「在手但锁着」的盒子入队；盒子本身让新盒子变成在手</span></span><span class="ln"><span class="no">18</span>            <span class="k">for</span> (<span class="k">int</span> k : keys[b]) {</span><span class="ln"><span class="no">19</span>                status[k] = <span class="n">1</span>;</span><span class="ln"><span class="no">20</span>                <span class="k">if</span> (hasBox[k] &amp;&amp; !opened[k]) { opened[k] = <span class="k">true</span>; queue.offer(k); }</span><span class="ln"><span class="no">21</span>            }</span><span class="ln"><span class="no">22</span>            <span class="k">for</span> (<span class="k">int</span> c : containedBoxes[b]) {</span><span class="ln"><span class="no">23</span>                hasBox[c] = <span class="k">true</span>;</span><span class="ln"><span class="no">24</span>                <span class="k">if</span> (status[c] == <span class="n">1</span> &amp;&amp; !opened[c]) { opened[c] = <span class="k">true</span>; queue.offer(c); }</span><span class="ln"><span class="no">25</span>            }</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你&nbsp;<code>n</code>&nbsp;个盒子，每个盒子的格式为&nbsp;<code>[status, candies, keys, containedBoxes]</code>&nbsp;，其中：</p>
+
+<ul>
+	<li>状态字&nbsp;<code>status[i]</code>：整数，如果&nbsp;<code>box[i]</code>&nbsp;是开的，那么是 <strong>1&nbsp;</strong>，否则是 <strong>0&nbsp;</strong>。</li>
+	<li>糖果数&nbsp;<code>candies[i]</code>: 整数，表示&nbsp;<code>box[i]</code> 中糖果的数目。</li>
+	<li>钥匙&nbsp;<code>keys[i]</code>：数组，表示你打开&nbsp;<code>box[i]</code>&nbsp;后，可以得到一些盒子的钥匙，每个元素分别为该钥匙对应盒子的下标。</li>
+	<li>内含的盒子&nbsp;<code>containedBoxes[i]</code>：整数，表示放在&nbsp;<code>box[i]</code>&nbsp;里的盒子所对应的下标。</li>
+</ul>
+
+<p>给你一个整数数组&nbsp;<code>initialBoxes</code>，包含你最初拥有的盒子。你可以拿走每个&nbsp;<strong>已打开盒子&nbsp;</strong>里的所有糖果，并且可以使用其中的钥匙去开启新的盒子，并且可以使用在其中发现的其他盒子。</p>
+
+<p>请你按照上述规则，返回可以获得糖果的 <strong>最大数目&nbsp;</strong>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>status = [1,0,1,0], candies = [7,5,4,100], keys = [[],[],[1],[]], containedBoxes = [[1,2],[3],[],[]], initialBoxes = [0]
+<strong>输出：</strong>16
+<strong>解释：
+</strong>一开始你有盒子 0 。你将获得它里面的 7 个糖果和盒子 1 和 2。
+盒子 1 目前状态是关闭的，而且你还没有对应它的钥匙。所以你将会打开盒子 2 ，并得到里面的 4 个糖果和盒子 1 的钥匙。
+在盒子 1 中，你会获得 5 个糖果和盒子 3 ，但是你没法获得盒子 3 的钥匙所以盒子 3 会保持关闭状态。
+你总共可以获得的糖果数目 = 7 + 4 + 5 = 16 个。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>status = [1,0,0,0,0,0], candies = [1,1,1,1,1,1], keys = [[1,2,3,4,5],[],[],[],[],[]], containedBoxes = [[1,2,3,4,5],[],[],[],[],[]], initialBoxes = [0]
+<strong>输出：</strong>6
+<strong>解释：
+</strong>你一开始拥有盒子 0 。打开它你可以找到盒子 1,2,3,4,5 和它们对应的钥匙。
+打开这些盒子，你将获得所有盒子的糖果，所以总糖果数为 6 个。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>status = [1,1,1], candies = [100,1,100], keys = [[],[0,2],[]], containedBoxes = [[],[],[]], initialBoxes = [1]
+<strong>输出：</strong>1
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre>
+<strong>输入：</strong>status = [1], candies = [100], keys = [[]], containedBoxes = [[]], initialBoxes = []
+<strong>输出：</strong>0
+</pre>
+
+<p><strong>示例 5：</strong></p>
+
+<pre>
+<strong>输入：</strong>status = [1,1,1], candies = [2,3,2], keys = [[],[],[]], containedBoxes = [[],[],[]], initialBoxes = [2,1,0]
+<strong>输出：</strong>7
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= status.length &lt;= 1000</code></li>
+	<li><code>status.length == candies.length == keys.length == containedBoxes.length == n</code></li>
+	<li><code>status[i]</code> 要么是&nbsp;<code>0</code>&nbsp;要么是&nbsp;<code>1</code> 。</li>
+	<li><code>1 &lt;= candies[i] &lt;= 1000</code></li>
+	<li><code>0 &lt;= keys[i].length &lt;= status.length</code></li>
+	<li><code>0 &lt;= keys[i][j] &lt; status.length</code></li>
+	<li><code>keys[i]</code>&nbsp;中的值都是互不相同的。</li>
+	<li><code>0 &lt;= containedBoxes[i].length &lt;= status.length</code></li>
+	<li><code>0 &lt;= containedBoxes[i][j] &lt; status.length</code></li>
+	<li><code>containedBoxes[i]</code>&nbsp;中的值都是互不相同的。</li>
+	<li>每个盒子最多被一个盒子包含。</li>
+	<li><code>0 &lt;= initialBoxes.length&nbsp;&lt;= status.length</code></li>
+	<li><code>0 &lt;= initialBoxes[i] &lt; status.length</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int maxCandies(int[] status, int[] candies, int[][] keys, int[][] containedBoxes, int[] initialBoxes) {", "        int n = status.length;", "        boolean[] hasBox = new boolean[n], opened = new boolean[n];", "        Deque<Integer> queue = new ArrayDeque<>();", "        int ans = 0;", "        // 最初持有的盒子：能开的直接入队，锁着的等钥匙或等被发现", "        for (int b : initialBoxes) {", "            hasBox[b] = true;", "            if (status[b] == 1 && !opened[b]) { opened[b] = true; queue.offer(b); }", "        }", "        while (!queue.isEmpty()) {", "            int b = queue.poll();", "            ans += candies[b];", "            // 钥匙让「在手但锁着」的盒子入队；盒子本身让新盒子变成在手", "            for (int k : keys[b]) {", "                status[k] = 1;", "                if (hasBox[k] && !opened[k]) { opened[k] = true; queue.offer(k); }", "            }", "            for (int c : containedBoxes[b]) {", "                hasBox[c] = true;", "                if (status[c] == 1 && !opened[c]) { opened[c] = true; queue.offer(c); }", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1298. 你能从盒子里获得的最大糖果数 —— 图解：复刻 Solution.java 的「BFS + 盒子三态」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  status: [1, 0, 1, 0],
+  candies: [7, 5, 4, 100],
+  keys: [[], [], [1], []],
+  containedBoxes: [[1, 2], [3], [], []],
+  initialBoxes: [0]
+};
+
+function trace(input) {
+  var st = input.status.slice();          // Java 会把 status 改写成「已拿到钥匙」，这里克隆
+  var candies = input.candies, keys = input.keys, inside = input.containedBoxes;
+  var initial = input.initialBoxes;
+  var frames = [];
+  var START = 'for (int b : initialBoxes) {';
+  var POLL = 'int b = queue.poll();';
+  var END = 'return ans;';
+
+  var hasBox = {}, opened = {}, queue = [], ans = 0;
+  for (var i = 0; i < initial.length; i++) {
+    var b0 = initial[i];
+    hasBox[b0] = true;
+    if (st[b0] && !opened[b0]) { opened[b0] = true; queue.push(b0); }
+  }
+
+  function tablePanel(fresh) {
+    var rows = [];
+    for (var b = 0; b < st.length; b++) {
+      var state = opened[b] ? '已开' : hasBox[b] ? (st[b] ? '在手·能开' : '在手·锁着')
+        : st[b] ? '可开·没到手' : '没见过';
+      var cls = opened[b] ? 'done' : fresh && fresh[b] ? 'new' : hasBox[b] ? '' : 'dim';
+      rows.push({ k: '盒' + b, v: '糖' + candies[b] + ' · ' + state, cls: cls });
+    }
+    return Viz.table('盒子状态（dim=没见过，done=已开）', rows);
+  }
+  function varPanel() {
+    return Viz.vars([
+      { name: 'ans', v: ans, cls: 'chg' },
+      { name: '待开队列', v: queue.length ? queue.join(',') : '空' }
+    ]);
+  }
+
+  frames.push(Viz.frame(START, '开局：手里的盒子能开就入队，锁着的等钥匙', [tablePanel(), varPanel()]));
+
+  var polls = 0;
+  while (queue.length) {
+    var b = queue.shift();
+    ans += candies[b];
+    var fresh = {};
+    for (var k = 0; k < keys[b].length; k++) {
+      var key = keys[b][k];
+      st[key] = 1;
+      if (hasBox[key] && !opened[key]) { opened[key] = true; queue.push(key); fresh[key] = true; }
+    }
+    for (k = 0; k < inside[b].length; k++) {
+      var c = inside[b][k];
+      var had = hasBox[c];
+      hasBox[c] = true;
+      if (st[c] && !opened[c]) { opened[c] = true; queue.push(c); fresh[c] = true; }
+      if (!had) fresh[c] = true;
+    }
+    if (polls < 3) {
+      var msg = '开盒 ' + b + '：+' + candies[b] + ' 糖';
+      var ks = keys[b], cs = inside[b];
+      if (ks.length) msg += '；得钥匙 ' + short(ks);
+      if (cs.length) msg += '；翻出盒 ' + short(cs);
+      frames.push(Viz.frame(POLL, msg, [tablePanel(fresh), varPanel()]));
+    }
+    polls++;
+  }
+
+  frames.push(Viz.frame(END, '队列空了：能开的都开完，共 ' + ans + ' 颗糖', [tablePanel(), varPanel()]));
+  return { frames: frames, result: ans };
+
+  function short(arr) {
+    var head = arr.slice(0, 4).join(',');
+    return arr.length > 4 ? head + ' 等' : head;
+  }
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

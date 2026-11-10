@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>森林中的兔子 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 390 / 1159</span>
+  <nav class="pn"><a href="0373.html">上一篇</a><a href="1658.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">781. </span>森林中的兔子</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 8</li><li class="algo">哈希表</li><li class="aux">数学</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">数学</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按「回答值」分组计数：答 x 的兔子每 x+1 只一组，报了几只 c 就要 ceil(c/(x+1)) 组，每组按满员 x+1 只算。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>答 <code>x</code> 的兔子暗示「和我同色的连我一共有 x+1 只」：同色组的规模是 <code>x+1</code>，且<strong>每组最多一只报数的</strong>。</li><li>同一个 <code>x</code> 报了 <code>c</code> 只：这些兔子至少来自 <code>ceil(c / (x+1))</code> 个不同颜色组（一组装不下就再开一组）。</li><li>每组必须<strong>凑满</strong> <code>x+1</code> 只（没报数的兔子也要算进总数）：组数 × (x+1) 求和即最少总数。</li><li>不同回答值不能同组（会互相矛盾），各算各的再相加。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> numRabbits(<span class="k">int</span>[] answers) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 先数：每种回答各有几只兔子报出来</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; cnt = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> x : answers) cnt.merge(x, <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> total = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="t">Map</span>.<span class="t">Entry</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; e : cnt.entrySet()) {</span><span class="ln"><span class="no">10</span>            <span class="k">int</span> group = e.getKey() + <span class="n">1</span>;                          <span class="c">// 答 x 的兔子和同色伙伴共 x+1 只一组</span></span><span class="ln"><span class="no">11</span>            total += (e.getValue() + group - <span class="n">1</span>) / group * group; <span class="c">// 不满一组的也要按整组补齐</span></span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> total;</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>森林中有未知数量的兔子。提问其中若干只兔子<strong> "还有多少只其它兔子与你（指被提问的兔子）颜色相同?"</strong> ，将答案收集到一个整数数组 <code>answers</code> 中，其中 <code>answers[i]</code> 是第 <code>i</code> 只兔子的回答。</p>
+
+<p>给你数组 <code>answers</code> ，返回森林中兔子的最少数量。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>answers = [1,1,2]
+<strong>输出：</strong>5
+<strong>解释：</strong>
+两只回答了 "1" 的兔子可能有相同的颜色，设为红色。 
+之后回答了 "2" 的兔子不会是红色，否则他们的回答会相互矛盾。
+设回答了 "2" 的兔子为蓝色。 
+此外，森林中还应有另外 2 只蓝色兔子的回答没有包含在数组中。 
+因此森林中兔子的最少数量是 5 只：3 只回答的和 2 只没有回答的。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>answers = [10,10,10]
+<strong>输出：</strong>11
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= answers.length &lt;= 1000</code></li>
+	<li><code>0 &lt;= answers[i] &lt; 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int numRabbits(int[] answers) {", "        // 先数：每种回答各有几只兔子报出来", "        Map<Integer, Integer> cnt = new HashMap<>();", "        for (int x : answers) cnt.merge(x, 1, Integer::sum);", "        int total = 0;", "        for (Map.Entry<Integer, Integer> e : cnt.entrySet()) {", "            int group = e.getKey() + 1;                          // 答 x 的兔子和同色伙伴共 x+1 只一组", "            total += (e.getValue() + group - 1) / group * group; // 不满一组的也要按整组补齐", "        }", "        return total;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 781. 森林中的兔子 —— 图解：复刻 Solution.java 的「分组计数 + 补满整组」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { answers: [1, 1, 2] };
+
+function trace(input) {
+  var answers = input.answers;
+  var cnt = {};                        // 回答值 -> 报这只的兔子数（保持出现顺序）
+  answers.forEach(function (x) { cnt[x] = (cnt[x] || 0) + 1; });
+
+  var frames = [], seenTags = {};
+  var CNT = 'for (int x : answers) cnt.merge(x, 1, Integer::sum);';
+  var ADD = 'total += (e.getValue() + group - 1) / group * group;';
+  var END = 'return total;';
+
+  function tablePanel(hitX) {
+    var rows = Object.keys(cnt).map(function (x) {
+      return { k: '答 ' + x, v: '报了 ' + cnt[x] + ' 只', cls: String(hitX) === String(x) ? 'hit' : '' };
+    });
+    return Viz.table('cnt：每种回答的报数个数', rows, { hint: '（组大小 = 回答值 + 1）' });
+  }
+
+  function snap(at, key, hitX, chg, tag) {
+    if (tag) { if (seenTags[tag]) return; seenTags[tag] = true; }
+    var panels = [tablePanel(hitX)];
+    panels.push(Viz.vars([{ name: 'total', v: total, cls: chg ? 'chg' : '' }]));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  var total = 0, vi = 0;
+  snap(CNT, '先数：每种回答各报了几只（回答相同才可能同色）', null, false, 'cnt');
+
+  Object.keys(cnt).forEach(function (k) {
+    var x = Number(k), c = cnt[k];
+    var group = x + 1;
+    var groups = Math.ceil(c / group);
+    var add = groups * group;
+    total += add;
+    var key = vi < 2 ? '答 ' + x + ' 的有 ' + c + ' 只：一组 ' + group + ' 只，要 ' + groups + ' 组，共 ' + add + ' 只'
+      + (c % group === 0 ? '' : '（不满一组也按满员算）') : '';
+    if (vi < 2) snap(ADD, key, x, true, 'grp' + vi);
+    vi++;
+  });
+
+  snap(END, '各组加起来：森林里至少 ' + total + ' 只兔子', null, true, null);
+  return { frames: frames, result: total };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>加油站 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 191 / 1159</span>
+  <nav class="pn"><a href="0051.html">上一篇</a><a href="0692.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">134. </span>加油站</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 27</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">数组</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">总和 ≥ 0 必有解；攒油一旦见底，见底前的起点全出局，从下一站重新攒，最后一个重置点就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每站看成净油量 <code>gas[i] - cost[i]</code>：总和 <code>total ≥ 0</code> 是能绕一圈的充要条件，先一路累加。</li><li><code>tank</code> 是从 <code>start</code> 出发攒到现在剩的油；一旦 <code>&lt; 0</code>，说明 <code>start..i</code> 之间任何站当起点都撑不过这一段，直接 <code>start = i + 1</code>、<code>tank</code> 清零。</li><li>扫完时若 <code>total ≥ 0</code>，最后那个重置点必然成功：它之后油量再没见底，绕回前面的亏空由全环盈余补上（重置点恰好是净油量前缀和的最小值处）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> canCompleteCircuit(<span class="k">int</span>[] gas, <span class="k">int</span>[] cost) {</span><span class="ln"><span class="no">3</span>        <span class="c">// net[i] = gas[i] - cost[i]：在 i 加油、开到下一站的净油量</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span> total = <span class="n">0</span>, tank = <span class="n">0</span>, start = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; gas.length; i++) {</span><span class="ln"><span class="no">6</span>            <span class="k">int</span> net = gas[i] - cost[i];</span><span class="ln"><span class="no">7</span>            total += net;   <span class="c">// 净油量总和 ≥ 0 才可能有解</span></span><span class="ln"><span class="no">8</span>            tank += net;    <span class="c">// tank 是从 start 出发开到 i 后剩的油</span></span><span class="ln"><span class="no">9</span>            <span class="c">// 一见底：start..i 这些起点都撑不过这一段，从下一站重新攒</span></span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (tank &lt; <span class="n">0</span>) {</span><span class="ln"><span class="no">11</span>                start = i + <span class="n">1</span>;</span><span class="ln"><span class="no">12</span>                tank = <span class="n">0</span>;</span><span class="ln"><span class="no">13</span>            }</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="c">// 总和够就一定轮到最后那个重置点成功</span></span><span class="ln"><span class="no">16</span>        <span class="k">return</span> total &gt;= <span class="n">0</span> ? start : -<span class="n">1</span>;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>在一条环路上有 <code>n</code>&nbsp;个加油站，其中第 <code>i</code>&nbsp;个加油站有汽油&nbsp;<code>gas[i]</code><em>&nbsp;</em>升。</p>
+
+<p>你有一辆油箱容量无限的的汽车，从第<em> </em><code>i</code><em> </em>个加油站开往第<em> </em><code>i+1</code><em>&nbsp;</em>个加油站需要消耗汽油&nbsp;<code>cost[i]</code><em>&nbsp;</em>升。你从其中的一个加油站出发，开始时油箱为空。</p>
+
+<p>给定两个整数数组 <code>gas</code> 和 <code>cost</code> ，如果你可以按顺序绕环路行驶一周，则返回出发时加油站的编号，否则返回 <code>-1</code> 。如果存在解，则 <strong>保证</strong> 它是 <strong>唯一</strong> 的。</p>
+
+
+
+<p><strong>示例&nbsp;1:</strong></p>
+
+<pre>
+<strong>输入:</strong> gas = [1,2,3,4,5], cost = [3,4,5,1,2]
+<strong>输出:</strong> 3
+<strong>解释:
+</strong>从 3 号加油站(索引为 3 处)出发，可获得 4 升汽油。此时油箱有 = 0 + 4 = 4 升汽油
+开往 4 号加油站，此时油箱有 4 - 1 + 5 = 8 升汽油
+开往 0 号加油站，此时油箱有 8 - 2 + 1 = 7 升汽油
+开往 1 号加油站，此时油箱有 7 - 3 + 2 = 6 升汽油
+开往 2 号加油站，此时油箱有 6 - 4 + 3 = 5 升汽油
+开往 3 号加油站，你需要消耗 5 升汽油，正好足够你返回到 3 号加油站。
+因此，3 可为起始索引。</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> gas = [2,3,4], cost = [3,4,3]
+<strong>输出:</strong> -1
+<strong>解释:
+</strong>你不能从 0 号或 1 号加油站出发，因为没有足够的汽油可以让你行驶到下一个加油站。
+我们从 2 号加油站出发，可以获得 4 升汽油。 此时油箱有 = 0 + 4 = 4 升汽油
+开往 0 号加油站，此时油箱有 4 - 3 + 2 = 3 升汽油
+开往 1 号加油站，此时油箱有 3 - 3 + 3 = 3 升汽油
+你无法返回 2 号加油站，因为返程需要消耗 4 升汽油，但是你的油箱只有 3 升汽油。
+因此，无论怎样，你都不可能绕环路行驶一周。</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>n == gas.length == cost.length</code></li>
+	<li><code>1 &lt;= n &lt;= 10<sup>5</sup></code></li>
+	<li><code>0 &lt;= gas[i], cost[i] &lt;= 10<sup>4</sup></code></li>
+	<li>输入保证答案唯一。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int canCompleteCircuit(int[] gas, int[] cost) {", "        // net[i] = gas[i] - cost[i]：在 i 加油、开到下一站的净油量", "        int total = 0, tank = 0, start = 0;", "        for (int i = 0; i < gas.length; i++) {", "            int net = gas[i] - cost[i];", "            total += net;   // 净油量总和 ≥ 0 才可能有解", "            tank += net;    // tank 是从 start 出发开到 i 后剩的油", "            // 一见底：start..i 这些起点都撑不过这一段，从下一站重新攒", "            if (tank < 0) {", "                start = i + 1;", "                tank = 0;", "            }", "        }", "        // 总和够就一定轮到最后那个重置点成功", "        return total >= 0 ? start : -1;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 134. 加油站 —— 图解：复刻 Solution.java 的一次遍历，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { gas: [1, 2, 3, 4, 5], cost: [3, 4, 5, 1, 2] };
+
+function trace(input) {
+  var gas = input.gas, cost = input.cost, n = gas.length;
+  var frames = [];
+  var total = 0, tank = 0, start = 0, resets = 0, banked = false;
+
+  // 净油量面板：dim = 已放弃的起点；bad = 撑不过的出发段；done = 最终答案那段
+  function netPanel(o) {
+    var net = gas.map(function (g, i) { return g - cost[i]; });
+    var marks = {};
+    var k;
+    for (k = 0; k < n; k++) if (k < start) marks[k] = 'dim';
+    if (o.bad) for (k = o.bad[0]; k <= o.bad[1]; k++) marks[k] = 'bad';
+    if (o.done) for (k = o.done[0]; k <= o.done[1]; k++) marks[k] = 'done';
+    var pointers = [];
+    if (o.at != null && o.at < n) pointers.push({ at: o.at, label: 'i', cls: 'p-cur' });
+    if (start < n) pointers.push({ at: start, label: 'start', cls: 'p-left' });
+    var range = o.range && o.range[1] >= o.range[0]
+      ? { from: o.range[0], to: o.range[1], label: '从 start=' + start + ' 出发的油箱' }
+      : null;
+    return Viz.cells(net, { title: '净油量 net = gas - cost', marks: marks, pointers: pointers, range: range });
+  }
+
+  function varsPanel(tankNow, chg) {
+    return Viz.vars([
+      { name: 'tank', v: tankNow, cls: tankNow < 0 ? 'bad' : '' },
+      { name: 'start', v: start, cls: chg ? 'chg' : '' },
+      { name: 'total', v: total, cls: total < 0 ? 'bad' : '' }
+    ]);
+  }
+
+  for (var i = 0; i < n; i++) {
+    var netI = gas[i] - cost[i];
+    total += netI;
+    tank += netI;
+    if (tank < 0) {
+      resets++;
+      if (resets === 1) {
+        frames.push(Viz.frame('start = i + 1;',
+          'i=' + i + '：tank=' + tank + ' < 0，start=' + start + ' 到这里的起点全出局',
+          [netPanel({ at: i, bad: [start, i], range: [start, i] }), varsPanel(tank, false)]));
+      }
+      if (resets === 2) {
+        frames.push(Viz.frame('tank = 0;',
+          '又见底：start 将重置为 ' + (i + 1) + '，油箱清零重新攒',
+          [netPanel({ at: i, bad: [start, i], range: [start, i] }), varsPanel(tank, false)]));
+      }
+      start = i + 1;
+      tank = 0;
+    } else if (resets > 0 && !banked && netI > 0) {
+      banked = true;
+      frames.push(Viz.frame('tank += net;',
+        'i=' + i + '：净油 +' + netI + '，从新起点 start=' + start + ' 攒起油来了（tank=' + tank + '）',
+        [netPanel({ at: i, range: [start, i] }), varsPanel(tank, false)]));
+    }
+  }
+
+  if (n) {
+    frames.push(Viz.frame('return total >= 0 ? start : -1;',
+      total >= 0
+        ? 'total=' + total + ' ≥ 0，且从 start=' + start + ' 出发再没见底 → 答案 ' + start
+        : 'total=' + total + ' < 0：全环净油量为负，谁出发都不行 → -1',
+      [netPanel({ at: n - 1, done: total >= 0 ? [start, n - 1] : null, range: total >= 0 ? [start, n - 1] : null }),
+        varsPanel(tank, false)]));
+  }
+
+  return { frames: frames, result: total >= 0 ? start : -1 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

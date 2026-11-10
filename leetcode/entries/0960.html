@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>删列造序 III · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 762 / 1159</span>
+  <nav class="pn"><a href="0462.html">上一篇</a><a href="1614.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">960. </span>删列造序 III</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">删最少列 = 保留最多列。把每列看成一个整体，在「列」上做 LIS：列 i 能接在列 j 前 ⟺ 每一行的字符都不减。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>保留的列必须满足：任意相邻两列，<strong>每一行</strong>的字符都不减（这是逐位比较，不是整列字典序）。</li><li><code>dp[j]</code> = 保留的最后一列是 <code>j</code> 时的最多保留数；转移枚举前面的列 <code>i</code>，逐行比较两列是否可接。</li><li>答案 = 总列数 <code>m</code> − <code>max(dp)</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m²·n)，空间复杂度 O(m)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> minDeletionSize(<span class="t">String</span>[] strs) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = strs.length, m = strs[<span class="n">0</span>].length();</span><span class="ln"><span class="no">4</span>        <span class="c">// dp[j]：保留的最后一列是第 j 列时，最多能保留多少列</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[m];</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> keep = <span class="n">1</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; m; j++) {</span><span class="ln"><span class="no">8</span>            dp[j] = <span class="n">1</span>;</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; j; i++) {</span><span class="ln"><span class="no">10</span>                <span class="c">// 列 i 能排在列 j 前面：每一行的字符都要不减</span></span><span class="ln"><span class="no">11</span>                <span class="k">boolean</span> ok = <span class="k">true</span>;</span><span class="ln"><span class="no">12</span>                <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; n &amp;&amp; ok; r++) ok = strs[r].charAt(i) &lt;= strs[r].charAt(j);</span><span class="ln"><span class="no">13</span>                <span class="k">if</span> (ok) dp[j] = <span class="t">Math</span>.max(dp[j], dp[i] + <span class="n">1</span>);</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>            keep = <span class="t">Math</span>.max(keep, dp[j]);</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="c">// 删的最少列数 = 总列数 − 最多保留的列数</span></span><span class="ln"><span class="no">18</span>        <span class="k">return</span> m - keep;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定由<meta charset="UTF-8" />&nbsp;<code>n</code>&nbsp;个小写字母字符串组成的数组<meta charset="UTF-8" />&nbsp;<code>strs</code>&nbsp;，其中每个字符串长度相等。</p>
+
+<p>选取一个删除索引序列，对于<meta charset="UTF-8" />&nbsp;<code>strs</code>&nbsp;中的每个字符串，删除对应每个索引处的字符。</p>
+
+<p>比如，有<meta charset="UTF-8" />&nbsp;<code>strs = ["abcdef","uvwxyz"]</code>&nbsp;，删除索引序列<meta charset="UTF-8" />&nbsp;<code>{0, 2, 3}</code>&nbsp;，删除后为<meta charset="UTF-8" />&nbsp;<code>["bef", "vyz"]</code>&nbsp;。</p>
+
+<p>假设，我们选择了一组删除索引<meta charset="UTF-8" />&nbsp;<code>answer</code>&nbsp;，那么在执行删除操作之后，最终得到的数组的行中的 <strong>每个元素</strong> 都是按<strong>字典序</strong>排列的（即&nbsp;<code>(strs[0][0] &lt;= strs[0][1] &lt;= ... &lt;= strs[0][strs[0].length - 1])</code>&nbsp;和&nbsp;<code>(strs[1][0] &lt;= strs[1][1] &lt;= ... &lt;= strs[1][strs[1].length - 1])</code> ，依此类推）。</p>
+
+<p>请返回<meta charset="UTF-8" /><em>&nbsp;<code>answer.length</code>&nbsp;的最小可能值</em>&nbsp;。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>strs = ["babca","bbazb"]
+<strong>输出：</strong>3
+<strong>解释：
+</strong>删除 0、1 和 4 这三列后，最终得到的数组是 strs = ["bc", "az"]。
+这两行是分别按字典序排列的（即，strs[0][0] &lt;= strs[0][1] 且 strs[1][0] &lt;= strs[1][1]）。
+注意，strs[0] &gt; strs[1] —— 数组 strs 不一定是按字典序排列的。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>strs = ["edcba"]
+<strong>输出：</strong>4
+<strong>解释：</strong>如果删除的列少于 4 列，则剩下的行都不会按字典序排列。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>strs = ["ghi","def","abc"]
+<strong>输出：</strong>0
+<strong>解释：</strong>所有行都已按字典序排列。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+<meta charset="UTF-8" />
+
+<ul>
+	<li><code>n == strs.length</code></li>
+	<li><code>1 &lt;= n &lt;= 100</code></li>
+	<li><code>1 &lt;= strs[i].length &lt;= 100</code></li>
+	<li><code>strs[i]</code>&nbsp;由小写英文字母组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int minDeletionSize(String[] strs) {", "        int n = strs.length, m = strs[0].length();", "        // dp[j]：保留的最后一列是第 j 列时，最多能保留多少列", "        int[] dp = new int[m];", "        int keep = 1;", "        for (int j = 0; j < m; j++) {", "            dp[j] = 1;", "            for (int i = 0; i < j; i++) {", "                // 列 i 能排在列 j 前面：每一行的字符都要不减", "                boolean ok = true;", "                for (int r = 0; r < n && ok; r++) ok = strs[r].charAt(i) <= strs[r].charAt(j);", "                if (ok) dp[j] = Math.max(dp[j], dp[i] + 1);", "            }", "            keep = Math.max(keep, dp[j]);", "        }", "        // 删的最少列数 = 总列数 − 最多保留的列数", "        return m - keep;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 960. 删列造序 III —— 图解：复刻 Solution.java 的「列上做 LIS」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { strs: ['babca', 'bbazb'] };
+
+function trace(input) {
+  var strs = input.strs;
+  var n = strs.length, m = strs[0].length;
+
+  // 与 Solution.java 相同的 DP；额外记 from 以便回溯出保留的列
+  var dp = [], from = [];
+  var keep = 1, bestJ = 0, firstTransfer = null;
+  for (var j = 0; j < m; j++) {
+    dp[j] = 1;
+    from[j] = -1;
+    for (var i = 0; i < j; i++) {
+      var ok = true;
+      for (var r = 0; r < n; r++) if (strs[r].charAt(i) > strs[r].charAt(j)) { ok = false; break; }
+      if (ok && dp[i] + 1 > dp[j]) {
+        dp[j] = dp[i] + 1;
+        from[j] = i;
+        if (!firstTransfer) firstTransfer = { i: i, j: j, fromVal: dp[i] };
+      }
+    }
+    if (dp[j] > keep) { keep = dp[j]; bestJ = j; }
+  }
+
+  // 回溯保留的列
+  var kept = [];
+  for (var w = bestJ; w >= 0; w = from[w]) kept.unshift(w);
+  var keptSet = {};
+  for (var k = 0; k < kept.length; k++) keptSet[kept[k]] = true;
+
+  function gridPanel(marks) {
+    var rows = [];
+    for (var r = 0; r < n; r++) rows.push(strs[r].split(''));
+    var rowLabels = [], colLabels = [];
+    for (var r2 = 0; r2 < n; r2++) rowLabels.push('行' + r2);
+    for (var c = 0; c < m; c++) colLabels.push('列' + c);
+    return Viz.grid(rows, { title: 'strs 矩阵（竖着看每一列）', marks: marks || {}, rowLabels: rowLabels, colLabels: colLabels });
+  }
+  function dpPanel(marks) {
+    return Viz.cells(dp, { title: 'dp[j]：以列 j 结尾最多保留几列', marks: marks || {} });
+  }
+  function varsPanel(a, fresh) {
+    return Viz.vars([{ name: '答案（要删的列数）', v: a, cls: fresh ? 'new' : '' }]);
+  }
+
+  var frames = [];
+  frames.push(Viz.frame('int n = strs.length, m = strs[0].length();',
+    '删最少列 = 保留最多列：保留的列要逐列满足「每一行都不减」',
+    [gridPanel({}), dpPanel({})]));
+
+  if (firstTransfer) {
+    var m1 = {};
+    for (var r1 = 0; r1 < n; r1++) {
+      m1[r1 + ',' + firstTransfer.i] = 'win';
+      m1[r1 + ',' + firstTransfer.j] = 'cur';
+    }
+    var mdp1 = {};
+    mdp1[firstTransfer.j] = 'cur';
+    frames.push(Viz.frame('if (ok) dp[j] = Math.max(dp[j], dp[i] + 1);',
+      '列 ' + firstTransfer.i + ' 每行字符 ≤ 列 ' + firstTransfer.j + ' 对应字符：能接上，dp[' + firstTransfer.j + '] = dp[' + firstTransfer.i + '] + 1',
+      [gridPanel(m1), dpPanel(mdp1)]));
+  }
+
+  var mdp2 = {};
+  mdp2[bestJ] = 'done';
+  frames.push(Viz.frame('keep = Math.max(keep, dp[j]);',
+    'dp 算完：最多保留 ' + keep + ' 列（如列 ' + kept.join('、') + '），其余都要删',
+    [gridPanel({}), dpPanel(mdp2)]));
+
+  var m2 = {};
+  for (var c = 0; c < m; c++) {
+    for (var r3 = 0; r3 < n; r3++) m2[r3 + ',' + c] = keptSet[c] ? 'win' : 'bad';
+  }
+  frames.push(Viz.frame('return m - keep;',
+    '保留 ' + keep + ' 列（' + kept.join('、') + ' 列处每行都不减），删掉 ' + (m - keep) + ' 列',
+    [gridPanel(m2), varsPanel(m - keep, true)]));
+
+  return { frames: frames, result: m - keep };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

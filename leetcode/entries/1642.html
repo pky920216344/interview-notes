@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>可以到达的最远建筑 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 632 / 1159</span>
+  <nav class="pn"><a href="offer-47.html">上一篇</a><a href="1160.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1642. </span>可以到达的最远建筑</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">贪心</li><li class="aux">堆</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">贪心 + 小顶堆：每段爬升先记进堆「默认用梯子」；梯子超了就把堆里最小的爬升改用砖，砖也花光就停在当前位置。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>下坡/平地不用资源；每段上坡 <code>d</code> 先入小顶堆，表示「暂由梯子扛」。</li><li>堆里超过 <code>ladders</code> 个就把<strong>最小</strong>的一段弹出改用砖——梯子省给最大的爬升才最优。</li><li>累计砖 <code>used</code> 超 <code>bricks</code> 立即返回 <code>i-1</code>；用 <code>long</code> 防累加溢出。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> furthestBuilding(<span class="k">int</span>[] heights, <span class="k">int</span> bricks, <span class="k">int</span> ladders) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 小顶堆里放「目前让梯子扛着」的各段爬升；堆里至多 ladders 个</span></span><span class="ln"><span class="no">6</span>        <span class="t">PriorityQueue</span>&lt;<span class="t">Integer</span>&gt; heap = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">long</span> used = <span class="n">0</span>;   <span class="c">// 已花的砖（累加值可能超 int，用 long）</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; heights.length; i++) {</span><span class="ln"><span class="no">9</span>            <span class="k">int</span> d = heights[i] - heights[i - <span class="n">1</span>];</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (d &lt;= <span class="n">0</span>) <span class="k">continue</span>;   <span class="c">// 下坡或平地：不用任何资源</span></span><span class="ln"><span class="no">11</span>            heap.add(d);            <span class="c">// 每段爬升先默认让梯子扛</span></span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (heap.size() &gt; ladders) {</span><span class="ln"><span class="no">13</span>                used += heap.poll();   <span class="c">// 梯子不够了：把最小的一段改用砖</span></span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (used &gt; bricks) <span class="k">return</span> i - <span class="n">1</span>;   <span class="c">// 连砖也不够：最远只能到 i-1</span></span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> heights.length - <span class="n">1</span>;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>heights</code> ，表示建筑物的高度。另有一些砖块 <code>bricks</code> 和梯子 <code>ladders</code> 。</p>
+
+<p>你从建筑物 <code>0</code> 开始旅程，不断向后面的建筑物移动，期间可能会用到砖块或梯子。</p>
+
+<p>当从建筑物 <code>i</code> 移动到建筑物 <code>i+1</code>（下标<strong> 从 0 开始 </strong>）时：</p>
+
+<ul>
+	<li>如果当前建筑物的高度 <strong>大于或等于</strong> 下一建筑物的高度，则不需要梯子或砖块</li>
+	<li>如果当前建筑的高度 <strong>小于</strong> 下一个建筑的高度，您可以使用 <strong>一架梯子</strong> 或 <strong><code>(h[i+1] - h[i])</code> 个砖块</strong></li>
+</ul>
+如果以最佳方式使用给定的梯子和砖块，返回你可以到达的最远建筑物的下标（下标<strong> 从 0 开始 </strong>）。
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/2a3f7b6472e8.gif" style="width: 562px; height: 561px;" />
+<pre>
+<strong>输入：</strong>heights = [4,2,7,6,9,14,12], bricks = 5, ladders = 1
+<strong>输出：</strong>4
+<strong>解释：</strong>从建筑物 0 出发，你可以按此方案完成旅程：
+- 不使用砖块或梯子到达建筑物 1 ，因为 4 >= 2
+- 使用 5 个砖块到达建筑物 2 。你必须使用砖块或梯子，因为 2 < 7
+- 不使用砖块或梯子到达建筑物 3 ，因为 7 >= 6
+- 使用唯一的梯子到达建筑物 4 。你必须使用砖块或梯子，因为 6 < 9
+无法越过建筑物 4 ，因为没有更多砖块或梯子。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>heights = [4,12,2,7,3,18,20,3,19], bricks = 10, ladders = 2
+<strong>输出：</strong>7
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>heights = [14,3,19,3], bricks = 17, ladders = 0
+<strong>输出：</strong>3
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= heights.length <= 10<sup>5</sup></code></li>
+	<li><code>1 <= heights[i] <= 10<sup>6</sup></code></li>
+	<li><code>0 <= bricks <= 10<sup>9</sup></code></li>
+	<li><code>0 <= ladders <= heights.length</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int furthestBuilding(int[] heights, int bricks, int ladders) {", "        // 小顶堆里放「目前让梯子扛着」的各段爬升；堆里至多 ladders 个", "        PriorityQueue<Integer> heap = new PriorityQueue<>();", "        long used = 0;   // 已花的砖（累加值可能超 int，用 long）", "        for (int i = 1; i < heights.length; i++) {", "            int d = heights[i] - heights[i - 1];", "            if (d <= 0) continue;   // 下坡或平地：不用任何资源", "            heap.add(d);            // 每段爬升先默认让梯子扛", "            if (heap.size() > ladders) {", "                used += heap.poll();   // 梯子不够了：把最小的一段改用砖", "            }", "            if (used > bricks) return i - 1;   // 连砖也不够：最远只能到 i-1", "        }", "        return heights.length - 1;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1642 可以到达的最远建筑 —— 图解：复刻 Solution.java 的「贪心 + 小顶堆」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { heights: [4, 2, 7, 6, 9, 14, 12], bricks: 5, ladders: 1 };
+
+function trace(input) {
+  var h = input.heights, bricks = input.bricks, ladders = input.ladders;
+  var heap = [];    // 小顶堆：让梯子扛着的爬升（升序数组模拟）
+  var used = 0;
+  var frames = [];
+
+  var ADD = 'heap.add(d);';
+  var POLL = 'used += heap.poll();';
+  var CHECK = 'if (used > bricks) return i - 1;';
+  var STOP = 'return i - 1;';
+
+  function addHeap(v) {
+    var i = 0;
+    while (i < heap.length && heap[i] <= v) i++;
+    heap.splice(i, 0, v);
+  }
+
+  function heightsPanel(marks) {
+    return Viz.cells(h, { title: 'heights（从建筑 0 出发向右走）', marks: marks || {} });
+  }
+
+  function heapPanel(badVal) {
+    var rows = heap.map(function (d) {
+      return { k: '爬升 ' + d, v: '梯子扛着', cls: d === badVal ? 'bad' : '' };
+    });
+    return Viz.table('堆里「让梯子扛着」的爬升', rows, { hint: '（小顶堆：堆顶最小）' });
+  }
+
+  function varsPanel() {
+    return Viz.vars([
+      { name: '已用砖 used', v: String(used), cls: '' },
+      { name: '剩余砖', v: String(bricks - used), cls: bricks - used < 0 ? 'bad' : '' },
+      { name: '梯子', v: String(ladders), cls: '' }
+    ]);
+  }
+
+  var firstClimb = true, popped = false, exceeded = false;
+  for (var i = 1; i < h.length; i++) {
+    var d = h[i] - h[i - 1];
+    if (d <= 0) continue;
+    addHeap(d);
+    if (firstClimb) {
+      firstClimb = false;
+      frames.push(Viz.frame(ADD, '爬升 ' + d + '：先记进堆，默认让梯子扛',
+        [heightsPanel({ [i - 1]: 'win', [i]: 'cur' }), heapPanel(null)]));
+    }
+    if (heap.length > ladders) {
+      var min = heap.shift();
+      if (!popped) {
+        popped = true;
+        frames.push(Viz.frame(POLL, '梯子不够了：堆里最小的爬升 ' + min + ' 改用砖',
+          [heightsPanel({ [i - 1]: 'win', [i]: 'cur' }), heapPanel(min)]));
+      }
+      used += min;
+      if (used > bricks) {
+        exceeded = true;
+        frames.push(Viz.frame(CHECK, '爬升 ' + min + ' 也要砖：已用 ' + used + ' > ' + bricks + '，砖花光了',
+          [heightsPanel({ [i - 1]: 'win', [i]: 'cur' }), heapPanel(null)]));
+        break;
+      }
+    }
+  }
+
+  frames.push(Viz.frame(STOP, exceeded ? '返回 ' + (i - 1) + '：建筑 ' + (i - 1) + ' 是能到的最后一栋'
+    : '全程没卡住：最远到最后一栋 ' + (h.length - 1),
+    [heightsPanel(exceeded ? { [i - 1]: 'done' } : { [h.length - 1]: 'done' }), varsPanel()]));
+
+  return { frames: frames, result: exceeded ? i - 1 : h.length - 1 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

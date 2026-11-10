@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>使数组唯一的最小增量 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 748 / 1159</span>
+  <nav class="pn"><a href="0575.html">上一篇</a><a href="0180.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">945. </span>使数组唯一的最小增量</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">计数</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">排序后扫一遍，维护下一个空位 free：每个数抬到 max(它, free)，free 永远指向下一个可用值。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>排序后从小往大安排座位：前面的数占掉的值，后面的重复值只能继续往后排。</li><li><code>free</code> 记下一个还没被占的值；<code>x</code> 的落点是 <code>max(x, free)</code>，增量 <code>落点 - x</code> 累加，再令 <code>free = 落点 + 1</code>。</li><li>最优性：最终数组也必须递增，第 i 小的最终值至少是 <code>max(前一个 + 1, a[i])</code>，贪心正好取到下界。</li><li>总增量可能超出 <code>int</code>（题面只保证答案在 32 位内），中途用 <code>long</code> 累加更稳。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(1)（不计排序栈）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> minIncrementForUnique(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        <span class="t">Arrays</span>.sort(nums);</span><span class="ln"><span class="no">6</span>        <span class="k">long</span> cost = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="c">// free：排序扫描中下一个还没被占用的值；每个数只需抬到 max(它, free)</span></span><span class="ln"><span class="no">8</span>        <span class="k">int</span> free = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) {</span><span class="ln"><span class="no">10</span>            <span class="k">int</span> target = <span class="t">Math</span>.max(x, free);   <span class="c">// 撞车或落在别人身后的数，抬到 free</span></span><span class="ln"><span class="no">11</span>            cost += target - x;</span><span class="ln"><span class="no">12</span>            free = target + <span class="n">1</span>;</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> (<span class="k">int</span>) cost;</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> 。每次 move 操作将会选择任意一个满足 <code>0 &lt;= i &lt; nums.length</code> 的下标 <code>i</code>，并将&nbsp;<code>nums[i]</code> 递增&nbsp;<code>1</code>。</p>
+
+<p>返回使 <code>nums</code> 中的每个值都变成唯一的所需要的最少操作次数。</p>
+
+<p>生成的测试用例保证答案在 32 位整数范围内。</p>
+
+<div class="original__bRMd">
+<div>
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,2]
+<strong>输出：</strong>1
+<strong>解释：</strong>经过一次 <em>move</em> 操作，数组将变为 [1, 2, 3]。
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [3,2,1,2,1,7]
+<strong>输出：</strong>6
+<strong>解释：</strong>经过 6 次 <em>move</em> 操作，数组将变为 [3, 4, 1, 2, 5, 7]。
+可以看出 5 次或 5 次以下的 <em>move</em> 操作是不能让数组的每个值唯一的。</pre>
+</div>
+</div>
+
+
+<strong>提示：</strong>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>0 &lt;= nums[i] &lt;= 10<sup>5</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int minIncrementForUnique(int[] nums) {", "        Arrays.sort(nums);", "        long cost = 0;", "        // free：排序扫描中下一个还没被占用的值；每个数只需抬到 max(它, free)", "        int free = 0;", "        for (int x : nums) {", "            int target = Math.max(x, free);   // 撞车或落在别人身后的数，抬到 free", "            cost += target - x;", "            free = target + 1;", "        }", "        return (int) cost;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 945. 使数组唯一的最小增量 —— 图解：复刻 Solution.java 的「排序 + free 指针」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [3, 2, 1, 2, 1, 7] };
+
+function trace(input) {
+  var a = input.nums.slice().sort(function (p, q) { return p - q; });
+  var n = a.length;
+  var shown = a.slice();   // 展示用的数组：抬升过的位置直接改成新值
+  var free = 0, cost = 0;
+  var frames = [];
+  var SORT = 'Arrays.sort(nums);';
+  var TARGET = 'int target = Math.max(x, free);';
+  var RET = 'return (int) cost;';
+
+  function cellsPanel(i, liftedAt) {
+    var marks = {};
+    for (var k = 0; k < i; k++) marks[k] = 'win';
+    if (i >= 0 && i < n) marks[i] = 'cur';
+    if (liftedAt != null) marks[liftedAt] = 'new';
+    return Viz.cells(shown, { title: '排序后的 nums（已抬升的值）', marks: marks,
+      pointers: i >= 0 && i < n ? [{ at: i, label: 'i', cls: 'p-cur' }] : [] });
+  }
+  function varsPanel(chg) {
+    return Viz.vars([
+      { name: 'free 下一个空位', v: free, cls: chg ? 'chg' : '' },
+      { name: 'cost 已付增量', v: cost, cls: chg ? 'chg' : '' }
+    ]);
+  }
+
+  function brief(arr) {   // key 有 60 字上限，短数组列值，长数组只报个数
+    return arr.length <= 6 ? '[' + arr.join(',') + ']' : '共 ' + arr.length + ' 个数';
+  }
+
+  frames.push(Viz.frame(SORT, '先排序：' + brief(a) + '，从小往大安排，撞车的只往后抬', [cellsPanel(0, null), varsPanel(false)]));
+
+  for (var i = 0; i < n; i++) {
+    var x = a[i];
+    var target = Math.max(x, free);
+    cost += target - x;
+    free = target + 1;
+    shown[i] = target;
+    if (i === 1) {
+      if (target > x) frames.push(Viz.frame(TARGET, 'x=' + x + ' 撞车：抬到 free=' + target + '（cost +' + (target - x) + '）', [cellsPanel(i, i), varsPanel(true)]));
+      else frames.push(Viz.frame(TARGET, 'x=' + x + ' 没撞车：原地不动，free 跳到 ' + free, [cellsPanel(i, null), varsPanel(false)]));
+    }
+    if (i === 3 && target > x) frames.push(Viz.frame(TARGET, 'x=' + x + ' 比 free=' + target + ' 还小：也得抬到 free（cost +' + (target - x) + '）', [cellsPanel(i, i), varsPanel(true)]));
+  }
+
+  frames.push(Viz.frame(RET, '全部错开：' + brief(shown) + '，最少增量 ' + cost, [cellsPanel(-1, null), varsPanel(true)]));
+
+  return { frames: frames, result: cost };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

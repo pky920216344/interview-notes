@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>铺瓷砖 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 777 / 1159</span>
+  <nav class="pn"><a href="1089.html">上一篇</a><a href="0696.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1240. </span>铺瓷砖</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">回溯</li><li class="tag">回溯</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">回溯：永远铺「最左上的空格」（铺法盖住它的那块砖左上角必然就在这），从大到小试各种正方形；已用块数不减于当前最优就回溯。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>关键结论：任何铺法里，盖住「最左上空格」的那块砖，左上角必然恰好在它（上方、左方都空不出来）。所以只需在这个格子枚举砖的尺寸，解空间不漏。</li><li>尺寸从大到小试：早点找到小 <code>best</code>，后面的分支剪得快。</li><li>剪枝：进入递归先判 <code>used &gt;= best</code>，直接放弃。</li><li>面积型网格 <code>n &gt; m</code> 时交换成行 ≤ 列，进一步缩小搜索空间（答案对转置不变）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O((nm)^(nm)) 最坏，剪枝后实际很快，空间复杂度 O(nm)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">int</span> n, m, best;</span><span class="ln"><span class="no">3</span>    <span class="k">private</span> <span class="k">boolean</span>[][] filled;</span><span class="ln"><span class="no">4</span> </span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="k">int</span> tilingRectangle(<span class="k">int</span> n, <span class="k">int</span> m) {</span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (n &gt; m) { <span class="k">int</span> t = n; n = m; m = t; }   <span class="c">// 行 ≤ 列，搜索空间更小</span></span><span class="ln"><span class="no">7</span>        <span class="k">this</span>.n = n;</span><span class="ln"><span class="no">8</span>        <span class="k">this</span>.m = m;</span><span class="ln"><span class="no">9</span>        filled = <span class="k">new</span> <span class="k">boolean</span>[n][m];</span><span class="ln"><span class="no">10</span>        best = n * m;                              <span class="c">// 全用 1×1 兜底</span></span><span class="ln"><span class="no">11</span>        dfs(<span class="n">0</span>);</span><span class="ln"><span class="no">12</span>        <span class="k">return</span> best;</span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span>    <span class="c">// 找最左上的空格铺：任何铺法在这个格子上的那块砖，左上角必然就在这里</span></span><span class="ln"><span class="no">16</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span> used) {</span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (used &gt;= best) <span class="k">return</span>;                  <span class="c">// 不会更优，剪掉</span></span><span class="ln"><span class="no">18</span>        <span class="k">int</span> r = -<span class="n">1</span>, c = -<span class="n">1</span>;</span><span class="ln"><span class="no">19</span>        outer:</span><span class="ln"><span class="no">20</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">21</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; m; j++) {</span><span class="ln"><span class="no">22</span>                <span class="k">if</span> (!filled[i][j]) { r = i; c = j; <span class="k">break</span> outer; }</span><span class="ln"><span class="no">23</span>            }</span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>        <span class="k">if</span> (r &lt; <span class="n">0</span>) {                               <span class="c">// 铺满了，刷新答案</span></span><span class="ln"><span class="no">26</span>            best = used;</span><span class="ln"><span class="no">27</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="k">int</span> maxS = <span class="t">Math</span>.min(n - r, m - c);</span><span class="ln"><span class="no">30</span>        <span class="k">for</span> (<span class="k">int</span> s = maxS; s &gt;= <span class="n">1</span>; s--) {          <span class="c">// 先试大的，早点找到好答案帮剪枝</span></span><span class="ln"><span class="no">31</span>            <span class="k">if</span> (!fits(r, c, s)) <span class="k">continue</span>;</span><span class="ln"><span class="no">32</span>            fill(r, c, s, <span class="k">true</span>);</span><span class="ln"><span class="no">33</span>            dfs(used + <span class="n">1</span>);</span><span class="ln"><span class="no">34</span>            fill(r, c, s, <span class="k">false</span>);</span><span class="ln"><span class="no">35</span>        }</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span> </span><span class="ln"><span class="no">38</span>    <span class="c">// (r,c) 开头的 s×s 区域是否全空</span></span><span class="ln"><span class="no">39</span>    <span class="k">private</span> <span class="k">boolean</span> fits(<span class="k">int</span> r, <span class="k">int</span> c, <span class="k">int</span> s) {</span><span class="ln"><span class="no">40</span>        <span class="k">for</span> (<span class="k">int</span> i = r; i &lt; r + s; i++) {</span><span class="ln"><span class="no">41</span>            <span class="k">for</span> (<span class="k">int</span> j = c; j &lt; c + s; j++) {</span><span class="ln"><span class="no">42</span>                <span class="k">if</span> (filled[i][j]) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">43</span>            }</span><span class="ln"><span class="no">44</span>        }</span><span class="ln"><span class="no">45</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">46</span>    }</span><span class="ln"><span class="no">47</span> </span><span class="ln"><span class="no">48</span>    <span class="k">private</span> <span class="k">void</span> fill(<span class="k">int</span> r, <span class="k">int</span> c, <span class="k">int</span> s, <span class="k">boolean</span> v) {</span><span class="ln"><span class="no">49</span>        <span class="k">for</span> (<span class="k">int</span> i = r; i &lt; r + s; i++) {</span><span class="ln"><span class="no">50</span>            <span class="k">for</span> (<span class="k">int</span> j = c; j &lt; c + s; j++) {</span><span class="ln"><span class="no">51</span>                filled[i][j] = v;</span><span class="ln"><span class="no">52</span>            }</span><span class="ln"><span class="no">53</span>        }</span><span class="ln"><span class="no">54</span>    }</span><span class="ln"><span class="no">55</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个大小为&nbsp;<code>n</code>&nbsp;x&nbsp;<code>m</code>&nbsp;的长方形，返回贴满矩形所需的整数边正方形的最小数量。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/276781eeade1.png" style="height: 106px; width: 154px;" /></p>
+
+<pre>
+<strong>输入：</strong>n = 2, m = 3
+<strong>输出：</strong>3
+<code><strong>解释：</strong>需要3</code> 个正方形来覆盖长方形。
+<code>     2</code> 个 <code>1x1 的正方形</code>
+<code>     1</code> 个 <code>2x2 的正方形</code></pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/8687dfb356b1.png" style="height: 126px; width: 224px;" /></p>
+
+<pre>
+<strong>输入：</strong>n = 5, m = 8
+<strong>输出：</strong>5
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<p><img alt="" src="../assets/img/0c39dcf8d8fc.png" style="height: 189px; width: 224px;" /></p>
+
+<pre>
+<strong>输入：</strong>n = 11, m = 13
+<strong>输出：</strong>6
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n, m &lt;= 13</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private int n, m, best;", "    private boolean[][] filled;", "", "    public int tilingRectangle(int n, int m) {", "        if (n > m) { int t = n; n = m; m = t; }   // 行 ≤ 列，搜索空间更小", "        this.n = n;", "        this.m = m;", "        filled = new boolean[n][m];", "        best = n * m;                              // 全用 1×1 兜底", "        dfs(0);", "        return best;", "    }", "", "    // 找最左上的空格铺：任何铺法在这个格子上的那块砖，左上角必然就在这里", "    private void dfs(int used) {", "        if (used >= best) return;                  // 不会更优，剪掉", "        int r = -1, c = -1;", "        outer:", "        for (int i = 0; i < n; i++) {", "            for (int j = 0; j < m; j++) {", "                if (!filled[i][j]) { r = i; c = j; break outer; }", "            }", "        }", "        if (r < 0) {                               // 铺满了，刷新答案", "            best = used;", "            return;", "        }", "        int maxS = Math.min(n - r, m - c);", "        for (int s = maxS; s >= 1; s--) {          // 先试大的，早点找到好答案帮剪枝", "            if (!fits(r, c, s)) continue;", "            fill(r, c, s, true);", "            dfs(used + 1);", "            fill(r, c, s, false);", "        }", "    }", "", "    // (r,c) 开头的 s×s 区域是否全空", "    private boolean fits(int r, int c, int s) {", "        for (int i = r; i < r + s; i++) {", "            for (int j = c; j < c + s; j++) {", "                if (filled[i][j]) return false;", "            }", "        }", "        return true;", "    }", "", "    private void fill(int r, int c, int s, boolean v) {", "        for (int i = r; i < r + s; i++) {", "            for (int j = c; j < c + s; j++) {", "                filled[i][j] = v;", "            }", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1240. 铺瓷砖 —— 图解：复刻 Solution.java 的「最左上空格 + 先试大方块」回溯，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 2, m: 3 };
+
+function trace(input) {
+  var n = input.n, m = input.m;
+  var grid = [];
+  for (var i = 0; i < n; i++) {
+    grid.push([]);
+    for (var j = 0; j < m; j++) grid[i].push(null);
+  }
+  var best = n * m;
+  var bestGrid = null;
+  var frames = [];
+
+  var PLACE = 'fill(r, c, s, true);';
+  var DONE = 'best = used;';
+
+  function tileName(idx) {
+    return String.fromCharCode(65 + (idx % 26));
+  }
+  function gridPanel(g) {
+    var rows = [], marks = {};
+    for (var i = 0; i < n; i++) {
+      var row = [];
+      for (var j = 0; j < m; j++) {
+        var v = g[i][j];
+        row.push(v === null ? '\u00b7' : v);
+        if (v !== null) marks[i + ',' + j] = 'done';
+      }
+      rows.push(row);
+    }
+    return Viz.grid(rows, { title: 'n\u00d7m 网格（字母 = 一块砖，· = 空格）', marks: marks });
+  }
+  function varsPanel(used, note) {
+    var items = [
+      { name: '已铺块数', v: String(used), cls: '' },
+      { name: '当前最优 best', v: String(best), cls: 'chg' }
+    ];
+    if (note) items.push(note);
+    return Viz.vars(items);
+  }
+  function snap(at, key, used, note) {
+    frames.push(Viz.frame(at, key, [gridPanel(grid), varsPanel(used, note)]));
+  }
+
+  function fits(r, c, s) {
+    for (var i = r; i < r + s; i++) {
+      for (var j = c; j < c + s; j++) {
+        if (grid[i][j] !== null) return false;
+      }
+    }
+    return true;
+  }
+  function fill(r, c, s, v) {
+    for (var i = r; i < r + s; i++) {
+      for (var j = c; j < c + s; j++) {
+        grid[i][j] = v;
+      }
+    }
+  }
+
+  var firedPlace = {};
+  function dfs(used) {
+    if (used >= best) return;
+    var r = -1, c = -1;
+    outer:
+    for (var i = 0; i < n; i++) {
+      for (var j = 0; j < m; j++) {
+        if (grid[i][j] === null) { r = i; c = j; break outer; }
+      }
+    }
+    if (r < 0) {
+      best = used;
+      bestGrid = grid.map(function (row) { return row.slice(); });
+      return;
+    }
+    var maxS = Math.min(n - r, m - c);
+    for (var s = maxS; s >= 1; s--) {
+      if (!fits(r, c, s)) continue;
+      fill(r, c, s, tileName(used));
+      if (used + 1 <= 3 && !firedPlace[used + 1]) {
+        firedPlace[used + 1] = true;
+        snap(PLACE, '第 ' + (used + 1) + ' 块：铺在最左上的空格 (' + r + ',' + c + ')，先试能放下的最大 ' + s + '\u00d7' + s, used + 1, null);
+      }
+      dfs(used + 1);
+      fill(r, c, s, null);
+    }
+  }
+
+  dfs(0);
+  // 回溯会把 grid 还原成空，最优铺法在找到时单独存了一份
+  frames.push(Viz.frame(DONE, bestGrid ? '铺满时的最优解：共 ' + best + ' 块' : '网格铺不满（不会发生）',
+    [gridPanel(bestGrid || grid), varsPanel(best, { name: 'best（答案）', v: String(best), cls: 'done' })]));
+
+  return { frames: frames, result: best };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

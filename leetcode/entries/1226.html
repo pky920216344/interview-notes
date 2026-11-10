@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>哲学家进餐 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 738 / 1159</span>
+  <nav class="pn"><a href="1400.html">上一篇</a><a href="1464.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1226. </span>哲学家进餐</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">并发</li><li class="tag">多线程</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">信号量只放 4 人上桌抢叉：5 人全持左叉等右叉才成死环，缺一人环就闭不上。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>死锁根源：5 人同时各拿左叉、齐等右叉，等待环 0→1→2→3→4→0 闭合。</li><li><strong>限流到 4</strong>：等待环要绕满 5 个哲学家才能闭合，缺一人则链条必有一环落空，总有人拿齐两叉吃完、释放资源。</li><li>流程：<code>seats.acquire()</code> 拿名额 → 锁左叉、锁右叉 → 依次执行拿叉/吃/放叉回调 → 放叉 → <code>seats.release()</code>。</li><li>也可以用「奇数先拿左、偶数先拿右」打破对称，或一次 <code>tryLock</code> 两把叉失败就全放，本题限流最简洁。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 每人 O(1) 次加锁，空间复杂度 O(1)（5 把叉子锁 + 1 个信号量）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.concurrent.*;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.concurrent.locks.<span class="t">ReentrantLock</span>;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span><span class="k">class</span> <span class="t">DiningPhilosophers</span> {</span><span class="ln"><span class="no">5</span>    <span class="c">// 名额信号量：最多放行 4 人同时抢叉子。5 人全上桌才可能人人持左叉等右叉，绕成死环</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Semaphore</span> seats = <span class="k">new</span> <span class="t">Semaphore</span>(<span class="n">4</span>);</span><span class="ln"><span class="no">7</span>    <span class="c">// 叉子 i 在哲学家 i 左手边；i 的右叉 (i+1)%5 与邻居共用</span></span><span class="ln"><span class="no">8</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">ReentrantLock</span>[] fork = <span class="k">new</span> <span class="t">ReentrantLock</span>[<span class="n">5</span>];</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">public</span> <span class="t">DiningPhilosophers</span>() {</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; <span class="n">5</span>; i++) fork[i] = <span class="k">new</span> <span class="t">ReentrantLock</span>();</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="k">public</span> <span class="k">void</span> wantsToEat(<span class="k">int</span> philosopher,</span><span class="ln"><span class="no">15</span>                           <span class="t">Runnable</span> pickLeftFork,</span><span class="ln"><span class="no">16</span>                           <span class="t">Runnable</span> pickRightFork,</span><span class="ln"><span class="no">17</span>                           <span class="t">Runnable</span> eat,</span><span class="ln"><span class="no">18</span>                           <span class="t">Runnable</span> putLeftFork,</span><span class="ln"><span class="no">19</span>                           <span class="t">Runnable</span> putRightFork) <span class="k">throws</span> <span class="t">InterruptedException</span> {</span><span class="ln"><span class="no">20</span>        <span class="k">int</span> left = philosopher, right = (philosopher + <span class="n">1</span>) % <span class="n">5</span>;</span><span class="ln"><span class="no">21</span>        seats.acquire();        <span class="c">// 先抢名额再碰叉子：永远有人能拿齐两根</span></span><span class="ln"><span class="no">22</span>        fork[left].lock();</span><span class="ln"><span class="no">23</span>        fork[right].lock();</span><span class="ln"><span class="no">24</span>        pickLeftFork.run();</span><span class="ln"><span class="no">25</span>        pickRightFork.run();</span><span class="ln"><span class="no">26</span>        eat.run();</span><span class="ln"><span class="no">27</span>        putLeftFork.run();</span><span class="ln"><span class="no">28</span>        putRightFork.run();</span><span class="ln"><span class="no">29</span>        fork[right].unlock();   <span class="c">// 吃完先放叉再放名额，等的人才能补位</span></span><span class="ln"><span class="no">30</span>        fork[left].unlock();</span><span class="ln"><span class="no">31</span>        seats.release();</span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>5 个沉默寡言的哲学家围坐在圆桌前，每人面前一盘意面。叉子放在哲学家之间的桌面上。（5 个哲学家，5 根叉子）</p>
+
+<p>所有的哲学家都只会在思考和进餐两种行为间交替。哲学家只有同时拿到左边和右边的叉子才能吃到面，而同一根叉子在同一时间只能被一个哲学家使用。每个哲学家吃完面后都需要把叉子放回桌面以供其他哲学家吃面。只要条件允许，哲学家可以拿起左边或者右边的叉子，但在没有同时拿到左右叉子时不能进食。</p>
+
+<p>假设面的数量没有限制，哲学家也能随便吃，不需要考虑吃不吃得下。</p>
+
+<p>设计一个进餐规则（并行算法）使得每个哲学家都不会挨饿；也就是说，在没有人知道别人什么时候想吃东西或思考的情况下，每个哲学家都可以在吃饭和思考之间一直交替下去。</p>
+
+<p><img alt="" src="../assets/img/062f892f81c1.png" style="height: 415px; width: 400px;" /></p>
+
+<p><em>问题描述和图片来自维基百科&nbsp;<a href="https://en.wikipedia.org/wiki/Dining_philosophers_problem" target="_blank">wikipedia.org</a></em></p>
+
+
+
+<p>哲学家从&nbsp;<strong>0</strong> 到 <strong>4</strong> 按 <strong>顺时针</strong> 编号。请实现函数&nbsp;<code>void wantsToEat(philosopher, pickLeftFork, pickRightFork, eat, putLeftFork, putRightFork)</code>：</p>
+
+<ul>
+	<li><code>philosopher</code>&nbsp;哲学家的编号。</li>
+	<li><code>pickLeftFork</code>&nbsp;和&nbsp;<code>pickRightFork</code>&nbsp;表示拿起左边或右边的叉子。</li>
+	<li><code>eat</code>&nbsp;表示吃面。</li>
+	<li><code>putLeftFork</code>&nbsp;和&nbsp;<code>putRightFork</code>&nbsp;表示放下左边或右边的叉子。</li>
+	<li>由于哲学家不是在吃面就是在想着啥时候吃面，所以思考这个方法没有对应的回调。</li>
+</ul>
+
+<p>给你 5 个线程，每个都代表一个哲学家，请你使用类的同一个对象来模拟这个过程。在最后一次调用结束之前，可能会为同一个哲学家多次调用该函数。</p>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 1
+<strong>输出：</strong>[[3,2,1],[3,1,1],[3,0,3],[3,1,2],[3,2,2],[4,2,1],[4,1,1],[2,2,1],[2,1,1],[1,2,1],[2,0,3],[2,1,2],[2,2,2],[4,0,3],[4,1,2],[4,2,2],[1,1,1],[1,0,3],[1,1,2],[1,2,2],[0,1,1],[0,2,1],[0,0,3],[0,1,2],[0,2,2]]
+<strong>解释:</strong>
+n 表示每个哲学家需要进餐的次数。
+输出数组描述了叉子的控制和进餐的调用，它的格式如下：
+output[i] = [a, b, c] (3个整数)
+- a 哲学家编号。
+- b 指定叉子：{1 : 左边, 2 : 右边}.
+- c 指定行为：{1 : 拿起, 2 : 放下, 3 : 吃面}。
+如 [4,2,1] 表示 4 号哲学家拿起了右边的叉子。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 60</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.concurrent.*;", "import java.util.concurrent.locks.ReentrantLock;", "", "class DiningPhilosophers {", "    // 名额信号量：最多放行 4 人同时抢叉子。5 人全上桌才可能人人持左叉等右叉，绕成死环", "    private final Semaphore seats = new Semaphore(4);", "    // 叉子 i 在哲学家 i 左手边；i 的右叉 (i+1)%5 与邻居共用", "    private final ReentrantLock[] fork = new ReentrantLock[5];", "", "    public DiningPhilosophers() {", "        for (int i = 0; i < 5; i++) fork[i] = new ReentrantLock();", "    }", "", "    public void wantsToEat(int philosopher,", "                           Runnable pickLeftFork,", "                           Runnable pickRightFork,", "                           Runnable eat,", "                           Runnable putLeftFork,", "                           Runnable putRightFork) throws InterruptedException {", "        int left = philosopher, right = (philosopher + 1) % 5;", "        seats.acquire();        // 先抢名额再碰叉子：永远有人能拿齐两根", "        fork[left].lock();", "        fork[right].lock();", "        pickLeftFork.run();", "        pickRightFork.run();", "        eat.run();", "        putLeftFork.run();", "        putRightFork.run();", "        fork[right].unlock();   // 吃完先放叉再放名额，等的人才能补位", "        fork[left].unlock();", "        seats.release();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1226. 哲学家进餐 —— 图解：名额信号量(4) + 叉子锁，串行化模型演示为什么不会死锁。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 2, demo: true };
+
+function trace(input) {
+  var n = input.n;
+  var demo = input.demo === true;
+  var frames = [];
+  var held = [-1, -1, -1, -1, -1];   // 叉子持有人，-1 = 空闲
+  var seat = [false, false, false, false, false];
+  var seats = 0;                     // 已占名额
+  var eaten = [0, 0, 0, 0, 0];
+  var denied = [false, false, false, false, false];   // 曾抢名额失败
+  var shotSeats = false, shotEat = false, shotRelease = false, shotBack = false;
+
+  function forkPanel(fresh) {
+    var marks = {};
+    for (var f = 0; f < 5; f++) {
+      if (held[f] !== -1) marks[f] = f === fresh ? 'new' : 'win';
+    }
+    var pointers = [];
+    for (f = 0; f < 5; f++) if (held[f] !== -1) pointers.push({ at: f, label: 'P' + held[f], cls: 'p-cur' });
+    return Viz.cells(['叉0', '叉1', '叉2', '叉3', '叉4'], { title: '五根叉子（下方 = 持有人）', marks: marks, pointers: pointers });
+  }
+  function seatPanel(fresh) {
+    var rows = [];
+    for (var p = 0; p < 5; p++) {
+      var v, cls = '';
+      if (eaten[p] >= n) { v = '吃完 ' + eaten[p] + ' 口'; cls = 'done'; }
+      else if (seat[p] && held[p] !== -1 && held[(p + 1) % 5] === p) { v = '两叉在手，吃面'; cls = 'cur'; }
+      else if (seat[p] && held[p] !== -1) { v = '持左叉 ' + p + '，等右叉 ' + (p + 1) % 5; cls = 'chg'; }
+      else if (seat[p]) { v = '已上桌，待拿叉'; }
+      else { v = '等名额'; cls = 'dim'; }
+      if (p === fresh) cls = 'new';
+      rows.push({ k: 'P' + p, v: v, cls: cls });
+    }
+    return Viz.table('餐位（信号量 seats = 4，已占 ' + seats + '）', rows);
+  }
+  function snap(at, key, freshFork, freshSeat) {
+    frames.push(Viz.frame(at, key, [forkPanel(freshFork), seatPanel(freshSeat)]));
+  }
+
+  // 串行化模型：每轮按 P0~P4 各前进一步（抢名额 / 拿左叉 / 拿右叉 / 吃+放+还名额），
+  // 与 Solution 的信号量语义一致：名额满则等，叉子被占则等。
+  var guard = 60 * n + 60;
+  while (eaten[0] + eaten[1] + eaten[2] + eaten[3] + eaten[4] < 5 * n && guard-- > 0) {
+    for (var p = 0; p < 5; p++) {
+      if (eaten[p] >= n) continue;
+      var left = p, right = (p + 1) % 5;
+      if (!seat[p]) {
+        if (seats < 4) {
+          seat[p] = true;
+          seats++;
+          if (demo && denied[p] && !shotBack) {
+            shotBack = true;
+            snap('seats.acquire();', 'P' + p + ' 等到了名额：正好补上刚吃完的人的空位', -1, p);
+          }
+          denied[p] = false;
+          if (demo && seats === 4 && !shotSeats) {
+            shotSeats = true;
+            snap('seats.acquire();', '第 4 个名额发出：桌上已有 4 人抢叉，其余人在 acquire 上等', -1, -1);
+          }
+        } else {
+          denied[p] = true;
+        }
+      } else if (held[left] !== p) {
+        if (held[left] === -1) held[left] = p;
+      } else if (held[right] !== p) {
+        if (held[right] === -1) held[right] = p;
+      } else {
+        eaten[p]++;
+        if (demo && !shotEat) {
+          shotEat = true;
+          snap('eat.run();', 'P' + p + ' 两叉到手开吃：右叉 ' + right + ' 当时没人抢——邻座没上桌', right, -1);
+        }
+        held[left] = -1;
+        held[right] = -1;
+        seat[p] = false;
+        seats--;
+        if (demo && !shotRelease) {
+          shotRelease = true;
+          snap('seats.release();', '吃完放叉、还名额：缺口一开，等名额的哲学家就能补位', -1, -1);
+        }
+      }
+    }
+  }
+
+  snap('seats.release();', '终态：每人吃到 ' + n + ' 口、5 叉归位 —— 名额限流保证总有人能拿齐两叉', -1, -1);
+
+  return { frames: frames, result: [n, n, n, n, n] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

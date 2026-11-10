@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最深叶节点的最近公共祖先 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 688 / 1159</span>
+  <nav class="pn"><a href="1287.html">上一篇</a><a href="1482.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1123. </span>最深叶节点的最近公共祖先</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">动态规划</li><li class="aux">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">哈希表</li><li class="tag">二叉树</li><li class="tag">lowest-common-ancestor</li><li class="tag">dp-on-trees</li><li class="tag">binary-lifting</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">一次后序 DFS：每棵子树返回（最深叶深度, 这些叶子的 LCA）；两边同深就在本结点汇合，否则沿更深一侧原样上传。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>空子树报告 <code>(0, null)</code>；叶子报告 <code>(1, 自己)</code>。</li><li>左右深度相等 → 最深叶分居两侧，本结点就是它们的 LCA，报告 <code>(深+1, 本结点)</code>。</li><li>不相等 → 答案完全在更深一侧，把那一侧的 LCA 原样上传；根的报告就是答案，唯一最深叶时自然得到它自己。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(树高)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="c">// 一次后序 DFS 的报告：子树最深叶子的深度 + 这些叶子在子树里的 LCA</span></span><span class="ln"><span class="no">3</span>    <span class="k">static</span> <span class="k">class</span> <span class="t">Res</span> {</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> depth;</span><span class="ln"><span class="no">5</span>        <span class="t">TreeNode</span> lca;</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>        <span class="t">Res</span>(<span class="k">int</span> depth, <span class="t">TreeNode</span> lca) {</span><span class="ln"><span class="no">8</span>            <span class="k">this</span>.depth = depth;</span><span class="ln"><span class="no">9</span>            <span class="k">this</span>.lca = lca;</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="k">public</span> <span class="t">TreeNode</span> lcaDeepestLeaves(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">14</span>        <span class="k">return</span> dfs(root).lca;</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span> </span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="t">Res</span> dfs(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="k">new</span> <span class="t">Res</span>(<span class="n">0</span>, <span class="k">null</span>);</span><span class="ln"><span class="no">19</span>        <span class="t">Res</span> l = dfs(node.left), r = dfs(node.right);</span><span class="ln"><span class="no">20</span>        <span class="c">// 两边最深叶同层：它们在本结点汇合，本结点就是 LCA</span></span><span class="ln"><span class="no">21</span>        <span class="k">if</span> (l.depth == r.depth) <span class="k">return</span> <span class="k">new</span> <span class="t">Res</span>(l.depth + <span class="n">1</span>, node);</span><span class="ln"><span class="no">22</span>        <span class="c">// 否则答案在更深一侧，原样上传</span></span><span class="ln"><span class="no">23</span>        <span class="k">return</span> l.depth &gt; r.depth ? <span class="k">new</span> <span class="t">Res</span>(l.depth + <span class="n">1</span>, l.lca) : <span class="k">new</span> <span class="t">Res</span>(r.depth + <span class="n">1</span>, r.lca);</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个有根节点<meta charset="UTF-8" />&nbsp;<code>root</code>&nbsp;的二叉树，返回它&nbsp;<em>最深的叶节点的最近公共祖先</em>&nbsp;。</p>
+
+<p>回想一下：</p>
+
+<ul>
+	<li><strong>叶节点</strong> 是二叉树中没有子节点的节点</li>
+	<li>树的根节点的&nbsp;<strong>深度&nbsp;</strong>为&nbsp;<code>0</code>，如果某一节点的深度为&nbsp;<code>d</code>，那它的子节点的深度就是&nbsp;<code>d+1</code></li>
+	<li>如果我们假定 <code>A</code> 是一组节点&nbsp;<code>S</code>&nbsp;的 <strong>最近公共祖先</strong>，<code>S</code>&nbsp;中的每个节点都在以 <code>A</code> 为根节点的子树中，且 <code>A</code>&nbsp;的深度达到此条件下可能的最大值。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/68b64a8a0699.png" style="height: 340px; width: 400px;" />
+<pre>
+<strong>输入：</strong>root = [3,5,1,6,2,0,8,null,null,7,4]
+<strong>输出：</strong>[2,7,4]
+<strong>解释：</strong>我们返回值为 2 的节点，在图中用黄色标记。
+在图中用蓝色标记的是树的最深的节点。
+注意，节点 6、0 和 8 也是叶节点，但是它们的深度是 2 ，而节点 7 和 4 的深度是 3 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [1]
+<strong>输出：</strong>[1]
+<strong>解释：</strong>根节点是树中最深的节点，它是它本身的最近公共祖先。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [0,1,3,null,2]
+<strong>输出：</strong>[2]
+<strong>解释：</strong>树中最深的叶节点是 2 ，最近公共祖先是它自己。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中的节点数将在<meta charset="UTF-8" />&nbsp;<code>[1, 1000]</code>&nbsp;的范围内。</li>
+	<li><code>0 &lt;= Node.val &lt;= 1000</code></li>
+	<li>每个节点的值都是&nbsp;<strong>独一无二</strong>&nbsp;的。</li>
+</ul>
+
+
+
+<p><strong>注意：</strong>本题与力扣 865 重复：<a href="https://leetcode.cn/problems/smallest-subtree-with-all-the-deepest-nodes/">https://leetcode.cn/problems/smallest-subtree-with-all-the-deepest-nodes/</a></p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    // 一次后序 DFS 的报告：子树最深叶子的深度 + 这些叶子在子树里的 LCA", "    static class Res {", "        int depth;", "        TreeNode lca;", "", "        Res(int depth, TreeNode lca) {", "            this.depth = depth;", "            this.lca = lca;", "        }", "    }", "", "    public TreeNode lcaDeepestLeaves(TreeNode root) {", "        return dfs(root).lca;", "    }", "", "    private Res dfs(TreeNode node) {", "        if (node == null) return new Res(0, null);", "        Res l = dfs(node.left), r = dfs(node.right);", "        // 两边最深叶同层：它们在本结点汇合，本结点就是 LCA", "        if (l.depth == r.depth) return new Res(l.depth + 1, node);", "        // 否则答案在更深一侧，原样上传", "        return l.depth > r.depth ? new Res(l.depth + 1, l.lca) : new Res(r.depth + 1, r.lca);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1123. 最深叶节点的最近公共祖先 —— 图解：复刻 Solution.java 的「后序 DFS 报告（深度, LCA)」，5 张关键帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, 2, 3, 4, 5, 6, 7, 8] };
+
+function trace(input) {
+  var arr = input.root || [];
+  var frames = [];
+
+  // 建树：与 lib/Trees.of 同一套规则（队列紧凑式，null 不占队列位），结点带层序下标 idx
+  function build() {
+    if (!arr.length || arr[0] == null) return null;
+    var root = { val: arr[0], left: null, right: null, idx: 0 };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var nd = q.shift();
+      if (i < arr.length) { if (arr[i] != null) { nd.left = { val: arr[i], left: null, right: null, idx: i }; q.push(nd.left); } i++; }
+      if (i < arr.length) { if (arr[i] != null) { nd.right = { val: arr[i], left: null, right: null, idx: i }; q.push(nd.right); } i++; }
+    }
+    return root;
+  }
+  var root = build();
+
+  function treePanel(marks, labels) {
+    return Viz.tree(arr, { title: '树（标签 = 子树报告 (最深叶深度, LCA)）', marks: marks || {}, labels: labels || [] });
+  }
+  function snap(at, key, marks, labels, extraVars) {
+    var items = extraVars || [];
+    frames.push(Viz.frame(at, key, [treePanel(marks, labels), Viz.vars(items)]));
+  }
+
+  var report = {};   // idx -> "深度,LCA" 标签文本
+  function labelOf(res) {
+    var idx = res.lca === null ? '无' : String(res.lca.idx);
+    return '(' + res.depth + ',' + idx + ')';
+  }
+
+  // 与 Java 相同的后序 DFS
+  function dfs(node) {
+    if (node === null) return { depth: 0, lca: null };
+    var l = dfs(node.left), r = dfs(node.right);
+    var res;
+    if (l.depth === r.depth) res = { depth: l.depth + 1, lca: node, merged: true };
+    else res = l.depth > r.depth ? { depth: l.depth + 1, lca: l.lca } : { depth: r.depth + 1, lca: r.lca };
+    report[node.idx] = labelOf(res);
+    var labels = Object.keys(report).map(function (k) { return { at: Number(k), label: report[k], cls: 'new' }; });
+    var marks = {}; marks[node.idx] = 'cur';
+    if (node.idx === 3) snap('return l.depth > r.depth ? new Res(l.depth + 1, l.lca) : new Res(r.depth + 1, r.lca);',
+      '结点 4：左子树有 8、右子树空 → 报告 (2, 8)，LCA 沿更深一侧上传',
+      marks, labels, [{ name: '左子树', v: labelOf(l), cls: '' }, { name: '右子树', v: labelOf(r), cls: '' }]);
+    if (node.idx === 1) snap('return l.depth > r.depth ? new Res(l.depth + 1, l.lca) : new Res(r.depth + 1, r.lca);',
+      '结点 2：左 (2,8) 深、右 (1,5) 浅 → 报告 (3, 8)',
+      marks, labels, [{ name: '左子树', v: labelOf(l), cls: '' }, { name: '右子树', v: labelOf(r), cls: '' }]);
+    if (node.idx === 2) snap('if (l.depth == r.depth) return new Res(l.depth + 1, node);',
+      '结点 3：6、7 同深 → 在本结点汇合，报告 (2, 3)',
+      marks, labels, [{ name: '左子树', v: labelOf(l), cls: '' }, { name: '右子树', v: labelOf(r), cls: '' }]);
+    if (node.idx === 0) snap('return l.depth > r.depth ? new Res(l.depth + 1, l.lca) : new Res(r.depth + 1, r.lca);',
+      '根：左 (3,8) 深、右 (2,3) 浅 → 全树答案 8',
+      marks, labels, [{ name: '左子树', v: labelOf(l), cls: '' }, { name: '右子树', v: labelOf(r), cls: '' }]);
+    return res;
+  }
+
+  if (root !== null) {
+    snap('return dfs(root).lca;', '开局：后序 DFS，每个结点向父亲报告（最深叶深度, 这些叶的 LCA）', {}, [],
+      [{ name: '约定', v: '(深度, LCA)', cls: '' }]);
+    var res = dfs(root);
+    var doneMarks = {}, doneLabels = [];
+    for (var i = 0; i < arr.length; i++) if (arr[i] != null) doneMarks[i] = 'done';
+    doneLabels.push({ at: res.lca.idx, label: 'LCA=' + res.lca.val, cls: 'done' });
+    snap('return dfs(root).lca;', '全部报告完：最深叶 8 的 LCA 就是它自己', doneMarks, doneLabels,
+      [{ name: '根的报告', v: labelOf(res), cls: 'done' }]);
+  }
+
+  // 与 Trees.toLevel 相同的层序序列化（末尾 null 去掉）
+  var out = [];
+  if (res && res.lca) {
+    var q = [res.lca];
+    while (q.length) {
+      var nd = q.shift();
+      if (nd === null) { out.push(null); continue; }
+      out.push(nd.val);
+      q.push(nd.left);
+      q.push(nd.right);
+    }
+    while (out.length && out[out.length - 1] === null) out.pop();
+  }
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

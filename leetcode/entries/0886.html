@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>可能的二分法 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 527 / 1159</span>
+  <nav class="pn"><a href="0951.html">上一篇</a><a href="0949.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">886. </span>可能的二分法</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">广度优先搜索</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">图</li><li class="tag">graph-coloring</li><li class="tag">bipartite-graph</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">讨厌关系连成无向图，「分两组互不讨厌」就是这张图能否二染色；逐连通块 BFS 染色，相邻同色即失败。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>把每条 <code>dislikes</code> 建成<strong>无向</strong>边（两人互相讨厌）；能分两组 ⇔ 图是二分图。</li><li><code>color[i]</code>：0 未分组、1 / -1 两组；图可能不连通，每个未染色的人都要当一次起点。</li><li>BFS：出队 <code>u</code>，邻居未染色就染反色 <code>-color[u]</code> 入队；邻居已染色且<strong>同色</strong> → 冲突，返回 false。</li><li>染完全部连通块无冲突 → true。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + m)，空间复杂度 O(n + m)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> possibleBipartition(<span class="k">int</span> n, <span class="k">int</span>[][] dislikes) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 互相讨厌的人连边；问题变成：这张图能不能二染色</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt;[] g = <span class="k">new</span> <span class="t">List</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= n; i++) g[i] = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span>[] d : dislikes) { g[d[<span class="n">0</span>]].add(d[<span class="n">1</span>]); g[d[<span class="n">1</span>]].add(d[<span class="n">0</span>]); }</span><span class="ln"><span class="no">9</span>        <span class="k">int</span>[] color = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];   <span class="c">// 0 未分组，1 / -1 两个组</span></span><span class="ln"><span class="no">10</span>        <span class="c">// 图可能不连通：每个没染过色的人都要当一次起点</span></span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> s = <span class="n">1</span>; s &lt;= n; s++) {</span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (color[s] != <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">13</span>            <span class="t">Queue</span>&lt;<span class="t">Integer</span>&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">14</span>            color[s] = <span class="n">1</span>;</span><span class="ln"><span class="no">15</span>            q.add(s);</span><span class="ln"><span class="no">16</span>            <span class="k">while</span> (!q.isEmpty()) {</span><span class="ln"><span class="no">17</span>                <span class="k">int</span> u = q.poll();</span><span class="ln"><span class="no">18</span>                <span class="k">for</span> (<span class="k">int</span> v : g[u]) {</span><span class="ln"><span class="no">19</span>                    <span class="k">if</span> (color[v] == color[u]) <span class="k">return</span> <span class="k">false</span>;   <span class="c">// 讨厌的人被分进了同组</span></span><span class="ln"><span class="no">20</span>                    <span class="k">if</span> (color[v] == <span class="n">0</span>) { color[v] = -color[u]; q.add(v); }</span><span class="ln"><span class="no">21</span>                }</span><span class="ln"><span class="no">22</span>            }</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一组&nbsp;<code>n</code>&nbsp;人（编号为&nbsp;<code>1, 2, ..., n</code>），&nbsp;我们想把每个人分进<strong>任意</strong>大小的两组。每个人都可能不喜欢其他人，那么他们不应该属于同一组。</p>
+
+<p>给定整数 <code>n</code>&nbsp;和数组 <code>dislikes</code>&nbsp;，其中&nbsp;<code>dislikes[i] = [a<sub>i</sub>, b<sub>i</sub>]</code>&nbsp;，表示不允许将编号为 <code>a<sub>i</sub></code>&nbsp;和&nbsp;&nbsp;<code>b<sub>i</sub></code>的人归入同一组。当可以用这种方法将所有人分进两组时，返回 <code>true</code>；否则返回 <code>false</code>。</p>
+
+
+
+<ol>
+</ol>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 4, dislikes = [[1,2],[1,3],[2,4]]
+<strong>输出：</strong>true
+<strong>解释：</strong>group1 [1,4], group2 [2,3]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 3, dislikes = [[1,2],[1,3],[2,3]]
+<strong>输出：</strong>false
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 5, dislikes = [[1,2],[2,3],[3,4],[4,5],[1,5]]
+<strong>输出：</strong>false
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 2000</code></li>
+	<li><code>0 &lt;= dislikes.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>dislikes[i].length == 2</code></li>
+	<li><code>1 &lt;= dislikes[i][j] &lt;= n</code></li>
+	<li><code>a<sub>i</sub>&nbsp;&lt; b<sub>i</sub></code></li>
+	<li><code>dislikes</code>&nbsp;中每一组都 <strong>不同</strong></li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean possibleBipartition(int n, int[][] dislikes) {", "        // 互相讨厌的人连边；问题变成：这张图能不能二染色", "        List<Integer>[] g = new List[n + 1];", "        for (int i = 1; i <= n; i++) g[i] = new ArrayList<>();", "        for (int[] d : dislikes) { g[d[0]].add(d[1]); g[d[1]].add(d[0]); }", "        int[] color = new int[n + 1];   // 0 未分组，1 / -1 两个组", "        // 图可能不连通：每个没染过色的人都要当一次起点", "        for (int s = 1; s <= n; s++) {", "            if (color[s] != 0) continue;", "            Queue<Integer> q = new ArrayDeque<>();", "            color[s] = 1;", "            q.add(s);", "            while (!q.isEmpty()) {", "                int u = q.poll();", "                for (int v : g[u]) {", "                    if (color[v] == color[u]) return false;   // 讨厌的人被分进了同组", "                    if (color[v] == 0) { color[v] = -color[u]; q.add(v); }", "                }", "            }", "        }", "        return true;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 886 可能的二分法 —— 图解：讨厌关系连成无向图后逐块 BFS 二染色，相邻必须异组。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 3, dislikes: [[1, 2], [1, 3], [2, 3]] };
+
+function trace(input) {
+  var n = input.n, dislikes = input.dislikes;
+  var g = {};
+  for (var i = 1; i <= n; i++) g[i] = [];
+  dislikes.forEach(function (d) { g[d[0]].push(d[1]); g[d[1]].push(d[0]); });
+  var color = [];
+  for (i = 1; i <= n; i++) color[i] = 0;
+  var q = [];
+  var frames = [];
+  var result = true;
+  var fired = { loop: false, start: false, nei: false, second: false };
+
+  var LOOP = 'for (int s = 1; s <= n; s++) {';
+  var START = 'color[s] = 1;';
+  var NEI = 'if (color[v] == 0) { color[v] = -color[u]; q.add(v); }';
+  var CONFLICT = 'if (color[v] == color[u]) return false;';
+  var TRUE = 'return true;';
+
+  function colorPanel(curU, justColored) {
+    var rows = [];
+    for (var i = 1; i <= n; i++) {
+      rows.push({
+        k: String(i),
+        v: color[i] === 0 ? '未分组' : (color[i] > 0 ? '组 +1' : '组 -1'),
+        cls: i === curU ? 'hit' : (i === justColored ? 'new' : '')
+      });
+    }
+    return Viz.table('color[]：人 → 组', rows, { hint: '互相讨厌的两人必须异组' });
+  }
+  function queuePanel() {
+    var pointers = q.length ? [{ at: 0, label: '队头', cls: 'p-left' }] : [];
+    return Viz.cells(q.length ? q.slice() : ['（空）'], { title: '队列 q', marks: {}, pointers: pointers });
+  }
+  function snap(at, key, curU, justColored) {
+    frames.push(Viz.frame(at, key, [colorPanel(curU, justColored), queuePanel()]));
+  }
+
+  // 与 Java 相同的逐连通块 BFS 染色
+  for (var s = 1; s <= n && result; s++) {
+    if (color[s] !== 0) continue;
+    if (fired.start && !fired.second && frames.length < 5) {
+      fired.second = true;
+      snap(LOOP, '前面的连通块染完了：图不连通，未染色的 ' + s + ' 开新一块', s, null);
+    }
+    if (!fired.loop) { fired.loop = true; snap(LOOP, '把讨厌关系建成无向图，逐块二染色；先给 ' + s + ' 定个组', s, null); }
+    color[s] = 1;
+    q.push(s);
+    if (!fired.start) { fired.start = true; snap(START, s + ' 进组 +1 入队：它的讨厌对象之后都得进 -1 组', s, s); }
+    while (q.length && result) {
+      var u = q.shift();
+      for (var k = 0; k < g[u].length && result; k++) {
+        var v = g[u][k];
+        if (color[v] === color[u]) {
+          snap(CONFLICT, u + ' 和它讨厌的 ' + v + ' 被分进了同一组：怎么分都不行，返回 false', u, null);
+          result = false;
+          break;
+        }
+        if (color[v] === 0) {
+          color[v] = -color[u];
+          q.push(v);
+          if (!fired.nei) { fired.nei = true; snap(NEI, '出队 ' + u + '：没分组的讨厌对象 ' + v + ' 进反组 -1 后入队', u, v); }
+        }
+      }
+    }
+  }
+
+  if (result) snap(TRUE, '所有人都分完组且没有冲突：返回 true', null, null);
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

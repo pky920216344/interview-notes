@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>销售价值减少的颜色球 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 928 / 1159</span>
+  <nav class="pn"><a href="1624.html">上一篇</a><a href="1010.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1648. </span>销售价值减少的颜色球</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">贪心</li><li class="aux">数学</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">二分查找</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">排序后按「层」贪心：值相同的颜色一起卖，整层拉平用等差求和，订单不够一层时除法分摊；全程 long + 取模。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每一步都卖当前剩余最多的颜色（值最大），所以把 inventory 排序，从右往左按层处理。</li><li><code>pool</code> = 值 ≥ 当前层值 v 的颜色数（恒等于 <code>n − i</code>）；一层拉平要卖 <code>d × pool</code> 个，价值和是等差和 <code>(v+next+1)×d/2 × pool</code>。</li><li>拉平后这 pool 个颜色降到 <code>next</code>，与下一层合并：<code>i--</code> 且 <code>pool++</code>，循环开头的 while 再把同值颜色并进来。</li><li>订单不足一层：<code>q = orders / pool</code> 整层摊、<code>rem</code> 个再各卖一个 <code>v − q</code>。中间量最大约 1e18，先取模再乘（<code>INV2</code> 代替除 2）防溢出。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">long</span> MOD = <span class="n">1_000_000_007L</span>;</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">long</span> INV2 = <span class="n">500_000_004L</span>;   <span class="c">// 2 模 MOD 的逆元，等差和除 2 用</span></span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="k">int</span> maxProfit(<span class="k">int</span>[] inventory, <span class="k">int</span> orders) {</span><span class="ln"><span class="no">8</span>        <span class="t">Arrays</span>.sort(inventory);                  <span class="c">// 升序；从值最大的那层开始卖</span></span><span class="ln"><span class="no">9</span>        <span class="k">int</span> n = inventory.length, i = n - <span class="n">1</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">long</span> pool = <span class="n">1</span>;                           <span class="c">// 当前层的颜色数：值 ≥ v 的颜色都算这一层</span></span><span class="ln"><span class="no">11</span>        <span class="k">long</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">12</span>        <span class="k">while</span> (orders &gt; <span class="n">0</span> &amp;&amp; i &gt;= <span class="n">0</span>) {</span><span class="ln"><span class="no">13</span>            <span class="k">while</span> (i &gt; <span class="n">0</span> &amp;&amp; inventory[i - <span class="n">1</span>] == inventory[i]) { i--; pool++; }</span><span class="ln"><span class="no">14</span>            <span class="k">long</span> v = inventory[i];               <span class="c">// 当前层卖到的值</span></span><span class="ln"><span class="no">15</span>            <span class="k">long</span> next = i &gt; <span class="n">0</span> ? inventory[i - <span class="n">1</span>] : <span class="n">0</span>;   <span class="c">// 下一层的值；没有就卖到 1 为止</span></span><span class="ln"><span class="no">16</span>            <span class="k">long</span> d = v - next;                   <span class="c">// 这一层到下一层的落差</span></span><span class="ln"><span class="no">17</span>            <span class="k">long</span> take = d * pool;                <span class="c">// 把整层拉平要卖的球数</span></span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (take &lt;= orders) {</span><span class="ln"><span class="no">19</span>                <span class="c">// 整层卖掉：每个颜色贡献 v, v-1, …, next+1，等差求和</span></span><span class="ln"><span class="no">20</span>                <span class="k">long</span> sum = (v + next + <span class="n">1</span>) % MOD * (d % MOD) % MOD * INV2 % MOD;</span><span class="ln"><span class="no">21</span>                ans = (ans + pool % MOD * sum) % MOD;</span><span class="ln"><span class="no">22</span>                orders -= take;</span><span class="ln"><span class="no">23</span>                i--;</span><span class="ln"><span class="no">24</span>                pool++;                          <span class="c">// 拉平后这层颜色降到 next，与下层合并</span></span><span class="ln"><span class="no">25</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">26</span>                <span class="c">// 卖不完整层：每种颜色卖 q 个，再挑 rem 种各卖 1 个</span></span><span class="ln"><span class="no">27</span>                <span class="k">long</span> q = orders / pool, rem = orders % pool;</span><span class="ln"><span class="no">28</span>                <span class="k">long</span> sum = (<span class="n">2</span> * v - q + <span class="n">1</span>) % MOD * (q % MOD) % MOD * INV2 % MOD;</span><span class="ln"><span class="no">29</span>                ans = (ans + pool % MOD * sum + rem % MOD * ((v - q) % MOD)) % MOD;</span><span class="ln"><span class="no">30</span>                orders = <span class="n">0</span>;</span><span class="ln"><span class="no">31</span>            }</span><span class="ln"><span class="no">32</span>        }</span><span class="ln"><span class="no">33</span>        <span class="k">return</span> (<span class="k">int</span>) ans;</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你有一些球的库存 <code>inventory</code> ，里面包含着不同颜色的球。一个顾客想要 <strong>任意颜色</strong> 总数为 <code>orders</code> 的球。</p>
+
+<p>这位顾客有一种特殊的方式衡量球的价值：每个球的价值是目前剩下的 <strong>同色球</strong> 的数目。比方说还剩下 <code>6</code> 个黄球，那么顾客买第一个黄球的时候该黄球的价值为 <code>6</code> 。这笔交易以后，只剩下 <code>5</code> 个黄球了，所以下一个黄球的价值为 <code>5</code> （也就是球的价值随着顾客购买同色球是递减的）</p>
+
+<p>给你整数数组 <code>inventory</code> ，其中 <code>inventory[i]</code> 表示第 <code>i</code> 种颜色球一开始的数目。同时给你整数 <code>orders</code> ，表示顾客总共想买的球数目。你可以按照 <strong>任意顺序</strong> 卖球。</p>
+
+<p>请你返回卖了 <code>orders</code> 个球以后 <strong>最大</strong> 总价值之和。由于答案可能会很大，请你返回答案对 <code>10<sup>9</sup> + 7</code> <strong>取余数</strong> 的结果。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/59650c92e782.gif" style="width: 480px; height: 270px;" />
+<pre>
+<b>输入：</b>inventory = [2,5], orders = 4
+<b>输出：</b>14
+<b>解释：</b>卖 1 个第一种颜色的球（价值为 2 )，卖 3 个第二种颜色的球（价值为 5 + 4 + 3）。
+最大总和为 2 + 5 + 4 + 3 = 14 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<b>输入：</b>inventory = [3,5], orders = 6
+<b>输出：</b>19
+<strong>解释：</strong>卖 2 个第一种颜色的球（价值为 3 + 2），卖 4 个第二种颜色的球（价值为 5 + 4 + 3 + 2）。
+最大总和为 3 + 2 + 5 + 4 + 3 + 2 = 19 。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<b>输入：</b>inventory = [2,8,4,10,6], orders = 20
+<b>输出：</b>110
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre>
+<b>输入：</b>inventory = [1000000000], orders = 1000000000
+<b>输出：</b>21
+<strong>解释：</strong>卖 1000000000 次第一种颜色的球，总价值为 500000000500000000 。 500000000500000000 对 10<sup>9 </sup>+ 7 取余为 21 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= inventory.length <= 10<sup>5</sup></code></li>
+	<li><code>1 <= inventory[i] <= 10<sup>9</sup></code></li>
+	<li><code>1 <= orders <= min(sum(inventory[i]), 10<sup>9</sup>)</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private static final long MOD = 1_000_000_007L;", "    private static final long INV2 = 500_000_004L;   // 2 模 MOD 的逆元，等差和除 2 用", "", "    public int maxProfit(int[] inventory, int orders) {", "        Arrays.sort(inventory);                  // 升序；从值最大的那层开始卖", "        int n = inventory.length, i = n - 1;", "        long pool = 1;                           // 当前层的颜色数：值 ≥ v 的颜色都算这一层", "        long ans = 0;", "        while (orders > 0 && i >= 0) {", "            while (i > 0 && inventory[i - 1] == inventory[i]) { i--; pool++; }", "            long v = inventory[i];               // 当前层卖到的值", "            long next = i > 0 ? inventory[i - 1] : 0;   // 下一层的值；没有就卖到 1 为止", "            long d = v - next;                   // 这一层到下一层的落差", "            long take = d * pool;                // 把整层拉平要卖的球数", "            if (take <= orders) {", "                // 整层卖掉：每个颜色贡献 v, v-1, …, next+1，等差求和", "                long sum = (v + next + 1) % MOD * (d % MOD) % MOD * INV2 % MOD;", "                ans = (ans + pool % MOD * sum) % MOD;", "                orders -= take;", "                i--;", "                pool++;                          // 拉平后这层颜色降到 next，与下层合并", "            } else {", "                // 卖不完整层：每种颜色卖 q 个，再挑 rem 种各卖 1 个", "                long q = orders / pool, rem = orders % pool;", "                long sum = (2 * v - q + 1) % MOD * (q % MOD) % MOD * INV2 % MOD;", "                ans = (ans + pool % MOD * sum + rem % MOD * ((v - q) % MOD)) % MOD;", "                orders = 0;", "            }", "        }", "        return (int) ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1648. 销售价值减少的颜色球 —— 图解：复刻 Solution.java 的「排序分层贪心」，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// JS 没有长整型，模乘用 15 位拆位乘法（mul），与 Java 的 long 取模结果一致。
+
+var STORY_INPUT = { inventory: [5, 2, 4], orders: 6 };
+
+var MOD = 1000000007, INV2 = 500000004;
+
+function mul(a, b) {           // (a*b) % MOD：拆成高 15 位 × 低 15 位，保证全程精确
+  a %= MOD; b %= MOD;
+  var aH = Math.floor(a / 32768), aL = a % 32768;
+  return (((aH * b) % MOD) * 32768 + aL * b) % MOD;
+}
+
+function trace(input) {
+  var inv = input.inventory.slice().sort(function (a, b) { return a - b; });
+  var n = inv.length, i = n - 1, pool = 1, orders = input.orders;
+  var ans = 0;
+  var frames = [];
+  var layer = 0;
+
+  function arrPanel(opt) {
+    opt = opt || {};
+    var marks = {};
+    if (opt.range) {
+      for (var j = opt.range.from; j <= opt.range.to; j++) marks[j] = 'win';
+    }
+    if (opt.doneAll) for (var j = 0; j < n; j++) marks[j] = 'done';
+    var pointers = opt.noPtr ? [] : [{ at: Math.max(0, i), label: 'v=' + (i >= 0 ? inv[i] : '-'), cls: 'p-cur' }];
+    var range = opt.range ? { from: opt.range.from, to: opt.range.to, label: '当前层 pool=' + pool, cls: 'win' } : null;
+    return Viz.cells(inv, { title: '排序后的 inventory（升序，从右往左卖）', marks: marks, pointers: pointers, range: range });
+  }
+  function varsPanel(extra) {
+    var items = [
+      { name: 'v 当前层值', v: String(i >= 0 ? inv[i] : '—') },
+      { name: 'pool 同层颜色数', v: String(pool) },
+      { name: 'orders 剩余', v: String(orders) },
+      { name: 'ans（mod）', v: String(ans) }
+    ];
+    if (extra) items.push(extra);
+    return Viz.vars(items);
+  }
+  function snap(at, key, opt, extra) { frames.push(Viz.frame(at, key, [arrPanel(opt), varsPanel(extra)])); }
+
+  snap('Arrays.sort(inventory);', '先排序：每次都从剩余最多的颜色卖', { range: { from: n - 1, to: n - 1 } });
+
+  while (orders > 0 && i >= 0) {
+    while (i > 0 && inv[i - 1] === inv[i]) { i--; pool++; }
+    var v = inv[i];
+    var next = i > 0 ? inv[i - 1] : 0;
+    var d = v - next;
+    var take = d * pool;
+    if (take <= orders) {
+      var sum = mul(mul(v + next + 1, d), INV2);
+      ans = (ans + mul(pool, sum)) % MOD;
+      orders -= take;
+      i--;
+      pool++;
+      layer++;
+      if (layer === 1) snap('long sum = (v + next + 1) % MOD * (d % MOD) % MOD * INV2 % MOD;',
+        '第 1 层（值 5）卖 1 个：5 降到 4，与 4 并成同层', { range: { from: Math.max(0, i), to: n - 1 } });
+      if (layer === 2) snap('long sum = (v + next + 1) % MOD * (d % MOD) % MOD * INV2 % MOD;',
+        '第 2 层（值 4）：pool=2，一起卖 4、3 各两个', { range: { from: Math.max(0, i), to: n - 1 } });
+      if (i < 0) break;
+    } else {
+      var q = Math.floor(orders / pool), rem = orders % pool;
+      var sum2 = mul(mul(2 * v - q + 1, q), INV2);
+      ans = (ans + mul(pool, sum2) + mul(rem, v - q)) % MOD;
+      orders = 0;
+      snap('ans = (ans + pool % MOD * sum + rem % MOD * ((v - q) % MOD)) % MOD;',
+        '剩 1 个订单 < pool=3：不够一整层，任选 1 种颜色卖 v=2', { range: { from: i, to: n - 1 } });
+    }
+  }
+
+  snap('return (int) ans;', '卖完 6 个球：总价值 21（mod 1e9+7）', { doneAll: true, noPtr: true });
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

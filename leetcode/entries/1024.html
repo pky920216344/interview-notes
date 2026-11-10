@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>视频拼接 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 551 / 1159</span>
+  <nav class="pn"><a href="0326.html">上一篇</a><a href="mianshi-08-11.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1024. </span>视频拼接</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">片段按起点排序；每轮把起点接得上覆盖末端的片段都看一眼，取右端最远的把覆盖末端一口气推过去，推不动就是断档。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>排序后 <code>curEnd</code> 表示已覆盖到的最右端，<code>i</code> 指向第一个没考察的片段。</li><li>每轮把起点 <code>&lt;= curEnd</code> 的片段全部吃进来，只记它们能伸到的最远右端 <code>nextEnd</code>。</li><li><code>nextEnd &lt;= curEnd</code> 说明接不上（断档），返回 <code>-1</code>；否则 <code>curEnd = nextEnd</code>，段数 +1，直到盖满 <code>time</code>。</li><li>排序保证起点单调，每个片段只被考察一次；能接上时选「右端最远」一定不亏。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(log n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> videoStitching(<span class="k">int</span>[][] clips, <span class="k">int</span> time) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 按起点排序：起点靠前的片段先被考察</span></span><span class="ln"><span class="no">6</span>        <span class="t">Arrays</span>.sort(clips, (a, b) -&gt; a[<span class="n">0</span>] - b[<span class="n">0</span>]);</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> ans = <span class="n">0</span>, curEnd = <span class="n">0</span>, nextEnd = <span class="n">0</span>, i = <span class="n">0</span>, n = clips.length;</span><span class="ln"><span class="no">8</span>        <span class="k">while</span> (curEnd &lt; time) {</span><span class="ln"><span class="no">9</span>            <span class="c">// 起点能接上已覆盖末端的所有片段里，记右端最远的那个</span></span><span class="ln"><span class="no">10</span>            <span class="k">while</span> (i &lt; n &amp;&amp; clips[i][<span class="n">0</span>] &lt;= curEnd) {</span><span class="ln"><span class="no">11</span>                nextEnd = <span class="t">Math</span>.max(nextEnd, clips[i][<span class="n">1</span>]);</span><span class="ln"><span class="no">12</span>                i++;</span><span class="ln"><span class="no">13</span>            }</span><span class="ln"><span class="no">14</span>            <span class="c">// 一个都接不上：中间断档，盖不满</span></span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (nextEnd &lt;= curEnd) <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">16</span>            curEnd = nextEnd;</span><span class="ln"><span class="no">17</span>            ans++;</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你将会获得一系列视频片段，这些片段来自于一项持续时长为&nbsp;<code>time</code>&nbsp;秒的体育赛事。这些片段可能有所重叠，也可能长度不一。</p>
+
+<p>使用数组&nbsp;<code>clips</code> 描述所有的视频片段，其中 <code>clips[i] = [start<sub>i</sub>, end<sub>i</sub>]</code> 表示：某个视频片段开始于&nbsp;<code>start<sub>i</sub></code>&nbsp;并于&nbsp;<code>end<sub>i</sub></code>&nbsp;结束。</p>
+
+<p>甚至可以对这些片段自由地再剪辑：</p>
+
+<ul>
+	<li>例如，片段&nbsp;<code>[0, 7]</code>&nbsp;可以剪切成&nbsp;<code>[0, 1] +&nbsp;[1, 3] + [3, 7]</code>&nbsp;三部分。</li>
+</ul>
+
+<p>我们需要将这些片段进行再剪辑，并将剪辑后的内容拼接成覆盖整个运动过程的片段（<code>[0, time]</code>）。返回所需片段的最小数目，如果无法完成该任务，则返回&nbsp;<code>-1</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>clips = [[0,2],[4,6],[8,10],[1,9],[1,5],[5,9]], time = 10
+<strong>输出：</strong>3
+<strong>解释：</strong>
+选中 [0,2], [8,10], [1,9] 这三个片段。
+然后，按下面的方案重制比赛片段：
+将 [1,9] 再剪辑为 [1,2] + [2,8] + [8,9] 。
+现在手上的片段为 [0,2] + [2,8] + [8,10]，而这些覆盖了整场比赛 [0, 10]。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>clips = [[0,1],[1,2]], time = 5
+<strong>输出：</strong>-1
+<strong>解释：</strong>
+无法只用 [0,1] 和 [1,2] 覆盖 [0,5] 的整个过程。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>clips = [[0,1],[6,8],[0,2],[5,6],[0,4],[0,3],[6,7],[1,3],[4,7],[1,4],[2,5],[2,6],[3,4],[4,5],[5,7],[6,9]], time = 9
+<strong>输出：</strong>3
+<strong>解释： </strong>
+选取片段 [0,4], [4,7] 和 [6,9] 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= clips.length &lt;= 100</code></li>
+	<li><code>0 &lt;= start<sub>i</sub> &lt;= end<sub>i</sub> &lt;= 100</code></li>
+	<li><code>1 &lt;= time &lt;= 100</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int videoStitching(int[][] clips, int time) {", "        // 按起点排序：起点靠前的片段先被考察", "        Arrays.sort(clips, (a, b) -> a[0] - b[0]);", "        int ans = 0, curEnd = 0, nextEnd = 0, i = 0, n = clips.length;", "        while (curEnd < time) {", "            // 起点能接上已覆盖末端的所有片段里，记右端最远的那个", "            while (i < n && clips[i][0] <= curEnd) {", "                nextEnd = Math.max(nextEnd, clips[i][1]);", "                i++;", "            }", "            // 一个都接不上：中间断档，盖不满", "            if (nextEnd <= curEnd) return -1;", "            curEnd = nextEnd;", "            ans++;", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1024 视频拼接 —— 图解：复刻 Solution.java 的「按起点排序 + 每轮伸到最远右端」，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { clips: [[0, 3], [1, 5], [4, 8], [7, 9]], time: 9 };
+
+function trace(input) {
+  var clips = input.clips.map(function (c) { return c.slice(); });
+  clips.sort(function (a, b) { return a[0] - b[0]; });
+  var time = input.time, n = clips.length;
+  var frames = [];
+  var used = [];            // 已考察过的片段（排序后下标），图解展示用
+  var fired = { start: false, round: 0 };
+
+  // 时间轴：格子 i 代表 [i, i+1) 这 1 秒；covered 是已盖住的右端（末段可能超过 time，显示时截断）
+  function timePanel(covered, fresh) {
+    var cov = Math.min(covered, time);
+    var items = [], marks = {}, i;
+    for (i = 0; i < time; i++) items.push(String(i));
+    for (i = 0; i < cov; i++) marks[i] = 'win';
+    for (i = Math.max(0, cov - fresh); i < cov; i++) marks[i] = 'new';
+    var pointers = cov > 0 ? [{ at: cov - 1, label: 'curEnd', cls: 'p-left' }] : [];
+    return Viz.cells(items, { title: '时间轴（格子 i = 第 i 秒）', marks: marks, pointers: pointers });
+  }
+
+  function clipsPanel(bestIdx) {
+    var rows = clips.map(function (c, i) {
+      var cls = used.indexOf(i) >= 0 ? 'done' : '';
+      if (i === bestIdx) cls = 'new';
+      return { k: '[' + c[0] + ',' + c[1] + ']', v: '右端 ' + c[1], cls: cls };
+    });
+    return Viz.table('片段（已按起点排序）', rows, { hint: '本轮只看起点 ≤ curEnd 的' });
+  }
+
+  var ans = 0, curEnd = 0, nextEnd = 0, i = 0;
+
+  if (!fired.start) {
+    fired.start = true;
+    frames.push(Viz.frame('while (curEnd < time) {',
+      'curEnd = 0：还一秒都没盖上，从时刻 0 开始挑片段',
+      [timePanel(0, 0), clipsPanel(-1)]));
+  }
+
+  while (curEnd < time) {
+    var bestIdx = -1;
+    while (i < n && clips[i][0] <= curEnd) {
+      if (clips[i][1] > nextEnd) { nextEnd = clips[i][1]; bestIdx = i; }
+      used.push(i);
+      i++;
+    }
+    // 断档：没有任何起点接得上的片段能伸得更远
+    if (nextEnd <= curEnd) return { frames: frames, result: -1 };
+    var old = curEnd;
+    curEnd = nextEnd;
+    ans++;
+    fired.round++;
+    if (fired.round <= 3) {
+      var key = curEnd >= time
+        ? 'curEnd 伸到 ' + curEnd + '，已盖满 [0,' + time + ']，共用 ' + ans + ' 段'
+        : 'curEnd 伸到这一批里最远的右端 ' + curEnd + '，已用 ' + ans + ' 段';
+      frames.push(Viz.frame('curEnd = nextEnd;', key, [timePanel(curEnd, curEnd - old), clipsPanel(bestIdx)]));
+    }
+  }
+
+  frames.push(Viz.frame('return ans;',
+    '盖满 [0,' + time + '] 最少要 ' + ans + ' 段',
+    [timePanel(curEnd, 0), clipsPanel(-1)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>俄罗斯套娃信封问题 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 274 / 1159</span>
+  <nav class="pn"><a href="0306.html">上一篇</a><a href="0233.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">354. </span>俄罗斯套娃信封问题</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 15</li><li class="algo">动态规划</li><li class="aux">二分查找</li><li class="aux">贪心</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">动态规划</li><li class="tag">排序</li><li class="tag">longest-increasing-subsequence</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">排序成「宽升序、同宽高降序」，问题变成对高度做严格 LIS（二分 O(n log n)），同宽的假递增被降序挡掉。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>宽升序排序后，「宽严格递增」只需看高度；<strong>同宽时高降序</strong>，保证同一宽度内的高不会被串成递增（同宽不能互套）。</li><li>对高度序列做严格 LIS：<code>tails[k]</code> 是长度 k+1 的子序列的最小结尾，<code>tails</code> 始终递增。</li><li>每个高二分找<strong>第一个 ≥ h</strong> 的位置：找到就覆盖（长度不涨），<code>lo == size</code> 说明 h 比结尾都大，追加并 <code>size++</code>。</li><li>等于 <code>tails</code> 结尾的值走覆盖分支，天然实现「严格递增」。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> maxEnvelopes(<span class="k">int</span>[][] envelopes) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 宽升序、同宽高降序：同宽里只有最高的那个能代表这组宽度</span></span><span class="ln"><span class="no">6</span>        <span class="t">Arrays</span>.sort(envelopes, (a, b) -&gt; a[<span class="n">0</span>] != b[<span class="n">0</span>] ? a[<span class="n">0</span>] - b[<span class="n">0</span>] : b[<span class="n">1</span>] - a[<span class="n">1</span>]);</span><span class="ln"><span class="no">7</span>        <span class="c">// 对高做严格 LIS：tails[k] = 长度 k+1 的递增子序列的最小结尾</span></span><span class="ln"><span class="no">8</span>        <span class="k">int</span>[] tails = <span class="k">new</span> <span class="k">int</span>[envelopes.length];</span><span class="ln"><span class="no">9</span>        <span class="k">int</span> size = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span>[] e : envelopes) {</span><span class="ln"><span class="no">11</span>            <span class="k">int</span> h = e[<span class="n">1</span>], lo = <span class="n">0</span>, hi = size;</span><span class="ln"><span class="no">12</span>            <span class="c">// 二分找第一个 &gt;= h 的位置：等值也停在这里</span></span><span class="ln"><span class="no">13</span>            <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">14</span>                <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">15</span>                <span class="k">if</span> (tails[mid] &lt; h) lo = mid + <span class="n">1</span>; <span class="k">else</span> hi = mid;</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>            tails[lo] = h;</span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (lo == size) size++;</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> size;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个二维整数数组 <code>envelopes</code> ，其中 <code>envelopes[i] = [w<sub>i</sub>, h<sub>i</sub>]</code> ，表示第 <code>i</code> 个信封的宽度和高度。</p>
+
+<p>当另一个信封的宽度和高度都比这个信封大的时候，这个信封就可以放进另一个信封里，如同俄罗斯套娃一样。</p>
+
+<p>请计算 <strong>最多能有多少个</strong> 信封能组成一组“俄罗斯套娃”信封（即可以把一个信封放到另一个信封里面）。</p>
+
+<p><strong>注意</strong>：不允许旋转信封。</p>
+&nbsp;
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>envelopes = [[5,4],[6,4],[6,7],[2,3]]
+<strong>输出：</strong>3
+<strong>解释：</strong>最多信封的个数为 <code>3, 组合为: </code>[2,3] =&gt; [5,4] =&gt; [6,7]。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>envelopes = [[1,1],[1,1],[1,1]]
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= envelopes.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>envelopes[i].length == 2</code></li>
+	<li><code>1 &lt;= w<sub>i</sub>, h<sub>i</sub> &lt;= 10<sup>5</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int maxEnvelopes(int[][] envelopes) {", "        // 宽升序、同宽高降序：同宽里只有最高的那个能代表这组宽度", "        Arrays.sort(envelopes, (a, b) -> a[0] != b[0] ? a[0] - b[0] : b[1] - a[1]);", "        // 对高做严格 LIS：tails[k] = 长度 k+1 的递增子序列的最小结尾", "        int[] tails = new int[envelopes.length];", "        int size = 0;", "        for (int[] e : envelopes) {", "            int h = e[1], lo = 0, hi = size;", "            // 二分找第一个 >= h 的位置：等值也停在这里", "            while (lo < hi) {", "                int mid = (lo + hi) >>> 1;", "                if (tails[mid] < h) lo = mid + 1; else hi = mid;", "            }", "            tails[lo] = h;", "            if (lo == size) size++;", "        }", "        return size;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 354. 俄罗斯套娃信封问题 —— 图解：复刻 Solution.java 的「排序 + 高度 LIS 二分」，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { envelopes: [[5, 4], [6, 5], [6, 7], [2, 3], [1, 3]] };
+
+function trace(input) {
+  var env = (input.envelopes || []).map(function (e) { return [e[0], e[1]]; });
+  var n = env.length;
+  env.sort(function (a, b) { return a[0] !== b[0] ? a[0] - b[0] : b[1] - a[1]; });
+
+  var tails = [];
+  var size = 0;
+  var frames = [];
+  var seen = { replace: 0, add: 0 };
+
+  var SORT = 'Arrays.sort(envelopes, (a, b) -> a[0] != b[0] ? a[0] - b[0] : b[1] - a[1]);';
+  var SET = 'tails[lo] = h;';
+  var GROW = 'if (lo == size) size++;';
+
+  // 信封面板：'宽×高'，cur 是正在处理的，dim 是已处理的
+  function envPanel(cur) {
+    var marks = {};
+    env.forEach(function (e, i) { if (i < cur) marks[i] = 'dim'; });
+    if (cur != null && cur < n) marks[cur] = 'cur';
+    return Viz.cells(env.map(function (e) { return e[0] + '×' + e[1]; }), {
+      title: '排序后（宽升序、同宽高降序）', marks: marks, hideIndex: true
+    });
+  }
+
+  // tails 面板：0..size-1 是有效的，后面是旧值（灰）
+  function tailsPanel(lo, chgAt) {
+    var marks = {};
+    for (var i = 0; i < size; i++) marks[i] = 'win';
+    if (chgAt != null) marks[chgAt] = 'chg';
+    var pointers = [];
+    if (lo != null) pointers.push({ at: lo, label: 'lo', cls: 'p-mid' });
+    return Viz.cells(tails.slice(), {
+      title: 'tails：长度 k+1 的递增子序列的最小结尾', marks: marks, pointers: pointers
+    });
+  }
+
+  function varsPanel(h, chg) {
+    return Viz.vars([
+      { name: 'h', v: h == null ? '—' : h },
+      { name: 'size', v: size, cls: chg ? 'chg' : '' }
+    ]);
+  }
+
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  snap(SORT, '排序完成：宽升序、同宽高降序——同宽的高永远不会被串成假递增',
+    [envPanel(0), tailsPanel(null, null), varsPanel(null, false)]);
+
+  for (var i = 0; i < n; i++) {
+    var h = env[i][1];
+    var lo = 0, hi = size;
+    while (lo < hi) {
+      var mid = (lo + hi) >> 1;
+      if (tails[mid] < h) lo = mid + 1; else hi = mid;
+    }
+    var grew = lo === size;
+    var oldv = tails[lo];
+    tails[lo] = h;
+    if (grew) size++;
+
+    if (!grew && seen.replace < 2) {
+      seen.replace++;
+      snap(SET, '高 ' + h + '：接不上更长的链（要严格大于），覆盖 tails[' + lo + ']=' + oldv + '，size 不涨',
+        [envPanel(i), tailsPanel(lo, lo), varsPanel(h, false)]);
+    } else if (grew && seen.add < 2) {
+      seen.add++;
+      snap(GROW, size === 1
+        ? '空表直接放第一个结尾 ' + h + '，size=1'
+        : '高 ' + h + ' 比所有结尾都大：追加到末尾，size=' + size,
+        [envPanel(i), tailsPanel(lo, lo), varsPanel(h, true)]);
+    }
+  }
+
+  snap('return size;', '扫完：最长的「宽高都严格递增」的链长 ' + size + '，就是最多套娃层数',
+    [envPanel(n), tailsPanel(null, null), varsPanel(null, false)]);
+
+  return { frames: frames, result: size };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

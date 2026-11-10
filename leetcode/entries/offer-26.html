@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>子结构判断 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 114 / 1159</span>
+  <nav class="pn"><a href="0123.html">上一篇</a><a href="0016.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 26. </span>子结构判断</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 55</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉树</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">双递归：isSub 在 A 里为 B 找同根起点，match 从起点逐结点比对；B 为空算匹配完，A 为空不算。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>外层 <code>isSub(A,B)</code>：<code>A</code>、<code>B</code> 有一个为空直接 <code>false</code>（空树不算子结构）；否则 <code>match(A,B)</code>，或在 <code>A.left/A.right</code> 上继续找起点。</li><li>内层 <code>match(a,b)</code>：<code>b</code> 为空说明 B 比完了 → <code>true</code>（A 对应位置多出的子树不影响）；<code>a</code> 为空或值不等 → <code>false</code>。</li><li>匹配时两棵树同步往左右孩子走，结构和取值都要一致。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·m)，空间复杂度 O(n)（递归栈，n 为 A 的结点数）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> isSubStructure(<span class="t">TreeNode</span> A, <span class="t">TreeNode</span> B) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 空树不算任何树的子结构：有一边是空就直接 false</span></span><span class="ln"><span class="no">4</span>        <span class="k">if</span> (A == <span class="k">null</span> || B == <span class="k">null</span>) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">5</span>        <span class="c">// B 先从 A 当前结点开始匹配；不行就到 A 的左右子树里继续找同根起点</span></span><span class="ln"><span class="no">6</span>        <span class="k">return</span> match(A, B) || isSubStructure(A.left, B) || isSubStructure(A.right, B);</span><span class="ln"><span class="no">7</span>    }</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="c">/** B 是否与「以 a 为根的这一段」完全同构；B 的空位不限制 A。 */</span></span><span class="ln"><span class="no">10</span>    <span class="k">private</span> <span class="k">boolean</span> match(<span class="t">TreeNode</span> a, <span class="t">TreeNode</span> b) {</span><span class="ln"><span class="no">11</span>        <span class="k">if</span> (b == <span class="k">null</span>) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (a == <span class="k">null</span> || a.val != b.val) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> match(a.left, b.left) &amp;&amp; match(a.right, b.right);</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定两棵二叉树 <code>tree1</code> 和 <code>tree2</code>，判断 <code>tree2</code> 是否以 <code>tree1</code> 的某个节点为根的子树具有 <strong>相同的结构和节点值</strong> 。<br />
+注意，<strong>空树&nbsp;</strong>不会是以 <code>tree1</code> 的某个节点为根的子树具有 <strong>相同的结构和节点值</strong> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+
+
+<p><img alt="" src="../assets/img/fe23dfecf8f8.png" /></p>
+
+
+
+<pre>
+<strong>输入：</strong>tree1 = [1,7,5], tree2 = [6,1]
+<strong>输出：</strong>false
+<strong>解释：</strong>tree2 与 tree1 的一个子树没有相同的结构和节点值。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/f58549762a19.png" /></p>
+
+<pre>
+<strong>输入：</strong>tree1 = [3,6,7,1,8], tree2 = [6,1]
+<strong>输出：</strong>true
+<strong>解释：</strong>tree2 与 tree1 的一个子树拥有相同的结构和节点值。即 6 - &gt; 1。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<p><code>0 &lt;= 节点个数 &lt;= 10000</code></p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean isSubStructure(TreeNode A, TreeNode B) {", "        // 空树不算任何树的子结构：有一边是空就直接 false", "        if (A == null || B == null) return false;", "        // B 先从 A 当前结点开始匹配；不行就到 A 的左右子树里继续找同根起点", "        return match(A, B) || isSubStructure(A.left, B) || isSubStructure(A.right, B);", "    }", "", "    /** B 是否与「以 a 为根的这一段」完全同构；B 的空位不限制 A。 */", "    private boolean match(TreeNode a, TreeNode b) {", "        if (b == null) return true;", "        if (a == null || a.val != b.val) return false;", "        return match(a.left, b.left) && match(a.right, b.right);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 剑指 Offer 26 / LCR 143. 子结构判断 —— 图解：复刻 Solution.java 的双递归，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { A: [3, 6, 7, 1, 8], B: [6, 1] };
+
+function trace(input) {
+  var levelA = input.A, levelB = input.B;
+  var A = build(levelA), B = build(levelB);
+  var frames = [];
+  var matchedA = [], matchedB = [];   // 当前匹配路径上各结点的层序下标（画 win 用）
+  var finalPairs = null;              // 成功那次匹配的 (A下标, B下标) 全路径
+  var found = false;
+
+  // 力扣层序数组 → 树结点（带层序下标 idx）
+  function build(level) {
+    if (!level.length || level[0] === null) return null;
+    var root = { v: level[0], idx: 0, l: null, r: null };
+    var q = [root], i = 1;
+    while (q.length && i < level.length) {
+      var cur = q.shift();
+      if (i < level.length) { if (level[i] !== null) { cur.l = { v: level[i], idx: i, l: null, r: null }; q.push(cur.l); } i++; }
+      if (i < level.length) { if (level[i] !== null) { cur.r = { v: level[i], idx: i, l: null, r: null }; q.push(cur.r); } i++; }
+    }
+    return root;
+  }
+
+  function snap(at, key, aExtra, bExtra, aLabels, bLabels) {
+    var am = {}, bm = {}, k;
+    matchedA.forEach(function (x) { am[x] = 'win'; });
+    matchedB.forEach(function (x) { bm[x] = 'win'; });
+    if (aExtra) for (k in aExtra) am[k] = aExtra[k];
+    if (bExtra) for (k in bExtra) bm[k] = bExtra[k];
+    frames.push(Viz.frame(at, key, [
+      Viz.tree(levelA, { title: 'A（大树）', marks: am, labels: aLabels || [] }),
+      Viz.tree(levelB, { title: 'B（小树）', marks: bm, labels: bLabels || [] })
+    ]));
+  }
+
+  var snappedTop = false, snappedRoot = false, snappedDone = false;
+
+  function isSub(a, b) {
+    if (a === null || b === null) return false;
+    if (!snappedTop) {
+      snappedTop = true;
+      snap('return match(A, B) || isSubStructure(A.left, B) || isSubStructure(A.right, B);',
+        'B 的根是 ' + b.v + '：先在 A 的根试，不等就去 A 的左右子树继续找同根结点',
+        { 0: 'cur' }, { 0: 'cur' },
+        [{ at: 0, label: '先试这里', cls: 'p-cur' }], [{ at: 0, label: 'B 的根', cls: 'p-cur' }]);
+    }
+    var pairs = [];
+    var hit = match(a, b, pairs);
+    if (hit) {
+      found = true;
+      finalPairs = pairs;   // 匹配成功时 pairs 不回退，正好是完整路径
+      return true;
+    }
+    return isSub(a.l, b) || isSub(a.r, b);
+  }
+
+  function match(a, b, pairs) {
+    if (b === null) {
+      if (matchedA.length && !snappedDone) {
+        snappedDone = true;
+        snap('if (b == null) return true;', 'B 比完了：A 对应位置多出的子树不影响，这一支匹配成功', null, null);
+      }
+      return true;
+    }
+    if (a === null || a.v !== b.v) return false;
+    matchedA.push(a.idx);
+    matchedB.push(b.idx);
+    pairs.push([a.idx, b.idx]);
+    if (!snappedRoot) {
+      snappedRoot = true;
+      var ae = {}, be = {};
+      ae[a.idx] = 'cur';
+      be[b.idx] = 'cur';
+      snap('if (a == null || a.val != b.val) return false;',
+        '在 A 里找到同值的 ' + b.v + '：从这里开始逐个孩子比对', ae, be);
+    }
+    var ok = match(a.l, b.l, pairs) && match(a.r, b.r, pairs);
+    if (!ok) pairs.pop();   // 失败的分支撤掉记录；成功的整条路径留给调用方
+    matchedA.pop();
+    matchedB.pop();
+    return ok;
+  }
+
+  isSub(A, B);
+
+  if (found) {
+    var doneA = {}, doneB = {};
+    finalPairs.forEach(function (p) { doneA[p[0]] = 'done'; doneB[p[1]] = 'done'; });
+    frames.push(Viz.frame('return match(A, B) || isSubStructure(A.left, B) || isSubStructure(A.right, B);',
+      '找到匹配：B（绿色结点）是 A 的子结构，返回 true', [
+      Viz.tree(levelA, { title: 'A（大树）', marks: doneA }),
+      Viz.tree(levelB, { title: 'B（小树）', marks: doneB })
+    ]));
+  }
+
+  return { frames: frames, result: found };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字典序的第K小数字 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 143 / 1159</span>
+  <nav class="pn"><a href="0213.html">上一篇</a><a href="0059.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">440. </span>字典序的第K小数字</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 42</li><li class="algo">字典树</li><li class="aux">数学</li><li class="tag">字典树</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">十叉树前序计数：算 cur 子树里 ≤n 的个数 steps；steps ≤ k 就整棵子树跳过去右兄弟，否则进孩子层。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>把 1..n 看成十叉树（前缀 x 的孩子是 10x..10x+9），字典序就是这棵树的前序遍历。</li><li><code>count(cur)</code> 数 cur 子树里 ≤n 的个数：逐层对 <code>[first, min(next, n+1))</code> 求和，first/next 是同层相邻前缀。</li><li>每步二选一：<code>steps ≤ k</code> 就整棵子树跳过（<code>k -= steps; cur++</code>）；否则 cur 自己占一步（<code>k--; cur *= 10</code>）。</li><li><code>n</code> 和计数都用 <code>long</code>：<code>cur*10</code> 会超过 int 范围。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log²n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> findKthNumber(<span class="k">int</span> n, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 十叉树前序：1..n 按前缀分棵子树；cur 是当前前缀</span></span><span class="ln"><span class="no">4</span>        <span class="k">long</span> cur = <span class="n">1</span>;</span><span class="ln"><span class="no">5</span>        k--;   <span class="c">// 1 本身占第 1 步</span></span><span class="ln"><span class="no">6</span>        <span class="k">while</span> (k &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">7</span>            <span class="c">// cur 开头的子树里有 steps 个 ≤ n 的数</span></span><span class="ln"><span class="no">8</span>            <span class="k">long</span> steps = count(cur, n);</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (steps &lt;= k) {</span><span class="ln"><span class="no">10</span>                <span class="c">// 整棵子树都排在答案前面：跳过它，去右兄弟</span></span><span class="ln"><span class="no">11</span>                k -= steps;</span><span class="ln"><span class="no">12</span>                cur++;</span><span class="ln"><span class="no">13</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">14</span>                <span class="c">// 子树里还有更小的：cur 自己占一步，进入下一层</span></span><span class="ln"><span class="no">15</span>                cur *= <span class="n">10</span>;</span><span class="ln"><span class="no">16</span>                k--;</span><span class="ln"><span class="no">17</span>            }</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> (<span class="k">int</span>) cur;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>    <span class="c">// 以 cur 为前缀且 ≤ n 的数字个数：逐层对 [first, min(next, n+1)) 计数</span></span><span class="ln"><span class="no">23</span>    <span class="k">private</span> <span class="k">long</span> count(<span class="k">long</span> cur, <span class="k">int</span> n) {</span><span class="ln"><span class="no">24</span>        <span class="k">long</span> total = <span class="n">0</span>, first = cur, next = cur + <span class="n">1</span>;</span><span class="ln"><span class="no">25</span>        <span class="k">while</span> (first &lt;= n) {</span><span class="ln"><span class="no">26</span>            total += <span class="t">Math</span>.min(next, (<span class="k">long</span>) n + <span class="n">1</span>) - first;</span><span class="ln"><span class="no">27</span>            first *= <span class="n">10</span>;</span><span class="ln"><span class="no">28</span>            next *= <span class="n">10</span>;</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> total;</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定整数&nbsp;<code>n</code>&nbsp;和&nbsp;<code>k</code>，返回&nbsp;&nbsp;<code>[1, n]</code>&nbsp;中字典序第&nbsp;<code>k</code>&nbsp;小的数字。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入: </strong>n = 13, k = 2
+<strong>输出: </strong>10
+<strong>解释: </strong>字典序的排列是 [1, 10, 11, 12, 13, 2, 3, 4, 5, 6, 7, 8, 9]，所以第二小的数字是 10。
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> n = 1, k = 1
+<strong>输出:</strong> 1
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= k &lt;= n &lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int findKthNumber(int n, int k) {", "        // 十叉树前序：1..n 按前缀分棵子树；cur 是当前前缀", "        long cur = 1;", "        k--;   // 1 本身占第 1 步", "        while (k > 0) {", "            // cur 开头的子树里有 steps 个 ≤ n 的数", "            long steps = count(cur, n);", "            if (steps <= k) {", "                // 整棵子树都排在答案前面：跳过它，去右兄弟", "                k -= steps;", "                cur++;", "            } else {", "                // 子树里还有更小的：cur 自己占一步，进入下一层", "                cur *= 10;", "                k--;", "            }", "        }", "        return (int) cur;", "    }", "", "    // 以 cur 为前缀且 ≤ n 的数字个数：逐层对 [first, min(next, n+1)) 计数", "    private long count(long cur, int n) {", "        long total = 0, first = cur, next = cur + 1;", "        while (first <= n) {", "            total += Math.min(next, (long) n + 1) - first;", "            first *= 10;", "            next *= 10;", "        }", "        return total;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 440. 字典序的第K小数字 —— 图解：复刻 Solution.java 的「十叉树前缀计数」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 13, k: 4 };
+
+function trace(input) {
+  var n = input.n, K = input.k;
+  var frames = [];
+
+  // 1..n 按字符串字典序排好（恰好就是十叉树的前序）
+  var lex = [];
+  for (var x = 1; x <= n; x++) lex.push(x);
+  lex.sort(function (a, b) { return String(a) < String(b) ? -1 : String(a) > String(b) ? 1 : 0; });
+  var pos = {};
+  for (var i = 0; i < lex.length; i++) pos[lex[i]] = i;
+
+  // 与 Solution.java 相同的子树计数
+  function count(cur) {
+    var total = 0, first = cur, next = cur + 1;
+    while (first <= n) {
+      total += Math.min(next, n + 1) - first;
+      first *= 10;
+      next *= 10;
+    }
+    return total;
+  }
+
+  // 面板：lex 行里，cur 之前的已定（dim），cur 的子树是连续一段（win），cur 本身（cur）
+  function lexPanel(cur, answer) {
+    var marks = {};
+    var p = pos[cur];
+    for (var i = 0; i < p; i++) marks[i] = 'dim';
+    if (answer != null) {
+      marks[p] = 'done';
+    } else {
+      var steps = count(cur);
+      for (var j = p; j < p + steps && j < lex.length; j++) marks[j] = j === p ? 'cur' : 'win';
+    }
+    return Viz.cells(lex.map(String), { title: '1..n 的字典序（=十叉树前序）', marks: marks });
+  }
+  function varsPanel(cur, kLeft, steps) {
+    return Viz.vars([
+      { name: 'cur（当前前缀）', v: cur, cls: '' },
+      { name: '剩余 k', v: kLeft, cls: '' },
+      { name: 'cur 子树规模', v: steps == null ? '—' : steps, cls: '' }
+    ]);
+  }
+  function snap(at, key, cur, kLeft, steps, answer) {
+    frames.push(Viz.frame(at, key, [lexPanel(cur, answer), varsPanel(cur, kLeft, steps)]));
+  }
+
+  // 与 Solution.java 相同的主循环
+  var cur = 1, k = K - 1;
+  snap('long cur = 1;', '开局：cur=1，先扣掉 1 自己占的第 1 步，剩 k=' + k, cur, k, count(cur));
+
+  var downShot = false, skipShots = 0;
+  while (k > 0) {
+    var steps = count(cur);
+    if (steps <= k) {
+      k -= steps;
+      cur++;
+      if (skipShots < 2) {
+        skipShots++;
+        snap('k -= steps;', '「' + (cur - 1) + '」子树只有 ' + steps + ' 个 ≤ 剩 k → 整棵跳过，去右兄弟 cur=' + cur, cur, k, steps);
+      }
+    } else {
+      cur *= 10;
+      k--;
+      if (!downShot) {
+        downShot = true;
+        snap('cur *= 10;', '「' + (cur / 10) + '」子树有 ' + steps + ' 个 > 剩 k=' + k + ' → 进孩子 cur=' + cur + '，cur 自己占 1 步', cur, k, steps);
+      }
+    }
+  }
+
+  snap('return (int) cur;', 'k 减到 0：第 ' + K + ' 个字典序就是 cur=' + cur, cur, k, null, cur);
+  return { frames: frames, result: cur };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

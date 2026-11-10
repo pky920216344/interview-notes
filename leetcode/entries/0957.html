@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>N 天后的牢房 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1013 / 1159</span>
+  <nav class="pn"><a href="0659.html">上一篇</a><a href="mianshi-03-02.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">957. </span>N 天后的牢房</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">模拟</li><li class="aux">哈希表</li><li class="aux">位运算</li><li class="tag">位运算</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">数学</li><li class="tag">floyds-cycle-finding-algorithm</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">8 格状态只有 2^6=64 种，逐天推进必然进循环：哈希记状态首次出现日，发现重复就按周期把剩余天数取模快跳。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>把 8 格打包成一个 8 位掩码；下一天 = 左右邻居相同置 1（两端按空算），即 <code>next</code> 一次位运算。</li><li>首尾两格没有两个邻居，推进一天后恒为 0，所以状态最多 2^6 = 64 种，最多 64 天必出现重复。</li><li>哈希记「掩码 → 首次出现天数」；再次遇到时周期 = <code>day - 首现日</code>，剩余天数对周期取模，只补模拟零头。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(min(n, 64) × 8)（n 大时约 O(64)），空间复杂度 O(64)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] prisonAfterNDays(<span class="k">int</span>[] cells, <span class="k">int</span> n) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 状态只有 2^6 = 64 种（推进一天后首尾恒为 0），出现重复即进入循环，剩余天数取模快跳</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; seen = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();   <span class="c">// 状态掩码 -&gt; 首次出现的天数</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> cur = pack(cells);</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> day = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">while</span> (day &lt; n) {</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (seen.containsKey(cur)) {</span><span class="ln"><span class="no">11</span>                <span class="c">// 状态重复 → 周期 period = day - 首现日；剩余天数取模，整周期直接跳过</span></span><span class="ln"><span class="no">12</span>                <span class="k">int</span> period = day - seen.get(cur);</span><span class="ln"><span class="no">13</span>                <span class="k">int</span> remain = (n - day) % period;</span><span class="ln"><span class="no">14</span>                <span class="k">while</span> (remain-- &gt; <span class="n">0</span>) cur = next(cur);   <span class="c">// 补模拟零头（不足一个周期）</span></span><span class="ln"><span class="no">15</span>                day = n;                                 <span class="c">// 已到第 n 天</span></span><span class="ln"><span class="no">16</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">17</span>                seen.put(cur, day);</span><span class="ln"><span class="no">18</span>                cur = next(cur);</span><span class="ln"><span class="no">19</span>                day++;</span><span class="ln"><span class="no">20</span>            }</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> unpack(cur);</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span> </span><span class="ln"><span class="no">25</span>    <span class="c">// 规则：两端没有两个邻居，无条件空置；中间格 = 左右邻相等（都占用或都空置）</span></span><span class="ln"><span class="no">26</span>    <span class="k">private</span> <span class="k">int</span> next(<span class="k">int</span> m) {</span><span class="ln"><span class="no">27</span>        <span class="k">int</span> r = <span class="n">0</span>;</span><span class="ln"><span class="no">28</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; <span class="n">7</span>; i++) {</span><span class="ln"><span class="no">29</span>            <span class="k">if</span> (((m &gt;&gt; (i - <span class="n">1</span>)) &amp; <span class="n">1</span>) == ((m &gt;&gt; (i + <span class="n">1</span>)) &amp; <span class="n">1</span>)) r |= <span class="n">1</span> &lt;&lt; i;</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>        <span class="k">return</span> r;   <span class="c">// 首尾两位没被置位，自然为 0</span></span><span class="ln"><span class="no">32</span>    }</span><span class="ln"><span class="no">33</span> </span><span class="ln"><span class="no">34</span>    <span class="k">private</span> <span class="k">int</span> pack(<span class="k">int</span>[] cells) {</span><span class="ln"><span class="no">35</span>        <span class="k">int</span> m = <span class="n">0</span>;</span><span class="ln"><span class="no">36</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; <span class="n">8</span>; i++) <span class="k">if</span> (cells[i] == <span class="n">1</span>) m |= <span class="n">1</span> &lt;&lt; i;</span><span class="ln"><span class="no">37</span>        <span class="k">return</span> m;</span><span class="ln"><span class="no">38</span>    }</span><span class="ln"><span class="no">39</span> </span><span class="ln"><span class="no">40</span>    <span class="k">private</span> <span class="k">int</span>[] unpack(<span class="k">int</span> m) {</span><span class="ln"><span class="no">41</span>        <span class="k">int</span>[] a = <span class="k">new</span> <span class="k">int</span>[<span class="n">8</span>];</span><span class="ln"><span class="no">42</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; <span class="n">8</span>; i++) a[i] = (m &gt;&gt; i) &amp; <span class="n">1</span>;</span><span class="ln"><span class="no">43</span>        <span class="k">return</span> a;</span><span class="ln"><span class="no">44</span>    }</span><span class="ln"><span class="no">45</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>监狱中 <code>8</code> 间牢房排成一排，每间牢房可能被占用或空置。</p>
+
+<p>每天，无论牢房是被占用或空置，都会根据以下规则进行变更：</p>
+
+<ul>
+	<li>如果一间牢房的两个相邻的房间都被占用或都是空的，那么该牢房就会被占用。</li>
+	<li>否则，它就会被空置。</li>
+</ul>
+
+<p><strong>注意</strong>：由于监狱中的牢房排成一行，所以行中的第一个和最后一个牢房不存在两个相邻的房间。</p>
+
+<p>给你一个整数数组 <code>cells</code> ，用于表示牢房的初始状态：如果第 <code>i</code> 间牢房被占用，则 <code>cell[i]==1</code>，否则 <code>cell[i]==0</code> 。另给你一个整数 <code>n</code> 。</p>
+
+<p>请你返回 <code>n</code> 天后监狱的状况（即，按上文描述进行 <code>n</code> 次变更）。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>cells = [0,1,0,1,1,0,0,1], n = 7
+<strong>输出：</strong>[0,0,1,1,0,0,0,0]
+<strong>解释：</strong>下表总结了监狱每天的状况：
+Day 0: [0, 1, 0, 1, 1, 0, 0, 1]
+Day 1: [0, 1, 1, 0, 0, 0, 0, 0]
+Day 2: [0, 0, 0, 0, 1, 1, 1, 0]
+Day 3: [0, 1, 1, 0, 0, 1, 0, 0]
+Day 4: [0, 0, 0, 0, 0, 1, 0, 0]
+Day 5: [0, 1, 1, 1, 0, 1, 0, 0]
+Day 6: [0, 0, 1, 0, 1, 1, 0, 0]
+Day 7: [0, 0, 1, 1, 0, 0, 0, 0]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>cells = [1,0,0,1,0,0,1,0], n = 1000000000
+<strong>输出：</strong>[0,0,1,1,1,1,1,0]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>cells.length == 8</code></li>
+	<li><code>cells[i]</code> 为 <code>0</code> 或 <code>1</code></li>
+	<li><code>1 &lt;= n &lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] prisonAfterNDays(int[] cells, int n) {", "        // 状态只有 2^6 = 64 种（推进一天后首尾恒为 0），出现重复即进入循环，剩余天数取模快跳", "        Map<Integer, Integer> seen = new HashMap<>();   // 状态掩码 -> 首次出现的天数", "        int cur = pack(cells);", "        int day = 0;", "        while (day < n) {", "            if (seen.containsKey(cur)) {", "                // 状态重复 → 周期 period = day - 首现日；剩余天数取模，整周期直接跳过", "                int period = day - seen.get(cur);", "                int remain = (n - day) % period;", "                while (remain-- > 0) cur = next(cur);   // 补模拟零头（不足一个周期）", "                day = n;                                 // 已到第 n 天", "            } else {", "                seen.put(cur, day);", "                cur = next(cur);", "                day++;", "            }", "        }", "        return unpack(cur);", "    }", "", "    // 规则：两端没有两个邻居，无条件空置；中间格 = 左右邻相等（都占用或都空置）", "    private int next(int m) {", "        int r = 0;", "        for (int i = 1; i < 7; i++) {", "            if (((m >> (i - 1)) & 1) == ((m >> (i + 1)) & 1)) r |= 1 << i;", "        }", "        return r;   // 首尾两位没被置位，自然为 0", "    }", "", "    private int pack(int[] cells) {", "        int m = 0;", "        for (int i = 0; i < 8; i++) if (cells[i] == 1) m |= 1 << i;", "        return m;", "    }", "", "    private int[] unpack(int m) {", "        int[] a = new int[8];", "        for (int i = 0; i < 8; i++) a[i] = (m >> i) & 1;", "        return a;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 957. N 天后的牢房 —— 图解：复刻 Solution.java 的「位掩码 + 状态循环节快跳」，在关键处拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { cells: [0, 1, 0, 1, 1, 0, 0, 1], n: 30 };
+
+function trace(input) {
+  var n = input.n;
+  var frames = [];
+
+  function pack(a) {
+    var m = 0;
+    for (var i = 0; i < 8; i++) if (a[i] === 1) m |= (1 << i);
+    return m;
+  }
+  function unpack(m) {
+    var a = [];
+    for (var i = 0; i < 8; i++) a.push((m >> i) & 1);
+    return a;
+  }
+  function next(m) {
+    var r = 0;
+    for (var i = 1; i < 7; i++) {
+      if (((m >> (i - 1)) & 1) === ((m >> (i + 1)) & 1)) r |= (1 << i);
+    }
+    return r;
+  }
+  function bits(m) {
+    var s = '';
+    for (var i = 7; i >= 0; i--) s += (m >> i) & 1;
+    return s;
+  }
+
+  function cellsPanel(state, marks) {
+    return Viz.cells(state.map(String), { title: '牢房（1 占用 / 0 空置，两端恒空）', marks: marks || {} });
+  }
+  function varsPanel(rows) {
+    return Viz.vars(rows);
+  }
+
+  var seen = {};   // 掩码 -> 首次出现的天数
+  var cur = pack(input.cells);
+  var day = 0;
+  var snappedRule = false, snappedCycle = false, cycleInfo = null;
+
+  frames.push(Viz.frame('int cur = pack(cells);', '第 0 天的初始状态；两端没有两个邻居，下一日起恒为 0',
+    [cellsPanel(unpack(cur), {}), varsPanel([{ name: 'day', v: '0' }, { name: '还剩天数', v: String(n) }])]));
+
+  while (day < n) {
+    if (seen[cur] !== undefined) {
+      var period = day - seen[cur];
+      var remain = (n - day) % period;
+      if (!snappedCycle) {
+        snappedCycle = true;
+        cycleInfo = { first: seen[cur], period: period };
+        frames.push(Viz.frame('int remain = (n - day) % period;',
+          '第 ' + day + ' 天的状态（' + bits(cur) + '）在第 ' + seen[cur] + ' 天出现过 → 周期 ' + period + '，跳过整周期，只补模拟 ' + remain + ' 天',
+          [cellsPanel(unpack(cur), (function () { var m = {}; for (var k = 0; k < 8; k++) m[k] = 'cur'; return m; })()),
+            varsPanel([{ name: '首次出现于', v: '第 ' + seen[cur] + ' 天' },
+              { name: '周期 period', v: String(period) },
+              { name: '快进后只补', v: remain + ' 天' }])]));
+      }
+      while (remain-- > 0) cur = next(cur);
+      day = n;
+    } else {
+      seen[cur] = day;
+      var old = cur;
+      cur = next(cur);
+      day++;
+      if (day === 1 && !snappedRule) {
+        snappedRule = true;
+        var marks = {};
+        var now = unpack(cur), before = unpack(old);
+        for (var k = 0; k < 8; k++) if (now[k] !== before[k]) marks[k] = 'chg';
+        frames.push(Viz.frame('if (((m >> (i - 1)) & 1) == ((m >> (i + 1)) & 1)) r |= 1 << i;',
+          '推进一天：左右邻居相同（都占用或都空）→ 1，否则 0；两端无条件空置',
+          [cellsPanel(now, marks), varsPanel([{ name: 'day', v: '1' }, { name: '还剩天数', v: String(n - 1) }])]));
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return unpack(cur);', '第 ' + n + ' 天的最终状态' + (cycleInfo ? '（循环节：从第 ' + cycleInfo.first + ' 天起周期 ' + cycleInfo.period + '）' : ''),
+    [cellsPanel(unpack(cur), (function () { var m = {}; for (var k = 0; k < 8; k++) m[k] = 'done'; return m; })()),
+      varsPanel([{ name: 'day', v: String(n) }, { name: '结果', v: JSON.stringify(unpack(cur)) }])]));
+
+  return { frames: frames, result: unpack(cur) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

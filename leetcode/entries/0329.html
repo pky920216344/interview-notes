@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>矩阵中的最长递增路径 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 125 / 1159</span>
+  <nav class="pn"><a href="0074.html">上一篇</a><a href="0442.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">329. </span>矩阵中的最长递增路径</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 48</li><li class="algo">动态规划</li><li class="aux">深度优先搜索/递归</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="tag">拓扑排序</li><li class="tag">记忆化</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">directed-acyclic-graph</li><li class="tag">矩阵</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">记忆化 DFS：dfs(i,j) = 从该格出发的最长递增链，四个方向只走严格更大的格子，结果缓存进 memo，全局取最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dfs(i, j)</code>：向四个方向试探，只走<strong>严格更大</strong>的格子，本格链长 = 邻格链长 + 1 的最大者，至少为 1。</li><li>沿路值严格递增，走不回头也不成环，所以<strong>不需要 visited 数组</strong>。</li><li><code>memo[i][j]</code> 缓存结果，<code>0</code> 表示没算过（算过的至少是 1）；命中直接返回，每格只真算一次。</li><li>外层把每个格子都当起点跑一遍 <code>dfs</code>，答案取全局最大值。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span>[][] memo;</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">int</span>[][] grid;</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">int</span>[][] DIRS = {{<span class="n">0</span>, <span class="n">1</span>}, {<span class="n">0</span>, -<span class="n">1</span>}, {<span class="n">1</span>, <span class="n">0</span>}, {-<span class="n">1</span>, <span class="n">0</span>}};</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="k">int</span> longestIncreasingPath(<span class="k">int</span>[][] matrix) {</span><span class="ln"><span class="no">9</span>        grid = matrix;</span><span class="ln"><span class="no">10</span>        <span class="k">int</span> m = matrix.length, n = matrix[<span class="n">0</span>].length;</span><span class="ln"><span class="no">11</span>        memo = <span class="k">new</span> <span class="k">int</span>[m][n];   <span class="c">// 0 = 还没算过；算过的至少是 1</span></span><span class="ln"><span class="no">12</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">15</span>                ans = <span class="t">Math</span>.max(ans, dfs(i, j));</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>    <span class="c">// dfs(i, j)：从该格出发的最长递增路径长度</span></span><span class="ln"><span class="no">22</span>    <span class="c">// 沿路严格变大，走不回头也不成环，无需 visited</span></span><span class="ln"><span class="no">23</span>    <span class="k">private</span> <span class="k">int</span> dfs(<span class="k">int</span> i, <span class="k">int</span> j) {</span><span class="ln"><span class="no">24</span>        <span class="k">if</span> (memo[i][j] != <span class="n">0</span>) <span class="k">return</span> memo[i][j];   <span class="c">// 记忆化：算过直接返回</span></span><span class="ln"><span class="no">25</span>        <span class="k">int</span> best = <span class="n">1</span>;                             <span class="c">// 路径至少含自己这一格</span></span><span class="ln"><span class="no">26</span>        <span class="k">for</span> (<span class="k">int</span>[] d : DIRS) {</span><span class="ln"><span class="no">27</span>            <span class="k">int</span> x = i + d[<span class="n">0</span>], y = j + d[<span class="n">1</span>];</span><span class="ln"><span class="no">28</span>            <span class="k">if</span> (x &lt; <span class="n">0</span> || x &gt;= grid.length || y &lt; <span class="n">0</span> || y &gt;= grid[<span class="n">0</span>].length) <span class="k">continue</span>;</span><span class="ln"><span class="no">29</span>            <span class="k">if</span> (grid[x][y] &lt;= grid[i][j]) <span class="k">continue</span>;   <span class="c">// 只能走向严格更大的格子</span></span><span class="ln"><span class="no">30</span>            best = <span class="t">Math</span>.max(best, dfs(x, y) + <span class="n">1</span>);</span><span class="ln"><span class="no">31</span>        }</span><span class="ln"><span class="no">32</span>        <span class="k">return</span> memo[i][j] = best;</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个 <code>m x n</code> 整数矩阵 <code>matrix</code> ，找出其中 <strong>最长递增路径</strong> 的长度。</p>
+
+<p>对于每个单元格，你可以往上，下，左，右四个方向移动。 你 <strong>不能</strong> 在 <strong>对角线</strong> 方向上移动或移动到 <strong>边界外</strong>（即不允许环绕）。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/e364048a6866.jpg" style="width: 242px; height: 242px;" />
+<pre>
+<strong>输入：</strong>matrix = [[9,9,4],[6,6,8],[2,1,1]]
+<strong>输出：</strong>4 
+<strong>解释：</strong>最长递增路径为 <code>[1, 2, 6, 9]</code>。</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/4d9b24a4ade3.jpg" style="width: 253px; height: 253px;" />
+<pre>
+<strong>输入：</strong>matrix = [[3,4,5],[3,2,6],[2,2,1]]
+<strong>输出：</strong>4 
+<strong>解释：</strong>最长递增路径是 <code>[3, 4, 5, 6]</code>。注意不允许在对角线方向上移动。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>matrix = [[1]]
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == matrix.length</code></li>
+	<li><code>n == matrix[i].length</code></li>
+	<li><code>1 <= m, n <= 200</code></li>
+	<li><code>0 <= matrix[i][j] <= 2<sup>31</sup> - 1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private int[][] memo;", "    private int[][] grid;", "    private static final int[][] DIRS = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};", "", "    public int longestIncreasingPath(int[][] matrix) {", "        grid = matrix;", "        int m = matrix.length, n = matrix[0].length;", "        memo = new int[m][n];   // 0 = 还没算过；算过的至少是 1", "        int ans = 0;", "        for (int i = 0; i < m; i++) {", "            for (int j = 0; j < n; j++) {", "                ans = Math.max(ans, dfs(i, j));", "            }", "        }", "        return ans;", "    }", "", "    // dfs(i, j)：从该格出发的最长递增路径长度", "    // 沿路严格变大，走不回头也不成环，无需 visited", "    private int dfs(int i, int j) {", "        if (memo[i][j] != 0) return memo[i][j];   // 记忆化：算过直接返回", "        int best = 1;                             // 路径至少含自己这一格", "        for (int[] d : DIRS) {", "            int x = i + d[0], y = j + d[1];", "            if (x < 0 || x >= grid.length || y < 0 || y >= grid[0].length) continue;", "            if (grid[x][y] <= grid[i][j]) continue;   // 只能走向严格更大的格子", "            best = Math.max(best, dfs(x, y) + 1);", "        }", "        return memo[i][j] = best;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 329. 矩阵中的最长递增路径 —— 图解：复刻 Solution.java 的「记忆化 DFS」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { matrix: [[9, 9, 4], [6, 6, 8], [2, 1, 1]] };
+
+function trace(input) {
+  var g = input.matrix;
+  var m = g.length, n = g[0].length;
+  var memo = [];
+  for (var z = 0; z < m; z++) { memo.push([]); for (var w = 0; w < n; w++) memo[z].push(0); }
+  var DIRS = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+  var frames = [];
+  var snapped = {};
+  var rowLbl = [], colLbl = [];
+  for (var a = 0; a < m; a++) rowLbl.push(String(a));
+  for (var b = 0; b < n; b++) colLbl.push(String(b));
+
+  function gridPanel(extra) {
+    var marks = {}, k;
+    if (extra) for (k in extra) marks[k] = extra[k];
+    return Viz.grid(g, { title: 'grid：原矩阵', marks: marks, rowLabels: rowLbl, colLabels: colLbl, corner: 'r＼c' });
+  }
+  function memoPanel(extra) {
+    var marks = {}, k;
+    for (var i = 0; i < m; i++) for (var j = 0; j < n; j++) if (memo[i][j] !== 0) marks[i + ',' + j] = 'win';
+    if (extra) for (k in extra) marks[k] = extra[k];
+    return Viz.grid(memo, { title: 'memo：每格出发的最长链（0 = 没算过）', marks: marks, rowLabels: rowLbl, colLabels: colLbl, corner: 'r＼c' });
+  }
+
+  function dfs(i, j) {
+    if (memo[i][j] !== 0) {
+      if (!snapped.hit) {
+        snapped.hit = true;
+        var hm = {};
+        hm[i + ',' + j] = 'hit';
+        frames.push(Viz.frame('if (memo[i][j] != 0) return memo[i][j];',
+          '记忆化命中：(' + i + ',' + j + ') 算过直接用 ' + memo[i][j] + '，不重算',
+          [gridPanel(null), memoPanel(hm)]));
+      }
+      return memo[i][j];
+    }
+    var best = 1;
+    if (!snapped.start) {
+      snapped.start = true;
+      var sm = {};
+      sm[i + ',' + j] = 'cur';
+      frames.push(Viz.frame('int best = 1;',
+        '从 ' + g[i][j] + ' 出发：四个方向找严格更大的格子，链长从 1 起算',
+        [gridPanel(sm), memoPanel(null)]));
+    }
+    for (var d = 0; d < 4; d++) {
+      var x = i + DIRS[d][0], y = j + DIRS[d][1];
+      if (x < 0 || x >= m || y < 0 || y >= n) continue;
+      if (g[x][y] <= g[i][j]) continue;
+      var sub = dfs(x, y) + 1;
+      if (!snapped.extend) {
+        snapped.extend = true;
+        var em = {};
+        em[i + ',' + j] = 'cur';
+        em[x + ',' + y] = 'hit';
+        frames.push(Viz.frame('best = Math.max(best, dfs(x, y) + 1);',
+          '能走到更大的 ' + g[x][y] + '：本格链长 = 它的链长 + 1',
+          [gridPanel(em), memoPanel(null)]));
+      }
+      if (sub > best) best = sub;
+    }
+    memo[i][j] = best;
+    return best;
+  }
+
+  var ans = 0;
+  for (var i2 = 0; i2 < m; i2++) {
+    for (var j2 = 0; j2 < n; j2++) {
+      ans = Math.max(ans, dfs(i2, j2));
+    }
+  }
+
+  // 终帧：在 memo 里从最大值一路找「值更大且 memo 减 1」的邻格，还原整条路径
+  var path = {}, si = 0, sj = 0;
+  outer:
+  for (var p = 0; p < m; p++) {
+    for (var q = 0; q < n; q++) {
+      if (memo[p][q] === ans) { si = p; sj = q; break outer; }
+    }
+  }
+  var ci = si, cj = sj;
+  while (memo[ci][cj] > 1) {
+    path[ci + ',' + cj] = 'done';
+    var stepped = false;
+    for (var d2 = 0; d2 < 4 && !stepped; d2++) {
+      var x2 = ci + DIRS[d2][0], y2 = cj + DIRS[d2][1];
+      if (x2 < 0 || x2 >= m || y2 < 0 || y2 >= n) continue;
+      if (g[x2][y2] > g[ci][cj] && memo[x2][y2] === memo[ci][cj] - 1) { ci = x2; cj = y2; stepped = true; }
+    }
+    if (!stepped) break;
+  }
+  path[ci + ',' + cj] = 'done';
+  frames.push(Viz.frame('return ans;',
+    '全部算完：最长递增路径长 ' + ans + '，memo 里存着每格答案',
+    [gridPanel(path), memoPanel(null)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

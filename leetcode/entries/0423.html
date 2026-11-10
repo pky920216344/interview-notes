@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>从英文中重建数字 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 510 / 1159</span>
+  <nav class="pn"><a href="0992.html">上一篇</a><a href="1151.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">423. </span>从英文中重建数字</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">数学</li><li class="aux">哈希表</li><li class="tag">哈希表</li><li class="tag">数学</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">找每个数字的独有字母定序剥离：z/w/u/x/g 直接定 0/2/4/6/8，再用扣除法定 1/3/5/7/9。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>一遍统计 26 个字母的计数。</li><li><code>z/w/u/x/g</code> 只出现在 zero/two/four/six/eight 里 → 直接得出这五个偶数的个数。</li><li>奇数用扣除法：<code>one</code> 的 <code>o</code> 扣掉 zero/two/four，<code>three</code> 的 <code>t</code> 扣掉 two/eight，<code>five</code> 的 <code>f</code> 扣掉 four，<code>seven</code> 的 <code>s</code> 扣掉 six，<code>nine</code> 的 <code>i</code> 扣掉 six/eight/five。</li><li>按 0→9 逐个展开拼接，天然升序。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">String</span> originalDigits(<span class="t">String</span> s) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span>[] cnt = <span class="k">new</span> <span class="k">int</span>[<span class="n">26</span>];</span><span class="ln"><span class="no">4</span>        <span class="k">for</span> (<span class="k">char</span> c : s.toCharArray()) cnt[c - <span class="s">'a'</span>]++;</span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] num = <span class="k">new</span> <span class="k">int</span>[<span class="n">10</span>];</span><span class="ln"><span class="no">6</span>        <span class="c">// z/w/u/x/g 分别只在 zero/two/four/six/eight 里，先定偶数</span></span><span class="ln"><span class="no">7</span>        num[<span class="n">0</span>] = cnt[<span class="s">'z'</span> - <span class="s">'a'</span>];</span><span class="ln"><span class="no">8</span>        num[<span class="n">2</span>] = cnt[<span class="s">'w'</span> - <span class="s">'a'</span>];</span><span class="ln"><span class="no">9</span>        num[<span class="n">4</span>] = cnt[<span class="s">'u'</span> - <span class="s">'a'</span>];</span><span class="ln"><span class="no">10</span>        num[<span class="n">6</span>] = cnt[<span class="s">'x'</span> - <span class="s">'a'</span>];</span><span class="ln"><span class="no">11</span>        num[<span class="n">8</span>] = cnt[<span class="s">'g'</span> - <span class="s">'a'</span>];</span><span class="ln"><span class="no">12</span>        <span class="c">// 其余的用扣除法：把这个字母已被前面数字占用的个数减掉</span></span><span class="ln"><span class="no">13</span>        num[<span class="n">1</span>] = cnt[<span class="s">'o'</span> - <span class="s">'a'</span>] - num[<span class="n">0</span>] - num[<span class="n">2</span>] - num[<span class="n">4</span>];</span><span class="ln"><span class="no">14</span>        num[<span class="n">3</span>] = cnt[<span class="s">'t'</span> - <span class="s">'a'</span>] - num[<span class="n">2</span>] - num[<span class="n">8</span>];</span><span class="ln"><span class="no">15</span>        num[<span class="n">5</span>] = cnt[<span class="s">'f'</span> - <span class="s">'a'</span>] - num[<span class="n">4</span>];</span><span class="ln"><span class="no">16</span>        num[<span class="n">7</span>] = cnt[<span class="s">'s'</span> - <span class="s">'a'</span>] - num[<span class="n">6</span>];</span><span class="ln"><span class="no">17</span>        num[<span class="n">9</span>] = cnt[<span class="s">'i'</span> - <span class="s">'a'</span>] - num[<span class="n">6</span>] - num[<span class="n">8</span>] - num[<span class="n">5</span>];</span><span class="ln"><span class="no">18</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">19</span>        <span class="k">for</span> (<span class="k">int</span> d = <span class="n">0</span>; d &lt; <span class="n">10</span>; d++) {</span><span class="ln"><span class="no">20</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; num[d]; i++) sb.append((<span class="k">char</span>) (<span class="s">'0'</span> + d));</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串 <code>s</code> ，其中包含字母顺序打乱的用英文单词表示的若干数字（<code>0-9</code>）。按 <strong>升序</strong> 返回原始的数字。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "owoztneoer"
+<strong>输出：</strong>"012"
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "fviefuro"
+<strong>输出：</strong>"45"
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>s[i]</code> 为 <code>["e","g","f","i","h","o","n","s","r","u","t","w","v","x","z"]</code> 这些字符之一</li>
+	<li><code>s</code> 保证是一个符合题目要求的字符串</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public String originalDigits(String s) {", "        int[] cnt = new int[26];", "        for (char c : s.toCharArray()) cnt[c - 'a']++;", "        int[] num = new int[10];", "        // z/w/u/x/g 分别只在 zero/two/four/six/eight 里，先定偶数", "        num[0] = cnt['z' - 'a'];", "        num[2] = cnt['w' - 'a'];", "        num[4] = cnt['u' - 'a'];", "        num[6] = cnt['x' - 'a'];", "        num[8] = cnt['g' - 'a'];", "        // 其余的用扣除法：把这个字母已被前面数字占用的个数减掉", "        num[1] = cnt['o' - 'a'] - num[0] - num[2] - num[4];", "        num[3] = cnt['t' - 'a'] - num[2] - num[8];", "        num[5] = cnt['f' - 'a'] - num[4];", "        num[7] = cnt['s' - 'a'] - num[6];", "        num[9] = cnt['i' - 'a'] - num[6] - num[8] - num[5];", "        StringBuilder sb = new StringBuilder();", "        for (int d = 0; d < 10; d++) {", "            for (int i = 0; i < num[d]; i++) sb.append((char) ('0' + d));", "        }", "        return sb.toString();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 423. 从英文中重建数字 —— 图解：复刻 Solution.java 的独有字母剥离法，在关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'owoztneoer' };
+
+function trace(input) {
+  var s = input.s;
+  var cnt = {};
+  for (var i = 0; i < s.length; i++) cnt[s[i]] = (cnt[s[i]] || 0) + 1;
+  var letters = Object.keys(cnt).sort();
+  var num = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  var frames = [];
+
+  function lettersPanel(marks) {
+    var rows = letters.map(function (ch) {
+      return { k: ch, v: '×' + cnt[ch], cls: (marks && marks[ch]) || '' };
+    });
+    return Viz.table('cnt：字母出现次数', rows);
+  }
+  function numPanel(marks) {
+    var rows = [];
+    for (var d = 0; d < 10; d++) rows.push({ k: String(d), v: String(num[d]), cls: (marks && marks[d]) || '' });
+    return Viz.table('num：每个数字的个数', rows);
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  snap('for (char c : s.toCharArray()) cnt[c - \'a\']++;', '先把 s 里每个字母数一遍', [lettersPanel()]);
+
+  // 独有字母直接定偶数
+  var evens = [['z', 0], ['w', 2], ['u', 4], ['x', 6], ['g', 8]];
+  var evenLetterMarks = {}, evenNumMarks = {};
+  evens.forEach(function (e) {
+    num[e[1]] = cnt[e[0]] || 0;
+    if (cnt[e[0]]) { evenLetterMarks[e[0]] = 'hit'; evenNumMarks[e[1]] = 'new'; }
+  });
+  snap('num[0] = cnt[\'z\' - \'a\'];',
+    'z/w/u/x/g 是 0/2/4/6/8 的独有字母：有几个就定几个', [lettersPanel(evenLetterMarks), numPanel(evenNumMarks)]);
+
+  // 扣除法定奇数里的 1
+  num[1] = (cnt.o || 0) - num[0] - num[2] - num[4];
+  snap('num[1] = cnt[\'o\' - \'a\'] - num[0] - num[2] - num[4];',
+    'one 的 o 有 ' + (cnt.o || 0) + ' 个，扣掉 zero/two/four 占用的 ' + (num[0] + num[2] + num[4]) + ' 个',
+    [lettersPanel({ o: 'hit' }), numPanel({ 1: 'new' })]);
+
+  // 其余奇数同样扣除（t/f/s/i）
+  num[3] = (cnt.t || 0) - num[2] - num[8];
+  num[5] = (cnt.f || 0) - num[4];
+  num[7] = (cnt.s || 0) - num[6];
+  num[9] = (cnt.i || 0) - num[6] - num[8] - num[5];
+
+  var out = '';
+  var finMarks = {};
+  for (var d = 0; d < 10; d++) {
+    for (var j = 0; j < num[d]; j++) out += String(d);
+    if (num[d] > 0) finMarks[d] = 'done';
+  }
+  snap('return sb.toString();', '按 0→9 展开：得到升序数字串 ' + out,
+    [numPanel(finMarks), Viz.vars([{ name: 'out', v: out, cls: 'done' }])]);
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

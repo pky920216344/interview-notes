@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>删除字符串中的所有相邻重复项 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 475 / 1159</span>
+  <nav class="pn"><a href="0820.html">上一篇</a><a href="supp-11.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1209. </span>删除字符串中的所有相邻重复项 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">栈</li><li class="tag">栈</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">栈里记「连续段」：每个元素存字符和连续个数，个数攒到 k 就整段弹出，弹出后可能连锁。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>栈中每个元素是一段连续相同字符 <code>[字符, 个数]</code>；相邻元素字符必不同。</li><li>读到相同字符就把栈顶的个数 +1；凑满 <code>k</code> 时整段弹出（不是弹 k 个字符）。</li><li><strong>弹出后要看新栈顶</strong>：它的字符若与后续字符相同，会继续凑满、连锁弹出（如 <code>ccc</code> 弹出后 <code>bb+b</code> 又满）。</li><li>栈底到栈顶就是最终串；Java 遍历 <code>Deque</code> 从栈顶开始，拼完 <code>reverse()</code> 一次。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> removeDuplicates(<span class="t">String</span> s, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 栈里每个元素是一段连续相同字符：[字符, 连续个数]；攒够 k 个整段一起弹</span></span><span class="ln"><span class="no">6</span>        <span class="t">Deque</span>&lt;<span class="k">int</span>[]&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) {</span><span class="ln"><span class="no">8</span>            <span class="k">char</span> c = s.charAt(i);</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (!stack.isEmpty() &amp;&amp; stack.peek()[<span class="n">0</span>] == c) {</span><span class="ln"><span class="no">10</span>                <span class="k">if</span> (++stack.peek()[<span class="n">1</span>] == k) stack.pop();   <span class="c">// 连续凑满 k 个，整段消掉</span></span><span class="ln"><span class="no">11</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">12</span>                stack.push(<span class="k">new</span> <span class="k">int</span>[]{c, <span class="n">1</span>});</span><span class="ln"><span class="no">13</span>            }</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="c">// 栈底到栈顶正好是最终顺序；但遍历 Deque 从顶到底，所以要反转</span></span><span class="ln"><span class="no">16</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">17</span>        <span class="k">for</span> (<span class="k">int</span>[] p : stack) {</span><span class="ln"><span class="no">18</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; p[<span class="n">1</span>]; i++) sb.append((<span class="k">char</span>) p[<span class="n">0</span>]);</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> sb.reverse().toString();</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串&nbsp;<code>s</code>，「<code>k</code> 倍重复项删除操作」将会从 <code>s</code>&nbsp;中选择&nbsp;<code>k</code>&nbsp;个相邻且相等的字母，并删除它们，使被删去的字符串的左侧和右侧连在一起。</p>
+
+<p>你需要对&nbsp;<code>s</code>&nbsp;重复进行无限次这样的删除操作，直到无法继续为止。</p>
+
+<p>在执行完所有删除操作后，返回最终得到的字符串。</p>
+
+<p>本题答案保证唯一。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>s = &quot;abcd&quot;, k = 2
+<strong>输出：</strong>&quot;abcd&quot;
+<strong>解释：</strong>没有要删除的内容。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>s = &quot;deeedbbcccbdaa&quot;, k = 3
+<strong>输出：</strong>&quot;aa&quot;
+<strong>解释： 
+</strong>先删除 &quot;eee&quot; 和 &quot;ccc&quot;，得到 &quot;ddbbbdaa&quot;
+再删除 &quot;bbb&quot;，得到 &quot;dddaa&quot;
+最后删除 &quot;ddd&quot;，得到 &quot;aa&quot;</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>s = &quot;pbbcggttciiippooaais&quot;, k = 2
+<strong>输出：</strong>&quot;ps&quot;
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 10^5</code></li>
+	<li><code>2 &lt;= k &lt;= 10^4</code></li>
+	<li><code>s</code>&nbsp;中只含有小写英文字母。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String removeDuplicates(String s, int k) {", "        // 栈里每个元素是一段连续相同字符：[字符, 连续个数]；攒够 k 个整段一起弹", "        Deque<int[]> stack = new ArrayDeque<>();", "        for (int i = 0; i < s.length(); i++) {", "            char c = s.charAt(i);", "            if (!stack.isEmpty() && stack.peek()[0] == c) {", "                if (++stack.peek()[1] == k) stack.pop();   // 连续凑满 k 个，整段消掉", "            } else {", "                stack.push(new int[]{c, 1});", "            }", "        }", "        // 栈底到栈顶正好是最终顺序；但遍历 Deque 从顶到底，所以要反转", "        StringBuilder sb = new StringBuilder();", "        for (int[] p : stack) {", "            for (int i = 0; i < p[1]; i++) sb.append((char) p[0]);", "        }", "        return sb.reverse().toString();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1209. 删除字符串中的所有相邻重复项 II —— 图解：复刻 Solution.java 的「栈 + 连续个数」，在关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'deeedbbcccbdaa', k: 3 };
+
+function trace(input) {
+  var s = input.s, k = input.k, n = s.length;
+  var frames = [];
+  var stack = [];          // 每项 { c, cnt }：一段连续相同字符；数组末尾是栈顶
+  var popped = 0;          // 已经弹出过的段数，用来识别连锁弹出
+  var POP_AT = 'if (++stack.peek()[1] == k) stack.pop();';
+  var PUSH_AT = 'stack.push(new int[]{c, 1});';
+  var RET_AT = 'return sb.reverse().toString();';
+  var pushShots = 1, popShots = 3;
+
+  function sPanel(i) {
+    var marks = {};
+    for (var j = 0; j < n; j++) marks[j] = j < i ? 'dim' : '';
+    if (i < n) marks[i] = 'cur';
+    var ptrs = i < n ? [{ at: i, label: 'i', cls: 'p-cur' }] : [];
+    return Viz.cells(s.split(''), { title: 's', marks: marks, pointers: ptrs });
+  }
+  function stackPanel(marks, label) {
+    var items = stack.map(function (p) { return p.c + '×' + p.cnt; });
+    var ptrs = stack.length ? [{ at: stack.length - 1, label: label || '栈顶', cls: 'p-tail' }] : [];
+    return Viz.cells(items, { title: '栈（左底右顶，每格是一段连续相同字符）', marks: marks || {}, pointers: ptrs, hideIndex: true });
+  }
+
+  for (var i = 0; i < n; i++) {
+    var c = s[i];
+    var top = stack.length ? stack[stack.length - 1] : null;
+    if (top && top.c === c) {
+      top.cnt++;
+      var full = top.cnt === k;
+      if (full && popShots-- > 0) {
+        var mk = {};
+        mk[stack.length - 1] = 'bad';
+        var cascaded = popped > 0;   // 上一步刚弹过：这次是连锁弹出
+        frames.push(Viz.frame(POP_AT,
+          (cascaded ? '连锁：' : '') + c + ' 连续凑满 ' + k + ' 个，整段弹出',
+          [sPanel(i), stackPanel(mk)]));
+      }
+      if (full) { stack.pop(); popped++; }
+    } else {
+      stack.push({ c: c, cnt: 1 });
+      if (pushShots-- > 0) frames.push(Viz.frame(PUSH_AT,
+        c + ' 和栈顶字符不同：新开一段，记个数 1', [sPanel(i), stackPanel()]));
+    }
+  }
+
+  var out = stack.map(function (p) { return p.c.repeat(p.cnt); }).join('');
+  var done = {};
+  for (var j = 0; j < stack.length; j++) done[j] = 'done';
+  frames.push(Viz.frame(RET_AT,
+    '弹栈序是反的，反转回来就是答案「' + (out || '空') + '」',
+    [stackPanel(done), Viz.vars([{ name: 'removeDuplicates', v: out || '（空串）', cls: 'done' }])]));
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

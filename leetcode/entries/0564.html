@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>寻找最近的回文数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 658 / 1159</span>
+  <nav class="pn"><a href="1363.html">上一篇</a><a href="0305.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">564. </span>寻找最近的回文数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">数学</li><li class="tag">数学</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">只镜像前半部分：候选 = 镜像(half−1)、镜像(half)、镜像(half+1)，再加 99…9 和 10…01 两个边界，取差最小者。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>回文由前半决定：把 <code>half</code> 直接镜像得到同侧候选；<code>half±1</code> 的镜像覆盖「进位/借位」后最接近的两种情况。</li><li>位数变化的极端（<code>1000</code> 借位、<code>999</code> 进位）正好落在两个边界回文上：<code>10^(len−1)−1</code> 与 <code>10^len+1</code>。</li><li>从候选里排除 <code>n</code> 自身，取差值最小者；同差取更小的（题面要求）。</li><li>全程 <code>long</code>：<code>n ≤ 10^18 − 1</code>，差值也不会溢出。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(len)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> nearestPalindromic(<span class="t">String</span> n) {</span><span class="ln"><span class="no">5</span>        <span class="k">long</span> num = <span class="t">Long</span>.parseLong(n);</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> len = n.length();</span><span class="ln"><span class="no">7</span>        <span class="t">Set</span>&lt;<span class="t">Long</span>&gt; cands = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="c">// 位数变化时的两个边界回文：99…9（比 n 短一位）与 10…01（比 n 长一位）</span></span><span class="ln"><span class="no">9</span>        cands.add((<span class="k">long</span>) <span class="t">Math</span>.pow(<span class="n">10</span>, len - <span class="n">1</span>) - <span class="n">1</span>);</span><span class="ln"><span class="no">10</span>        cands.add((<span class="k">long</span>) <span class="t">Math</span>.pow(<span class="n">10</span>, len) + <span class="n">1</span>);</span><span class="ln"><span class="no">11</span>        <span class="k">long</span> half = <span class="t">Long</span>.parseLong(n.substring(<span class="n">0</span>, (len + <span class="n">1</span>) / <span class="n">2</span>));</span><span class="ln"><span class="no">12</span>        <span class="c">// 前半部分 ±1 各镜像一次：覆盖「镜像自身」之外最接近的回文</span></span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">long</span> h = half - <span class="n">1</span>; h &lt;= half + <span class="n">1</span>; h++) {</span><span class="ln"><span class="no">14</span>            <span class="t">String</span> s = <span class="t">Long</span>.toString(h);</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (s.length() != (len + <span class="n">1</span>) / <span class="n">2</span>) <span class="k">continue</span>;   <span class="c">// 借位/进位导致位数变化：已被边界候选覆盖</span></span><span class="ln"><span class="no">16</span>            <span class="t">String</span> rev = <span class="k">new</span> <span class="t">StringBuilder</span>(s.substring(<span class="n">0</span>, len / <span class="n">2</span>)).reverse().toString();</span><span class="ln"><span class="no">17</span>            cands.add(<span class="t">Long</span>.parseLong(s + rev));</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="c">// 取 ≠ n 且差最小的；同差取小的</span></span><span class="ln"><span class="no">20</span>        <span class="k">long</span> best = <span class="n">0</span>;</span><span class="ln"><span class="no">21</span>        <span class="k">boolean</span> first = <span class="k">true</span>;</span><span class="ln"><span class="no">22</span>        <span class="k">for</span> (<span class="k">long</span> c : cands) {</span><span class="ln"><span class="no">23</span>            <span class="k">if</span> (c == num) <span class="k">continue</span>;</span><span class="ln"><span class="no">24</span>            <span class="k">if</span> (first || <span class="t">Math</span>.abs(c - num) &lt; <span class="t">Math</span>.abs(best - num)</span><span class="ln"><span class="no">25</span>                    || (<span class="t">Math</span>.abs(c - num) == <span class="t">Math</span>.abs(best - num) &amp;&amp; c &lt; best)) {</span><span class="ln"><span class="no">26</span>                best = c;</span><span class="ln"><span class="no">27</span>                first = <span class="k">false</span>;</span><span class="ln"><span class="no">28</span>            }</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> <span class="t">Long</span>.toString(best);</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个表示整数的字符串&nbsp;<code>n</code> ，返回与它最近的回文整数（不包括自身）。如果不止一个，返回较小的那个。</p>
+
+<p>“最近的”定义为两个整数<strong>差的绝对值</strong>最小。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> n = "123"
+<strong>输出:</strong> "121"
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> n = "1"
+<strong>输出:</strong> "0"
+<strong>解释:</strong> 0 和 2是最近的回文，但我们返回最小的，也就是 0。
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n.length &lt;= 18</code></li>
+	<li><code>n</code>&nbsp;只由数字组成</li>
+	<li><code>n</code>&nbsp;不含前导 0</li>
+	<li><code>n</code>&nbsp;代表在&nbsp;<code>[1, 10<sup>18</sup>&nbsp;- 1]</code> 范围内的整数</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String nearestPalindromic(String n) {", "        long num = Long.parseLong(n);", "        int len = n.length();", "        Set<Long> cands = new HashSet<>();", "        // 位数变化时的两个边界回文：99…9（比 n 短一位）与 10…01（比 n 长一位）", "        cands.add((long) Math.pow(10, len - 1) - 1);", "        cands.add((long) Math.pow(10, len) + 1);", "        long half = Long.parseLong(n.substring(0, (len + 1) / 2));", "        // 前半部分 ±1 各镜像一次：覆盖「镜像自身」之外最接近的回文", "        for (long h = half - 1; h <= half + 1; h++) {", "            String s = Long.toString(h);", "            if (s.length() != (len + 1) / 2) continue;   // 借位/进位导致位数变化：已被边界候选覆盖", "            String rev = new StringBuilder(s.substring(0, len / 2)).reverse().toString();", "            cands.add(Long.parseLong(s + rev));", "        }", "        // 取 ≠ n 且差最小的；同差取小的", "        long best = 0;", "        boolean first = true;", "        for (long c : cands) {", "            if (c == num) continue;", "            if (first || Math.abs(c - num) < Math.abs(best - num)", "                    || (Math.abs(c - num) == Math.abs(best - num) && c < best)) {", "                best = c;", "                first = false;", "            }", "        }", "        return Long.toString(best);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 564. 寻找最近的回文数 —— 图解：复刻 Solution.java 的「前半 ±1 镜像 + 两个边界」，在 3 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: '123' };
+
+function trace(input) {
+  var n = input.n;
+  var num = Number(n);
+  var len = n.length;
+  var frames = [];
+
+  function mirror(h) {
+    var s = String(h);
+    if (s.length !== Math.floor((len + 1) / 2)) return null;   // 位数变化：交给边界候选
+    var rev = s.substring(0, Math.floor(len / 2)).split('').reverse().join('');
+    return Number(s + rev);
+  }
+
+  var half = Number(n.substring(0, Math.floor((len + 1) / 2)));
+  var cands = {};
+  cands[Math.pow(10, len - 1) - 1] = true;   // 99…9（短一位）
+  cands[Math.pow(10, len) + 1] = true;       // 10…01（长一位）
+  for (var h = half - 1; h <= half + 1; h++) {
+    var m = mirror(h);
+    if (m != null) cands[m] = true;
+  }
+
+  function varsPanel(pick) {
+    return Viz.vars([
+      { name: 'n（原数）', v: n, cls: '' },
+      { name: 'half（前半部分）', v: half, cls: 'cur' },
+      { name: 'best（当前最近回文）', v: pick == null ? '—' : pick, cls: pick != null ? 'new' : '' }
+    ]);
+  }
+  function candsPanel(best) {
+    var keys = Object.keys(cands).map(Number).sort(function (a, b) { return a - b; });
+    return Viz.table('候选回文（自身除外，同差取小的）', keys.map(function (c) {
+      var same = c === num;
+      var d = Math.abs(c - num);
+      var cls = same ? 'dim' : (best != null && c === best ? 'done' : '');
+      return { k: String(c), v: same ? '自身，排除' : '差 ' + d, cls: cls };
+    }));
+  }
+  function snap(at, key, pick) {
+    frames.push(Viz.frame(at, key, [candsPanel(pick), varsPanel(pick)]));
+  }
+
+  snap('long half = Long.parseLong(n.substring(0, (len + 1) / 2));',
+    '开局：切出前半 half=' + half + '，候选 = 镜像(half−1/0/+1) + 边界 99…9、10…01', null);
+
+  var best = 0, first = true;
+  var keys = Object.keys(cands).map(Number).sort(function (a, b) { return a - b; });
+  for (var i = 0; i < keys.length; i++) {
+    var c = keys[i];
+    if (c === num) continue;
+    if (first || Math.abs(c - num) < Math.abs(best - num)
+        || (Math.abs(c - num) === Math.abs(best - num) && c < best)) {
+      best = c;
+      first = false;
+    }
+  }
+  snap('for (long c : cands) {', '逐个比较差值：离 ' + n + ' 最近的是 ' + best + '（差 ' + Math.abs(best - num) + '）', best);
+
+  snap('return Long.toString(best);', '收工：返回 ' + best + '，它与 ' + n + ' 的距离最小且不是自身', best);
+  return { frames: frames, result: String(best) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

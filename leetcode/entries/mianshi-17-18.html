@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最短超串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 741 / 1159</span>
+  <nav class="pn"><a href="0338.html">上一篇</a><a href="1041.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 17.18. </span>最短超串</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">滑动窗口</li><li class="aux">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">滑动窗口</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">滑动窗口：右扩到 small 全覆盖，再左缩到刚缺为止，途中记录最短窗口；多余的重复不算缺。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>rem[x]</code> 记 x 还差几次覆盖（可为负 = 窗口里有多余重复），<code>missing</code> 记还缺几种，两者配合判断「齐 / 缺」。</li><li>右指针扩张：读到的元素若 <code>rem &gt; 0</code> 就 <code>missing--</code>；<code>missing == 0</code> 说明窗口已覆盖全部种类。</li><li>左指针收缩：只要仍覆盖就继续缩并更新最短；拿走的元素 <code>rem + 1</code>，只有从 0 变正（拿走了「刚好够用」那份）才算真缺。</li><li>答案要左端点最小：扫描中右端点只增不减，同长度的窗口左端点随之变大，所以只在严格更短时更新即可。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(m)（m 为 small 长度）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] shortestSeq(<span class="k">int</span>[] big, <span class="k">int</span>[] small) {</span><span class="ln"><span class="no">5</span>        <span class="c">// rem[x]：x 还差几次才覆盖够（small 元素互不相同，初始都是 1）</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; rem = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> x : small) rem.put(x, <span class="n">1</span>);</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> missing = small.length;                 <span class="c">// 还缺的种类数</span></span><span class="ln"><span class="no">9</span>        <span class="k">int</span> best = <span class="t">Integer</span>.MAX_VALUE, bestL = -<span class="n">1</span>, left = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> right = <span class="n">0</span>; right &lt; big.length; right++) {</span><span class="ln"><span class="no">11</span>            <span class="t">Integer</span> r = rem.get(big[right]);</span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (r != <span class="k">null</span>) {                        <span class="c">// 只有 small 里的元素影响覆盖</span></span><span class="ln"><span class="no">13</span>                <span class="k">if</span> (r &gt; <span class="n">0</span>) missing--;</span><span class="ln"><span class="no">14</span>                rem.put(big[right], r - <span class="n">1</span>);</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>            <span class="c">// 凑齐就尽量左缩：每缩一步窗口仍覆盖，顺手记录最短</span></span><span class="ln"><span class="no">17</span>            <span class="k">while</span> (missing == <span class="n">0</span>) {</span><span class="ln"><span class="no">18</span>                <span class="k">if</span> (right - left + <span class="n">1</span> &lt; best) { best = right - left + <span class="n">1</span>; bestL = left; }</span><span class="ln"><span class="no">19</span>                <span class="t">Integer</span> l = rem.get(big[left]);</span><span class="ln"><span class="no">20</span>                <span class="k">if</span> (l != <span class="k">null</span>) {</span><span class="ln"><span class="no">21</span>                    rem.put(big[left], l + <span class="n">1</span>);</span><span class="ln"><span class="no">22</span>                    <span class="k">if</span> (l == <span class="n">0</span>) missing++;          <span class="c">// 拿走的是「刚好够用」那份才变缺</span></span><span class="ln"><span class="no">23</span>                }</span><span class="ln"><span class="no">24</span>                left++;</span><span class="ln"><span class="no">25</span>            }</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> bestL &lt; <span class="n">0</span> ? <span class="k">new</span> <span class="k">int</span>[<span class="n">0</span>] : <span class="k">new</span> <span class="k">int</span>[]{bestL, bestL + best - <span class="n">1</span>};</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>假设你有两个数组，一个长一个短，短的元素均不相同。找到长数组中包含短数组所有的元素的最短子数组，其出现顺序无关紧要。</p>
+
+<p>返回最短子数组的左端点和右端点，如有多个满足条件的子数组，返回左端点最小的一个。若不存在，返回空数组。</p>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+big = <code>[7,5,9,0,2,1,3,<strong>5,7,9,1</strong>,1,5,8,8,9,7]
+small = [1,5,9]</code>
+<strong>输出：</strong>[7,10]</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+big = <code>[1,2,3]
+small = [4]</code>
+<strong>输出：</strong>[]</pre>
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>big.length&nbsp;&lt;= 100000</code></li>
+	<li><code>1 &lt;= small.length&nbsp;&lt;= 100000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] shortestSeq(int[] big, int[] small) {", "        // rem[x]：x 还差几次才覆盖够（small 元素互不相同，初始都是 1）", "        Map<Integer, Integer> rem = new HashMap<>();", "        for (int x : small) rem.put(x, 1);", "        int missing = small.length;                 // 还缺的种类数", "        int best = Integer.MAX_VALUE, bestL = -1, left = 0;", "        for (int right = 0; right < big.length; right++) {", "            Integer r = rem.get(big[right]);", "            if (r != null) {                        // 只有 small 里的元素影响覆盖", "                if (r > 0) missing--;", "                rem.put(big[right], r - 1);", "            }", "            // 凑齐就尽量左缩：每缩一步窗口仍覆盖，顺手记录最短", "            while (missing == 0) {", "                if (right - left + 1 < best) { best = right - left + 1; bestL = left; }", "                Integer l = rem.get(big[left]);", "                if (l != null) {", "                    rem.put(big[left], l + 1);", "                    if (l == 0) missing++;          // 拿走的是「刚好够用」那份才变缺", "                }", "                left++;", "            }", "        }", "        return bestL < 0 ? new int[0] : new int[]{bestL, bestL + best - 1};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 17.18. 最短超串 —— 图解：复刻 Solution.java 的「滑窗覆盖计数」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { big: [9, 5, 0, 1, 5, 9, 2], small: [1, 5, 9] };
+
+var FOR = 'for (int right = 0; right < big.length; right++) {';
+var WHILE = 'while (missing == 0) {';
+var BEST = 'if (right - left + 1 < best) { best = right - left + 1; bestL = left; }';
+var MISS = 'if (l == 0) missing++;';
+var RET = 'return bestL < 0 ? new int[0] : new int[]{bestL, bestL + best - 1};';
+
+function trace(input) {
+  var big = input.big, small = input.small;
+  var n = big.length;
+  var frames = [];
+
+  // 第一遍只算出答案窗口 [bestL, bestR]，第二遍在关键时刻拍帧
+  var ans = solve(false);
+  var bestL = ans.length ? ans[0] : -1, bestR = ans.length ? ans[1] : -1;
+  solve(true);
+  return { frames: frames, result: bestL < 0 ? [] : [bestL, bestR] };
+
+  function solve(record) {
+    var rem = {};                            // x -> 还差几次（负数 = 窗口里有多余重复）
+    small.forEach(function (x) { rem[x] = 1; });
+    var missing = small.length, left = 0;
+    var best = Infinity, bl = -1;
+    var covered = false, bestDone = false, stopDone = false;
+
+    if (record) frames.push(Viz.frame(FOR, '开局：rem 全是 1（每种还差一次），missing=' + small.length + ' 全缺', panels(0, -1, null, null, false)));
+
+    for (var right = 0; right < n; right++) {
+      var v = big[right];
+      if (v in rem) {
+        if (rem[v] > 0) missing--;
+        rem[v]--;
+      }
+      while (missing === 0) {
+        if (!covered && record) {
+          covered = true;
+          frames.push(Viz.frame(WHILE, 'right=' + right + ' 读入 ' + v + '：' + small.length + ' 种凑齐，开始左缩', panels(left, right, v, null, false)));
+        }
+        if (right - left + 1 < best) { best = right - left + 1; bl = left; }
+        if (record && left === bestL && right === bestR && !bestDone) {
+          bestDone = true;
+          frames.push(Viz.frame(BEST, '左缩到 [' + left + ',' + right + '] 只剩 ' + best + ' 个：记为最短', panels(left, right, null, null, false)));
+        }
+        var lv = big[left];
+        if (lv in rem) {
+          if (rem[lv] === 0) {
+            if (record && left === bestL && right === bestR && !stopDone) {
+              stopDone = true;
+              frames.push(Viz.frame(MISS, lv + ' 只有一份，拿走就缺：左缩到此为止', panels(left, right, null, lv, false)));
+            }
+            missing++;
+          }
+          rem[lv]++;
+        }
+        left++;
+      }
+    }
+    if (record) {
+      var key = bl < 0 ? 'big 里凑不齐 ' + small.length + ' 种：返回空数组'
+                       : '扫完：最短覆盖是 [' + bestL + ',' + bestR + ']，长度 ' + best;
+      frames.push(Viz.frame(RET, key, panels(0, -1, null, null, bl >= 0)));
+    }
+    return bl < 0 ? [] : [bl, bl + best - 1];
+
+    function panels(left, right, hitVal, badVal, done) {   // 定义在 solve 内，才能读到 rem/missing/best
+      var marks = {};
+      if (badVal != null && big[left] === badVal) marks[left] = 'bad';
+      if (done && bestL >= 0) for (var j = bestL; j <= bestR; j++) marks[j] = 'done';
+      var pointers = [];
+      if (left >= 0 && left < n) pointers.push({ at: left, label: 'left', cls: 'p-left' });
+      if (right >= 0 && right < n) pointers.push({ at: right, label: 'right', cls: 'p-right' });
+      var range = left >= 0 && right >= left ? { from: left, to: right, label: '窗口 [' + left + ', ' + right + ']' } : null;
+      var cellsP = Viz.cells(big, { title: 'big', marks: marks, pointers: pointers, range: range });
+      var rows = small.map(function (x) { return { k: String(x), v: String(rem[x]), cls: x === hitVal ? 'hit' : '' }; });
+      var tableP = Viz.table('rem：还差几次（负数 = 有多余重复）', rows);
+      var varsP = Viz.vars([
+        { name: 'missing 还缺几种', v: missing, cls: missing === 0 ? 'done' : '' },
+        { name: 'best 最短长度', v: best === Infinity ? '—' : best }
+      ]);
+      return [cellsP, tableP, varsP];
+    }
+  }
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

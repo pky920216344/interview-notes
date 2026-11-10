@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>连续的子数组和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 278 / 1159</span>
+  <nav class="pn"><a href="0386.html">上一篇</a><a href="0994.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">523. </span>连续的子数组和</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 15</li><li class="algo">前缀和/差分</li><li class="aux">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">数学</li><li class="tag">前缀和</li><li class="tag">pigeonhole-principle</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">前缀和取模 + 哈希记每个余数的首次下标：两个同余前缀之间就是 k 的倍数段，间隔 ≥ 2 即成功。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>子数组 <code>(i, j]</code> 的和是 k 的倍数 ⟺ 前缀和 <code>S[i] ≡ S[j] (mod k)</code>；转成「余数相同」就不怕和溢出。</li><li><code>first</code> 记每个余数<strong>首次</strong>出现的下标（余数 0 记在 -1，覆盖从第 0 个开始的子数组）；只记首次，间隔才可能最大。</li><li>扫到 <code>i</code>：余数见过且 <code>i - 首次下标 ≥ 2</code> → 长度也 ≥ 2，返回 true；余数没见过才写入。</li><li>题面保证 <code>k ≥ 1</code>，取模安全；<code>mod</code> 用 <code>long</code> 防极值相加溢出。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(min(n, k))</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">boolean</span> checkSubarraySum(<span class="k">int</span>[] nums, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 余数 → 首次出现的下标；空前缀（下标 0 之前）的余数是 0，记在 -1</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">Long</span>, <span class="t">Integer</span>&gt; first = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        first.put(<span class="n">0L</span>, -<span class="n">1</span>);</span><span class="ln"><span class="no">8</span>        <span class="k">long</span> mod = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; nums.length; i++) {</span><span class="ln"><span class="no">10</span>            mod = (mod + nums[i]) % k;</span><span class="ln"><span class="no">11</span>            <span class="t">Integer</span> prev = first.get(mod);</span><span class="ln"><span class="no">12</span>            <span class="c">// 只记首次出现：留下的间隔才可能最大</span></span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (prev == <span class="k">null</span>) {</span><span class="ln"><span class="no">14</span>                first.put(mod, i);</span><span class="ln"><span class="no">15</span>            } <span class="k">else</span> <span class="k">if</span> (i - prev &gt;= <span class="n">2</span>) {</span><span class="ln"><span class="no">16</span>                <span class="c">// 两前缀同余 → 中间那段和是 k 的倍数，长度也 ≥ 2</span></span><span class="ln"><span class="no">17</span>                <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> 和一个整数&nbsp;<code>k</code> ，如果&nbsp;<code>nums</code>&nbsp;有一个 <strong>好的子数组</strong>&nbsp;返回&nbsp;<code>true</code>&nbsp;，否则返回 <code>false</code>：</p>
+
+<p>一个&nbsp;<strong>好的子数组</strong>&nbsp;是：</p>
+
+<ul>
+	<li>长度&nbsp;<strong>至少为 2</strong> ，且</li>
+	<li>子数组元素总和为 <code>k</code> 的倍数。</li>
+</ul>
+
+<p><strong>注意</strong>：</p>
+
+<ul>
+	<li><strong>子数组</strong> 是数组中 <strong>连续</strong> 的部分。</li>
+	<li>如果存在一个整数 <code>n</code> ，令整数 <code>x</code> 符合 <code>x = n * k</code> ，则称 <code>x</code> 是 <code>k</code> 的一个倍数。<code>0</code> <strong>始终</strong> 视为 <code>k</code> 的一个倍数。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [23<u>,2,4</u>,6,7], k = 6
+<strong>输出：</strong>true
+<strong>解释：</strong>[2,4] 是一个大小为 2 的子数组，并且和为 6 。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [<u>23,2,6,4,7</u>], k = 6
+<strong>输出：</strong>true
+<strong>解释：</strong>[23, 2, 6, 4, 7] 是大小为 5 的子数组，并且和为 42 。 
+42 是 6 的倍数，因为 42 = 7 * 6 且 7 是一个整数。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [23,2,6,4,7], k = 13
+<strong>输出：</strong>false
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>0 &lt;= nums[i] &lt;= 10<sup>9</sup></code></li>
+	<li><code>0 &lt;= sum(nums[i]) &lt;= 2<sup>31</sup> - 1</code></li>
+	<li><code>1 &lt;= k &lt;= 2<sup>31</sup> - 1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public boolean checkSubarraySum(int[] nums, int k) {", "        // 余数 → 首次出现的下标；空前缀（下标 0 之前）的余数是 0，记在 -1", "        Map<Long, Integer> first = new HashMap<>();", "        first.put(0L, -1);", "        long mod = 0;", "        for (int i = 0; i < nums.length; i++) {", "            mod = (mod + nums[i]) % k;", "            Integer prev = first.get(mod);", "            // 只记首次出现：留下的间隔才可能最大", "            if (prev == null) {", "                first.put(mod, i);", "            } else if (i - prev >= 2) {", "                // 两前缀同余 → 中间那段和是 k 的倍数，长度也 ≥ 2", "                return true;", "            }", "        }", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 523. 连续的子数组和 —— 图解：复刻 Solution.java 的「前缀和取模 + 首现下标」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [23, 2, 4, 6, 7], k: 6 };
+
+function trace(input) {
+  var nums = input.nums || [];
+  var k = input.k;
+  var n = nums.length;
+  var first = { 0: -1 };      // 余数 → 首次出现的下标（空前缀记在 -1）
+  var mod = 0;
+  var frames = [];
+  var seen = { fresh: 0, hit: false };
+
+  var INIT = 'first.put(0L, -1);';
+  var MOD = 'mod = (mod + nums[i]) % k;';
+  var HIT = '} else if (i - prev >= 2) {';
+
+  function numsPanel(o) {
+    var marks = {};
+    if (o.cur != null) marks[o.cur] = 'cur';
+    if (o.range) for (var x = o.range[0]; x <= o.range[1]; x++) marks[x] = 'win';
+    var opt = { title: 'nums（找长度 ≥ 2、和为 ' + k + ' 倍数的子数组）', marks: marks };
+    if (o.range) opt.range = { from: o.range[0], to: o.range[1], label: '和 = ' + o.sum + '，是 ' + k + ' 的倍数' };
+    return Viz.cells(nums.map(String), opt);
+  }
+
+  function tablePanel(hitKey) {
+    var keys = Object.keys(first).map(Number).sort(function (a, b) { return a - b; });
+    return Viz.table('first：余数 → 首次出现的下标', keys.map(function (m) {
+      return { k: String(m), v: String(first[m]), cls: m === hitKey ? 'hit' : '' };
+    }), { hint: '余数 0 记在 -1（空前缀）' });
+  }
+
+  function varsPanel(i) {
+    return Viz.vars([{ name: 'i', v: i == null ? '—' : i }, { name: 'mod（前缀和 mod k）', v: mod }]);
+  }
+
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  snap(INIT, '开局：余数 0 先记在下标 -1——「从第 0 个开始」的子数组也要能配上',
+    [numsPanel({}), tablePanel(null), varsPanel(null)]);
+
+  for (var i = 0; i < n; i++) {
+    mod = (mod + nums[i]) % k;
+    if (!(mod in first)) {
+      first[mod] = i;
+      if (seen.fresh < 2) {
+        seen.fresh++;
+        snap(MOD, '前缀和 mod ' + k + ' = ' + mod + '：新余数，记下首次出现的下标 ' + i,
+          [numsPanel({ cur: i }), tablePanel(null), varsPanel(i)]);
+      }
+    } else if (i - first[mod] >= 2) {
+      var prev = first[mod];
+      if (!seen.hit) {
+        seen.hit = true;
+        snap(HIT, '余数 ' + mod + ' 在下标 ' + prev + ' 出现过：间隔 ' + (i - prev) + ' ≥ 2 → 中间这段就是答案',
+          [numsPanel({ cur: i, range: [prev + 1, i], sum: nums.slice(prev + 1, i + 1).reduce(function (a, b) { return a + b; }, 0) }),
+            tablePanel(mod), varsPanel(i)]);
+      }
+      first[mod] = i;   // 与 Java 一致地继续走（不影响结果，便于复刻）
+      return { frames: frames, result: true };
+    }
+    // 余数重复但间隔 < 2：不更新首现下标（留更早的间隔才大）
+  }
+
+  snap('return false;', '扫完没有同余间隔 ≥ 2 的前缀：不存在这样的子数组',
+    [numsPanel({}), tablePanel(null), varsPanel(n - 1 < 0 ? null : n - 1)]);
+
+  return { frames: frames, result: false };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

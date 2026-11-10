@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>统计不同回文子序列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1026 / 1159</span>
+  <nav class="pn"><a href="1584.html">上一篇</a><a href="0725.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">730. </span>统计不同回文子序列</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按「首尾字符」分类的区间 DP：dp[c][i][j] = 区间内以 c 开头结尾的回文子序列数，用首末出现位置递推，答案为四类之和。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每个回文按首尾字符归类：<code>dp[c][i][j]</code> 只数「两头都是 <code>c</code>」的，答案 = 四类相加，天然不重不漏。</li><li>区间里找 <code>c</code> 的首次 <code>L</code>、末次 <code>R</code>（<code>nxt</code>/<code>prv</code> 预处理）：<code>L==R</code> 只有 <code>c</code> 一种；<code>L&lt;R</code> 时 = <code>c</code>、<code>cc</code> 两种 + 给中间 <code>[L+1..R−1]</code> 的每种回文套 <code>c…c</code> 外壳。</li><li>中间每种回文 X 只会被外壳包一次，且不同 X 生成不同回文——这正是「不同」计数的关键。</li><li>递归记忆化实现，逐层 <code>% 10⁹+7</code>；求和用 <code>long</code>（四类相加可超 int）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(16n²)，空间复杂度 O(4n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">int</span> MOD = <span class="n">1_000_000_007</span>;</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">int</span>[][][] memo;   <span class="c">// memo[c][i][j]：s[i..j] 里以 c 开头且以 c 结尾的回文子序列个数</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">int</span>[][] nxt, prv; <span class="c">// nxt[i][c]：i 起第一个 c（没有为 n）；prv[j][c]：j 止最后一个 c（没有为 -1）</span></span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="t">String</span> s;</span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="k">public</span> <span class="k">int</span> countPalindromicSubsequences(<span class="t">String</span> s) {</span><span class="ln"><span class="no">10</span>        <span class="k">this</span>.s = s;</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">12</span>        memo = <span class="k">new</span> <span class="k">int</span>[<span class="n">4</span>][n][n];</span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; <span class="n">4</span>; c++)</span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++)</span><span class="ln"><span class="no">15</span>                <span class="t">Arrays</span>.fill(memo[c][i], -<span class="n">1</span>);</span><span class="ln"><span class="no">16</span>        nxt = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>][<span class="n">4</span>];</span><span class="ln"><span class="no">17</span>        prv = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>][<span class="n">4</span>];</span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; <span class="n">4</span>; c++) {</span><span class="ln"><span class="no">19</span>            nxt[n][c] = n;</span><span class="ln"><span class="no">20</span>            <span class="k">for</span> (<span class="k">int</span> i = n - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) nxt[i][c] = s.charAt(i) - <span class="s">'a'</span> == c ? i : nxt[i + <span class="n">1</span>][c];</span><span class="ln"><span class="no">21</span>            prv[<span class="n">0</span>][c] = s.charAt(<span class="n">0</span>) - <span class="s">'a'</span> == c ? <span class="n">0</span> : -<span class="n">1</span>;</span><span class="ln"><span class="no">22</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt; n; j++) prv[j][c] = s.charAt(j) - <span class="s">'a'</span> == c ? j : prv[j - <span class="n">1</span>][c];</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">long</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">25</span>        <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; <span class="n">4</span>; c++) ans += dp(c, <span class="n">0</span>, n - <span class="n">1</span>);   <span class="c">// 四种字符各自负责「首尾同字母」的回文</span></span><span class="ln"><span class="no">26</span>        <span class="k">return</span> (<span class="k">int</span>) (ans % MOD);</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span> </span><span class="ln"><span class="no">29</span>    <span class="k">private</span> <span class="k">int</span> dp(<span class="k">int</span> c, <span class="k">int</span> i, <span class="k">int</span> j) {</span><span class="ln"><span class="no">30</span>        <span class="k">if</span> (i &gt; j) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">31</span>        <span class="k">if</span> (memo[c][i][j] != -<span class="n">1</span>) <span class="k">return</span> memo[c][i][j];</span><span class="ln"><span class="no">32</span>        <span class="k">int</span> L = nxt[i][c], R = prv[j][c];</span><span class="ln"><span class="no">33</span>        <span class="k">int</span> ans;</span><span class="ln"><span class="no">34</span>        <span class="k">if</span> (L &gt; j) ans = <span class="n">0</span>;           <span class="c">// 区间里没有 c</span></span><span class="ln"><span class="no">35</span>        <span class="k">else</span> <span class="k">if</span> (L == R) ans = <span class="n">1</span>;     <span class="c">// 只有一个 c：只有「c」自己</span></span><span class="ln"><span class="no">36</span>        <span class="k">else</span> {</span><span class="ln"><span class="no">37</span>            <span class="c">// 「c」「cc」两种，再给中间每种回文 X 套上 c...c 外壳</span></span><span class="ln"><span class="no">38</span>            <span class="k">long</span> sum = <span class="n">2</span>;</span><span class="ln"><span class="no">39</span>            <span class="k">for</span> (<span class="k">int</span> d = <span class="n">0</span>; d &lt; <span class="n">4</span>; d++) sum += dp(d, L + <span class="n">1</span>, R - <span class="n">1</span>);</span><span class="ln"><span class="no">40</span>            ans = (<span class="k">int</span>) (sum % MOD);</span><span class="ln"><span class="no">41</span>        }</span><span class="ln"><span class="no">42</span>        memo[c][i][j] = ans;</span><span class="ln"><span class="no">43</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">44</span>    }</span><span class="ln"><span class="no">45</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串 <code>s</code> ，返回 <code>s</code>&nbsp;中不同的非空回文子序列个数 。由于答案可能很大，请返回对 <code>10<sup>9</sup> + 7</code> <strong>取余</strong> 的结果。</p>
+
+<p>字符串的子序列可以经由字符串删除 0 个或多个字符获得。</p>
+
+<p>如果一个序列与它反转后的序列一致，那么它是回文序列。</p>
+
+<p>如果存在某个 <code>i</code> , 满足&nbsp;<code>a<sub>i</sub>&nbsp;!= b<sub>i</sub></code><sub>&nbsp;</sub>，则两个序列&nbsp;<code>a<sub>1</sub>, a<sub>2</sub>, ...</code>&nbsp;和&nbsp;<code>b<sub>1</sub>, b<sub>2</sub>, ...</code>&nbsp;不同。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = 'bccb'
+<strong>输出：</strong>6
+<strong>解释：</strong>6 个不同的非空回文子字符序列分别为：'b', 'c', 'bb', 'cc', 'bcb', 'bccb'。
+注意：'bcb' 虽然出现两次但仅计数一次。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = 'abcdabcdabcdabcdabcdabcdabcdabcddcbadcbadcbadcbadcbadcbadcbadcba'
+<strong>输出：</strong>104860361
+<strong>解释：</strong>共有 3104860382 个不同的非空回文子序列，104860361 是对 10<sup>9</sup> + 7 取余后的值。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 1000</code></li>
+	<li><code>s[i]</code>&nbsp;仅包含&nbsp;<code>'a'</code>,&nbsp;<code>'b'</code>,&nbsp;<code>'c'</code>&nbsp;或&nbsp;<code>'d'</code>&nbsp;</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private static final int MOD = 1_000_000_007;", "    private int[][][] memo;   // memo[c][i][j]：s[i..j] 里以 c 开头且以 c 结尾的回文子序列个数", "    private int[][] nxt, prv; // nxt[i][c]：i 起第一个 c（没有为 n）；prv[j][c]：j 止最后一个 c（没有为 -1）", "    private String s;", "", "    public int countPalindromicSubsequences(String s) {", "        this.s = s;", "        int n = s.length();", "        memo = new int[4][n][n];", "        for (int c = 0; c < 4; c++)", "            for (int i = 0; i < n; i++)", "                Arrays.fill(memo[c][i], -1);", "        nxt = new int[n + 1][4];", "        prv = new int[n + 1][4];", "        for (int c = 0; c < 4; c++) {", "            nxt[n][c] = n;", "            for (int i = n - 1; i >= 0; i--) nxt[i][c] = s.charAt(i) - 'a' == c ? i : nxt[i + 1][c];", "            prv[0][c] = s.charAt(0) - 'a' == c ? 0 : -1;", "            for (int j = 1; j < n; j++) prv[j][c] = s.charAt(j) - 'a' == c ? j : prv[j - 1][c];", "        }", "        long ans = 0;", "        for (int c = 0; c < 4; c++) ans += dp(c, 0, n - 1);   // 四种字符各自负责「首尾同字母」的回文", "        return (int) (ans % MOD);", "    }", "", "    private int dp(int c, int i, int j) {", "        if (i > j) return 0;", "        if (memo[c][i][j] != -1) return memo[c][i][j];", "        int L = nxt[i][c], R = prv[j][c];", "        int ans;", "        if (L > j) ans = 0;           // 区间里没有 c", "        else if (L == R) ans = 1;     // 只有一个 c：只有「c」自己", "        else {", "            // 「c」「cc」两种，再给中间每种回文 X 套上 c...c 外壳", "            long sum = 2;", "            for (int d = 0; d < 4; d++) sum += dp(d, L + 1, R - 1);", "            ans = (int) (sum % MOD);", "        }", "        memo[c][i][j] = ans;", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 730. 统计不同回文子序列 —— 图解：复刻 Solution.java 的「按首尾字符分类」区间 DP，拍 5 张快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'bccb' };
+
+function trace(input) {
+  var s = input.s, n = s.length;
+  var frames = [];
+  var MOD = 1000000007;
+
+  // 与 Java 相同的 nxt / prv
+  var nxt = [], prv = [];
+    for (var c = 0; c < 4; c++) {
+    nxt.push(new Array(n + 1).fill(n));
+    prv.push(new Array(n).fill(-1));
+    for (var i = n - 1; i >= 0; i--) nxt[c][i] = s.charCodeAt(i) - 97 === c ? i : nxt[c][i + 1];
+    prv[c][0] = s.charCodeAt(0) - 97 === c ? 0 : -1;
+    for (i = 1; i < n; i++) prv[c][i] = s.charCodeAt(i) - 97 === c ? i : prv[c][i - 1];
+  }
+
+  function cellsPanel(marks) {
+    var m = {};
+    for (i = 0; i < n; i++) m[i] = (marks && marks[i]) || '';
+    return Viz.cells(s.split(''), { title: '字符串 s', marks: m });
+  }
+
+  function varsPanel(items) { return Viz.vars(items); }
+  function name(c) { return 'abcd'[c]; }
+
+  var memo = {};
+  function dp(c, i, j) {
+    if (i > j) return 0;
+    var key = c + ',' + i + ',' + j;
+    if (memo[key] !== undefined) return memo[key];
+    var L = nxt[c][i], R = prv[c][j], ans;
+    if (L > j) ans = 0;
+    else if (L === R) ans = 1;
+    else {
+      var sum = 2;
+      for (var d = 0; d < 4; d++) sum += dp(d, L + 1, R - 1);
+      ans = sum % MOD;
+    }
+    memo[key] = ans;
+    return ans;
+  }
+
+  var small = n <= 8;
+  var snap = function (at, key, marks, vars) {
+    if (small) frames.push(Viz.frame(at, key, [cellsPanel(marks), varsPanel(vars)]));
+  };
+
+  // 讲清楚 dp[c0][0..n-1]（c0 = 首字符）怎么算出来
+  var c0 = s.charCodeAt(0) - 97;
+  var L0 = nxt[c0][0], R0 = prv[c0][n - 1];
+  snap('int L = nxt[i][c], R = prv[j][c];',
+    'dp[' + name(c0) + '][0..' + (n - 1) + ']：首尾 ' + name(c0) + ' 的位置 L=' + L0 + '、R=' + R0,
+    (function () { var m = {}; m[L0] = 'cur'; m[R0] = 'cur'; return m; })(),
+    [{ name: 'L（首个 ' + name(c0) + '）', v: String(L0), cls: 'cur' }, { name: 'R（末个 ' + name(c0) + '）', v: String(R0), cls: 'cur' }]);
+
+  var dpVal;
+  if (L0 === R0) {
+    dpVal = 1;
+    snap('else if (L == R) ans = 1;',
+      '区间里只有一个 ' + name(c0) + '：回文只有它自己，dp = 1',
+      (function () { var m = {}; m[L0] = 'cur'; return m; })(),
+      [{ name: 'dp[' + name(c0) + '][0..' + (n - 1) + ']', v: '1', cls: 'done' }]);
+  } else {
+    var mid = [];
+    for (i = L0 + 1; i <= R0 - 1; i++) mid.push(i);
+    var sumMid = 0;
+    for (c = 0; c < 4; c++) sumMid = (sumMid + dp(c, L0 + 1, R0 - 1)) % MOD;
+    dpVal = (2 + sumMid) % MOD;
+    snap('for (int d = 0; d < 4; d++) sum += dp(d, L + 1, R - 1);',
+      mid.length ? '中间 [' + (L0 + 1) + '..' + (R0 - 1) + '] 的回文 ' + sumMid + ' 种，各套 ' + name(c0) + '…' + name(c0) + ' 外壳，另有 ' + name(c0) + '、' + name(c0) + name(c0) : '中间没字符：只有 ' + name(c0) + ' 和 ' + name(c0) + name(c0) + ' 两种',
+      (function () { var m = {}; mid.forEach(function (idx) { m[idx] = 'win'; }); m[L0] = 'cur'; m[R0] = 'cur'; return m; })(),
+      [{ name: 'dp[' + name(c0) + '][0..' + (n - 1) + ']', v: String(dpVal), cls: 'done' },
+       { name: '中间回文数', v: String(sumMid), cls: '' }]);
+  }
+
+  var per = [];
+  for (c = 0; c < 4; c++) per.push(dp(c, 0, n - 1));
+  snap('long ans = 0;',
+    '四个字符各管一类：dp = [' + per.map(function (v, k) { return name(k) + ':' + v; }).join(', ') + ']',
+    {}, per.map(function (v, k) { return { name: 'dp[' + name(k) + ']', v: String(v), cls: v > 0 ? 'win' : '' }; }));
+
+  var total = 0;
+  for (c = 0; c < 4; c++) total = (total + per[c]) % MOD;
+  snap('return (int) (ans % MOD);',
+    '不同回文子序列共 ' + total + ' 个（对 10^9+7 取模）',
+    (function () { var m = {}; for (i = 0; i < n; i++) m[i] = 'done'; return m; })(),
+    [{ name: '答案', v: String(total), cls: 'done' }]);
+
+  return { frames: frames, result: total };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

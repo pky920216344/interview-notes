@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最大子矩阵 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 233 / 1159</span>
+  <nav class="pn"><a href="0902.html">上一篇</a><a href="0260.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 17.24. </span>最大子矩阵</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 20</li><li class="algo">动态规划</li><li class="aux">前缀和/差分</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="tag">前缀和</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">枚举上下边界把矩阵压成一维列和数组，对它跑 Kadane 找最大子段，顺便记下四角坐标。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>枚举上边界 <code>top</code>，下边界 <code>bottom</code> 从 <code>top</code> 往下扩；<code>colSum[j]</code> 随 <code>bottom</code> 逐行累加，就是这两行之间每一列的和。</li><li>对 <code>colSum</code> 跑 Kadane：<code>cur</code> 负了就丢掉前缀、<code>start = j + 1</code> 重开，<code>cur</code> 超过 <code>best</code> 就记下四角 <code>(top, start, bottom, j)</code>。</li><li>先更新答案再判负重置，全负矩阵也能正确取到最大的单格。</li><li>本质：把二维最大子矩阵问题降维成 <code>rows²</code> 次一维最大子段和。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(rows² × cols)，空间复杂度 O(cols)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] getMaxMatrix(<span class="k">int</span>[][] matrix) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> rows = matrix.length, cols = matrix[<span class="n">0</span>].length;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> best = <span class="t">Integer</span>.MIN_VALUE, r1 = <span class="n">0</span>, c1 = <span class="n">0</span>, r2 = <span class="n">0</span>, c2 = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] colSum = <span class="k">new</span> <span class="k">int</span>[cols];   <span class="c">// 上下边界之间每一列的和</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> top = <span class="n">0</span>; top &lt; rows; top++) {</span><span class="ln"><span class="no">9</span>            <span class="t">Arrays</span>.fill(colSum, <span class="n">0</span>);   <span class="c">// 上边界换了，列和重新累计</span></span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> bottom = top; bottom &lt; rows; bottom++) {</span><span class="ln"><span class="no">11</span>                <span class="c">// 下边界每扩一行，colSum 就变成一维数组的最大子段问题</span></span><span class="ln"><span class="no">12</span>                <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; cols; j++) colSum[j] += matrix[bottom][j];</span><span class="ln"><span class="no">13</span>                <span class="k">int</span> cur = <span class="n">0</span>, start = <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>                <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; cols; j++) {</span><span class="ln"><span class="no">15</span>                    cur += colSum[j];</span><span class="ln"><span class="no">16</span>                    <span class="k">if</span> (cur &gt; best) {   <span class="c">// 当前方块 [top..bottom] × [start..j] 更大</span></span><span class="ln"><span class="no">17</span>                        best = cur;</span><span class="ln"><span class="no">18</span>                        r1 = top; c1 = start; r2 = bottom; c2 = j;</span><span class="ln"><span class="no">19</span>                    }</span><span class="ln"><span class="no">20</span>                    <span class="k">if</span> (cur &lt; <span class="n">0</span>) { cur = <span class="n">0</span>; start = j + <span class="n">1</span>; }   <span class="c">// 前缀是负资产，丢掉重开</span></span><span class="ln"><span class="no">21</span>                }</span><span class="ln"><span class="no">22</span>            }</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{r1, c1, r2, c2};</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个正整数、负整数和 0 组成的 N &times; M&nbsp;矩阵，编写代码找出元素总和最大的子矩阵。</p>
+
+<p>返回一个数组 <code>[r1, c1, r2, c2]</code>，其中 <code>r1</code>, <code>c1</code> 分别代表子矩阵左上角的行号和列号，<code>r2</code>, <code>c2</code> 分别代表右下角的行号和列号。若有多个满足条件的子矩阵，返回任意一个均可。</p>
+
+<p><strong>注意：</strong>本题相对书上原题稍作改动</p>
+
+<p><strong>示例：</strong></p>
+
+<pre><strong>输入：
+</strong><code>[
+&nbsp;  [-1,<strong>0</strong>],
+&nbsp;  [0,-1]
+]</code>
+<strong>输出：</strong>[0,1,0,1]
+<strong>解释：</strong>输入中标粗的元素即为输出所表示的矩阵</pre>
+
+
+
+<p><strong>说明：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= matrix.length, matrix[0].length &lt;= 200</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] getMaxMatrix(int[][] matrix) {", "        int rows = matrix.length, cols = matrix[0].length;", "        int best = Integer.MIN_VALUE, r1 = 0, c1 = 0, r2 = 0, c2 = 0;", "        int[] colSum = new int[cols];   // 上下边界之间每一列的和", "        for (int top = 0; top < rows; top++) {", "            Arrays.fill(colSum, 0);   // 上边界换了，列和重新累计", "            for (int bottom = top; bottom < rows; bottom++) {", "                // 下边界每扩一行，colSum 就变成一维数组的最大子段问题", "                for (int j = 0; j < cols; j++) colSum[j] += matrix[bottom][j];", "                int cur = 0, start = 0;", "                for (int j = 0; j < cols; j++) {", "                    cur += colSum[j];", "                    if (cur > best) {   // 当前方块 [top..bottom] × [start..j] 更大", "                        best = cur;", "                        r1 = top; c1 = start; r2 = bottom; c2 = j;", "                    }", "                    if (cur < 0) { cur = 0; start = j + 1; }   // 前缀是负资产，丢掉重开", "                }", "            }", "        }", "        return new int[]{r1, c1, r2, c2};", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 17.24 最大子矩阵 —— 图解：复刻 Solution.java 的「上下边界压成列和 + Kadane」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  matrix: [[1, -2, -7, 0], [9, 2, -6, 2], [0, 5, 7, 0]]
+};
+
+function trace(input) {
+  var matrix = input.matrix;
+  var rows = matrix.length, cols = matrix[0].length;
+  var colSum = [];
+  for (var j = 0; j < cols; j++) colSum.push(0);
+  var best = -2147483648, r1 = 0, c1 = 0, r2 = 0, c2 = 0;
+  var frames = [];
+  var improveSeen = false, resetSeen = false;
+
+  var GROW = 'for (int j = 0; j < cols; j++) colSum[j] += matrix[bottom][j];';
+  var BETTER = 'if (cur > best) {';
+  var RESET = 'if (cur < 0) { cur = 0; start = j + 1; }';
+  var RET = 'return new int[]{r1, c1, r2, c2};';
+
+  function rectMarks(top, bottom, cFrom, cTo, cls) {
+    var m = {};
+    for (var r = top; r <= bottom; r++)
+      for (var c = cFrom; c <= cTo; c++)
+        m[r + ',' + c] = cls;
+    return m;
+  }
+  function gridPanel(top, bottom, extra) {
+    var marks = rectMarks(top, bottom, 0, cols - 1, 'win');   // 上下边界之间的行
+    if (extra) for (var k in extra) marks[k] = extra[k];       // 覆盖优先
+    return Viz.grid(matrix, { title: '矩阵（亮的是当前上下边界之间）', marks: marks });
+  }
+  function colPanel(marks) {
+    return Viz.cells(colSum.map(String), { title: 'colSum：上下边界间每列的和', marks: marks || {} });
+  }
+  function varsPanel(top, bottom, cur, start, bestCls) {
+    return Viz.vars([{ name: 'top', v: top }, { name: 'bottom', v: bottom },
+      { name: 'cur', v: cur }, { name: 'start', v: start },
+      { name: 'best', v: best, cls: bestCls || '' }]);
+  }
+
+  for (var top = 0; top < rows; top++) {
+    for (j = 0; j < cols; j++) colSum[j] = 0;
+    for (var bottom = top; bottom < rows; bottom++) {
+      for (j = 0; j < cols; j++) colSum[j] += matrix[bottom][j];
+      if (top === 0 && bottom === 0) {
+        frames.push(Viz.frame(GROW, '上边界固定 top=0，下边界一行行往下扩：矩阵压成一维 colSum',
+          [gridPanel(0, 0), colPanel(), varsPanel(top, bottom, 0, 0)]));
+      }
+      var cur = 0, start = 0;
+      for (j = 0; j < cols; j++) {
+        cur += colSum[j];
+        if (cur > best) {
+          best = cur;
+          r1 = top; c1 = start; r2 = bottom; c2 = j;
+          if (!improveSeen) {
+            improveSeen = true;
+            frames.push(Viz.frame(BETTER, 'cur = ' + cur + ' 更大：记下四角 (' + top + ',' + start + ')-(' + bottom + ',' + j + ')',
+              [gridPanel(top, bottom, rectMarks(top, bottom, start, j, 'cur')),
+               colPanel((function () { var m = {}; for (var q = start; q <= j; q++) m[q] = q === j ? 'cur' : 'win'; return m; })()),
+               varsPanel(top, bottom, cur, start, 'chg')]));
+          }
+          if (top === 1 && bottom === 2 && j === cols - 1) {
+            frames.push(Viz.frame(BETTER, '下边界扩到第 ' + bottom + ' 行：整块 (' + r1 + ',' + c1 + ')-(' + r2 + ',' + c2 + ') 和 ' + best + '，刷新答案',
+              [gridPanel(top, bottom, rectMarks(r1, r2, c1, c2, 'cur')),
+               colPanel((function () { var m = {}; for (var q = c1; q <= c2; q++) m[q] = 'win'; return m; })()),
+               varsPanel(top, bottom, cur, start, 'chg')]));
+          }
+        }
+        if (cur < 0) {
+          if (!resetSeen) {
+            resetSeen = true;
+            var dm = {};
+            for (var d = 0; d <= j; d++) dm[d] = 'bad';
+            frames.push(Viz.frame(RESET, 'cur 掉成负数：前面这段白拖后腿，start 跳到下一列重开',
+              [gridPanel(top, bottom, null), colPanel(dm), varsPanel(top, bottom, cur, j + 1, '')]));
+          }
+          cur = 0;
+          start = j + 1;
+        }
+      }
+    }
+  }
+
+  frames.push(Viz.frame(RET, '扫完所有上下边界：最大子矩阵 (' + r1 + ',' + c1 + ')-(' + r2 + ',' + c2 + ')，和 ' + best,
+    [gridPanel(r1, r2, rectMarks(r1, r2, c1, c2, 'done')), colPanel(),
+     Viz.vars([{ name: '答案 [r1,c1,r2,c2]', v: '[' + r1 + ',' + c1 + ',' + r2 + ',' + c2 + ']', cls: 'done' },
+       { name: 'best', v: best, cls: 'done' }])]));
+  return { frames: frames, result: [r1, c1, r2, c2] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>恢复二叉搜索树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 325 / 1159</span>
+  <nav class="pn"><a href="0581.html">上一篇</a><a href="0137.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">99. </span>恢复二叉搜索树</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 12</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉搜索树</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">中序遍历找逆序对：第一个逆序的大数记进 first，最后一个逆序的小数记进 second，交换这两个值即可。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>合法 BST 的中序<strong>严格递增</strong>；交换两个值后最多出现<strong>两处逆序</strong>。</li><li>中序走到 <code>cur</code> 时若 <code>prev.val &gt; cur.val</code>：<code>first</code> 只在<strong>第一次</strong>记下 <code>prev</code>（大数），<code>second</code> <strong>每次都刷新</strong>成 <code>cur</code>（最后就是最后一个逆序的小数）。</li><li>两处逆序（不相邻交换）：first=前的大数、second=后的小数；只有一处（相邻交换）：first、second 恰好是这一对。</li><li>最后 <code>swap(first.val, second.val)</code>，<strong>不动结构</strong>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="t">TreeNode</span> prev;              <span class="c">// 中序遍历里上一个访问的结点</span></span><span class="ln"><span class="no">3</span>    <span class="k">private</span> <span class="t">TreeNode</span> first, second;     <span class="c">// 第一个逆序的大数 / 最后一个逆序的小数</span></span><span class="ln"><span class="no">4</span> </span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="k">void</span> recoverTree(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">6</span>        prev = <span class="k">null</span>;</span><span class="ln"><span class="no">7</span>        first = <span class="k">null</span>;</span><span class="ln"><span class="no">8</span>        second = <span class="k">null</span>;</span><span class="ln"><span class="no">9</span>        inorder(root);</span><span class="ln"><span class="no">10</span>        <span class="c">// 只交换这两个结点的值，树的结构不动</span></span><span class="ln"><span class="no">11</span>        <span class="k">int</span> t = first.val;</span><span class="ln"><span class="no">12</span>        first.val = second.val;</span><span class="ln"><span class="no">13</span>        second.val = t;</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="k">private</span> <span class="k">void</span> inorder(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span>;</span><span class="ln"><span class="no">18</span>        inorder(node.left);</span><span class="ln"><span class="no">19</span>        <span class="c">// prev &gt; cur 就是一处逆序：first 只记第一次的大数，second 一直刷新成最后一次的小数</span></span><span class="ln"><span class="no">20</span>        <span class="k">if</span> (prev != <span class="k">null</span> &amp;&amp; prev.val &gt; node.val) {</span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (first == <span class="k">null</span>) first = prev;</span><span class="ln"><span class="no">22</span>            second = node;</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        prev = node;</span><span class="ln"><span class="no">25</span>        inorder(node.right);</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你二叉搜索树的根节点 <code>root</code> ，该树中的 <strong>恰好</strong> 两个节点的值被错误地交换。<em>请在不改变其结构的情况下，恢复这棵树&nbsp;</em>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/f7963cb73ca9.jpg" style="width: 300px;" />
+<pre>
+<strong>输入：</strong>root = [1,3,null,null,2]
+<strong>输出：</strong>[3,1,null,null,2]
+<strong>解释：</strong>3 不能是 1 的左孩子，因为 3 &gt; 1 。交换 1 和 3 使二叉搜索树有效。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/3e46c367dc83.jpg" style="height: 208px; width: 400px;" />
+<pre>
+<strong>输入：</strong>root = [3,1,4,null,null,2]
+<strong>输出：</strong>[2,1,4,null,null,3]
+<strong>解释：</strong>2 不能在 3 的右子树中，因为 2 &lt; 3 。交换 2 和 3 使二叉搜索树有效。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树上节点的数目在范围 <code>[2, 1000]</code> 内</li>
+	<li><code>-2<sup>31</sup> &lt;= Node.val &lt;= 2<sup>31</sup> - 1</code></li>
+</ul>
+
+
+
+<p><strong>进阶：</strong>使用 <code>O(n)</code> 空间复杂度的解法很容易实现。你能想出一个只使用&nbsp;<code>O(1)</code> 空间的解决方案吗？</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private TreeNode prev;              // 中序遍历里上一个访问的结点", "    private TreeNode first, second;     // 第一个逆序的大数 / 最后一个逆序的小数", "", "    public void recoverTree(TreeNode root) {", "        prev = null;", "        first = null;", "        second = null;", "        inorder(root);", "        // 只交换这两个结点的值，树的结构不动", "        int t = first.val;", "        first.val = second.val;", "        second.val = t;", "    }", "", "    private void inorder(TreeNode node) {", "        if (node == null) return;", "        inorder(node.left);", "        // prev > cur 就是一处逆序：first 只记第一次的大数，second 一直刷新成最后一次的小数", "        if (prev != null && prev.val > node.val) {", "            if (first == null) first = prev;", "            second = node;", "        }", "        prev = node;", "        inorder(node.right);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 99. 恢复二叉搜索树 —— 图解：复刻 Solution.java 的「中序找逆序对」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, 3, null, null, 2] };
+
+function trace(input) {
+  var arr = input.root || [];
+  // 层序数组 → 结点表（和 Java 的树结构一致）
+  var nodes = arr.map(function (v, i) { return v === null ? null : { v: v, idx: i, l: null, r: null }; });
+  var root = arr.length && nodes[0] ? nodes[0] : null;
+  if (root) {
+    var q = [root], k = 1;
+    while (q.length && k < arr.length) {
+      var cur = q.shift();
+      if (nodes[k]) { cur.l = nodes[k]; q.push(nodes[k]); }
+      k++;
+      if (k < arr.length && nodes[k]) { cur.r = nodes[k]; q.push(nodes[k]); }
+      k++;
+    }
+  }
+
+  var frames = [];
+  var seq = [];              // 中序序列（结点），按访问顺序
+  var violations = [];       // 每处逆序：{ pos, big, small }，pos 是小数的下标
+
+  function walk(node) {
+    if (!node) return;
+    walk(node.l);
+    var pos = seq.length;
+    seq.push(node);
+    if (pos > 0 && seq[pos - 1].v > node.v) violations.push({ pos: pos, big: seq[pos - 1], small: node });
+    walk(node.r);
+  }
+  walk(root);
+
+  // 树面板：marks 挂在层序下标上
+  function treePanel(marks) {
+    return Viz.tree(arr, { title: '二叉树（两个结点的值被交换了）', marks: marks, labels: [] });
+  }
+  // 中序序列面板
+  function seqPanel(marks, ptrAt) {
+    var pointers = ptrAt != null && ptrAt >= 0 && ptrAt < seq.length ? [{ at: ptrAt, label: 'prev', cls: 'p-prev' }] : [];
+    return Viz.cells(seq.map(function (n) { return String(n.v); }), {
+      title: '中序序列（合法 BST 必须严格递增）', marks: marks, pointers: pointers
+    });
+  }
+
+  frames.push(Viz.frame('inorder(root);', '开局：中序遍历一遍，合法 BST 的中序必须严格递增', [treePanel({}), seqPanel({}, -1)]));
+
+  var states = {};           // 层序下标 → 高亮
+  var v = violations[0];
+  if (v) {
+    states[v.big.idx] = 'bad';
+    var mSeq = {};
+    mSeq[v.pos] = 'bad';
+    mSeq[v.pos - 1] = 'hit';
+    frames.push(Viz.frame('if (first == null) first = prev;',
+      '第一处逆序：prev=' + v.big.v + ' > cur=' + v.small.v + '，大数 ' + v.big.v + ' 记进 first',
+      [treePanel(states), seqPanel(mSeq, v.pos - 1)]));
+  }
+  var last = violations[violations.length - 1];
+  if (last && last !== v) {
+    states[last.small.idx] = 'bad';
+    var mSeq2 = {};
+    mSeq2[last.pos] = 'bad';
+    mSeq2[last.pos - 1] = 'hit';
+    frames.push(Viz.frame('second = node;',
+      '最后一处逆序：' + last.big.v + ' > ' + last.small.v + '，小数 ' + last.small.v + ' 刷进 second',
+      [treePanel(states), seqPanel(mSeq2, last.pos - 1)]));
+  }
+
+  // 交换 first / second 的值，恢复有序
+  var fi = violations.length ? violations[0].big : null;
+  var si = violations.length ? violations[violations.length - 1].small : null;
+  if (fi && si) {
+    var fv = fi.v, sv = si.v;   // 记下交换前的值，图解文案用
+    var t = fi.v;
+    fi.v = si.v;
+    si.v = t;
+  }
+  var fMarks = {};
+  for (var i = 0; i < seq.length; i++) fMarks[i] = 'done';
+  var tMarks = {};
+  if (fi) tMarks[fi.idx] = 'new';
+  if (si && si !== fi) tMarks[si.idx] = 'new';
+  for (var key in states) if (!tMarks[key]) tMarks[key] = 'done';
+  frames.push(Viz.frame('first.val = second.val;',
+    fi && si ? '把 ' + fv + ' 和 ' + sv + ' 两个值换回来：中序恢复严格递增，树修好了' : '没有逆序？题面保证必有两处交换',
+    [treePanel(tMarks), seqPanel(fMarks, -1)]));
+
+  return { frames: frames, result: seq.map(function (n) { return n.v; }) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

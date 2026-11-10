@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IPO · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 967 / 1159</span>
+  <nav class="pn"><a href="0645.html">上一篇</a><a href="mianshi-04-05.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">502. </span>IPO</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">贪心</li><li class="aux">堆</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">项目按启动资本排序，资本增长时把「做得起」的项目利润压进大顶堆，每轮做堆顶利润最大的那个。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>贪心：每轮在「当前开得起」的项目里选<strong>纯利润最大</strong>的做；利润只加不减，所以这个选择不会亏。</li><li>把项目按 <code>capital</code> 升序排序，指针 <code>i</code> 单向右移：<code>w</code> 涨到哪，就把 <code>capital ≤ w</code> 的利润全部 <code>offer</code> 进大顶堆。</li><li>每轮 <code>poll</code> 堆顶累加到 <code>w</code>；堆空说明剩下的项目全都开不起，提前 <code>break</code>（剩余次数作废）。</li><li>堆里的项目可能到死都没被选中——没关系，它们只是「候补」，不影响正确性。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n + k log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> findMaximizedCapital(<span class="k">int</span> k, <span class="k">int</span> w, <span class="k">int</span>[] profits, <span class="k">int</span>[] capital) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = profits.length;</span><span class="ln"><span class="no">6</span>        <span class="c">// 项目按「启动资本」升序：w 只会涨，做得起的项目只增不减</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[][] items = <span class="k">new</span> <span class="k">int</span>[n][<span class="n">2</span>];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">9</span>            items[i][<span class="n">0</span>] = capital[i];</span><span class="ln"><span class="no">10</span>            items[i][<span class="n">1</span>] = profits[i];</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="t">Arrays</span>.sort(items, (a, b) -&gt; a[<span class="n">0</span>] - b[<span class="n">0</span>]);</span><span class="ln"><span class="no">13</span>        <span class="c">// 大顶堆装「当前做得起」的项目利润，每轮取利润最大的做</span></span><span class="ln"><span class="no">14</span>        <span class="t">PriorityQueue</span>&lt;<span class="t">Integer</span>&gt; heap = <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;(<span class="t">Collections</span>.reverseOrder());</span><span class="ln"><span class="no">15</span>        <span class="k">int</span> i = <span class="n">0</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">while</span> (k-- &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">17</span>            <span class="k">while</span> (i &lt; n &amp;&amp; items[i][<span class="n">0</span>] &lt;= w) heap.offer(items[i++][<span class="n">1</span>]);</span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (heap.isEmpty()) <span class="k">break</span>;    <span class="c">// 再也开不起任何新项目，提前收工</span></span><span class="ln"><span class="no">19</span>            w += heap.poll();</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> w;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>假设 力扣（LeetCode）即将开始 <strong>IPO</strong> 。为了以更高的价格将股票卖给风险投资公司，力扣 希望在 IPO 之前开展一些项目以增加其资本。 由于资源有限，它只能在 IPO 之前完成最多 <code>k</code> 个不同的项目。帮助 力扣 设计完成最多 <code>k</code> 个不同项目后得到最大总资本的方式。</p>
+
+<p>给你 <code>n</code> 个项目。对于每个项目 <code>i</code>，它都有一个纯利润 <code>profits[i]</code> ，和启动该项目需要的最小资本 <code>capital[i]</code> 。</p>
+
+<p>最初，你的资本为 <code>w</code> 。当你完成一个项目时，你将获得纯利润，且利润将被添加到你的总资本中。</p>
+
+<p>总而言之，从给定项目中选择 <strong>最多</strong> <code>k</code> 个不同项目的列表，以 <strong>最大化最终资本</strong> ，并输出最终可获得的最多资本。</p>
+
+<p>答案保证在 32 位有符号整数范围内。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>k = 2, w = 0, profits = [1,2,3], capital = [0,1,1]
+<strong>输出：</strong>4
+<strong>解释：
+</strong>由于你的初始资本为 0，你仅可以从 0 号项目开始。
+在完成后，你将获得 1 的利润，你的总资本将变为 1。
+此时你可以选择开始 1 号或 2 号项目。
+由于你最多可以选择两个项目，所以你需要完成 2 号项目以获得最大的资本。
+因此，输出最后最大化的资本，为 0 + 1 + 3 = 4。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>k = 3, w = 0, profits = [1,2,3], capital = [0,1,2]
+<strong>输出：</strong>6
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= k &lt;= 10<sup>5</sup></code></li>
+	<li><code>0 &lt;= w &lt;= 10<sup>9</sup></code></li>
+	<li><code>n == profits.length</code></li>
+	<li><code>n == capital.length</code></li>
+	<li><code>1 &lt;= n &lt;= 10<sup>5</sup></code></li>
+	<li><code>0 &lt;= profits[i] &lt;= 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= capital[i] &lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int findMaximizedCapital(int k, int w, int[] profits, int[] capital) {", "        int n = profits.length;", "        // 项目按「启动资本」升序：w 只会涨，做得起的项目只增不减", "        int[][] items = new int[n][2];", "        for (int i = 0; i < n; i++) {", "            items[i][0] = capital[i];", "            items[i][1] = profits[i];", "        }", "        Arrays.sort(items, (a, b) -> a[0] - b[0]);", "        // 大顶堆装「当前做得起」的项目利润，每轮取利润最大的做", "        PriorityQueue<Integer> heap = new PriorityQueue<>(Collections.reverseOrder());", "        int i = 0;", "        while (k-- > 0) {", "            while (i < n && items[i][0] <= w) heap.offer(items[i++][1]);", "            if (heap.isEmpty()) break;    // 再也开不起任何新项目，提前收工", "            w += heap.poll();", "        }", "        return w;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 502. IPO —— 图解：项目按启动资本排序，资本增长过程中不断把做得起的项目利润入大顶堆。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { k: 2, w: 0, profits: [1, 2, 3], capital: [0, 1, 1] };
+
+function trace(input) {
+  var k = input.k, w = input.w;
+  var profits = input.profits, capital = input.capital;
+  var n = profits.length;
+  var frames = [];
+
+  // 与 Java 相同：按启动资本升序排序
+  var items = [];
+  for (var i = 0; i < n; i++) items.push([capital[i], profits[i]]);
+  items.sort(function (a, b) { return a[0] - b[0]; });
+
+  function itemsPanel(marks) {
+    var rows = items.map(function (it, idx) {
+      return { k: '资本 ' + it[0], v: '利润 ' + it[1], cls: (marks && marks[idx]) || '' };
+    });
+    return Viz.table('项目（按启动资本升序）', rows);
+  }
+  function heapPanel(marks) {
+    var sorted = heap.slice().sort(function (a, b) { return b - a; });
+    return Viz.cells(sorted.map(String), {
+      title: '利润大顶堆（左端 = 堆顶）',
+      marks: marks || {},
+      hideIndex: true
+    });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: 'w（当前资本）', v: String(w), cls: 'chg' },
+      { name: 'k（剩余次数）', v: String(kLeft) },
+      { name: 'i（扫到的项目）', v: String(ptr) }
+    ]);
+  }
+
+  var heap = [];          // 堆内容（顺序无关，画时排序）
+  var ptr = 0;            // 已入堆到第几个项目
+  var kLeft = k;
+
+  // 第 1 帧在排序完成后拍
+  frames.push(Viz.frame('Arrays.sort(items, (a, b) -> a[0] - b[0]);',
+    '按启动资本排序：w 只涨不跌，做得起的项目只会越来越多',
+    [itemsPanel(), varsPanel()]));
+
+  var didFrame = { in: false, poll: 0, inCount: 0 };
+  while (kLeft > 0) {
+    var fresh = 0;
+    while (ptr < n && items[ptr][0] <= w) { heap.push(items[ptr][1]); ptr++; fresh++; }
+    if (fresh > 0 && !didFrame.in) {
+      didFrame.in = true;
+      var mk = {};
+      mk[0] = 'cur';      // 堆顶即将被取走
+      frames.push(Viz.frame('while (i < n && items[i][0] <= w) heap.offer(items[i++][1]);',
+        '把资本 ≤ ' + w + ' 的项目利润全部入堆，堆顶就是最划算的',
+        [heapPanel(mk), itemsPanel(), varsPanel()]));
+    }
+    if (!heap.length) break;
+    var top = heap.splice(heap.indexOf(Math.max.apply(null, heap)), 1)[0];
+    w += top;
+    kLeft--;
+    didFrame.poll++;
+    if (didFrame.poll <= 2) {
+      var mk2 = {};
+      frames.push(Viz.frame('w += heap.poll();',
+        '做堆顶项目：利润 +' + top + '，w 涨到 ' + w + '（又解锁更多项目）',
+        [heapPanel(mk2), itemsPanel(), varsPanel()]));
+    }
+  }
+
+  frames.push(Viz.frame('return w;',
+    '做完 ' + (input.k - kLeft) + ' 个项目，最大资本 w=' + w,
+    [itemsPanel((function () {
+      var m = {};
+      for (var j = 0; j < ptr; j++) m[j] = 'done';
+      return m;
+    })()), varsPanel()]));
+
+  return { frames: frames, result: w };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

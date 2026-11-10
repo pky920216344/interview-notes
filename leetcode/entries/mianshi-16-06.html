@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最小差 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 413 / 1159</span>
+  <nav class="pn"><a href="0237.html">上一篇</a><a href="1027.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 16.06. </span>最小差</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 7</li><li class="algo">双指针</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">二分查找</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">两数组各自排序后双指针夹逼：谁指的数小谁右移，途中不断用 |a[i]-b[j]| 刷新最小差。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>排序后从两头各放一个指针：<code>a[i] &lt; b[j]</code> 说明 <code>a[i]</code> 配后面的 <code>b</code> 只会更远，<code>i</code> 右移；反之 <code>j</code> 右移。</li><li>每比较一对就用 <code>|a[i]-b[j]|</code> 刷新 <code>best</code>；碰到相等直接返回 <code>0</code>，不可能更小。</li><li>一方走完就停：剩下的配对只会更远，<code>best</code> 已经是答案。</li><li>关键坑：<code>a[i] - b[j]</code> 要先转 <code>long</code> 再取绝对值，两个 <code>int</code> 极值相减会溢出。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m log m + n log n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> smallestDifference(<span class="k">int</span>[] a, <span class="k">int</span>[] b) {</span><span class="ln"><span class="no">5</span>        <span class="t">Arrays</span>.sort(a);</span><span class="ln"><span class="no">6</span>        <span class="t">Arrays</span>.sort(b);</span><span class="ln"><span class="no">7</span>        <span class="k">long</span> best = <span class="t">Long</span>.MAX_VALUE;   <span class="c">// 差最大能到 2^32，int 装不下</span></span><span class="ln"><span class="no">8</span>        <span class="k">int</span> i = <span class="n">0</span>, j = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">while</span> (i &lt; a.length &amp;&amp; j &lt; b.length) {</span><span class="ln"><span class="no">10</span>            <span class="c">// 相减必须先转 long：两个极值相减会溢出</span></span><span class="ln"><span class="no">11</span>            <span class="k">long</span> d = (<span class="k">long</span>) a[i] - b[j];</span><span class="ln"><span class="no">12</span>            best = <span class="t">Math</span>.min(best, d &lt; <span class="n">0</span> ? -d : d);</span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (d == <span class="n">0</span>) <span class="k">return</span> <span class="n">0</span>;         <span class="c">// 有相等的数，差为 0 到顶了</span></span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (d &lt; <span class="n">0</span>) i++;               <span class="c">// a 小，右移 a 去逼近</span></span><span class="ln"><span class="no">15</span>            <span class="k">else</span> j++;                     <span class="c">// a 大，右移 b 去逼近</span></span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> (<span class="k">int</span>) best;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定两个整数数组<code>a</code>和<code>b</code>，计算具有最小差绝对值的一对数值（每个数组中取一个值），并返回该对数值的差</p>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入：</strong>{1, 3, 15, 11, 2}, {23, 127, 235, 19, 8}
+<strong>输出：</strong>3，即数值对(11, 8)
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= a.length, b.length <= 100000</code></li>
+	<li><code>-2147483648 <= a[i], b[i] <= 2147483647</code></li>
+	<li>正确结果在区间 <code>[0, 2147483647]</code> 内</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int smallestDifference(int[] a, int[] b) {", "        Arrays.sort(a);", "        Arrays.sort(b);", "        long best = Long.MAX_VALUE;   // 差最大能到 2^32，int 装不下", "        int i = 0, j = 0;", "        while (i < a.length && j < b.length) {", "            // 相减必须先转 long：两个极值相减会溢出", "            long d = (long) a[i] - b[j];", "            best = Math.min(best, d < 0 ? -d : d);", "            if (d == 0) return 0;         // 有相等的数，差为 0 到顶了", "            if (d < 0) i++;               // a 小，右移 a 去逼近", "            else j++;                     // a 大，右移 b 去逼近", "        }", "        return (int) best;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 16.06. 最小差 —— 图解：复刻 Solution.java 的「各自排序 + 双指针夹逼」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { a: [1, 3, 15, 11, 2], b: [23, 127, 235, 19, 8] };
+
+function trace(input) {
+  var a = input.a.slice().sort(function (x, y) { return x - y; });
+  var b = input.b.slice().sort(function (x, y) { return x - y; });
+  var frames = [];
+  var best = Infinity, d = null, bp = null;
+
+  // 已排序数组的面板：at<0 表示指针已走出数组，不画
+  function arrPanel(arr, name, at) {
+    var marks = {};
+    if (at >= 0) marks[at] = 'cur';
+    return Viz.cells(arr, {
+      title: name + '（已排序）',
+      marks: marks,
+      pointers: at >= 0 ? [{ at: at, label: name, cls: 'p-cur' }] : []
+    });
+  }
+  function varsPanel(chg) {
+    return Viz.vars([
+      { name: 'd = a-b', v: d === null ? '—' : d, cls: '' },
+      { name: 'best 最小差', v: best === Infinity ? '∞' : best, cls: chg ? 'chg' : '' }
+    ]);
+  }
+  function snap(at, key, i, j, chg) {
+    frames.push(Viz.frame(at, key, [arrPanel(a, 'a', i), arrPanel(b, 'b', j), varsPanel(chg)]));
+  }
+
+  snap('int i = 0, j = 0;', '两边各自排序，i、j 都从头开始，逐个比大小', 0, 0, false);
+
+  var i = 0, j = 0;
+  while (i < a.length && j < b.length) {
+    d = a[i] - b[j];
+    var abs = d < 0 ? -d : d;
+    var improved = abs < best;
+    if (improved) { best = abs; bp = [a[i], b[j]]; }
+    // 拍两帧比较时刻（a 小 / a 大各一帧），key 按当前值现写，随机用例上也不说谎
+    if (i === 2 && j === 0) snap('best = Math.min(best, d < 0 ? -d : d);',
+      a[i] + ' 比 ' + b[j] + (d < 0 ? ' 小' : ' 大') + '：差 ' + abs + ' 进 best，' + (d < 0 ? 'i' : 'j') + ' 该右移', i, j, true);
+    if (i === 3 && j === 0) snap('best = Math.min(best, d < 0 ? -d : d);',
+      a[i] + ' 比 ' + b[j] + (d < 0 ? ' 小' : ' 大') + '：差 ' + abs + ' 进 best，' + (d < 0 ? 'i' : 'j') + ' 该右移', i, j, true);
+    if (d === 0) { best = 0; break; }
+    if (d < 0) i++; else j++;
+  }
+
+  snap('return (int) best;', '一边走完就停：最小差 ' + best + '（' + bp[0] + ' 和 ' + bp[1] + '）', -1, -1, false);
+  return { frames: frames, result: best };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

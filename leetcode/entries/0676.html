@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>实现一个魔法字典 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 984 / 1159</span>
+  <nav class="pn"><a href="1005.html">上一篇</a><a href="0419.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">676. </span>实现一个魔法字典</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">哈希表</li><li class="aux">设计</li><li class="tag">深度优先搜索</li><li class="tag">设计</li><li class="tag">字典树</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按长度分桶存词；search 只在同长度桶里逐词比对，恰有 1 处字符不同即成功。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>改一个字母长度不变，所以按 <code>len</code> 分桶，<code>search</code> 直接跳到同长度桶，其他桶不用看。</li><li>对桶里每个词数「逐位不同的个数」，<strong>恰好等于 1</strong> 才返回 true（0 处是自己、≥ 2 处改一次到不了）。</li><li>桶里词数少（词表互不相同），逐词比对就够了；早停：<code>diff &gt; 1</code> 立刻换下一个词。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 build O(总字符)；search O(同长度词数 × 词长)，空间复杂度 O(总字符)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">MagicDictionary</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 按长度分桶：改一个字母不改变长度，只可能和同长度的词匹配</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; byLen = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">MagicDictionary</span>() {</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">public</span> <span class="k">void</span> buildDict(<span class="t">String</span>[] dictionary) {</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="t">String</span> w : dictionary) {</span><span class="ln"><span class="no">12</span>            byLen.computeIfAbsent(w.length(), x -&gt; <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;()).add(w);</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="k">public</span> <span class="k">boolean</span> search(<span class="t">String</span> searchWord) {</span><span class="ln"><span class="no">17</span>        <span class="k">for</span> (<span class="t">String</span> w : byLen.getOrDefault(searchWord.length(), <span class="t">List</span>.of())) {</span><span class="ln"><span class="no">18</span>            <span class="c">// 数逐位不同的个数：恰好 1 处不同才算魔法匹配</span></span><span class="ln"><span class="no">19</span>            <span class="k">int</span> diff = <span class="n">0</span>;</span><span class="ln"><span class="no">20</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; w.length() &amp;&amp; diff &lt;= <span class="n">1</span>; i++) {</span><span class="ln"><span class="no">21</span>                <span class="k">if</span> (w.charAt(i) != searchWord.charAt(i)) diff++;</span><span class="ln"><span class="no">22</span>            }</span><span class="ln"><span class="no">23</span>            <span class="k">if</span> (diff == <span class="n">1</span>) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>设计一个使用单词列表进行初始化的数据结构，单词列表中的单词 <strong>互不相同</strong> 。 如果给出一个单词，请判定能否只将这个单词中<strong>一个</strong>字母换成另一个字母，使得所形成的新单词存在于你构建的字典中。</p>
+
+<p>实现 <code>MagicDictionary</code> 类：</p>
+
+<ul>
+	<li><code>MagicDictionary()</code> 初始化对象</li>
+	<li><code>void buildDict(String[] dictionary)</code> 使用字符串数组 <code>dictionary</code> 设定该数据结构，<code>dictionary</code> 中的字符串互不相同</li>
+	<li><code>bool search(String searchWord)</code> 给定一个字符串 <code>searchWord</code> ，判定能否只将字符串中<strong> 一个 </strong>字母换成另一个字母，使得所形成的新字符串能够与字典中的任一字符串匹配。如果可以，返回 <code>true</code> ；否则，返回 <code>false</code> 。</li>
+</ul>
+
+
+
+<div class="top-view__1vxA">
+<div class="original__bRMd">
+<div>
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入</strong>
+["MagicDictionary", "buildDict", "search", "search", "search", "search"]
+[[], [["hello", "leetcode"]], ["hello"], ["hhllo"], ["hell"], ["leetcoded"]]
+<strong>输出</strong>
+[null, null, false, true, false, false]
+
+<strong>解释</strong>
+MagicDictionary magicDictionary = new MagicDictionary();
+magicDictionary.buildDict(["hello", "leetcode"]);
+magicDictionary.search("hello"); // 返回 False
+magicDictionary.search("hhllo"); // 将第二个 'h' 替换为 'e' 可以匹配 "hello" ，所以返回 True
+magicDictionary.search("hell"); // 返回 False
+magicDictionary.search("leetcoded"); // 返回 False
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= dictionary.length <= 100</code></li>
+	<li><code>1 <= dictionary[i].length <= 100</code></li>
+	<li><code>dictionary[i]</code> 仅由小写英文字母组成</li>
+	<li><code>dictionary</code> 中的所有字符串 <strong>互不相同</strong></li>
+	<li><code>1 <= searchWord.length <= 100</code></li>
+	<li><code>searchWord</code> 仅由小写英文字母组成</li>
+	<li><code>buildDict</code> 仅在 <code>search</code> 之前调用一次</li>
+	<li>最多调用 <code>100</code> 次 <code>search</code></li>
+</ul>
+</div>
+</div>
+</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class MagicDictionary {", "    // 按长度分桶：改一个字母不改变长度，只可能和同长度的词匹配", "    private final Map<Integer, List<String>> byLen = new HashMap<>();", "", "    public MagicDictionary() {", "    }", "", "    public void buildDict(String[] dictionary) {", "        for (String w : dictionary) {", "            byLen.computeIfAbsent(w.length(), x -> new ArrayList<>()).add(w);", "        }", "    }", "", "    public boolean search(String searchWord) {", "        for (String w : byLen.getOrDefault(searchWord.length(), List.of())) {", "            // 数逐位不同的个数：恰好 1 处不同才算魔法匹配", "            int diff = 0;", "            for (int i = 0; i < w.length() && diff <= 1; i++) {", "                if (w.charAt(i) != searchWord.charAt(i)) diff++;", "            }", "            if (diff == 1) return true;", "        }", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 676. 实现一个魔法字典 —— 图解：复刻「按长度分桶 + 逐词比对恰 1 处不同」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  ops: [['buildDict', ['hello', 'leetcode']], ['search', 'hello'], ['search', 'hhllo'], ['search', 'hell'], ['search', 'leetcoded']]
+};
+
+function trace(input) {
+  var ops = input.ops;
+  var frames = [];
+  var out = [];
+  var byLen = {};   // 长度 → 词列表
+
+  var BUILD = 'byLen.computeIfAbsent(w.length(), x -> new ArrayList<>()).add(w);';
+  var HIT = 'if (diff == 1) return true;';
+  var MISS = 'return false;';
+
+  function bucketPanel(hitLen) {
+    var lens = Object.keys(byLen).map(Number).sort(function (a, b) { return a - b; });
+    var rows = lens.map(function (len) {
+      return { k: '长度 ' + len, v: byLen[len].join('、'), cls: len === hitLen ? 'hit' : '' };
+    });
+    return Viz.table('按长度分桶的词典', rows, { hint: '改一个字母长度不变，只查同长度桶' });
+  }
+  function comparePanel(w, cand) {
+    if (!cand) return null;
+    var marks = {};
+    for (var i = 0; i < w.length; i++) {
+      if (w[i] !== cand[i]) {
+        marks['0,' + i] = 'bad';
+        marks['1,' + i] = 'bad';
+      }
+    }
+    return Viz.grid([w.split(''), cand.split('')], {
+      title: '逐位比对：bad 是不同的位置（恰 1 处才算命中）',
+      rowLabels: ['查询 ' + w, '候选 ' + cand],
+      marks: marks
+    });
+  }
+  function snap(at, key, hitLen, w, cand, ok) {
+    var panels = [bucketPanel(hitLen)];
+    var cmp = comparePanel(w, cand);
+    if (cmp) panels.push(cmp);
+    var items = [];
+    if (w) items.push({ name: '查询词', v: w, cls: '' });
+    if (ok != null) items.push({ name: 'search 结果', v: ok ? 'true' : 'false', cls: ok ? '' : 'bad' });
+    panels.push(Viz.vars(items));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  ops.forEach(function (op, oi) {
+    if (op[0] === 'buildDict') {
+      byLen = {};
+      op[1].forEach(function (w) {
+        var len = w.length;
+        if (!byLen[len]) byLen[len] = [];
+        byLen[len].push(w);
+      });
+      if (oi === 0) snap(BUILD, '建桶：词按长度放进哈希表，查询时只看同长度的桶', null, null, null, null);
+      return;
+    }
+    var w = op[1];
+    var bucket = byLen[w.length] || [];
+    var first = bucket[0] || null;
+    var matched = null;
+    for (var bi = 0; bi < bucket.length; bi++) {
+      var cand = bucket[bi];
+      var diff = 0;
+      for (var i = 0; i < cand.length && diff <= 1; i++) {
+        if (cand[i] !== w[i]) diff++;
+      }
+      if (diff === 1) {
+        matched = cand;
+        break;
+      }
+    }
+    out.push(!!matched);
+    if (oi === 1 && !matched) snap(MISS, 'search(' + w + ')：和同长度词逐位比，0 处不同——是自己，不算', w.length, w, first, false);
+    if (matched && (oi === 1 || oi === 2)) snap(HIT, 'search(' + w + ')：候选 ' + matched + ' 恰有 1 处不同，命中', w.length, w, matched, true);
+    if (oi === 3 && !matched) snap(MISS, 'search(' + w + ')：长度不同直接查不到，false', w.length, w, null, false);
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

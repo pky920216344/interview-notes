@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>寻找二叉搜索树中的目标节点 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 153 / 1159</span>
+  <nav class="pn"><a href="0450.html">上一篇</a><a href="0295.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 54. </span>寻找二叉搜索树中的目标节点</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 39</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉搜索树</li><li class="tag">二叉树</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">反中序遍历（右→根→左）用栈迭代，弹出的顺序就是从大到小，数到第 cnt 个直接返回。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>BST 的中序是升序；反过来先右后左，就变成降序，第 cnt 个弹出的就是第 cnt 大。</li><li>先把右链一路压栈（攒着没数到的较大结点），弹出栈顶计数，再转到它的左子树重复。</li><li><code>if (--cnt == 0) return</code> 提前返回，不用遍历整棵树；最坏只走 <code>O(h + k)</code> 个结点。</li><li>递归写法同理：先递归右子树，回来时 <code>--cnt</code>，为 0 记下答案再进左子树。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(h + k)，空间复杂度 O(h)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> findTargetNode(<span class="t">TreeNode</span> root, <span class="k">int</span> cnt) {</span><span class="ln"><span class="no">5</span>        <span class="t">Deque</span>&lt;<span class="t">TreeNode</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="t">TreeNode</span> cur = root;</span><span class="ln"><span class="no">7</span>        <span class="c">// 反中序（右 → 根 → 左）遍历，弹出的顺序就是从大到小</span></span><span class="ln"><span class="no">8</span>        <span class="k">while</span> (cur != <span class="k">null</span> || !stack.isEmpty()) {</span><span class="ln"><span class="no">9</span>            <span class="c">// 右链一路压栈：栈里攒着「还没数到的较大结点」</span></span><span class="ln"><span class="no">10</span>            <span class="k">while</span> (cur != <span class="k">null</span>) {</span><span class="ln"><span class="no">11</span>                stack.push(cur);</span><span class="ln"><span class="no">12</span>                cur = cur.right;</span><span class="ln"><span class="no">13</span>            }</span><span class="ln"><span class="no">14</span>            cur = stack.pop();</span><span class="ln"><span class="no">15</span>            <span class="c">// 第 cnt 个弹出的就是第 cnt 大，直接返回</span></span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (--cnt == <span class="n">0</span>) <span class="k">return</span> cur.val;</span><span class="ln"><span class="no">17</span>            cur = cur.left;</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> -<span class="n">1</span>;   <span class="c">// 题目保证 cnt 有效，走不到这里</span></span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>某公司组织架构以二叉搜索树形式记录，节点值为处于该职位的员工编号。请返回第 <code>cnt</code> 大的员工编号。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/39df889267b8.png" style="height: 281px; width: 500px;" /></p>
+
+<pre>
+<strong>输入：</strong>root = [7, 3, 9, 1, 5], cnt = 2
+       7
+      / \
+     3   9
+    / \
+   1   5
+<strong>输出：</strong>7
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/7d6128c9ef6f.png" style="height: 281px; width: 500px;" /></p>
+
+<pre>
+<strong>输入:</strong> root = [10, 5, 15, 2, 7, null, 20, 1, null, 6, 8], cnt = 4
+       10
+      / \
+     5   15
+    / \    \
+   2   7    20
+  /   / \ 
+ 1   6   8
+<strong>输出:</strong> 8</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>1 ≤ cnt&nbsp;≤ 二叉搜索树元素个数</li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int findTargetNode(TreeNode root, int cnt) {", "        Deque<TreeNode> stack = new ArrayDeque<>();", "        TreeNode cur = root;", "        // 反中序（右 → 根 → 左）遍历，弹出的顺序就是从大到小", "        while (cur != null || !stack.isEmpty()) {", "            // 右链一路压栈：栈里攒着「还没数到的较大结点」", "            while (cur != null) {", "                stack.push(cur);", "                cur = cur.right;", "            }", "            cur = stack.pop();", "            // 第 cnt 个弹出的就是第 cnt 大，直接返回", "            if (--cnt == 0) return cur.val;", "            cur = cur.left;", "        }", "        return -1;   // 题目保证 cnt 有效，走不到这里", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// LCR 174（offer-54）寻找二叉搜索树中的目标节点 —— 图解：复刻 Solution.java 的反中序迭代计数，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [10, 5, 15, 2, 7, null, 20, 1, null, 6, 8], cnt: 4 };
+
+function trace(input) {
+  var arr = input.root || [];
+  var frames = [];
+
+  // 力扣层序数组 -> 结点（树只读不改，层序下标直接当高亮键用）
+  var root = null;
+  if (arr.length && arr[0] != null) {
+    root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var nd = q.shift();
+      if (i < arr.length) { if (arr[i] != null) { nd.left = { idx: i, val: arr[i], left: null, right: null }; q.push(nd.left); } i++; }
+      if (i < arr.length) { if (arr[i] != null) { nd.right = { idx: i, val: arr[i], left: null, right: null }; q.push(nd.right); } i++; }
+    }
+  }
+
+  var marks = {};   // 结点层序下标 -> 高亮类，跨帧累积（done 的保持住）
+  function treePanel(curNode) {
+    var m = {};
+    for (var k in marks) m[k] = marks[k];
+    if (curNode) m[curNode.idx] = 'cur';
+    return Viz.tree(arr, { title: '二叉搜索树（反中序：右→根→左，从大到小）', marks: m });
+  }
+  function stackPanel() {
+    var items = stack.map(function (n) { return n.val; });
+    return Viz.cells(items, {
+      title: '栈（左边栈底，右边栈顶）', hideIndex: true,
+      pointers: stack.length ? [{ at: stack.length - 1, label: '栈顶', cls: 'p-mid' }] : []
+    });
+  }
+  function varsPanel(chgCnt) {
+    return Viz.vars([{ name: '还需弹出', v: cnt, cls: chgCnt ? 'chg' : '' }]);
+  }
+
+  var PUSH = 'stack.push(cur);';
+  var POP = 'cur = stack.pop();';
+  var LEFT = 'cur = cur.left;';
+  var RET = 'if (--cnt == 0) return cur.val;';
+
+  var stack = [], cur = root, cnt = input.cnt, popCount = 0, res = -1;
+  var fired1 = false, fired2 = false, fired3 = false;
+  var pushAfterPop = -1;   // 当前这个压栈阶段跟着第几次弹出发生
+
+  while (cur !== null || stack.length) {
+    // 压右链
+    while (cur !== null) {
+      stack.push(cur);
+      cur = cur.right;
+      if (cur === null && !fired1) {           // 第 1 帧：第一条右链压完
+        fired1 = true;
+        stack.forEach(function (n) { marks[n.idx] = 'win'; });
+        frames.push(Viz.frame(PUSH, '一路向右：' + stack.map(function (n) { return n.val; }).join('、') + ' 压栈，栈顶 ' + stack[stack.length - 1].val + ' 最大',
+          [treePanel(null), stackPanel(), varsPanel(false)]));
+      }
+      if (cur === null && pushAfterPop === 3 && !fired3) {   // 第 3 帧：转进左子树后的新右链
+        fired3 = true;
+        stack.forEach(function (n) { marks[n.idx] = 'win'; });
+        frames.push(Viz.frame(LEFT, '还差 ' + cnt + ' 个：转入左子树，把 ' + stack.map(function (n) { return n.val; }).join('、') + ' 压栈',
+          [treePanel(null), stackPanel(), varsPanel(false)]));
+      }
+    }
+    cur = stack.pop();
+    popCount++;
+    cnt--;
+    if (cnt === 0) {                            // 第 4 帧：数到第 cnt 个
+      marks[cur.idx] = 'done';
+      res = cur.val;
+      frames.push(Viz.frame(RET, '弹出 ' + cur.val + '：cnt 归零，反中序第 ' + popCount + ' 个弹出 = 第 ' + input.cnt + ' 大',
+        [treePanel(null), stackPanel(), varsPanel(true)]));
+      break;
+    }
+    if (popCount === 2 && !fired2) {            // 第 2 帧：已经弹出两个
+      fired2 = true;
+      marks[cur.idx] = 'done';
+      frames.push(Viz.frame(POP, '弹出 ' + cur.val + '：这是目前已弹出的第 ' + popCount + ' 大，还剩 ' + cnt + ' 个要数',
+        [treePanel(null), stackPanel(), varsPanel(true)]));
+    } else {
+      marks[cur.idx] = 'done';
+    }
+    pushAfterPop = popCount;
+    cur = cur.left;
+  }
+
+  return { frames: frames, result: res };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

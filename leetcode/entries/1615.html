@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最大网络秩 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1134 / 1159</span>
+  <nav class="pn"><a href="1570.html">上一篇</a><a href="0643.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1615. </span>最大网络秩</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">模拟</li><li class="tag">图</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">预处理每城的度数和邻接表，双重循环枚举城市对：deg[i]+deg[j]−（相连 ? 1 : 0）取最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>城市对 <code>(i,j)</code> 的网络秩 = <code>deg[i] + deg[j]</code>；若 <code>i、j</code> 之间有路，这条被数了两遍，<strong>减 1</strong>。</li><li>建度数数组 <code>deg[]</code> 和邻接矩阵 <code>adj[][]</code>，一次扫完 <code>roads</code>。</li><li>双重循环枚举所有城市对（n ≤ 100，O(n²) 足够），逐对更新答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n² + E)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maximalNetworkRank(<span class="k">int</span> n, <span class="k">int</span>[][] roads) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span>[] deg = <span class="k">new</span> <span class="k">int</span>[n];   <span class="c">// deg[i]：城市 i 直接相连的道路数</span></span><span class="ln"><span class="no">4</span>        <span class="k">boolean</span>[][] adj = <span class="k">new</span> <span class="k">boolean</span>[n][n];</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span>[] r : roads) {</span><span class="ln"><span class="no">6</span>            deg[r[<span class="n">0</span>]]++;</span><span class="ln"><span class="no">7</span>            deg[r[<span class="n">1</span>]]++;</span><span class="ln"><span class="no">8</span>            adj[r[<span class="n">0</span>]][r[<span class="n">1</span>]] = adj[r[<span class="n">1</span>]][r[<span class="n">0</span>]] = <span class="k">true</span>;</span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> j = i + <span class="n">1</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">13</span>                <span class="c">// 两城度数相加；若两城之间恰好有路，这条被算了两次，减回 1</span></span><span class="ln"><span class="no">14</span>                <span class="k">int</span> rank = deg[i] + deg[j] - (adj[i][j] ? <span class="n">1</span> : <span class="n">0</span>);</span><span class="ln"><span class="no">15</span>                ans = <span class="t">Math</span>.max(ans, rank);</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p><code>n</code> 座城市和一些连接这些城市的道路 <code>roads</code> 共同组成一个基础设施网络。每个 <code>roads[i] = [a<sub>i</sub>, b<sub>i</sub>]</code> 都表示在城市 <code>a<sub>i</sub></code> 和 <code>b<sub>i</sub></code> 之间有一条双向道路。</p>
+
+<p>两座不同城市构成的 <strong>城市对</strong> 的 <strong>网络秩</strong> 定义为：与这两座城市 <strong>直接</strong> 相连的道路总数。如果存在一条道路直接连接这两座城市，则这条道路只计算 <strong>一次</strong> 。</p>
+
+<p>整个基础设施网络的 <strong>最大网络秩</strong> 是所有不同城市对中的 <strong>最大网络秩</strong> 。</p>
+
+<p>给你整数 <code>n</code> 和数组 <code>roads</code>，返回整个基础设施网络的 <strong>最大网络秩</strong> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/5a36389f7548.png" style="width: 292px; height: 172px;" /></strong></p>
+
+<pre>
+<strong>输入：</strong>n = 4, roads = [[0,1],[0,3],[1,2],[1,3]]
+<strong>输出：</strong>4
+<strong>解释：</strong>城市 0 和 1 的网络秩是 4，因为共有 4 条道路与城市 0 或 1 相连。位于 0 和 1 之间的道路只计算一次。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/3d8bd1f11a6f.png" style="width: 292px; height: 172px;" /></strong></p>
+
+<pre>
+<strong>输入：</strong>n = 5, roads = [[0,1],[0,3],[1,2],[1,3],[2,3],[2,4]]
+<strong>输出：</strong>5
+<strong>解释：</strong>共有 5 条道路与城市 1 或 2 相连。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 8, roads = [[0,1],[1,2],[2,3],[2,4],[5,6],[5,7]]
+<strong>输出：</strong>5
+<strong>解释：</strong>2 和 5 的网络秩为 5，注意并非所有的城市都需要连接起来。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 <= n <= 100</code></li>
+	<li><code>0 <= roads.length <= n * (n - 1) / 2</code></li>
+	<li><code>roads[i].length == 2</code></li>
+	<li><code>0 <= a<sub>i</sub>, b<sub>i</sub> <= n-1</code></li>
+	<li><code>a<sub>i</sub> != b<sub>i</sub></code></li>
+	<li>每对城市之间 <strong>最多只有一条</strong> 道路相连</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maximalNetworkRank(int n, int[][] roads) {", "        int[] deg = new int[n];   // deg[i]：城市 i 直接相连的道路数", "        boolean[][] adj = new boolean[n][n];", "        for (int[] r : roads) {", "            deg[r[0]]++;", "            deg[r[1]]++;", "            adj[r[0]][r[1]] = adj[r[1]][r[0]] = true;", "        }", "        int ans = 0;", "        for (int i = 0; i < n; i++) {", "            for (int j = i + 1; j < n; j++) {", "                // 两城度数相加；若两城之间恰好有路，这条被算了两次，减回 1", "                int rank = deg[i] + deg[j] - (adj[i][j] ? 1 : 0);", "                ans = Math.max(ans, rank);", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1615. 最大网络秩 —— 图解：度数表 + 枚举城市对减去重复边，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 4, roads: [[0, 1], [0, 3], [1, 2], [1, 3]] };
+
+function trace(input) {
+  var n = input.n, roads = input.roads;
+  var frames = [];
+  var BUILD = 'adj[r[0]][r[1]] = adj[r[1]][r[0]] = true;';
+  var RANK = 'int rank = deg[i] + deg[j] - (adj[i][j] ? 1 : 0);';
+  var RET = 'return ans;';
+
+  var deg = new Array(n).fill(0);
+  var adj = [];
+  for (var i0 = 0; i0 < n; i0++) adj.push(new Array(n).fill(false));
+  roads.forEach(function (r) {
+    deg[r[0]]++; deg[r[1]]++;
+    adj[r[0]][r[1]] = true; adj[r[1]][r[0]] = true;
+  });
+
+  var ans = 0;
+
+  function degPanel(hitA, hitB) {
+    var rows = deg.map(function (d, i) {
+      var cls = i === hitA ? 'cur' : (i === hitB ? 'hit' : '');
+      return { k: '城市 ' + i, v: '度 ' + d, cls: cls };
+    });
+    return Viz.table('deg：每城直接相连的道路数', rows, { hint: '两城度数相加，相连的边被数两次要减 1' });
+  }
+  function varsPanel(o) {
+    var items = [];
+    if (o) {
+      items.push({ name: '枚举城市对', v: '(' + o.i + ',' + o.j + ')', cls: 'cur' });
+      items.push({ name: 'deg[i]+deg[j]', v: o.sum });
+      items.push({ name: '两城相连？', v: o.conn ? '是 → 减 1' : '否' });
+      items.push({ name: 'rank', v: o.rank, cls: 'chg' });
+    }
+    items.push({ name: 'ans', v: ans, cls: 'done' });
+    return Viz.vars(items);
+  }
+
+  // 先把算法完整跑一遍，记下要拍照的时刻
+  var pairs = [];
+  for (var i = 0; i < n; i++) {
+    for (var j = i + 1; j < n; j++) {
+      var rank = deg[i] + deg[j] - (adj[i][j] ? 1 : 0);
+      pairs.push({ i: i, j: j, rank: rank });
+      ans = Math.max(ans, rank);
+    }
+  }
+
+  frames.push(Viz.frame(BUILD, '扫完 roads：先建度数表，答案在枚举城市对里找',
+    [degPanel(), varsPanel()]));
+
+  var p0 = pairs[0];
+  frames.push(Viz.frame(RANK, '枚举 (' + p0.i + ',' + p0.j + ')：' + deg[p0.i] + '+' + deg[p0.j]
+    + (adj[p0.i][p0.j] ? '−1（两城有路）' : '（两城不相连）') + '=' + p0.rank,
+    [degPanel(p0.i, p0.j), varsPanel({ i: p0.i, j: p0.j, sum: deg[p0.i] + deg[p0.j], conn: adj[p0.i][p0.j], rank: p0.rank })]));
+
+  var first = null;
+  for (var k = 0; k < pairs.length; k++) {
+    if (pairs[k].rank === ans) { first = pairs[k]; break; }
+  }
+  if (first && !(first.i === p0.i && first.j === p0.j)) {
+    frames.push(Viz.frame(RANK, '枚举 (' + first.i + ',' + first.j + ')：' + deg[first.i] + '+' + deg[first.j]
+      + (adj[first.i][first.j] ? '−1=' : '=') + first.rank + '，追平最大',
+      [degPanel(first.i, first.j), varsPanel({ i: first.i, j: first.j, sum: deg[first.i] + deg[first.j], conn: adj[first.i][first.j], rank: first.rank })]));
+  }
+
+  frames.push(Viz.frame(RET, '所有城市对枚举完：最大网络秩 = ' + ans,
+    [degPanel(), varsPanel()]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

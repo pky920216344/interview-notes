@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最长湍流子数组 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 932 / 1159</span>
+  <nav class="pn"><a href="1103.html">上一篇</a><a href="1473.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">978. </span>最长湍流子数组</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">滑动窗口</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">双状态 DP：up[i] 是「以 i 结尾、末步上升」的最长湍流，down[i] 是末步下降的；方向一换就交替接力，相等就归 1。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>湍流 = 相邻比较符号严格交替。以 <code>i</code> 结尾的湍流只分两种：末步上升（<code>up</code>）和末步下降（<code>down</code>），滚动变量即可。</li><li><code>arr[i] &gt; arr[i-1]</code> 时 <code>up = down + 1</code>：新段只能接在「末步下降」的段后面；<code>down</code> 重置为 1。</li><li><code>arr[i] &lt; arr[i-1]</code> 时对称地 <code>down = up + 1</code>；<strong>相邻相等时两个状态都要重置为 1</strong>，这是最容易漏的分支。</li><li>每步用 <code>max(up, down)</code> 更新答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maxTurbulenceSize(<span class="k">int</span>[] arr) {</span><span class="ln"><span class="no">3</span>        <span class="c">// up：以 i 结尾、最后一步上升的湍流长度；down：最后一步下降</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span> up = <span class="n">1</span>, down = <span class="n">1</span>, ans = <span class="n">1</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; arr.length; i++) {</span><span class="ln"><span class="no">6</span>            <span class="k">if</span> (arr[i] &gt; arr[i - <span class="n">1</span>]) {</span><span class="ln"><span class="no">7</span>                <span class="c">// 升：接在「以上一步结尾是下降」的段后面</span></span><span class="ln"><span class="no">8</span>                up = down + <span class="n">1</span>;</span><span class="ln"><span class="no">9</span>                down = <span class="n">1</span>;</span><span class="ln"><span class="no">10</span>            } <span class="k">else</span> <span class="k">if</span> (arr[i] &lt; arr[i - <span class="n">1</span>]) {</span><span class="ln"><span class="no">11</span>                <span class="c">// 降：接在「以上一步结尾是上升」的段后面</span></span><span class="ln"><span class="no">12</span>                down = up + <span class="n">1</span>;</span><span class="ln"><span class="no">13</span>                up = <span class="n">1</span>;</span><span class="ln"><span class="no">14</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">15</span>                <span class="c">// 相等：两边的段都断，长度重置为 1</span></span><span class="ln"><span class="no">16</span>                up = down = <span class="n">1</span>;</span><span class="ln"><span class="no">17</span>            }</span><span class="ln"><span class="no">18</span>            ans = <span class="t">Math</span>.max(ans, <span class="t">Math</span>.max(up, down));</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个整数数组 <code>arr</code>&nbsp;，返回 <code>arr</code>&nbsp;的&nbsp;<em>最大湍流子数组的<strong>长度</strong></em>。</p>
+
+<p>如果比较符号在子数组中的每个相邻元素对之间翻转，则该子数组是&nbsp;<strong>湍流子数组</strong>&nbsp;。</p>
+
+<p>更正式地来说，当 <code>arr</code>&nbsp;的子数组&nbsp;<code>A[i], A[i+1], ..., A[j]</code>&nbsp;满足仅满足下列条件时，我们称其为<em>湍流子数组</em>：</p>
+
+<ul>
+	<li>若&nbsp;<code>i &lt;= k &lt; j</code>&nbsp;：
+
+	<ul>
+		<li>当 <code>k</code>&nbsp;为奇数时，&nbsp;<code>A[k] &gt; A[k+1]</code>，且</li>
+		<li>当 <code>k</code> 为偶数时，<code>A[k] &lt; A[k+1]</code>；</li>
+	</ul>
+	</li>
+	<li><strong>或 </strong>若&nbsp;<code>i &lt;= k &lt; j</code>&nbsp;：
+	<ul>
+		<li>当 <code>k</code> 为偶数时，<code>A[k] &gt; A[k+1]</code>&nbsp;，且</li>
+		<li>当 <code>k</code>&nbsp;为奇数时，&nbsp;<code>A[k] &lt; A[k+1]</code>。</li>
+	</ul>
+	</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [9,4,2,10,7,8,8,1,9]
+<strong>输出：</strong>5
+<strong>解释：</strong>arr[1] &gt; arr[2] &lt; arr[3] &gt; arr[4] &lt; arr[5]</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [4,8,12,16]
+<strong>输出：</strong>2
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [100]
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= arr.length &lt;= 4 * 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= arr[i] &lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maxTurbulenceSize(int[] arr) {", "        // up：以 i 结尾、最后一步上升的湍流长度；down：最后一步下降", "        int up = 1, down = 1, ans = 1;", "        for (int i = 1; i < arr.length; i++) {", "            if (arr[i] > arr[i - 1]) {", "                // 升：接在「以上一步结尾是下降」的段后面", "                up = down + 1;", "                down = 1;", "            } else if (arr[i] < arr[i - 1]) {", "                // 降：接在「以上一步结尾是上升」的段后面", "                down = up + 1;", "                up = 1;", "            } else {", "                // 相等：两边的段都断，长度重置为 1", "                up = down = 1;", "            }", "            ans = Math.max(ans, Math.max(up, down));", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 978. 最长湍流子数组 —— 图解：复刻 Solution.java 的「双状态 DP」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [9, 4, 2, 10, 8, 8, 7] };
+
+function trace(input) {
+  var a = input.arr;
+  var n = a.length;
+  var up = 1, down = 1, ans = 1;
+  var bestL = 0, bestR = 0;
+  var frames = [];
+  var sawFlip = false, sawReset = false, sawLong = false;
+
+  function cellsPanel(marks, pointers) {
+    return Viz.cells(a, { title: '数组 arr（↑ 末步上升 → up，↓ 末步下降 → down）', marks: marks || {}, pointers: pointers || [] });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: 'up', v: String(up) },
+      { name: 'down', v: String(down) },
+      { name: 'ans', v: String(ans), cls: 'chg' }
+    ]);
+  }
+  function snap(at, key, marks, pointers) {
+    frames.push(Viz.frame(at, key, [cellsPanel(marks, pointers), varsPanel()]));
+  }
+
+  // 开局：单个数自己就是长度 1 的湍流
+  snap('int up = 1, down = 1, ans = 1;',
+    n <= 1 ? '就一个数，湍流长度是 1' : '开局：up = down = 1，单个数自己就是长度 1 的湍流');
+
+  for (var i = 1; i < n; i++) {
+    var marks = {};
+    marks[i - 1] = 'win';
+    marks[i] = 'cur';
+    var pointers = [
+      { at: i - 1, label: 'i-1', cls: 'p-prev' },
+      { at: i, label: 'i', cls: 'p-cur' }
+    ];
+
+    if (a[i] > a[i - 1]) {
+      up = down + 1;
+      down = 1;
+      // 第一次出现「接出长度 ≥ 3 的段」时拍：新段接在相反状态的段后面
+      if (!sawFlip && Math.max(up, down) >= 3) {
+        sawFlip = true;
+        snap('up = down + 1;', '升接过降的段：up = down + 1，方向一换就接上了', marks, pointers);
+      }
+    } else if (a[i] < a[i - 1]) {
+      down = up + 1;
+      up = 1;
+      if (!sawFlip && Math.max(up, down) >= 3) {
+        sawFlip = true;
+        snap('down = up + 1;', '降接过升的段：down = up + 1，方向一换就接上了', marks, pointers);
+      }
+    } else {
+      up = 1;
+      down = 1;
+      if (!sawReset) {
+        sawReset = true;
+        snap('up = down = 1;', '相邻相等：升、降都接不上，两个状态一起重置为 1', marks, pointers);
+      }
+    }
+    if (Math.max(up, down) > ans) {
+      ans = Math.max(up, down);
+      bestL = i - ans + 1;
+      bestR = i;
+      if (!sawLong && ans >= 4) {
+        sawLong = true;
+        snap('ans = Math.max(ans, Math.max(up, down));',
+          '又是新的一段：长度到 ' + ans + '，成为当前最长', marks, pointers);
+      }
+    }
+  }
+
+  var done = {};
+  for (i = bestL; i <= bestR; i++) done[i] = 'done';
+  snap('return ans;',
+    n <= 1 ? '返回 1' : '扫完：最长湍流是 [' + a.slice(bestL, bestR + 1).join(',') + ']，长度 ' + ans,
+    done, []);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

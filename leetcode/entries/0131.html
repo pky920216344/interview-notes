@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>分割回文串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 285 / 1159</span>
+  <nav class="pn"><a href="0013.html">上一篇</a><a href="0438.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">131. </span>分割回文串</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 15</li><li class="algo">回溯</li><li class="aux">动态规划</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="tag">回溯</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">先用区间 DP 预处理 isPal[i][j]，再回溯枚举切割点：每段是回文就切下去，切到串尾收方案，撤销换切点。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>预处理 <code>isPal[i][j]</code>：<code>s[i]==s[j]</code> 且（长度 &lt; 2 或 <code>isPal[i+1][j-1]</code>）；<code>i</code> 倒着算保证内部先算好，之后 O(1) 查询。</li><li>回溯：从 <code>start</code> 枚举 <code>end</code>，<code>isPal[start][end]</code> 为真就 <code>path.add</code> 这一段并递归 <code>end+1</code>。</li><li><code>start == s.length()</code> 时收进 <code>ans</code>（要 <code>new ArrayList&lt;&gt;(path)</code> 拷贝）；返回前 <code>path.remove</code> 撤销这一刀再试下一个切点。</li><li>重复利用 isPal 表，别在回溯里每次现判回文（那是 O(n³) 起步）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·2^n)（输出本身就有指数多个），空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; partition(<span class="t">String</span> s) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">6</span>        <span class="c">// isPal[i][j]：s[i..j] 是否回文；i 倒着算，长区间看两头字符和内部小区间</span></span><span class="ln"><span class="no">7</span>        <span class="k">boolean</span>[][] isPal = <span class="k">new</span> <span class="k">boolean</span>[n][n];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = n - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> j = i; j &lt; n; j++) {</span><span class="ln"><span class="no">10</span>                isPal[i][j] = s.charAt(i) == s.charAt(j) &amp;&amp; (j - i &lt; <span class="n">2</span> || isPal[i + <span class="n">1</span>][j - <span class="n">1</span>]);</span><span class="ln"><span class="no">11</span>            }</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">14</span>        dfs(s, <span class="n">0</span>, isPal, <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(), ans);</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="c">// 从 start 开始切剩余部分；path 是前面已经切好的回文段</span></span><span class="ln"><span class="no">19</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="t">String</span> s, <span class="k">int</span> start, <span class="k">boolean</span>[][] isPal, <span class="t">List</span>&lt;<span class="t">String</span>&gt; path, <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; ans) {</span><span class="ln"><span class="no">20</span>        <span class="k">if</span> (start == s.length()) {          <span class="c">// 切到串尾，path 就是一种方案</span></span><span class="ln"><span class="no">21</span>            ans.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(path));</span><span class="ln"><span class="no">22</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">for</span> (<span class="k">int</span> end = start; end &lt; s.length(); end++) {</span><span class="ln"><span class="no">25</span>            <span class="k">if</span> (!isPal[start][end]) <span class="k">continue</span>;</span><span class="ln"><span class="no">26</span>            path.add(s.substring(start, end + <span class="n">1</span>));   <span class="c">// s[start..end] 是回文，切下这一段</span></span><span class="ln"><span class="no">27</span>            dfs(s, end + <span class="n">1</span>, isPal, path, ans);</span><span class="ln"><span class="no">28</span>            path.remove(path.size() - <span class="n">1</span>);            <span class="c">// 撤销这一刀，换下一个切点</span></span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串 <code>s</code>，请你将<em> </em><code>s</code><em> </em>分割成一些 <span>子串</span>，使每个子串都是 <strong><span>回文串</span></strong> 。返回 <code>s</code> 所有可能的分割方案。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "aab"
+<strong>输出：</strong>[["a","a","b"],["aa","b"]]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "a"
+<strong>输出：</strong>[["a"]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 16</code></li>
+	<li><code>s</code> 仅由小写英文字母组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<String>> partition(String s) {", "        int n = s.length();", "        // isPal[i][j]：s[i..j] 是否回文；i 倒着算，长区间看两头字符和内部小区间", "        boolean[][] isPal = new boolean[n][n];", "        for (int i = n - 1; i >= 0; i--) {", "            for (int j = i; j < n; j++) {", "                isPal[i][j] = s.charAt(i) == s.charAt(j) && (j - i < 2 || isPal[i + 1][j - 1]);", "            }", "        }", "        List<List<String>> ans = new ArrayList<>();", "        dfs(s, 0, isPal, new ArrayList<>(), ans);", "        return ans;", "    }", "", "    // 从 start 开始切剩余部分；path 是前面已经切好的回文段", "    private void dfs(String s, int start, boolean[][] isPal, List<String> path, List<List<String>> ans) {", "        if (start == s.length()) {          // 切到串尾，path 就是一种方案", "            ans.add(new ArrayList<>(path));", "            return;", "        }", "        for (int end = start; end < s.length(); end++) {", "            if (!isPal[start][end]) continue;", "            path.add(s.substring(start, end + 1));   // s[start..end] 是回文，切下这一段", "            dfs(s, end + 1, isPal, path, ans);", "            path.remove(path.size() - 1);            // 撤销这一刀，换下一个切点", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 131. 分割回文串 —— 图解：复刻 Solution.java 的「isPal 预处理 + 回溯切分」，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'aab' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+  var fired = { firstCut: false, firstPlan: false, firstBack: false };
+
+  // 预处理 isPal：i 从后往前、j 从 i 往右，和 Solution.java 的两重循环一致
+  var isPal = [];
+  for (var i = 0; i < n; i++) isPal.push(new Array(n).fill(false));
+  for (var i2 = n - 1; i2 >= 0; i2--) {
+    for (var j2 = i2; j2 < n; j2++) {
+      isPal[i2][j2] = s[i2] === s[j2] && (j2 - i2 < 2 || isPal[i2 + 1][j2 - 1]);
+    }
+  }
+
+  function gridPanel() {
+    var rows = [];
+    for (var r = 0; r < n; r++) rows.push(isPal[r].map(function (b) { return b ? '✓' : '·'; }));
+    return Viz.grid(rows, { title: 'isPal[i][j]：s[i..j] 是否回文（✓ = 真）', colLabels: s.split(''), corner: 'i\\j' });
+  }
+  function strPanel(start, end, marks) {
+    var m = marks || {};
+    var ptrs = [{ at: Math.min(start, n - 1), label: 'start', cls: 'p-left' }];
+    if (end >= start) ptrs.push({ at: end, label: 'end', cls: 'p-right' });
+    return Viz.cells(s.split(''), {
+      title: 's', marks: m, pointers: ptrs,
+      range: end >= start ? { from: start, to: end, label: '正在试的 s[' + start + '..' + end + ']' } : null
+    });
+  }
+  function pathPanel(chg) {
+    return Viz.table('path：已切好的段', path.map(function (p, i) {
+      return { k: '第 ' + (i + 1) + ' 段', v: p, cls: i === chg ? 'new' : '' };
+    }), { hint: '（切到串尾就是一种方案）' });
+  }
+  function ansPanel() {
+    return Viz.vars([{ name: 'ans（方案数）', v: String(ans.length), cls: 'chg' }]);
+  }
+  function cmpJoined(p, q) {
+    var a = p.join(','), b = q.join(',');
+    return a < b ? -1 : a > b ? 1 : 0;
+  }
+
+  frames.push(Viz.frame('isPal[i][j] = s.charAt(i) == s.charAt(j) && (j - i < 2 || isPal[i + 1][j - 1]);',
+    '先算 isPal：对角线全真；长 2 看两头相等，更长再看内部是否回文',
+    [gridPanel(), strPanel(0, -1, {})]));
+
+  var path = [];
+  var ans = [];
+  var completed = 0;      // 已收进 ans 的方案数
+  var justDone = false;   // 刚完成一个方案，下一次撤销时拍「回溯」
+
+  function dfs(start) {
+    if (start === n) {
+      ans.push(path.slice());
+      completed++;
+      if (completed === 1 && !fired.firstPlan) {
+        fired.firstPlan = true;
+        justDone = true;
+        frames.push(Viz.frame('ans.add(new ArrayList<>(path));',
+          '切到串尾：path = [' + path.join(', ') + '] 是第一种方案',
+          [pathPanel(path.length - 1), ansPanel()]));
+      }
+      return;
+    }
+    for (var end = start; end < n; end++) {
+      if (!isPal[start][end]) continue;
+      path.push(s.substring(start, end + 1));
+      if (start === 0 && end === 0 && !fired.firstCut) {
+        fired.firstCut = true;
+        frames.push(Viz.frame('path.add(s.substring(start, end + 1));',
+          'start=0：s[0..0] 是回文，切下第一段并往下递归',
+          [strPanel(start, end, (function () { var m = {}; m[end] = 'cur'; return m; })()), pathPanel(path.length - 1)]));
+      }
+      dfs(end + 1);
+      path.pop();
+      if (justDone && !fired.firstBack) {
+        fired.firstBack = true;
+        frames.push(Viz.frame('path.remove(path.size() - 1);',
+          '回溯：撤掉这一段，回到分叉口换下一种切法',
+          [strPanel(start, end, {}), pathPanel(-1)]));
+      }
+    }
+  }
+
+  dfs(0);
+
+  frames.push(Viz.frame('return ans;',
+    '所有切法找完：共 ' + ans.length + ' 种方案',
+    [Viz.table('ans：全部方案（顺序已规范化）', ans.map(function (p, i) {
+      return { k: '方案 ' + (i + 1), v: '[' + p.join(', ') + ']', cls: 'done' };
+    }))]));
+  return { frames: frames, result: ans.map(function (p) { return p.slice(); }).sort(cmpJoined) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

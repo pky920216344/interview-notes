@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最低票价 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 464 / 1159</span>
+  <nav class="pn"><a href="0976.html">上一篇</a><a href="0369.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">983. </span>最低票价</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">倒着按旅行日 DP：dp[i] = 三种票各自「票价 + 盖不住之后的 dp[next]」的最小值。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>只在旅行日做决策：<code>dp[i]</code> = 完成 <code>days[i..]</code> 的最低花费；<code>dp[n] = 0</code> 是边界。</li><li>第 <code>days[i]</code> 天必须旅行 ⇒ 手上必须有一张盖住它的票；票从当天算起（提前买只会浪费覆盖面）。</li><li>三种选择：1 天票 → <code>costs[0] + dp[next(i,1)]</code>；7 天、30 天同理。<code>next(i,span)</code> = 这张票<strong>盖不住</strong>的第一个旅行日下标（向后扫 ≤ span 步）。</li><li>状态只有「第几个旅行日」，不用按日历天开 365 长度的数组。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(30n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> mincostTickets(<span class="k">int</span>[] days, <span class="k">int</span>[] costs) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = days.length;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];               <span class="c">// dp[i]：搞定 days[i..] 这些旅行日的最低花费</span></span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = n - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">6</span>            <span class="c">// days[i] 当天必须旅行，手上得有一张盖住它的票</span></span><span class="ln"><span class="no">7</span>            <span class="c">// 票一律从当天算起，三张各试一张，取最省</span></span><span class="ln"><span class="no">8</span>            dp[i] = <span class="t">Math</span>.min(costs[<span class="n">0</span>] + dp[next(days, i, <span class="n">1</span>)],</span><span class="ln"><span class="no">9</span>                    <span class="t">Math</span>.min(costs[<span class="n">1</span>] + dp[next(days, i, <span class="n">7</span>)], costs[<span class="n">2</span>] + dp[next(days, i, <span class="n">30</span>)]));</span><span class="ln"><span class="no">10</span>        }</span><span class="ln"><span class="no">11</span>        <span class="k">return</span> dp[<span class="n">0</span>];</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="c">// 从 days[i] 当天买一张 span 天的票，返回它盖不住的第一个旅行日下标</span></span><span class="ln"><span class="no">15</span>    <span class="k">private</span> <span class="k">int</span> next(<span class="k">int</span>[] days, <span class="k">int</span> i, <span class="k">int</span> span) {</span><span class="ln"><span class="no">16</span>        <span class="k">int</span> j = i;</span><span class="ln"><span class="no">17</span>        <span class="k">while</span> (j &lt; days.length &amp;&amp; days[j] &lt;= days[i] + span - <span class="n">1</span>) j++;</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> j;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>在一个火车旅行很受欢迎的国度，你提前一年计划了一些火车旅行。在接下来的一年里，你要旅行的日子将以一个名为&nbsp;<code>days</code>&nbsp;的数组给出。每一项是一个从&nbsp;<code>1</code>&nbsp;到&nbsp;<code>365</code>&nbsp;的整数。</p>
+
+<p>火车票有 <strong>三种不同的销售方式</strong> ：</p>
+
+<ul>
+	<li>一张 <strong>为期一天</strong> 的通行证售价为&nbsp;<code>costs[0]</code> 美元；</li>
+	<li>一张 <strong>为期七天</strong> 的通行证售价为&nbsp;<code>costs[1]</code> 美元；</li>
+	<li>一张 <strong>为期三十天</strong> 的通行证售价为&nbsp;<code>costs[2]</code> 美元。</li>
+</ul>
+
+<p>通行证允许数天无限制的旅行。 例如，如果我们在第 <code>2</code> 天获得一张 <strong>为期 7 天</strong> 的通行证，那么我们可以连着旅行 7 天：第 <code>2</code> 天、第 <code>3</code> 天、第 <code>4</code> 天、第 <code>5</code> 天、第 <code>6</code> 天、第 <code>7</code> 天和第 <code>8</code> 天。</p>
+
+<p>返回 <em>你想要完成在给定的列表&nbsp;<code>days</code>&nbsp;中列出的每一天的旅行所需要的最低消费&nbsp;</em>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>days = [1,4,6,7,8,20], costs = [2,7,15]
+<strong>输出：</strong>11
+<strong>解释： </strong>
+例如，这里有一种购买通行证的方法，可以让你完成你的旅行计划：
+在第 1 天，你花了 costs[0] = $2 买了一张为期 1 天的通行证，它将在第 1 天生效。
+在第 3 天，你花了 costs[1] = $7 买了一张为期 7 天的通行证，它将在第 3, 4, ..., 9 天生效。
+在第 20 天，你花了 costs[0] = $2 买了一张为期 1 天的通行证，它将在第 20 天生效。
+你总共花了 $11，并完成了你计划的每一天旅行。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>days = [1,2,3,4,5,6,7,8,9,10,30,31], costs = [2,7,15]
+<strong>输出：</strong>17
+<strong>解释：
+</strong>例如，这里有一种购买通行证的方法，可以让你完成你的旅行计划： 
+在第 1 天，你花了 costs[2] = $15 买了一张为期 30 天的通行证，它将在第 1, 2, ..., 30 天生效。
+在第 31 天，你花了 costs[0] = $2 买了一张为期 1 天的通行证，它将在第 31 天生效。 
+你总共花了 $17，并完成了你计划的每一天旅行。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= days.length &lt;= 365</code></li>
+	<li><code>1 &lt;= days[i] &lt;= 365</code></li>
+	<li><code>days</code>&nbsp;按顺序严格递增</li>
+	<li><code>costs.length == 3</code></li>
+	<li><code>1 &lt;= costs[i] &lt;= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int mincostTickets(int[] days, int[] costs) {", "        int n = days.length;", "        int[] dp = new int[n + 1];               // dp[i]：搞定 days[i..] 这些旅行日的最低花费", "        for (int i = n - 1; i >= 0; i--) {", "            // days[i] 当天必须旅行，手上得有一张盖住它的票", "            // 票一律从当天算起，三张各试一张，取最省", "            dp[i] = Math.min(costs[0] + dp[next(days, i, 1)],", "                    Math.min(costs[1] + dp[next(days, i, 7)], costs[2] + dp[next(days, i, 30)]));", "        }", "        return dp[0];", "    }", "", "    // 从 days[i] 当天买一张 span 天的票，返回它盖不住的第一个旅行日下标", "    private int next(int[] days, int i, int span) {", "        int j = i;", "        while (j < days.length && days[j] <= days[i] + span - 1) j++;", "        return j;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 983. 最低票价 —— 图解：复刻 Solution.java 的「按旅行日倒着 DP」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { days: [1, 4, 6, 7, 8, 20], costs: [2, 7, 15] };
+
+function trace(input) {
+  var days = input.days, costs = input.costs;
+  var n = days.length;
+  var dp = [];
+  for (var k = 0; k <= n; k++) dp[k] = k === n ? 0 : '?';
+  var frames = [];
+  var didFirst = false, didWeek = false;
+
+  function daysPanel(i, coverTo) {
+    var marks = {};
+    for (var k = 0; k < n; k++) marks[k] = k > i ? 'dim' : (k === i ? 'cur' : 'win');
+    var range = null;
+    if (coverTo != null && coverTo >= i) {
+      range = { from: i, to: coverTo, label: '这张票盖住 days[' + i + '..' + coverTo + ']' };
+    }
+    return Viz.cells(days, {
+      title: '旅行日 days（橙 = 正在算的 dp[i]）', marks: marks,
+      pointers: i >= 0 && i < n ? [{ at: i, label: 'i', cls: 'p-cur' }] : [], range: range
+    });
+  }
+
+  function dpPanel(marks) {
+    var vals = [], lbl = [];
+    for (var k = 0; k <= n; k++) { vals.push(String(dp[k])); lbl.push(k === n ? '底' : 'd' + days[k]); }
+    return Viz.grid([vals], { title: 'dp[i]：搞定 days[i..] 的最低花费', marks: marks || {}, rowLabels: ['dp'], colLabels: lbl, corner: '' });
+  }
+
+  function costsPanel() {
+    return Viz.table('票价 costs', [
+      { k: '1 天', v: costs[0] }, { k: '7 天', v: costs[1] }, { k: '30 天', v: costs[2] }
+    ]);
+  }
+
+  function snap(at, key, coverTo, marks) {
+    if (frames.length >= 6) return;
+    frames.push(Viz.frame(at, key, [daysPanel(i, coverTo), dpPanel(marks), costsPanel()]));
+  }
+
+  // 与 Java 相同的 next：days[i] 当天买 span 天票，返回盖不住的第一个旅行日下标
+  function next(i, span) {
+    var j = i;
+    while (j < days.length && days[j] <= days[i] + span - 1) j++;
+    return j;
+  }
+
+  var i = n - 1;
+  snap('for (int i = n - 1; i >= 0; i--) {', '开局：dp[n]=0（后面没有旅行日了），从最后一个旅行日倒着算', null, (function () { var m = {}; m['0,' + n] = 'done'; return m; })());
+
+  for (i = n - 1; i >= 0; i--) {
+    var j1 = next(i, 1), j7 = next(i, 7), j30 = next(i, 30);
+    var c1 = costs[0] + dp[j1], c7 = costs[1] + dp[j7], c30 = costs[2] + dp[j30];
+    dp[i] = Math.min(c1, Math.min(c7, c30));
+    var mk = {}; mk['0,' + i] = 'new';
+    var which = dp[i] === c1 ? '1 天票' : (dp[i] === c7 ? '7 天票' : '30 天票');
+    if (!didFirst) {
+      didFirst = true;
+      snap('dp[i] = Math.min(costs[0] + dp[next(days, i, 1)],',
+        'dp[' + i + ']（第 ' + days[i] + ' 天）：三张票比较，最省 ' + dp[i] + '（' + which + '）', null, mk);
+    } else if (!didWeek && dp[i] === c7 && j7 > i + 1) {
+      didWeek = true;
+      snap('dp[i] = Math.min(costs[0] + dp[next(days, i, 1)],',
+        'dp[' + i + ']（第 ' + days[i] + ' 天）：7 天票一张盖 ' + (j7 - i) + ' 个旅行日，' + costs[1] + '+dp[' + j7 + ']=' + c7 + ' 最省', j7 - 1, mk);
+    }
+  }
+
+  i = 0;
+  var mf = {}; mf['0,0'] = 'done';
+  snap('return dp[0];', '从最后一个旅行日算回首日：dp[0] = ' + dp[0] + '，就是最低票价', null, mf);
+  return { frames: frames, result: dp[0] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

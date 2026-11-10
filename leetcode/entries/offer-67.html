@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>把字符串转换成整数 (atoi) · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 513 / 1159</span>
+  <nav class="pn"><a href="0853.html">上一篇</a><a href="0940.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 67. </span>把字符串转换成整数 (atoi)</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">模拟</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">跳空格 → 定符号 → 逐位累加；一旦超出 int 范围就停止读取，最后按符号截断到边界值。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>四步走：跳前导空格、读可选正负号、累加数字、按范围截断。</li><li>用 <code>long</code> 累加，<code>num &gt; Integer.MAX_VALUE</code> 就停：再读只会更大，方向已定。</li><li>截断不对称：正数上界 2^31−1，负数下界 −2^31（绝对值可以多 1）。</li><li>符号只认一个：<code>+12</code>、<code>-12</code> 行，<code>+-12</code> 直接得 0。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> myAtoi(<span class="t">String</span> str) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> i = <span class="n">0</span>, n = str.length();</span><span class="ln"><span class="no">4</span>        <span class="c">// 跳过前导空格</span></span><span class="ln"><span class="no">5</span>        <span class="k">while</span> (i &lt; n &amp;&amp; str.charAt(i) == <span class="s">' '</span>) i++;</span><span class="ln"><span class="no">6</span>        <span class="c">// 可选的正负号，只认一个</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> sign = <span class="n">1</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">if</span> (i &lt; n &amp;&amp; (str.charAt(i) == <span class="s">'+'</span> || str.charAt(i) == <span class="s">'-'</span>)) {</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (str.charAt(i) == <span class="s">'-'</span>) sign = -<span class="n">1</span>;</span><span class="ln"><span class="no">10</span>            i++;</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="c">// 逐位累加；超出 int 就停，再读只会更超</span></span><span class="ln"><span class="no">13</span>        <span class="k">long</span> num = <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>        <span class="k">while</span> (i &lt; n &amp;&amp; str.charAt(i) &gt;= <span class="s">'0'</span> &amp;&amp; str.charAt(i) &lt;= <span class="s">'9'</span>) {</span><span class="ln"><span class="no">15</span>            num = num * <span class="n">10</span> + (str.charAt(i) - <span class="s">'0'</span>);</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (num &gt; <span class="t">Integer</span>.MAX_VALUE) <span class="k">break</span>;</span><span class="ln"><span class="no">17</span>            i++;</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="c">// 截断：正数顶到 2^31-1，负数可以到 -2^31</span></span><span class="ln"><span class="no">20</span>        <span class="k">if</span> (sign == <span class="n">1</span>) <span class="k">return</span> num &gt; <span class="t">Integer</span>.MAX_VALUE ? <span class="t">Integer</span>.MAX_VALUE : (<span class="k">int</span>) num;</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> num &gt; -(<span class="k">long</span>) <span class="t">Integer</span>.MIN_VALUE ? <span class="t">Integer</span>.MIN_VALUE : (<span class="k">int</span>) -num;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>请你来实现一个&nbsp;<code>myAtoi(string s)</code>&nbsp;函数，使其能将字符串转换成一个 32 位有符号整数（类似 C/C++ 中的 <code>atoi</code> 函数）。</p>
+
+<p>函数&nbsp;<code>myAtoi(string s)</code> 的算法如下：</p>
+
+<ol>
+	<li>读入字符串并丢弃无用的前导空格</li>
+	<li>检查下一个字符（假设还未到字符末尾）为正还是负号，读取该字符（如果有）。 确定最终结果是负数还是正数。 如果两者都不存在，则假定结果为正。</li>
+	<li>读入下一个字符，直到到达下一个非数字字符或到达输入的结尾。字符串的其余部分将被忽略。</li>
+	<li>将前面步骤读入的这些数字转换为整数（即，"123" -&gt; 123， "0032" -&gt; 32）。如果没有读入数字，则整数为 <code>0</code> 。必要时更改符号（从步骤 2 开始）。</li>
+	<li>如果整数数超过 32 位有符号整数范围 <code>[−2<sup>31</sup>,&nbsp; 2<sup>31&nbsp;</sup>− 1]</code> ，需要截断这个整数，使其保持在这个范围内。具体来说，小于 <code>−2<sup>31</sup></code> 的整数应该被固定为 <code>−2<sup>31</sup></code> ，大于 <code>2<sup>31&nbsp;</sup>− 1</code> 的整数应该被固定为 <code>2<sup>31&nbsp;</sup>− 1</code> 。</li>
+	<li>返回整数作为最终结果。</li>
+</ol>
+
+<p><strong>注意：</strong></p>
+
+<ul>
+	<li>本题中的空白字符只包括空格字符 <code>' '</code> 。</li>
+	<li>除前导空格或数字后的其余字符串外，<strong>请勿忽略</strong> 任何其他字符。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "42"
+<strong>输出：</strong>42
+<strong>解释：</strong>加粗的字符串为已经读入的字符，插入符号是当前读取的字符。
+第 1 步："42"（当前没有读入字符，因为没有前导空格）
+         ^
+第 2 步："42"（当前没有读入字符，因为这里不存在 '-' 或者 '+'）
+         ^
+第 3 步："<u>42</u>"（读入 "42"）
+           ^
+解析得到整数 42 。
+由于 "42" 在范围 [-2<sup>31</sup>, 2<sup>31</sup> - 1] 内，最终结果为 42 。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "   -42"
+<strong>输出：</strong>-42
+<strong>解释：</strong>
+第 1 步："<u></u>-42"（读入前导空格，但忽视掉）
+            ^
+第 2 步："   <u><strong>-</strong></u>42"（读入 '-' 字符，所以结果应该是负数）
+             ^
+第 3 步："   <u><strong>-42</strong></u>"（读入 "42"）
+               ^
+解析得到整数 -42 。
+由于 "-42" 在范围 [-2<sup>31</sup>, 2<sup>31</sup> - 1] 内，最终结果为 -42 。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "4193 with words"
+<strong>输出：</strong>4193
+<strong>解释：</strong>
+第 1 步："4193 with words"（当前没有读入字符，因为没有前导空格）
+         ^
+第 2 步："4193 with words"（当前没有读入字符，因为这里不存在 '-' 或者 '+'）
+         ^
+第 3 步："<u>4193</u> with words"（读入 "4193"；由于下一个字符不是一个数字，所以读入停止）
+             ^
+解析得到整数 4193 。
+由于 "4193" 在范围 [-2<sup>31</sup>, 2<sup>31</sup> - 1] 内，最终结果为 4193 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= s.length &lt;= 200</code></li>
+	<li><code>s</code> 由英文字母（大写和小写）、数字（<code>0-9</code>）、<code>' '</code>、<code>'+'</code>、<code>'-'</code> 和 <code>'.'</code> 组成</li>
+</ul>
+
+
+
+<p>注意：本题与主站 8 题相同：<a href="https://leetcode.cn/problems/string-to-integer-atoi/">https://leetcode.cn/problems/string-to-integer-atoi/</a></p>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int myAtoi(String str) {", "        int i = 0, n = str.length();", "        // 跳过前导空格", "        while (i < n && str.charAt(i) == ' ') i++;", "        // 可选的正负号，只认一个", "        int sign = 1;", "        if (i < n && (str.charAt(i) == '+' || str.charAt(i) == '-')) {", "            if (str.charAt(i) == '-') sign = -1;", "            i++;", "        }", "        // 逐位累加；超出 int 就停，再读只会更超", "        long num = 0;", "        while (i < n && str.charAt(i) >= '0' && str.charAt(i) <= '9') {", "            num = num * 10 + (str.charAt(i) - '0');", "            if (num > Integer.MAX_VALUE) break;", "            i++;", "        }", "        // 截断：正数顶到 2^31-1，负数可以到 -2^31", "        if (sign == 1) return num > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) num;", "        return num > -(long) Integer.MIN_VALUE ? Integer.MIN_VALUE : (int) -num;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 剑指 Offer 67 / LCR 192. 把字符串转换成整数 (atoi) —— 图解：复刻 Solution.java 的四步解析，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { str: '  -42a' };
+
+function trace(input) {
+  var s = input.str;
+  var n = s.length;
+  var frames = [];
+
+  var SPACE = "while (i < n && str.charAt(i) == ' ') i++;";
+  var SIGN = "if (str.charAt(i) == '-') sign = -1;";
+  var NUM = "num = num * 10 + (str.charAt(i) - '0');";
+  var POS = 'return num > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) num;';
+  var NEG = 'return num > -(long) Integer.MIN_VALUE ? Integer.MIN_VALUE : (int) -num;';
+
+  var i = 0, sign = 1, num = 0;
+  var digFrom = -1, digTo = -1;
+
+  function panel() {
+    var marks = {}, k;
+    for (k = 0; k < n; k++) {
+      if (k < i) marks[k] = 'dim';
+      if (digFrom >= 0 && k >= digFrom && k < digTo) marks[k] = 'win';
+    }
+    var pointers = i < n ? [{ at: i, label: 'i', cls: 'p-right' }] : [];
+    return Viz.cells(s.split(''), { title: '输入字符串', marks: marks, pointers: pointers });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: 'sign', v: sign === 1 ? '+1' : '-1' },
+      { name: 'num', v: String(num) }
+    ]);
+  }
+  function snap(at, key) { frames.push(Viz.frame(at, key, [panel(), varsPanel()])); }
+
+  var spaces = 0;
+  while (i < n && s[i] === ' ') { i++; spaces++; }
+  if (spaces > 0) snap(SPACE, '跳过 ' + spaces + ' 个前导空格，i 停在第一个有效字符');
+
+  if (i < n && (s[i] === '+' || s[i] === '-')) {
+    if (s[i] === '-') sign = -1;
+    i++;
+    snap(SIGN, '读到符号：sign = ' + (sign === 1 ? '+1' : '-1') + '，正负号只认一个');
+  }
+
+  var start = i;
+  while (i < n && s[i] >= '0' && s[i] <= '9') {
+    num = num * 10 + (s.charCodeAt(i) - 48);
+    if (num > 2147483647) break;
+    i++;
+  }
+  digFrom = start;
+  digTo = i;
+  if (digTo > digFrom) {
+    snap(NUM, '逐位累加：读到 ' + (sign === 1 ? '' : '-') + num + (i < n ? '，在「' + s[i] + '」处停下' : '，到字符串末尾'));
+  }
+
+  var out;
+  if (sign === 1) out = num > 2147483647 ? 2147483647 : num;
+  else out = num > 2147483648 ? -2147483648 : -num;
+  var clamped = (out === 2147483647 && num > 2147483647) || (out === -2147483648 && num > 2147483648);
+  snap(sign === 1 ? POS : NEG, clamped ? '超出 32 位范围：截断到 ' + out : '得到最终结果：' + out);
+  return { frames: frames, result: out };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

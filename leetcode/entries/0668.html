@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>乘法表中第k小的数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 668 / 1159</span>
+  <nav class="pn"><a href="mianshi-02-01.html">上一篇</a><a href="offer-55-i.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">668. </span>乘法表中第k小的数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">二分查找</li><li class="aux">数学</li><li class="tag">数学</li><li class="tag">二分查找</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">二分答案 x：count(x) = 表里 ≤ x 的个数 = 各行 min(x/i, n) 之和，随 x 单调，找第一个 count ≥ k 的 x。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>不建表（m×n 可达 9×10⁸），直接二分「第 k 小的值是多少」：<code>count(x)</code> 单调不减。</li><li><code>count(x)</code> 逐行数：第 i 行是 <code>i, 2i, …, ni</code>，其中 ≤ x 的有 <code>min(x/i, n)</code> 个，一行一条除法即可。</li><li>二分模板：<code>count(mid) ≥ k</code> 说明答案 ≤ mid（压 <code>hi</code>），否则抬 <code>lo</code>；<code>lo == hi</code> 时即为答案。</li><li>答案一定是表里真实存在的数（第一个 count ≥ k 的 x 必在表中）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m log(mn))，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> findKthNumber(<span class="k">int</span> m, <span class="k">int</span> n, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 二分答案 x：表里 ≤ x 的个数随 x 单调不减，找第一个 ≥ k 的 x</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span> lo = <span class="n">1</span>, hi = m * n;</span><span class="ln"><span class="no">5</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">6</span>            <span class="k">int</span> mid = (lo + hi) / <span class="n">2</span>;</span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (count(mid, m, n) &gt;= k) hi = mid;   <span class="c">// 够 k 个：答案在 mid 或更小</span></span><span class="ln"><span class="no">8</span>            <span class="k">else</span> lo = mid + <span class="n">1</span>;                     <span class="c">// 不够：答案更大</span></span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="k">return</span> lo;</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="c">// 乘法表里 ≤ x 的个数：第 i 行是 i,2i,…,ni，其中 ≤ x 的有 min(x/i, n) 个</span></span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="k">int</span> count(<span class="k">long</span> x, <span class="k">int</span> m, <span class="k">int</span> n) {</span><span class="ln"><span class="no">15</span>        <span class="k">int</span> cnt = <span class="n">0</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= m; i++) cnt += <span class="t">Math</span>.min(x / i, n);</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> cnt;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>几乎每一个人都用&nbsp;<a href="https://baike.baidu.com/item/%E4%B9%98%E6%B3%95%E8%A1%A8">乘法表</a>。但是你能在乘法表中快速找到第 <code>k</code> 小的数字吗？</p>
+
+<p>乘法表是大小为 <code>m x n</code> 的一个整数矩阵，其中&nbsp;<code>mat[i][j] == i * j</code>（下标从 <strong>1</strong> 开始）。</p>
+
+<p>给你三个整数 <code>m</code>、<code>n</code> 和 <code>k</code>，请你在大小为&nbsp;<code>m x n</code> 的乘法表中，找出并返回第 <code>k</code>&nbsp;小的数字。</p>
+
+<div class="original__bRMd">
+<div>
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/b84dbd040191.jpg" style="width: 500px; height: 254px;" />
+<pre>
+<strong>输入：</strong>m = 3, n = 3, k = 5
+<strong>输出：</strong>3
+<strong>解释：</strong>第 5 小的数字是 3 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/0648f2a633e8.jpg" style="width: 493px; height: 293px;" />
+<pre>
+<strong>输入：</strong>m = 2, n = 3, k = 6
+<strong>输出：</strong>6
+<strong>解释：</strong>第 6 小的数字是 6 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= m, n &lt;= 3 * 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= k &lt;= m * n</code></li>
+</ul>
+</div>
+</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int findKthNumber(int m, int n, int k) {", "        // 二分答案 x：表里 ≤ x 的个数随 x 单调不减，找第一个 ≥ k 的 x", "        int lo = 1, hi = m * n;", "        while (lo < hi) {", "            int mid = (lo + hi) / 2;", "            if (count(mid, m, n) >= k) hi = mid;   // 够 k 个：答案在 mid 或更小", "            else lo = mid + 1;                     // 不够：答案更大", "        }", "        return lo;", "    }", "", "    // 乘法表里 ≤ x 的个数：第 i 行是 i,2i,…,ni，其中 ≤ x 的有 min(x/i, n) 个", "    private int count(long x, int m, int n) {", "        int cnt = 0;", "        for (int i = 1; i <= m; i++) cnt += Math.min(x / i, n);", "        return cnt;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 668 乘法表中第k小的数 —— 图解：复刻 Solution.java 的「二分答案 + 按行计数」，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { m: 3, n: 3, k: 5 };
+
+function trace(input) {
+  var m = input.m, n = input.n, k = input.k;
+  var frames = [];
+  var step = 0;
+
+  function gridPanel(mid, extraMarks) {
+    var rows = [], marks = {};
+    for (var i = 1; i <= m; i++) {
+      var row = [];
+      for (var j = 1; j <= n; j++) {
+        var v = i * j;
+        row.push(v);
+        if (mid !== null && v <= mid) marks[(i - 1) + ',' + (j - 1)] = 'win';
+      }
+      rows.push(row);
+    }
+    Object.keys(extraMarks || {}).forEach(function (key) { marks[key] = extraMarks[key]; });
+    var clabels = [], rlabels = [];
+    for (var t = 1; t <= n; t++) clabels.push(String(t));
+    for (var r = 1; r <= m; r++) rlabels.push(String(r));
+    return Viz.grid(rows, { title: '乘法表（亮格 = ≤ mid 的数，亮格个数就是 count）', marks: marks, rowLabels: rlabels, colLabels: clabels, corner: 'i\\j' });
+  }
+  function varsPanel(lo, hi, mid, cnt) {
+    var items = [{ name: '区间 [lo, hi]', v: '[' + lo + ', ' + hi + ']' }];
+    if (mid !== null) items.push({ name: 'mid', v: mid, cls: 'chg' }, { name: 'count(mid)', v: cnt, cls: 'chg' }, { name: 'k', v: k });
+    return Viz.vars(items);
+  }
+  function snap(at, key, lo, hi, mid, cnt, extraMarks) {
+    frames.push(Viz.frame(at, key, [gridPanel(mid, extraMarks), varsPanel(lo, hi, mid, cnt)]));
+  }
+
+  var lo = 1, hi = m * n;
+  snap('int lo = 1, hi = m * n;', '开局：答案在 [1, m×n] 里二分；count(x) = 表中 ≤ x 的个数，随 x 单调', lo, hi, null, null);
+  while (lo < hi) {
+    var mid = Math.floor((lo + hi) / 2);
+    var cnt = 0;
+    for (var i = 1; i <= m; i++) cnt += Math.min(Math.floor(mid / i), n);
+    if (cnt >= k) {
+      if (step < 2) snap('if (count(mid, m, n) >= k) hi = mid;', 'count(' + mid + ')=' + cnt + ' ≥ k=' + k + '：够 k 个，答案 ≤ mid，压上界', lo, hi, mid, cnt);
+      hi = mid;
+    } else {
+      if (step < 2) snap('else lo = mid + 1;', 'count(' + mid + ')=' + cnt + ' < k=' + k + '：不够 k 个，答案更大，抬下界', lo, hi, mid, cnt);
+      lo = mid + 1;
+    }
+    step++;
+  }
+  var done = {};
+  for (var a = 1; a <= m; a++)
+    for (var b = 1; b <= n; b++)
+      if (a * b === lo) done[(a - 1) + ',' + (b - 1)] = 'done';
+  snap('return lo;', 'lo=hi=' + lo + '：第 ' + k + ' 小就是 ' + lo + '，表中它的位置已标出', lo, hi, null, null, done);
+
+  return { frames: frames, result: lo };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

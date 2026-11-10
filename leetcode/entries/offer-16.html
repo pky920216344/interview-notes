@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pow(x, n) · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 641 / 1159</span>
+  <nav class="pn"><a href="0446.html">上一篇</a><a href="0406.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 16. </span>Pow(x, n)</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">位运算</li><li class="tag">递归</li><li class="tag">数学</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">快速幂：把 |n| 按二进制拆开，base 不断平方，逢 1 的位乘进 ans；负指数最后统一取倒数。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>n</code> 先升成 <code>long</code> 再取 <code>|n|</code>：<code>n</code> 可能是 <code>Integer.MIN_VALUE</code>，直接取负会溢出。</li><li>循环里 <code>base</code> 每轮自乘（x→x²→x⁴…），当前位是 1 就 <code>ans *= base</code>。</li><li><strong>负指数放到最后取倒数</strong>：先算 <code>x^|n|</code> 再 <code>1/ans</code>。若一上来就用 <code>1/x</code> 当底数，大指数用例的精度过不了。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">double</span> myPow(<span class="k">double</span> x, <span class="k">int</span> n) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 快速幂：|n| 按二进制拆开，base 不断自乘平方，逢 1 的位把当时的 base 乘进结果</span></span><span class="ln"><span class="no">4</span>        <span class="k">long</span> m = n;              <span class="c">// n 可能是 Integer.MIN_VALUE，直接取负会溢出，先升成 long</span></span><span class="ln"><span class="no">5</span>        <span class="k">boolean</span> neg = m &lt; <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (neg) m = -m;</span><span class="ln"><span class="no">7</span>        <span class="k">double</span> ans = <span class="n">1</span>, base = x;</span><span class="ln"><span class="no">8</span>        <span class="k">while</span> (m &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> ((m &amp; <span class="n">1</span>) == <span class="n">1</span>) ans *= base;   <span class="c">// 这一位是 1：结果乘上 x 的 2^k 次方</span></span><span class="ln"><span class="no">10</span>            base *= base;                    <span class="c">// base 自乘：从 x^(2^k) 变 x^(2^(k+1))</span></span><span class="ln"><span class="no">11</span>            m &gt;&gt;= <span class="n">1</span>;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="c">// 负指数最后统一取倒数：先算 x^|n| 再除，精度才对（先取倒数会被大指数精度用例拒绝）</span></span><span class="ln"><span class="no">14</span>        <span class="k">return</span> neg ? <span class="n">1</span> / ans : ans;</span><span class="ln"><span class="no">15</span>    }</span><span class="ln"><span class="no">16</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>实现&nbsp;<a href="https://www.cplusplus.com/reference/valarray/pow/">pow(<em>x</em>,&nbsp;<em>n</em>)</a>&nbsp;，即计算 x 的 n 次幂函数（即，x<sup>n</sup>）。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>x = 2.00000, n = 10
+<strong>输出：</strong>1024.00000
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>x = 2.10000, n = 3
+<strong>输出：</strong>9.26100</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>x = 2.00000, n = -2
+<strong>输出：</strong>0.25000
+<strong>解释：</strong>2<sup>-2</sup> = 1/2<sup>2</sup> = 1/4 = 0.25</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>-100.0 &lt;&nbsp;x&nbsp;&lt; 100.0</code></li>
+	<li><code>-2<sup>31</sup>&nbsp;&lt;= n &lt;=&nbsp;2<sup>31</sup>-1</code></li>
+	<li><code>-10<sup>4</sup>&nbsp;&lt;= x<sup>n</sup>&nbsp;&lt;= 10<sup>4</sup></code></li>
+</ul>
+
+
+
+<p>注意：本题与主站 50 题相同：<a href="https://leetcode.cn/problems/powx-n/">https://leetcode.cn/problems/powx-n/</a></p>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public double myPow(double x, int n) {", "        // 快速幂：|n| 按二进制拆开，base 不断自乘平方，逢 1 的位把当时的 base 乘进结果", "        long m = n;              // n 可能是 Integer.MIN_VALUE，直接取负会溢出，先升成 long", "        boolean neg = m < 0;", "        if (neg) m = -m;", "        double ans = 1, base = x;", "        while (m > 0) {", "            if ((m & 1) == 1) ans *= base;   // 这一位是 1：结果乘上 x 的 2^k 次方", "            base *= base;                    // base 自乘：从 x^(2^k) 变 x^(2^(k+1))", "            m >>= 1;", "        }", "        // 负指数最后统一取倒数：先算 x^|n| 再除，精度才对（先取倒数会被大指数精度用例拒绝）", "        return neg ? 1 / ans : ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 剑指 Offer 16. 数值的整数次方 —— 图解：复刻 Solution.java 的「快速幂 + 最后取倒数」，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { x: 2, n: -5 };
+
+function trace(input) {
+  var x = input.x, n = input.n;
+  var frames = [];
+  var neg = n < 0;
+  var m = Math.abs(n);
+  var ans = 1, base = x;
+  var k = 0;                       // 正在处理第 k 位（从最低位数起）
+  var fired = { first1: false, first0: false, sq: false };
+
+  var INIT = 'double ans = 1, base = x;';
+  var MUL = 'if ((m & 1) == 1) ans *= base;';
+  var SQ = 'base *= base;';
+  var RET = 'return neg ? 1 / ans : ans;';
+
+  // |n| 的二进制位，按书写顺序排；处理从最右边的低位开始，指针向左走
+  var bits = m === 0 ? [] : m.toString(2).split('');
+
+  function bitsPanel(final) {
+    var marks = {};
+    for (var j = 0; j < bits.length; j++) {
+      if (final) marks[j] = bits[j] === '1' ? 'done' : 'dim';
+      else if (bits[j] === '1') marks[j] = 'win';
+    }
+    var pointers = final ? [] : (bits.length ? [{ at: bits.length - 1 - k, label: '当前位', cls: 'p-cur' }] : []);
+    return Viz.cells(bits, { title: '指数 |n| = ' + m0 + ' 的二进制（从右往左处理）', marks: marks, pointers: pointers, hideIndex: true });
+  }
+  function varsPanel(extra) {
+    var items = [
+      { name: 'ans（已算出的部分积）', v: String(ans) },
+      { name: 'base（x 的 2^k 次方）', v: String(base) },
+      { name: 'k（轮到的位）', v: String(k) }
+    ];
+    if (extra) items.push(extra);
+    return Viz.vars(items);
+  }
+  function snap(at, key, extra) { frames.push(Viz.frame(at, key, [bitsPanel(false), varsPanel(extra)])); }
+
+  var m0 = m;
+  var fmt = function (v) {           // 数值太长时截断，保证帧说明不超过 60 字
+    var s = String(v);
+    return s.length > 10 ? s.slice(0, 8) + '…' : s;
+  };
+  if (neg) {
+    snap(INIT, 'n 为负：先按 |n| = ' + m + ' 算幂，最后才取倒数', { name: 'n', v: String(n), cls: 'bad' });
+  } else {
+    snap(INIT, '快速幂：ans 从 1 起，base 从 x = ' + x + ' 起');
+  }
+
+  while (m > 0) {
+    if (m % 2 === 1) {
+      ans *= base;
+      if (!fired.first1) {
+        fired.first1 = true;
+        snap(MUL, '第 ' + k + ' 位是 1：ans 乘上 base，得 ' + fmt(ans));
+      }
+      if (m === 1) snap(MUL, '最高位的 1：ans 乘上最后的 base，x^|n| 算完');
+    } else if (!fired.first0) {
+      fired.first0 = true;
+      snap(MUL, '第 ' + k + ' 位是 0：ans 保持 ' + fmt(ans) + '，base 马上平方');
+    }
+    base *= base;
+    if (!fired.sq) {
+      fired.sq = true;
+      snap(SQ, 'base 自乘：x^(2^' + k + ') 平方成 x^(2^' + (k + 1) + ')');
+    }
+    m = Math.floor(m / 2);
+    k++;
+  }
+
+  if (neg) {
+    var inv = 1 / ans;
+    ans = inv;
+    frames.push(Viz.frame(RET, '最后一步才取倒数：返回 1 ÷ x^|n| 的结果', [bitsPanel(true), varsPanel()]));
+  } else {
+    frames.push(Viz.frame(RET, 'n 为正：不用取倒数，直接返回 ' + ans, [bitsPanel(true), varsPanel()]));
+  }
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

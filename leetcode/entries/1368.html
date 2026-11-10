@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>使网格图至少有一条有效路径的最小代价 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1018 / 1159</span>
+  <nav class="pn"><a href="0801.html">上一篇</a><a href="0650.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1368. </span>使网格图至少有一条有效路径的最小代价</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">广度优先搜索</li><li class="aux">图算法</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="tag">最短路</li><li class="tag">dijkstra</li><li class="tag">堆（优先队列）</li><li class="tag">0-1-bfs</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">0-1 BFS：顺着本格箭头走成本 0、改向走成本 1；双端队列队头进 0 成本、队尾进 1 成本，保证出队即最短。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每个格向 4 个邻居连边：沿 <code>grid[r][c]</code> 箭头方向权 0，其余方向权 1（花 1 改一格箭头）。</li><li>0-1 BFS：松弛成功时，权 0 的邻居 <code>addFirst</code>、权 1 的 <code>addLast</code>；队列里的距离始终非降，等价于 Dijkstra 但不用堆。</li><li>起点入队，反复「出队 → 松弛四邻」，最后 <code>dist[m-1][n-1]</code> 即答案；起点即终点答案为 0。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 方向编号 1~4：右、左、下、上</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">int</span>[] DR = {<span class="n">0</span>, <span class="n">0</span>, <span class="n">1</span>, -<span class="n">1</span>};</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="k">int</span>[] DC = {<span class="n">1</span>, -<span class="n">1</span>, <span class="n">0</span>, <span class="n">0</span>};</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="k">int</span> minCost(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">9</span>        <span class="k">int</span> m = grid.length, n = grid[<span class="n">0</span>].length;</span><span class="ln"><span class="no">10</span>        <span class="k">int</span>[][] dist = <span class="k">new</span> <span class="k">int</span>[m][n];</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span>[] row : dist) <span class="t">Arrays</span>.fill(row, <span class="t">Integer</span>.MAX_VALUE);</span><span class="ln"><span class="no">12</span>        <span class="t">ArrayDeque</span>&lt;<span class="k">int</span>[]&gt; dq = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">13</span>        dist[<span class="n">0</span>][<span class="n">0</span>] = <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>        dq.addFirst(<span class="k">new</span> <span class="k">int</span>[]{<span class="n">0</span>, <span class="n">0</span>});</span><span class="ln"><span class="no">15</span>        <span class="k">while</span> (!dq.isEmpty()) {</span><span class="ln"><span class="no">16</span>            <span class="k">int</span>[] cur = dq.pollFirst();</span><span class="ln"><span class="no">17</span>            <span class="k">int</span> r = cur[<span class="n">0</span>], c = cur[<span class="n">1</span>];</span><span class="ln"><span class="no">18</span>            <span class="k">for</span> (<span class="k">int</span> d = <span class="n">0</span>; d &lt; <span class="n">4</span>; d++) {</span><span class="ln"><span class="no">19</span>                <span class="k">int</span> nr = r + DR[d], nc = c + DC[d];</span><span class="ln"><span class="no">20</span>                <span class="k">if</span> (nr &lt; <span class="n">0</span> || nr &gt;= m || nc &lt; <span class="n">0</span> || nc &gt;= n) <span class="k">continue</span>;</span><span class="ln"><span class="no">21</span>                <span class="c">// 顺着本格箭头走成本 0，改向走成本 1：0-1 BFS，短的从头进、长的从尾进</span></span><span class="ln"><span class="no">22</span>                <span class="k">int</span> w = grid[r][c] == d + <span class="n">1</span> ? <span class="n">0</span> : <span class="n">1</span>;</span><span class="ln"><span class="no">23</span>                <span class="k">if</span> (dist[r][c] + w &lt; dist[nr][nc]) {</span><span class="ln"><span class="no">24</span>                    dist[nr][nc] = dist[r][c] + w;</span><span class="ln"><span class="no">25</span>                    <span class="k">if</span> (w == <span class="n">0</span>) dq.addFirst(<span class="k">new</span> <span class="k">int</span>[]{nr, nc});</span><span class="ln"><span class="no">26</span>                    <span class="k">else</span> dq.addLast(<span class="k">new</span> <span class="k">int</span>[]{nr, nc});</span><span class="ln"><span class="no">27</span>                }</span><span class="ln"><span class="no">28</span>            }</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> dist[m - <span class="n">1</span>][n - <span class="n">1</span>];</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个 m x n 的网格图&nbsp;<code>grid</code>&nbsp;。&nbsp;<code>grid</code>&nbsp;中每个格子都有一个数字，对应着从该格子出发下一步走的方向。&nbsp;<code>grid[i][j]</code>&nbsp;中的数字可能为以下几种情况：</p>
+
+<ul>
+	<li><strong>1</strong>&nbsp;，下一步往右走，也就是你会从 <code>grid[i][j]</code>&nbsp;走到 <code>grid[i][j + 1]</code></li>
+	<li><strong>2</strong>&nbsp;，下一步往左走，也就是你会从 <code>grid[i][j]</code>&nbsp;走到 <code>grid[i][j - 1]</code></li>
+	<li><strong>3</strong>&nbsp;，下一步往下走，也就是你会从 <code>grid[i][j]</code>&nbsp;走到 <code>grid[i + 1][j]</code></li>
+	<li><strong>4</strong>&nbsp;，下一步往上走，也就是你会从 <code>grid[i][j]</code>&nbsp;走到 <code>grid[i - 1][j]</code></li>
+</ul>
+
+<p>注意网格图中可能会有&nbsp;<strong>无效数字</strong>&nbsp;，因为它们可能指向&nbsp;<code>grid</code>&nbsp;以外的区域。</p>
+
+<p>一开始，你会从最左上角的格子&nbsp;<code>(0,0)</code>&nbsp;出发。我们定义一条&nbsp;<strong>有效路径</strong>&nbsp;为从格子&nbsp;<code>(0,0)</code>&nbsp;出发，每一步都顺着数字对应方向走，最终在最右下角的格子&nbsp;<code>(m - 1, n - 1)</code>&nbsp;结束的路径。有效路径&nbsp;<strong>不需要是最短路径</strong>&nbsp;。</p>
+
+<p>你可以花费&nbsp;<code>cost = 1</code>&nbsp;的代价修改一个格子中的数字，但每个格子中的数字&nbsp;<strong>只能修改一次</strong>&nbsp;。</p>
+
+<p>请你返回让网格图至少有一条有效路径的最小代价。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/29af268fde49.png" style="height: 528px; width: 542px;"></p>
+
+<pre><strong>输入：</strong>grid = [[1,1,1,1],[2,2,2,2],[1,1,1,1],[2,2,2,2]]
+<strong>输出：</strong>3
+<strong>解释：</strong>你将从点 (0, 0) 出发。
+到达 (3, 3) 的路径为： (0, 0) --&gt; (0, 1) --&gt; (0, 2) --&gt; (0, 3) 花费代价 cost = 1 使方向向下 --&gt; (1, 3) --&gt; (1, 2) --&gt; (1, 1) --&gt; (1, 0) 花费代价 cost = 1 使方向向下 --&gt; (2, 0) --&gt; (2, 1) --&gt; (2, 2) --&gt; (2, 3) 花费代价 cost = 1 使方向向下 --&gt; (3, 3)
+总花费为 cost = 3.
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/57d8bcf8df10.png" style="height: 408px; width: 419px;"></p>
+
+<pre><strong>输入：</strong>grid = [[1,1,3],[3,2,2],[1,1,4]]
+<strong>输出：</strong>0
+<strong>解释：</strong>不修改任何数字你就可以从 (0, 0) 到达 (2, 2) 。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<p><img alt="" src="../assets/img/6057d97c05ae.png" style="height: 302px; width: 314px;"></p>
+
+<pre><strong>输入：</strong>grid = [[1,2],[4,3]]
+<strong>输出：</strong>1
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre><strong>输入：</strong>grid = [[2,2,2],[2,2,2]]
+<strong>输出：</strong>3
+</pre>
+
+<p><strong>示例 5：</strong></p>
+
+<pre><strong>输入：</strong>grid = [[4]]
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == grid.length</code></li>
+	<li><code>n == grid[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 100</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    // 方向编号 1~4：右、左、下、上", "    private static final int[] DR = {0, 0, 1, -1};", "    private static final int[] DC = {1, -1, 0, 0};", "", "    public int minCost(int[][] grid) {", "        int m = grid.length, n = grid[0].length;", "        int[][] dist = new int[m][n];", "        for (int[] row : dist) Arrays.fill(row, Integer.MAX_VALUE);", "        ArrayDeque<int[]> dq = new ArrayDeque<>();", "        dist[0][0] = 0;", "        dq.addFirst(new int[]{0, 0});", "        while (!dq.isEmpty()) {", "            int[] cur = dq.pollFirst();", "            int r = cur[0], c = cur[1];", "            for (int d = 0; d < 4; d++) {", "                int nr = r + DR[d], nc = c + DC[d];", "                if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;", "                // 顺着本格箭头走成本 0，改向走成本 1：0-1 BFS，短的从头进、长的从尾进", "                int w = grid[r][c] == d + 1 ? 0 : 1;", "                if (dist[r][c] + w < dist[nr][nc]) {", "                    dist[nr][nc] = dist[r][c] + w;", "                    if (w == 0) dq.addFirst(new int[]{nr, nc});", "                    else dq.addLast(new int[]{nr, nc});", "                }", "            }", "        }", "        return dist[m - 1][n - 1];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1368. 使网格图至少有一条有效路径的最小代价 —— 图解：复刻 Solution.java 的 0-1 BFS（顺箭头 0 成本头插、改向 1 成本尾插）。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[1, 2], [4, 3]] };
+
+function trace(input) {
+  var g = input.grid;
+  var m = g.length, n = g[0].length;
+  var frames = [];
+  var dist = [];
+  for (var r = 0; r < m; r++) {
+    dist.push([]);
+    for (var c = 0; c < n; c++) dist[r].push(Infinity);
+  }
+  var dq = [];                 // 双端队列：unshift 头插 / push 尾插 / shift 头出
+  dist[0][0] = 0;
+  dq.unshift([0, 0]);
+
+  function gridPanel(marks) {
+    var rows = dist.map(function (row) {
+      return row.map(function (v) { return v === Infinity ? '∞' : String(v); });
+    });
+    return Viz.grid(rows, { title: 'dist：到各格的最小代价（∞ = 还没碰到）', marks: marks || {} });
+  }
+  function varsPanel(extra) {
+    var items = [{ name: '双端队列（头在左）', v: dqView() }];
+    return Viz.vars(extra ? items.concat(extra) : items);
+  }
+  function dqView() {
+    if (!dq.length) return '（空）';
+    var parts = dq.slice(0, 8).map(function (p) { return '(' + p[0] + ',' + p[1] + ')'; });
+    return parts.join(' ') + (dq.length > 8 ? ' …共' + dq.length + '个' : '');
+  }
+
+  frames.push(Viz.frame('dist[0][0] = 0;', '起点 (0,0) 的代价是 0，先入队',
+    [gridPanel({ '0,0': 'new' }), varsPanel()]));
+
+  var didZero = false, didOne = false;
+  var DR = [0, 0, 1, -1], DC = [1, -1, 0, 0];
+  while (dq.length) {
+    var cur = dq.shift();
+    var r = cur[0], c = cur[1];
+    for (var d = 0; d < 4; d++) {
+      var nr = r + DR[d], nc = c + DC[d];
+      if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;
+      var w = g[r][c] === d + 1 ? 0 : 1;
+      if (dist[r][c] + w < dist[nr][nc]) {
+        dist[nr][nc] = dist[r][c] + w;
+        var marks = {};
+        marks[r + ',' + c] = 'cur';
+        marks[nr + ',' + nc] = 'new';
+        var vs = [{ name: '出队格', v: '(' + r + ',' + c + ') 代价 ' + dist[r][c] },
+          { name: '这一步', v: w === 0 ? '顺箭头 → 成本 0' : '改向 → 成本 1' }];
+        if (w === 0 && !didZero) {
+          didZero = true;
+          frames.push(Viz.frame('if (w == 0) dq.addFirst(new int[]{nr, nc});',
+            '(' + r + ',' + c + ') 顺着自己的箭头走到 (' + nr + ',' + nc + ')：成本 0，从队头插入优先扩展',
+            [gridPanel(marks), varsPanel(vs)]));
+        } else if (w === 1 && !didOne) {
+          didOne = true;
+          frames.push(Viz.frame('else dq.addLast(new int[]{nr, nc});',
+            '(' + r + ',' + c + ') 改向走到 (' + nr + ',' + nc + ')：成本 1，从队尾插入排队',
+            [gridPanel(marks), varsPanel(vs)]));
+        }
+        if (w === 0) dq.unshift([nr, nc]);
+        else dq.push([nr, nc]);
+      }
+    }
+  }
+
+  var ans = dist[m - 1][n - 1];
+  frames.push(Viz.frame('return dist[m - 1][n - 1];',
+    m === 1 && n === 1 ? '起点即终点，代价 0' : '搜完：到右下角 (' + (m - 1) + ',' + (n - 1) + ') 的最小代价是 ' + ans,
+    [gridPanel((function () { var mk = {}; mk[(m - 1) + ',' + (n - 1)] = 'done'; return mk; })()),
+      varsPanel([{ name: '答案', v: String(ans), cls: 'done' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

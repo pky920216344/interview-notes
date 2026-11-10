@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>使数组互补的最少操作次数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 856 / 1159</span>
+  <nav class="pn"><a href="0793.html">上一篇</a><a href="0517.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1674. </span>使数组互补的最少操作次数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">前缀和/差分</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">前缀和</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">枚举互补和 T，对每对差分记账：改一个数能凑到的和省 1（两段必相连并成 [lo+1, hi+limit]），凑成原和再省 1；扫一遍取最小。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每对 <code>(lo, hi)</code>（<code>lo=min</code>、<code>hi=max</code>）对目标和 <code>T</code> 的开销：<code>T=lo+hi</code> 为 0；<code>T</code> 能靠改一个数凑出为 1；否则 2。</li><li>「改一个数」能凑出的和 = <code>[lo+1, lo+limit] ∪ [hi+1, hi+limit]</code>，因 <code>hi ≤ lo+limit</code> 两段必相连，就是 <code>[lo+1, hi+limit]</code>。</li><li>开销 = 全改基线 <code>n</code> 减去各对的节省量；节省量随 <code>T</code> 分段变化，用差分数组 <code>O(1)</code> 记每对的两个区间，最后扫 <code>T∈[2, 2·limit]</code> 取最小。</li><li>关键易错：两个「改一个数」区间是<strong>并集</strong>关系，直接各记一次 <code>−1</code> 会在重叠处多省。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + limit)，空间复杂度 O(limit)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> minMoves(<span class="k">int</span>[] nums, <span class="k">int</span> limit) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">4</span>        <span class="c">// diff[T]：互补和取 T 时，总开销相对「每对都改 2 次（共 n 次）」的差分</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] diff = <span class="k">new</span> <span class="k">int</span>[<span class="n">2</span> * limit + <span class="n">2</span>];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n / <span class="n">2</span>; i++) {</span><span class="ln"><span class="no">7</span>            <span class="k">int</span> lo = <span class="t">Math</span>.min(nums[i], nums[n - <span class="n">1</span> - i]);</span><span class="ln"><span class="no">8</span>            <span class="k">int</span> hi = <span class="t">Math</span>.max(nums[i], nums[n - <span class="n">1</span> - i]);</span><span class="ln"><span class="no">9</span>            <span class="c">// 只改一边能凑出的和：[lo+1, lo+limit] ∪ [hi+1, hi+limit]。</span></span><span class="ln"><span class="no">10</span>            <span class="c">// 因 hi ≤ lo+limit 两段必相连，并成 [lo+1, hi+limit]，落在这里比全改省 1</span></span><span class="ln"><span class="no">11</span>            diff[lo + <span class="n">1</span>] -= <span class="n">1</span>;</span><span class="ln"><span class="no">12</span>            diff[hi + limit + <span class="n">1</span>] += <span class="n">1</span>;</span><span class="ln"><span class="no">13</span>            <span class="c">// 和恰好凑成 lo+hi 时一次都不用改（该点必在上面区间内），再省 1</span></span><span class="ln"><span class="no">14</span>            diff[lo + hi] -= <span class="n">1</span>;</span><span class="ln"><span class="no">15</span>            diff[lo + hi + <span class="n">1</span>] += <span class="n">1</span>;</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> ans = n, cur = <span class="n">0</span>;   <span class="c">// cur 是相对全改的节省量</span></span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="k">int</span> T = <span class="n">2</span>; T &lt;= <span class="n">2</span> * limit; T++) {</span><span class="ln"><span class="no">19</span>            cur += diff[T];</span><span class="ln"><span class="no">20</span>            ans = <span class="t">Math</span>.min(ans, n + cur);</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个长度为<strong> 偶数</strong> <code>n</code> 的整数数组 <code>nums</code> 和一个整数 <code>limit</code> 。每一次操作，你可以将 <code>nums</code> 中的任何整数替换为 <code>1</code> 到 <code>limit</code> 之间的另一个整数。</p>
+
+<p>如果对于所有下标 <code>i</code>（<strong>下标从 </strong><code>0</code><strong> 开始</strong>），<code>nums[i] + nums[n - 1 - i]</code> 都等于同一个数，则数组 <code>nums</code> 是 <strong>互补的</strong> 。例如，数组 <code>[1,2,3,4]</code> 是互补的，因为对于所有下标 <code>i</code> ，<code>nums[i] + nums[n - 1 - i] = 5</code> 。</p>
+
+<p>返回使数组 <strong>互补</strong> 的 <strong>最少</strong> 操作次数。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,4,3], limit = 4
+<strong>输出：</strong>1
+<strong>解释：</strong>经过 1 次操作，你可以将数组 nums 变成 [1,2,<strong>2</strong>,3]（加粗元素是变更的数字）：
+nums[0] + nums[3] = 1 + 3 = 4.
+nums[1] + nums[2] = 2 + 2 = 4.
+nums[2] + nums[1] = 2 + 2 = 4.
+nums[3] + nums[0] = 3 + 1 = 4.
+对于每个 i ，nums[i] + nums[n-1-i] = 4 ，所以 nums 是互补的。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,2,1], limit = 2
+<strong>输出：</strong>2
+<strong>解释：</strong>经过 2 次操作，你可以将数组 nums 变成 [<strong>2</strong>,2,2,<strong>2</strong>] 。你不能将任何数字变更为 3 ，因为 3 > limit 。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,1,2], limit = 2
+<strong>输出：</strong>0
+<strong>解释：</strong>nums 已经是互补的。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == nums.length</code></li>
+	<li><code>2 <= n <= 10<sup>5</sup></code></li>
+	<li><code>1 <= nums[i] <= limit <= 10<sup>5</sup></code></li>
+	<li><code>n</code> 是偶数。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int minMoves(int[] nums, int limit) {", "        int n = nums.length;", "        // diff[T]：互补和取 T 时，总开销相对「每对都改 2 次（共 n 次）」的差分", "        int[] diff = new int[2 * limit + 2];", "        for (int i = 0; i < n / 2; i++) {", "            int lo = Math.min(nums[i], nums[n - 1 - i]);", "            int hi = Math.max(nums[i], nums[n - 1 - i]);", "            // 只改一边能凑出的和：[lo+1, lo+limit] ∪ [hi+1, hi+limit]。", "            // 因 hi ≤ lo+limit 两段必相连，并成 [lo+1, hi+limit]，落在这里比全改省 1", "            diff[lo + 1] -= 1;", "            diff[hi + limit + 1] += 1;", "            // 和恰好凑成 lo+hi 时一次都不用改（该点必在上面区间内），再省 1", "            diff[lo + hi] -= 1;", "            diff[lo + hi + 1] += 1;", "        }", "        int ans = n, cur = 0;   // cur 是相对全改的节省量", "        for (int T = 2; T <= 2 * limit; T++) {", "            cur += diff[T];", "            ans = Math.min(ans, n + cur);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1674. 使数组互补的最少操作次数 —— 图解：复刻 Solution.java 的「按互补和差分计费」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 2, 4, 3], limit: 4 };
+
+function trace(input) {
+  var nums = input.nums, limit = input.limit;
+  var n = nums.length;
+  var frames = [];
+
+  var A = 'diff[lo + 1] -= 1;';
+  var B = 'diff[hi + limit + 1] += 1;';
+  var SWEEP = 'ans = Math.min(ans, n + cur);';
+  var RET = 'return ans;';
+
+  var maxT = 2 * limit;
+  var diff = [];   // 差分：下标 0..maxT+1，与 Java 一致
+  for (var i = 0; i <= maxT + 1; i++) diff.push(0);
+  var cost = [];   // cost[T] = n + 前缀和，边加对边刷新，图上实时显示
+  for (var t = 0; t <= maxT + 1; t++) cost.push(n);
+
+  // 一对 (lo, hi) 记账：省 1 的区间 [lo+1, hi+limit]，零开销点 lo+hi 再省 1
+  function applyPair(lo, hi) {
+    diff[lo + 1] -= 1;
+    diff[hi + limit + 1] += 1;
+    diff[lo + hi] -= 1;
+    diff[lo + hi + 1] += 1;
+    var cur = 0;
+    for (var T = 2; T <= maxT; T++) {
+      cur += diff[T];
+      cost[T] = n + cur;
+    }
+  }
+
+  function pairsPanel(done) {
+    var items = [];
+    for (var i = 0; i < n / 2; i++) {
+      var lo = Math.min(nums[i], nums[n - 1 - i]);
+      var hi = Math.max(nums[i], nums[n - 1 - i]);
+      items.push(lo + '+' + hi);
+    }
+    var marks = {};
+    for (var k = 0; k < items.length; k++) if (k < done) marks[k] = 'dim';
+    if (done > 0 && done <= items.length) marks[done - 1] = 'cur';
+    return Viz.cells(items, { title: '配对（小+大），已记账的标灰', marks: marks });
+  }
+
+  function costPanel(marks) {
+    var items = [];
+    for (var T = 2; T <= maxT; T++) items.push(cost[T]);
+    return Viz.cells(items, { title: '各互补和 T 的总开销（T = 2…' + maxT + '）', marks: marks || {} });
+  }
+
+  var pairs = n / 2;
+  for (var i = 0; i < pairs; i++) {
+    var lo = Math.min(nums[i], nums[n - 1 - i]);
+    var hi = Math.max(nums[i], nums[n - 1 - i]);
+    applyPair(lo, hi);
+    if (i === 0) {
+      var m1 = {};
+      m1[lo + hi - 2] = 'new';   // 零开销点在 T 轴上的位置（T−2 转下标）
+      frames.push(Viz.frame(A, '第 1 对 ' + lo + '+' + hi + '：改一个数能凑出和 ' + (lo + 1) + '~' + (hi + limit)
+          + '，凑成 ' + (lo + hi) + ' 时一次不用改', [pairsPanel(1), costPanel(m1)]));
+    }
+    if (i === 1) {
+      var m2 = {};
+      m2[lo + hi - 2] = 'new';
+      frames.push(Viz.frame(B, '第 2 对 ' + lo + '+' + hi + '：同样记账（能凑 ' + (lo + 1) + '~' + (hi + limit)
+          + '，凑成 ' + (lo + hi) + ' 不用改）', [pairsPanel(2), costPanel(m2)]));
+    }
+  }
+
+  // 扫描取最小
+  var ans = n, bestT = 2;
+  for (var T2 = 2; T2 <= maxT; T2++) {
+    var c = cost[T2];
+    if (c < ans) { ans = c; bestT = T2; }
+  }
+  var mS = {};
+  mS[bestT - 2] = 'done';
+  frames.push(Viz.frame(SWEEP, '扫完 T=2…' + maxT + '：T=' + bestT + ' 处总开销最小，只要改 ' + ans + ' 次',
+    [pairsPanel(pairs), costPanel(mS)]));
+
+  frames.push(Viz.frame(RET, '答案 ' + ans + '：把互补和定成 T=' + bestT + '，按账改最少的数',
+    [pairsPanel(pairs), costPanel(mS)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

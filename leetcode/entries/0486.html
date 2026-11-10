@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>预测赢家 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 330 / 1159</span>
+  <nav class="pn"><a href="0836.html">上一篇</a><a href="0658.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">486. </span>预测赢家</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 12</li><li class="algo">动态规划</li><li class="tag">递归</li><li class="tag">极小化极大</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">动态规划</li><li class="tag">博弈</li><li class="tag">zero-sum-game</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">区间 DP 算净胜分：dp[i][j] = 当前玩家在 [i,j] 的最大「自己 − 对手」= max(nums[i]−dp[i+1][j], nums[j]−dp[i][j-1])。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i][j]</code>：轮到当前玩家时，他在 <code>[i,j]</code> 上能拿到的<strong>最大净胜分</strong>。</li><li>拿走一端后<strong>轮到对手</strong>，对手在剩余区间的净胜分要减掉：拿左 <code>nums[i] − dp[i+1][j]</code>，拿右 <code>nums[j] − dp[i][j-1]</code>，取大。</li><li><code>dp[i][i] = nums[i]</code>（只剩一个数全拿），<code>i</code> 从右往左填。</li><li>答案 <code>dp[0][n-1] &gt;= 0</code>：净胜分非负（<strong>含平局</strong>）玩家 1 就赢。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> predictTheWinner(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">4</span>        <span class="c">// dp[i][j]：当前轮到谁，他在 [i,j] 上能拿到的最大「净胜分」（自己 − 对手）</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[][] dp = <span class="k">new</span> <span class="k">int</span>[n][n];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = n - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">7</span>            dp[i][i] = nums[i];               <span class="c">// 区间只剩一个数，先手全拿</span></span><span class="ln"><span class="no">8</span>            <span class="k">for</span> (<span class="k">int</span> j = i + <span class="n">1</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">9</span>                <span class="c">// 拿走一端后轮到对手；对手在剩余区间的净胜分要减掉</span></span><span class="ln"><span class="no">10</span>                dp[i][j] = <span class="t">Math</span>.max(nums[i] - dp[i + <span class="n">1</span>][j], nums[j] - dp[i][j - <span class="n">1</span>]);</span><span class="ln"><span class="no">11</span>            }</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> dp[<span class="n">0</span>][n - <span class="n">1</span>] &gt;= <span class="n">0</span>;             <span class="c">// 净胜分 ≥ 0（含平局）就算玩家 1 赢</span></span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code>。</p>
+
+<p>玩家 1 和玩家 2 基于这个数组设计了一个游戏。</p>
+
+<p>玩家 1 和玩家 2 轮流进行自己的回合，玩家 1 先手。开始时，两个玩家的初始分值都是 <code>0</code> 。</p>
+
+<p>每一回合，玩家从数组的 <strong>任意一端</strong> 取一个数字（即，<code>nums[0]</code> 或 <code>nums[nums.length - 1]</code>），取到的数字将会从数组中 <strong>移除</strong>（数组长度减 <code>1</code> ）。玩家选中的数字将会加到他的得分上。当数组中没有剩余数字可取时，游戏结束。</p>
+
+<p>如果玩家 1 能成为赢家，返回 <code>true</code> 。</p>
+
+<p><strong>注意</strong>，如果两个玩家得分相等，同样认为玩家 1 是游戏的赢家。你可以假设每个玩家的玩法都会使他的分数最大化。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<div class="example-block">
+<p><strong>输入：</strong>nums = [1,5,2]</p>
+
+<p><strong>输出：</strong>false</p>
+
+<p><strong>解释：</strong></p>
+
+<ul>
+	<li>玩家 1 必须先取 1 或 2，两种选择都会导致相同的结果。</li>
+	<li>如果玩家 1 取 1，数组变为&nbsp;<code>[5, 2]</code>。玩家 2 取 5，剩下 2 给玩家 1。</li>
+	<li>如果玩家 1 取 2，数组变为&nbsp;<code>[1, 5]</code>。玩家 2 取 5，剩下 1 给玩家 1。</li>
+	<li>无论哪种情况，玩家 1 最终得到&nbsp;<code>1 + 2 = 3</code>，玩家 2 得到&nbsp;<code>5</code>。玩家 1 永远无法获胜，所以返回&nbsp;<code>false</code>。</li>
+</ul>
+</div>
+
+<p><strong>示例 2：</strong></p>
+
+<div class="example-block">
+<p><strong>输入：</strong>nums = [1,5,233,7]</p>
+
+<p><strong>输出：</strong>true</p>
+
+<p><strong>解释： </strong></p>
+
+<ul>
+	<li>玩家 1 先取 1，剩下&nbsp;<code>[5,233,7]</code>。然后玩家 2 必须在 5 和 7 之间选择，无论玩家 2 选择哪个数字，玩家 1 在下一次回合都可以取 233。</li>
+	<li>玩家 1 的得分（234）高于玩家 2（12），所以返回&nbsp;<code>true</code>。</li>
+</ul>
+</div>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 20</code></li>
+	<li><code>0 &lt;= nums[i] &lt;= 10<sup>7</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean predictTheWinner(int[] nums) {", "        int n = nums.length;", "        // dp[i][j]：当前轮到谁，他在 [i,j] 上能拿到的最大「净胜分」（自己 − 对手）", "        int[][] dp = new int[n][n];", "        for (int i = n - 1; i >= 0; i--) {", "            dp[i][i] = nums[i];               // 区间只剩一个数，先手全拿", "            for (int j = i + 1; j < n; j++) {", "                // 拿走一端后轮到对手；对手在剩余区间的净胜分要减掉", "                dp[i][j] = Math.max(nums[i] - dp[i + 1][j], nums[j] - dp[i][j - 1]);", "            }", "        }", "        return dp[0][n - 1] >= 0;             // 净胜分 ≥ 0（含平局）就算玩家 1 赢", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 486. 预测赢家 —— 图解：复刻 Solution.java 的区间 DP（净胜分），在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 5, 2] };
+
+function trace(input) {
+  var nums = input.nums;
+  var n = nums.length;
+  var frames = [];
+  var dp = [];
+  var i, j;
+  for (i = 0; i < n; i++) { dp.push([]); for (j = 0; j < n; j++) dp[i].push(0); }
+
+  function gridPanel(marks) {
+    var rows = [], r, c;
+    for (r = 0; r < n; r++) {
+      var row = [];
+      for (c = 0; c < n; c++) row.push(c < r ? '' : String(dp[r][c]));
+      rows.push(row);
+    }
+    var lbl = [];
+    for (c = 0; c < n; c++) lbl.push(String(c));
+    return Viz.grid(rows, { title: 'dp[i][j]：当前玩家在 [i,j] 的最大净胜分', marks: marks, rowLabels: lbl, colLabels: lbl, corner: 'i＼j' });
+  }
+
+  var filled = 0, filledSnaps = 0;
+  for (i = n - 1; i >= 0; i--) {
+    dp[i][i] = nums[i];
+    filled++;
+    if (filled === 1) {   // 第 1 帧：对角线起算
+      var m0 = {};
+      m0[(n - 1) + ',' + (n - 1)] = 'new';
+      frames.push(Viz.frame('dp[i][i] = nums[i];',
+        '从右下角起算：区间只剩一个数，先手全拿，dp[i][i] = nums[i]',
+        [gridPanel(m0), Viz.vars([{ name: 'i（区间左端）', v: n - 1 }])]));
+    }
+    for (j = i + 1; j < n; j++) {
+      dp[i][j] = Math.max(nums[i] - dp[i + 1][j], nums[j] - dp[i][j - 1]);
+      filled++;
+      if (filled === n) {   // 第 2 帧：第一格非对角
+        var m = {};
+        m[i + ',' + j] = 'new';
+        m[(i + 1) + ',' + j] = 'hit';
+        m[i + ',' + (j - 1)] = 'hit';
+        frames.push(Viz.frame('dp[i][j] = Math.max(nums[i] - dp[i + 1][j], nums[j] - dp[i][j - 1]);',
+          'dp[' + i + '][' + j + ']：拿左 ' + nums[i] + ' 净胜 ' + (nums[i] - dp[i + 1][j]) + '，拿右 ' + nums[j] + ' 净胜 ' + (nums[j] - dp[i][j - 1]) + '，取大',
+          [gridPanel(m), Viz.vars([{ name: 'dp[i][j]', v: dp[i][j], cls: 'chg' }])]));
+      }
+    }
+  }
+
+  var m1 = {};
+  m1['0,' + (n - 1)] = 'done';
+  frames.push(Viz.frame('dp[i][j] = Math.max(nums[i] - dp[i + 1][j], nums[j] - dp[i][j - 1]);',
+    '算到左上角 dp[0][' + (n - 1) + '] = ' + dp[0][n - 1] + (dp[0][n - 1] >= 0 ? ' ≥ 0' : ' < 0'),
+    [gridPanel(m1), Viz.vars([{ name: 'dp[0][n-1]', v: dp[0][n - 1], cls: 'chg' }])]));
+
+  frames.push(Viz.frame('return dp[0][n - 1] >= 0;',
+    dp[0][n - 1] >= 0
+      ? '净胜分 ' + dp[0][n - 1] + ' ≥ 0（含平局）：玩家 1 赢'
+      : '净胜分 ' + dp[0][n - 1] + ' < 0：玩家 1 怎么拿都输',
+    [gridPanel(m1), Viz.vars([{ name: '返回', v: dp[0][n - 1] >= 0, cls: 'done' }])]));
+
+  return { frames: frames, result: dp[0][n - 1] >= 0 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

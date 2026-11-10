@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最大休假天数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 867 / 1159</span>
+  <nav class="pn"><a href="1512.html">上一篇</a><a href="1298.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">568. </span>最大休假天数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">逐周 DP：dp[i] = 本周一人在城市 i 的最大累计休假；每周从「留下或任一可达城市」转移。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>状态 <code>dp[i]</code>：本周一人在城市 <code>i</code> 时已休的最大天数；<code>-1</code> 表示到不了。初始只有 <code>dp[0] = 0</code>。</li><li>每周一二选一：原地不动（<code>i == j</code> 永远可行），或沿 <code>flights[i][j] = 1</code> 的航班飞；转移 <code>ndp[j] = max(dp[i] + days[j][w])</code>。</li><li>滚动数组把空间压到 <code>O(n)</code>；答案取最后一周所有城市的最大值（人可以停在任何城市）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(k·n²)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> maxVacationDays(<span class="k">int</span>[][] flights, <span class="k">int</span>[][] days) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = flights.length, k = days[<span class="n">0</span>].length;</span><span class="ln"><span class="no">6</span>        <span class="c">// dp[i]：本周一人在城市 i 时，已经休掉的最大天数；-1 表示这个状态到不了</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">8</span>        <span class="t">Arrays</span>.fill(dp, -<span class="n">1</span>);</span><span class="ln"><span class="no">9</span>        dp[<span class="n">0</span>] = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> w = <span class="n">0</span>; w &lt; k; w++) {</span><span class="ln"><span class="no">11</span>            <span class="k">int</span>[] ndp = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">12</span>            <span class="t">Arrays</span>.fill(ndp, -<span class="n">1</span>);</span><span class="ln"><span class="no">13</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">14</span>                <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">15</span>                    <span class="c">// 原地不动永远可以；飞往 j 需要 i 到 j 有航班</span></span><span class="ln"><span class="no">16</span>                    <span class="k">if</span> (dp[i] &lt; <span class="n">0</span> || (i != j &amp;&amp; flights[i][j] == <span class="n">0</span>)) <span class="k">continue</span>;</span><span class="ln"><span class="no">17</span>                    <span class="k">int</span> v = dp[i] + days[j][w];</span><span class="ln"><span class="no">18</span>                    <span class="k">if</span> (v &gt; ndp[j]) ndp[j] = v;</span><span class="ln"><span class="no">19</span>                }</span><span class="ln"><span class="no">20</span>            }</span><span class="ln"><span class="no">21</span>            dp = ndp;</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">24</span>        <span class="k">for</span> (<span class="k">int</span> v : dp) ans = <span class="t">Math</span>.max(ans, v);</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int maxVacationDays(int[][] flights, int[][] days) {", "        int n = flights.length, k = days[0].length;", "        // dp[i]：本周一人在城市 i 时，已经休掉的最大天数；-1 表示这个状态到不了", "        int[] dp = new int[n];", "        Arrays.fill(dp, -1);", "        dp[0] = 0;", "        for (int w = 0; w < k; w++) {", "            int[] ndp = new int[n];", "            Arrays.fill(ndp, -1);", "            for (int j = 0; j < n; j++) {", "                for (int i = 0; i < n; i++) {", "                    // 原地不动永远可以；飞往 j 需要 i 到 j 有航班", "                    if (dp[i] < 0 || (i != j && flights[i][j] == 0)) continue;", "                    int v = dp[i] + days[j][w];", "                    if (v > ndp[j]) ndp[j] = v;", "                }", "            }", "            dp = ndp;", "        }", "        int ans = 0;", "        for (int v : dp) ans = Math.max(ans, v);", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 568. 最大休假天数 —— 图解：复刻 Solution.java 的「逐周 DP」，画出每周各城市的最优累计，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  flights: [[0, 1, 1], [1, 0, 1], [1, 1, 0]],
+  days: [[3, 1, 1], [1, 7, 1], [1, 1, 7]]
+};
+
+function trace(input) {
+  var flights = input.flights, days = input.days;
+  var n = days.length, k = days[0].length;
+  var frames = [];
+  var START = 'dp[0] = 0;';
+  var ROLL = 'dp = ndp;';
+  var FINAL = 'for (int v : dp) ans = Math.max(ans, v);';
+
+  var dp = [];
+  for (var i = 0; i < n; i++) dp.push(i === 0 ? 0 : -1);
+  function rowOf(vals, label) {
+    return [label].concat(vals.map(function (v) { return v < 0 ? '—' : String(v); }));
+  }
+  var rows = [rowOf(dp, '开局')];
+
+  function gridPanel(latestRow, bestCol) {
+    var marks = {};
+    if (latestRow != null) {
+      for (var c = 0; c < n; c++) {
+        marks[latestRow + ',' + c] = c === bestCol ? 'chg' : 'new';
+      }
+    }
+    return Viz.grid(rows.map(function (r) { return r.slice(1); }), {
+      title: '各周末「人在该城」的最大休假累计（— 是到不了）',
+      marks: marks,
+      rowLabels: rows.map(function (r) { return r[0]; }),
+      colLabels: days.map(function (_, c) { return '城' + c; })
+    });
+  }
+  function varPanel(w) {
+    return Viz.vars([{ name: '刚算完', v: w <= 0 ? '开局' : '第 ' + w + ' 周' }]);
+  }
+
+  frames.push(Viz.frame(START, '开局：人在城市 0，已休 0 天；别的城市还到不了', [gridPanel(), varPanel(0)]));
+
+  var snapped = 0, bestCol = 0;
+  for (var w = 0; w < k; w++) {
+    var ndp = [];
+    for (var j = 0; j < n; j++) {
+      var best = -1;
+      for (i = 0; i < n; i++) {
+        if (dp[i] < 0 || (i !== j && !flights[i][j])) continue;
+        best = Math.max(best, dp[i] + days[j][w]);
+      }
+      ndp.push(best);
+    }
+    dp = ndp;
+    rows.push(rowOf(dp, '第' + (w + 1) + '周'));
+    bestCol = 0;
+    for (j = 0; j < n; j++) if (dp[j] > dp[bestCol]) bestCol = j;
+    if (w < k - 1 && snapped < 2) {
+      snapped++;
+      frames.push(Viz.frame(ROLL, '第' + (w + 1) + '周：每城取「飞来/留下」的最优，dp=' +
+        dp.map(function (v) { return v < 0 ? '—' : v; }).join('/'),
+        [gridPanel(rows.length - 1, bestCol), varPanel(w + 1)]));
+    }
+  }
+
+  var ans = 0;
+  for (i = 0; i < n; i++) ans = Math.max(ans, dp[i]);
+  frames.push(Viz.frame(FINAL, 'k 周结束：全表最大 ' + ans + ' 就是答案', [gridPanel(rows.length - 1, bestCol), varPanel(k)]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

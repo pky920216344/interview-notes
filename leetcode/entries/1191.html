@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K 次串联后最大子数组之和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 881 / 1159</span>
+  <nav class="pn"><a href="mianshi-16-02.html">上一篇</a><a href="0185.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1191. </span>K 次串联后最大子数组之和</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">动态规划</li><li class="aux">前缀和/差分</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">单份 Kadane + 全和 + 前/后缀最大：答案只在「单份内、跨两份、跨满 k 份」三种形态里取最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>拼接数组里的最大子数组只有三种形态：完全在一份里（Kadane 的 <code>best</code>）、跨相邻两份（上一份后缀最大 + 下一份前缀最大）、跨更多份。</li><li>多跨一份就多一整个 <code>total</code>：<code>total &gt; 0</code> 时垫满 <code>k</code> 份最优，<code>total ≤ 0</code> 时跨两份就够，两个候选都算出来取 <code>max</code> 不吃亏。</li><li><code>k == 1</code> 只能取单份内的 <code>best</code>；子数组允许为空，所以答案至少是 <code>0</code>。</li><li>全程用 <code>long</code> 算准确值（最大约 <code>10^14</code>），最后对 <code>10^9+7</code> 取模。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> kConcatenationMaxSum(<span class="k">int</span>[] arr, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="k">final</span> <span class="k">int</span> MOD = <span class="n">1_000_000_007</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">long</span> total = <span class="n">0</span>, cur = <span class="n">0</span>, best = <span class="n">0</span>;                 <span class="c">// best：单份内最大子数组和（允许空，至少 0）</span></span><span class="ln"><span class="no">5</span>        <span class="k">long</span> preMax = <span class="t">Long</span>.MIN_VALUE, sufMax = <span class="t">Long</span>.MIN_VALUE;</span><span class="ln"><span class="no">6</span>        <span class="k">long</span> pre = <span class="n">0</span>, suf = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> x : arr) {                                <span class="c">// 一趟同时算：Kadane、总和、前缀最大</span></span><span class="ln"><span class="no">8</span>            total += x;</span><span class="ln"><span class="no">9</span>            cur = <span class="t">Math</span>.max(cur + x, x);</span><span class="ln"><span class="no">10</span>            best = <span class="t">Math</span>.max(best, cur);</span><span class="ln"><span class="no">11</span>            pre += x;</span><span class="ln"><span class="no">12</span>            preMax = <span class="t">Math</span>.max(preMax, pre);</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> i = arr.length - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {        <span class="c">// 后缀最大：从右往左再扫一趟</span></span><span class="ln"><span class="no">15</span>            suf += arr[i];</span><span class="ln"><span class="no">16</span>            sufMax = <span class="t">Math</span>.max(sufMax, suf);</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">long</span> ans = best;                                   <span class="c">// 形态一：完全在一份里</span></span><span class="ln"><span class="no">19</span>        <span class="k">if</span> (k &gt;= <span class="n">2</span>) {                                      <span class="c">// 多跨一份就多一整个 total</span></span><span class="ln"><span class="no">20</span>            ans = <span class="t">Math</span>.max(ans, sufMax + preMax);                          <span class="c">// 形态二：跨相邻两份</span></span><span class="ln"><span class="no">21</span>            ans = <span class="t">Math</span>.max(ans, sufMax + (k - <span class="n">2</span>) * total + preMax);        <span class="c">// 形态三：跨满 k 份</span></span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> (<span class="k">int</span>) (ans % MOD);                          <span class="c">// ans ≥ 0，直接取模</span></span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个整数数组&nbsp;<code>arr</code>&nbsp;和一个整数&nbsp;<code>k</code>&nbsp;，通过重复&nbsp;<code>k</code>&nbsp;次来修改数组。</p>
+
+<p>例如，如果&nbsp;<code>arr = [1, 2]</code>&nbsp;，<meta charset="UTF-8" />&nbsp;<code>k = 3</code>&nbsp;，那么修改后的数组将是 <code>[1, 2, 1, 2, 1, 2]</code> 。</p>
+
+<p>返回修改后的数组中的最大的子数组之和。注意，子数组长度可以是 <code>0</code>，在这种情况下它的总和也是 <code>0</code>。</p>
+
+<p>由于&nbsp;<strong>结果可能会很大</strong>，需要返回结果对&nbsp;<code>10<sup>9</sup>&nbsp;+ 7</code>&nbsp;取&nbsp;<strong>模</strong>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [1,2], k = 3
+<strong>输出：</strong>9
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [1,-2,1], k = 5
+<strong>输出：</strong>2
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [-1,-2], k = 7
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+<meta charset="UTF-8" />
+
+<ul>
+	<li><code>1 &lt;= arr.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>1 &lt;= k &lt;= 10<sup>5</sup></code></li>
+	<li><code>-10<sup>4</sup>&nbsp;&lt;= arr[i] &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int kConcatenationMaxSum(int[] arr, int k) {", "        final int MOD = 1_000_000_007;", "        long total = 0, cur = 0, best = 0;                 // best：单份内最大子数组和（允许空，至少 0）", "        long preMax = Long.MIN_VALUE, sufMax = Long.MIN_VALUE;", "        long pre = 0, suf = 0;", "        for (int x : arr) {                                // 一趟同时算：Kadane、总和、前缀最大", "            total += x;", "            cur = Math.max(cur + x, x);", "            best = Math.max(best, cur);", "            pre += x;", "            preMax = Math.max(preMax, pre);", "        }", "        for (int i = arr.length - 1; i >= 0; i--) {        // 后缀最大：从右往左再扫一趟", "            suf += arr[i];", "            sufMax = Math.max(sufMax, suf);", "        }", "        long ans = best;                                   // 形态一：完全在一份里", "        if (k >= 2) {                                      // 多跨一份就多一整个 total", "            ans = Math.max(ans, sufMax + preMax);                          // 形态二：跨相邻两份", "            ans = Math.max(ans, sufMax + (k - 2) * total + preMax);        // 形态三：跨满 k 份", "        }", "        return (int) (ans % MOD);                          // ans ≥ 0，直接取模", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1191. K 次串联后最大子数组之和 —— 图解：复刻 Solution.java，拍「单份 Kadane / 跨两份 / 跨满 k 份 / 取模」四帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [1, -2, 1], k: 5 };
+
+function trace(input) {
+  var arr = input.arr, k = input.k, MOD = 1000000007;
+  var n = arr.length;
+  var frames = [];
+
+  // --- 完整跑一遍最优解的三个量：单份 Kadane、总和、前缀/后缀最大 ---
+  var total = 0, cur = 0, best = 0, bestL = -1, bestR = -1, curStart = 0;
+  var pre = 0, preMax = -Infinity, preAt = -1, suf = 0, sufMax = -Infinity, sufAt = -1;
+  var i;
+  for (i = 0; i < n; i++) {
+    total += arr[i];
+    if (cur + arr[i] < arr[i]) curStart = i;           // 对应 Java 的 cur = max(cur+x, x)
+    cur = Math.max(cur + arr[i], arr[i]);
+    if (cur > best) { best = cur; bestL = curStart; bestR = i; }
+    pre += arr[i];
+    if (pre > preMax) { preMax = pre; preAt = i; }
+  }
+  for (i = n - 1; i >= 0; i--) {
+    suf += arr[i];
+    if (suf > sufMax) { sufMax = suf; sufAt = i; }
+  }
+
+  function vars(items) { return Viz.vars(items); }
+  function cellsOf(items, marks, title) { return Viz.cells(items, { title: title || '', marks: marks || {} }); }
+  function arrMarks(spec) {                            // spec: {from, to, cls} 列表
+    var m = {}, s;
+    for (s = 0; s < spec.length; s++) {
+      var a = Math.max(0, spec[s].from), b = Math.min(n - 1, spec[s].to);
+      for (var j = a; j <= b; j++) m[j] = spec[s].cls;
+    }
+    return m;
+  }
+
+  // 帧 1：单份内的 Kadane 结果（best 可能是 0 = 空子数组）
+  var m1 = best > 0 ? arrMarks([{ from: bestL, to: bestR, cls: 'done' }]) : {};
+  frames.push(Viz.frame('best = Math.max(best, cur);', '单份内跑 Kadane：最大子数组和 best = ' + best + (best === 0 ? '（全负时取空子数组）' : ''),
+    [cellsOf(arr, m1, '数组 arr（绿：单份内最优子数组）'),
+     vars([{ name: 'best', v: best, cls: 'done' }, { name: 'total', v: total }])]));
+
+  // 帧 2：跨相邻两份 = 上一份的「后缀最大」+ 下一份的「前缀最大」
+  var twice = arr.concat(arr);                         // 两份拼一起，直观展示跨份
+  var m2 = arrMarks([{ from: sufAt, to: n - 1, cls: 'win' }]);
+  for (i = 0; i <= preAt; i++) m2[n + i] = 'new';
+  frames.push(Viz.frame('ans = Math.max(ans, sufMax + preMax);',
+    '跨两份：上一份的后缀 ' + sufMax + ' + 下一份的前缀 ' + preMax + ' = ' + (sufMax + preMax),
+    [cellsOf(twice, m2, 'arr 拼两份（黄：前一份的尾段；绿：后一份的头段）'),
+     vars([{ name: '尾段和', v: sufMax }, { name: '头段和', v: preMax }, { name: '组合', v: sufMax + preMax, cls: 'new' }])]));
+
+  // 帧 3：跨满 k 份 = 尾段 + (k-2) 个整份 + 头段
+  var crossK = sufMax + (k - 2) * total + preMax;
+  var three = k >= 2
+    ? ['尾段 ' + sufMax, '整份×' + (k - 2) + ' 共 ' + (k - 2) * total, '头段 ' + preMax]
+    : ['单份 arr（k = 1 拼不出两份）'];
+  frames.push(Viz.frame('ans = Math.max(ans, sufMax + (k - 2) * total + preMax);',
+    k >= 2 ? '跨满 k 份：中间垫 (k-2)×total = ' + (k - 2) * total + '，合计 ' + crossK
+           : 'k = 1 拼不出两份，只看单份内的 best',
+    [cellsOf(three, k >= 2 && total > 0 ? { 1: 'win' } : {}, '跨多份的三段结构'),
+     vars([{ name: 'total', v: total, cls: total > 0 ? 'win' : 'bad' },
+           { name: 'total>0?', v: total > 0 ? '垫满 k 份' : '只跨两份' }])]));
+
+  // 帧 4：三个候选取 max，再取模
+  var ans = best;
+  if (k >= 2) ans = Math.max(ans, sufMax + preMax, crossK);
+  frames.push(Viz.frame('return (int) (ans % MOD);', '答案 = max(单份 ' + best + ', 跨份 ' + (k >= 2 ? Math.max(sufMax + preMax, crossK) : '-') + ') = ' + ans + '，取模后 ' + (ans % MOD),
+    [vars([{ name: '单份 best', v: best }, { name: '跨两份', v: k >= 2 ? sufMax + preMax : '—' },
+           { name: '跨满 k 份', v: k >= 2 ? crossK : '—' }, { name: 'ans % MOD', v: ans % MOD, cls: 'done' }])]));
+
+  return { frames: frames, result: ans % MOD };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

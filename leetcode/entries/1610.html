@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>可见点的最大数目 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 952 / 1159</span>
+  <nav class="pn"><a href="1043.html">上一篇</a><a href="1052.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1610. </span>可见点的最大数目</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">数学</li><li class="aux">滑动窗口</li><li class="tag">几何</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">排序</li><li class="tag">滑动窗口</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">每个点算相对极角排序，复制一份 +360° 接成环，用定长 angle 的滑窗数最多覆盖几个点；与自己重合的点直接计入。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>只关心方向不关心距离：<code>Math.atan2(dy, dx)</code> 把每个点变成 (−π, π] 的极角；与 location 重合的点<strong>永远可见</strong>，先摘出来。</li><li>视野可以转，最优窗口的<strong>起点必然压着某个点的极角</strong> → 排序后枚举每个点作为窗口左端。</li><li>跨 0° 的窗口靠「复制一份 +2π」拉直成普通滑窗；<code>r</code> 不回退，整体 O(n)。</li><li>浮点比较带 <code>1e-9</code> 容差，恰好差 angle 度（如 90° 正交）的点也算看得见。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> visiblePoints(<span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; points, <span class="k">int</span> angle, <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; location) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> same = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">Double</span>&gt; angles = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> px = location.get(<span class="n">0</span>), py = location.get(<span class="n">1</span>);</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="t">List</span>&lt;<span class="t">Integer</span>&gt; p : points) {</span><span class="ln"><span class="no">9</span>            <span class="k">int</span> dx = p.get(<span class="n">0</span>) - px, dy = p.get(<span class="n">1</span>) - py;</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (dx == <span class="n">0</span> &amp;&amp; dy == <span class="n">0</span>) same++;   <span class="c">// 和自己重合的点：朝哪都看得见</span></span><span class="ln"><span class="no">11</span>            <span class="k">else</span> angles.add(<span class="t">Math</span>.atan2(dy, dx));   <span class="c">// 极角，范围 (−π, π]</span></span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="t">Collections</span>.sort(angles);</span><span class="ln"><span class="no">14</span>        <span class="k">int</span> n = angles.size();</span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) angles.add(angles.get(i) + <span class="n">2</span> * <span class="t">Math</span>.PI);   <span class="c">// 复制一份接成「环」</span></span><span class="ln"><span class="no">16</span>        <span class="k">double</span> w = <span class="t">Math</span>.toRadians(angle);</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> best = <span class="n">0</span>;</span><span class="ln"><span class="no">18</span>        <span class="c">// 定长窗口：从 l 的方向逆时针转 angle 度，能罩住 [l, r) 里的所有点</span></span><span class="ln"><span class="no">19</span>        <span class="k">for</span> (<span class="k">int</span> l = <span class="n">0</span>, r = <span class="n">0</span>; l &lt; n; l++) {</span><span class="ln"><span class="no">20</span>            <span class="k">while</span> (r &lt; <span class="n">2</span> * n &amp;&amp; angles.get(r) - angles.get(l) &lt;= w + 1e-<span class="n">9</span>) r++;</span><span class="ln"><span class="no">21</span>            best = <span class="t">Math</span>.max(best, r - l);</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> best + same;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个点数组 <code>points</code> 和一个表示角度的整数 <code>angle</code> ，你的位置是 <code>location</code> ，其中 <code>location = [pos<sub>x</sub>, pos<sub>y</sub>]</code> 且 <code>points[i] = [x<sub>i</sub>, y<sub>i</sub>]</code> 都表示 X-Y 平面上的整数坐标。</p>
+
+<p>最开始，你面向东方进行观测。你 <strong>不能</strong> 进行移动改变位置，但可以通过 <strong>自转</strong> 调整观测角度。换句话说，<code>pos<sub>x</sub></code> 和 <code>pos<sub>y</sub></code> 不能改变。你的视野范围的角度用 <code>angle</code> 表示， 这决定了你观测任意方向时可以多宽。设 <code>d</code> 为你逆时针自转旋转的度数，那么你的视野就是角度范围 <code>[d - angle/2, d + angle/2]</code> 所指示的那片区域。</p>
+
+<video autoplay="" controls="" height="360" muted="" style="max-width:100%;height:auto;" width="750"><source src="https://assets.leetcode.cn/aliyun-lc-upload/uploads/2020/10/04/angle.mp4" type="video/mp4" />Your browser does not support the video tag or this video format.</video>
+
+<p>对于每个点，如果由该点、你的位置以及从你的位置直接向东的方向形成的角度 <strong>位于你的视野中</strong> ，那么你就可以看到它。</p>
+
+<p>同一个坐标上可以有多个点。你所在的位置也可能存在一些点，但不管你的怎么旋转，总是可以看到这些点。同时，点不会阻碍你看到其他点。</p>
+
+<p>返回你能看到的点的最大数目。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/de8529348b6e.png" style="height: 300px; width: 400px;" /></p>
+
+<pre>
+<strong>输入：</strong>points = [[2,1],[2,2],[3,3]], angle = 90, location = [1,1]
+<strong>输出：</strong>3
+<strong>解释：</strong>阴影区域代表你的视野。在你的视野中，所有的点都清晰可见，尽管 [2,2] 和 [3,3]在同一条直线上，你仍然可以看到 [3,3] 。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>points = [[2,1],[2,2],[3,4],[1,1]], angle = 90, location = [1,1]
+<strong>输出：</strong>4
+<strong>解释：</strong>在你的视野中，所有的点都清晰可见，包括你所在位置的那个点。</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<p><img alt="" src="../assets/img/ccd30c0b7073.png" style="height: 348px; width: 690px;" /></p>
+
+<pre>
+<strong>输入：</strong>points = [[1,0],[2,1]], angle = 13, location = [1,1]
+<strong>输出：</strong>1
+<strong>解释：</strong>如图所示，你只能看到两点之一。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= points.length <= 10<sup>5</sup></code></li>
+	<li><code>points[i].length == 2</code></li>
+	<li><code>location.length == 2</code></li>
+	<li><code>0 <= angle < 360</code></li>
+	<li><code>0 <= pos<sub>x</sub>, pos<sub>y</sub>, x<sub>i</sub>, y<sub>i</sub> <= 100</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int visiblePoints(List<List<Integer>> points, int angle, List<Integer> location) {", "        int same = 0;", "        List<Double> angles = new ArrayList<>();", "        int px = location.get(0), py = location.get(1);", "        for (List<Integer> p : points) {", "            int dx = p.get(0) - px, dy = p.get(1) - py;", "            if (dx == 0 && dy == 0) same++;   // 和自己重合的点：朝哪都看得见", "            else angles.add(Math.atan2(dy, dx));   // 极角，范围 (−π, π]", "        }", "        Collections.sort(angles);", "        int n = angles.size();", "        for (int i = 0; i < n; i++) angles.add(angles.get(i) + 2 * Math.PI);   // 复制一份接成「环」", "        double w = Math.toRadians(angle);", "        int best = 0;", "        // 定长窗口：从 l 的方向逆时针转 angle 度，能罩住 [l, r) 里的所有点", "        for (int l = 0, r = 0; l < n; l++) {", "            while (r < 2 * n && angles.get(r) - angles.get(l) <= w + 1e-9) r++;", "            best = Math.max(best, r - l);", "        }", "        return best + same;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1610. 可见点的最大数目 —— 图解：复刻 Solution.java 的「极角排序 + 复制成环 + 定长滑窗」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { points: [[2, 1], [2, 2], [3, 3]], angle: 90, location: [1, 1] };
+
+function trace(input) {
+  var points = input.points, angle = input.angle, location = input.location;
+  var px = location[0], py = location[1];
+  var same = 0;
+  var pts = [];   // {dx, dy, deg, rad}
+  for (var i = 0; i < points.length; i++) {
+    var dx = points[i][0] - px, dy = points[i][1] - py;
+    if (dx === 0 && dy === 0) { same++; continue; }
+    pts.push({ dx: dx, dy: dy, rad: Math.atan2(dy, dx) });
+  }
+  pts.sort(function (a, b) { return a.rad - b.rad; });
+  var n = pts.length;
+  var frames = [];
+
+  function deg(v) {   // 显示用：保留 1 位小数并规范化到 [0, 360)
+    var d = v * 180 / Math.PI;
+    if (d < 0) d += 360;
+    return (Math.round(d * 10) / 10) + '°';
+  }
+  function cellsPanel(items, title, marks, range, ptr) {
+    var pointers = ptr ? [
+      { at: ptr[0], label: 'l', cls: 'p-left' },
+      { at: ptr[1], label: 'r−1', cls: 'p-right' }
+    ] : [];
+    return Viz.cells(items, { title: title, marks: marks || {}, range: range || null, pointers: pointers });
+  }
+  function snap(at, key, panels, items) {
+    if (items) panels = panels.concat([Viz.vars(items)]);
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  // F1：每个点的极角表
+  if (pts.length) {
+    var rows = pts.map(function (p) { return { k: '(' + p.dx + ',' + p.dy + ')', v: deg(p.rad) }; });
+    snap("else angles.add(Math.atan2(dy, dx));",
+      '每个点算相对极角；和自己重合的点直接计入 same=' + same,
+      [Viz.table('点 → 相对极角（0°=正东，逆时针增大）', rows)],
+      [{ name: 'same（重合点）', v: String(same) }]);
+  }
+
+  // 复制成环
+  var ring = pts.map(function (p) { return deg(p.rad); });
+  var ringMarks = {};
+  for (i = 0; i < n; i++) ringMarks[i + n] = 'new';
+  for (i = 0; i < n; i++) ring.push(deg(pts[i].rad + 2 * Math.PI));
+  if (n) {
+    snap('double w = Math.toRadians(angle);',
+      '排序后复制一份 +360° 接在后面：环上的窗口变成直线上的定长窗',
+      [cellsPanel(ring, '排序后的极角（后半是复制的）', ringMarks, null, null)],
+      [{ name: '视野宽 angle', v: angle + '°' }]);
+  }
+
+  // 滑窗：记下覆盖最多的 l
+  var w = angle / 180 * Math.PI;
+  var best = 0, bestL = 0, bestR = 0;
+  var arr = pts.map(function (p) { return p.rad; }).concat(pts.map(function (p) { return p.rad + 2 * Math.PI; }));
+  for (var l = 0, r = 0; l < n; l++) {
+    while (r < 2 * n && arr[r] - arr[l] <= w + 1e-9) r++;
+    if (r - l > best) { best = r - l; bestL = l; bestR = r; }
+    if (n && l === bestL && best > 0) {
+      var wm = {};
+      for (i = bestL; i < bestR; i++) wm[i] = 'win';
+      snap('while (r < 2 * n && angles.get(r) - angles.get(l) <= w + 1e-9) r++;',
+        '从 ' + deg(arr[bestL]) + ' 起逆时针转 ' + angle + '°：罩住 r−l = ' + best + ' 个点',
+        [cellsPanel(ring, '排序后的极角（后半是复制的）', wm,
+          { from: bestL, to: Math.min(bestR - 1, 2 * n - 1), label: '视野 ' + angle + '°' },
+          bestR - 1 < 2 * n ? [bestL, Math.max(bestR - 1, bestL)] : null)],
+        [{ name: 'r − l', v: String(best) }]);
+    }
+  }
+
+  snap('return best + same;',
+    same ? '最多 ' + best + ' 个 + 重合 ' + same + ' 个 = ' + (best + same) : '最好窗口罩住 ' + best + ' 个点，返回它',
+    [cellsPanel(ring, '排序后的极角（后半是复制的）', (function () { var m = {}; if (n) for (i = bestL; i < bestR; i++) m[i] = 'done'; return m; })(), null, null)],
+    [{ name: 'best + same', v: String(best + same) }]);
+
+  return { frames: frames, result: best + same };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

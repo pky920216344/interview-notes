@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二维区域和检索 - 矩阵可修改 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1062 / 1159</span>
+  <nav class="pn"><a href="0938.html">上一篇</a><a href="mianshi-03-05.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">308. </span>二维区域和检索 - 矩阵可修改</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">树状数组/线段树</li><li class="aux">设计</li><li class="tag">设计</li><li class="tag">树状数组</li><li class="tag">线段树</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="tag">sqrt-decomposition</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">二维树状数组：单点改值沿 lowbit 链向上修正，前缀和沿链下行累加，区间和用四次前缀和容斥。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>BIT 的每个结点 <code>tree[i][j]</code> 管住一块矩形（行方向 [i−lowbit+1..i]、列方向 [j−lowbit+1..j]）；两个方向各自独立跳 lowbit。</li><li><code>update</code> 是<strong>增量</strong>语义：先算 <code>val − nums[row][col]</code> 的差值再入树（所以手里要留原矩阵副本）。</li><li><code>sumRegion</code> 不直接做：取四次前缀和容斥——大矩形减上、减左、加回左上角重叠。</li><li>复杂度：建树 O(mn)、单点更新与区域查询都是 O(log m × log n)；暴力重算是 O(mn) 每查，BIT 是这类「可改可查」场景的标准答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn 建树)、update/sumRegion O(log(m)·log(n))，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">NumMatrix</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span>[][] tree;   <span class="c">// 1-based 二维树状数组，存的是前缀和</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span>[][] nums;   <span class="c">// 原矩阵，update 时算差值用</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span> m, n;</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">NumMatrix</span>(<span class="k">int</span>[][] matrix) {</span><span class="ln"><span class="no">9</span>        m = matrix.length;</span><span class="ln"><span class="no">10</span>        n = matrix[<span class="n">0</span>].length;</span><span class="ln"><span class="no">11</span>        tree = <span class="k">new</span> <span class="k">int</span>[m + <span class="n">1</span>][n + <span class="n">1</span>];</span><span class="ln"><span class="no">12</span>        nums = matrix;</span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++)</span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++)</span><span class="ln"><span class="no">15</span>                add(i + <span class="n">1</span>, j + <span class="n">1</span>, matrix[i][j]);</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="k">public</span> <span class="k">void</span> update(<span class="k">int</span> row, <span class="k">int</span> col, <span class="k">int</span> val) {</span><span class="ln"><span class="no">19</span>        <span class="c">// BIT 只支持增量更新，先把这一格的差值算出来</span></span><span class="ln"><span class="no">20</span>        add(row + <span class="n">1</span>, col + <span class="n">1</span>, val - nums[row][col]);</span><span class="ln"><span class="no">21</span>        nums[row][col] = val;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span> </span><span class="ln"><span class="no">24</span>    <span class="k">public</span> <span class="k">int</span> sumRegion(<span class="k">int</span> row1, <span class="k">int</span> col1, <span class="k">int</span> row2, <span class="k">int</span> col2) {</span><span class="ln"><span class="no">25</span>        <span class="c">// 容斥：大前缀减去两侧再补回重叠角</span></span><span class="ln"><span class="no">26</span>        <span class="k">return</span> query(row2 + <span class="n">1</span>, col2 + <span class="n">1</span>) - query(row1, col2 + <span class="n">1</span>)</span><span class="ln"><span class="no">27</span>             - query(row2 + <span class="n">1</span>, col1) + query(row1, col1);</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span> </span><span class="ln"><span class="no">30</span>    <span class="c">// (x, y) 单点加上 delta，沿两个方向各自跳 lowbit</span></span><span class="ln"><span class="no">31</span>    <span class="k">private</span> <span class="k">void</span> add(<span class="k">int</span> x, <span class="k">int</span> y, <span class="k">int</span> delta) {</span><span class="ln"><span class="no">32</span>        <span class="k">for</span> (<span class="k">int</span> i = x; i &lt;= m; i += i &amp; (-i))</span><span class="ln"><span class="no">33</span>            <span class="k">for</span> (<span class="k">int</span> j = y; j &lt;= n; j += j &amp; (-j))</span><span class="ln"><span class="no">34</span>                tree[i][j] += delta;</span><span class="ln"><span class="no">35</span>    }</span><span class="ln"><span class="no">36</span> </span><span class="ln"><span class="no">37</span>    <span class="c">// (1,1) 到 (x,y) 的前缀和</span></span><span class="ln"><span class="no">38</span>    <span class="k">private</span> <span class="k">int</span> query(<span class="k">int</span> x, <span class="k">int</span> y) {</span><span class="ln"><span class="no">39</span>        <span class="k">int</span> sum = <span class="n">0</span>;</span><span class="ln"><span class="no">40</span>        <span class="k">for</span> (<span class="k">int</span> i = x; i &gt; <span class="n">0</span>; i -= i &amp; (-i))</span><span class="ln"><span class="no">41</span>            <span class="k">for</span> (<span class="k">int</span> j = y; j &gt; <span class="n">0</span>; j -= j &amp; (-j))</span><span class="ln"><span class="no">42</span>                sum += tree[i][j];</span><span class="ln"><span class="no">43</span>        <span class="k">return</span> sum;</span><span class="ln"><span class="no">44</span>    }</span><span class="ln"><span class="no">45</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class NumMatrix {", "    private final int[][] tree;   // 1-based 二维树状数组，存的是前缀和", "    private final int[][] nums;   // 原矩阵，update 时算差值用", "    private final int m, n;", "", "    public NumMatrix(int[][] matrix) {", "        m = matrix.length;", "        n = matrix[0].length;", "        tree = new int[m + 1][n + 1];", "        nums = matrix;", "        for (int i = 0; i < m; i++)", "            for (int j = 0; j < n; j++)", "                add(i + 1, j + 1, matrix[i][j]);", "    }", "", "    public void update(int row, int col, int val) {", "        // BIT 只支持增量更新，先把这一格的差值算出来", "        add(row + 1, col + 1, val - nums[row][col]);", "        nums[row][col] = val;", "    }", "", "    public int sumRegion(int row1, int col1, int row2, int col2) {", "        // 容斥：大前缀减去两侧再补回重叠角", "        return query(row2 + 1, col2 + 1) - query(row1, col2 + 1)", "             - query(row2 + 1, col1) + query(row1, col1);", "    }", "", "    // (x, y) 单点加上 delta，沿两个方向各自跳 lowbit", "    private void add(int x, int y, int delta) {", "        for (int i = x; i <= m; i += i & (-i))", "            for (int j = y; j <= n; j += j & (-j))", "                tree[i][j] += delta;", "    }", "", "    // (1,1) 到 (x,y) 的前缀和", "    private int query(int x, int y) {", "        int sum = 0;", "        for (int i = x; i > 0; i -= i & (-i))", "            for (int j = y; j > 0; j -= j & (-j))", "                sum += tree[i][j];", "        return sum;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 308（会员题）二维区域和检索 - 可变 —— 图解：复刻 Solution.java 的二维树状数组三步走，
+// 在 4 个关键时刻拍快照。约定见 site/assets/viz.js。at 里的字符串必须唯一匹配 Solution.java 一行。
+
+var STORY_INPUT = { m: 3, n: 3, matrix: [[3, 0, 1], [4, 2, 5], [1, 2, 0]], ops: 's 0 0 1 1;u 1 1 8;s 1 1 2 2' };
+
+function trace(input) {
+  var m = input.m, n = input.n;
+  var mat = input.matrix;
+  var frames = [];
+  var tree = [];
+  var nums = [];
+  for (var i = 0; i <= m; i++) {
+    tree.push(new Array(n + 1).fill(0));
+    var row = [0];                              // 1-based：第 0 列补 0
+    for (var j = 0; j < n; j++) row.push(i > 0 ? mat[i - 1][j] : 0);
+    nums.push(row);
+  }
+
+  function lowbit(x) { return x & (-x); }
+
+  // tree[i][j] 的覆盖范围：从 (i-lowbit(i)+1, j-lowbit(j)+1) 到 (i, j)
+  function cellRange(i, j) {
+    var r1 = i - lowbit(i) + 1, r2 = i;
+    var c1 = j - lowbit(j) + 1, c2 = j;
+    return { r1: r1, r2: r2, c1: c1, c2: c2 };
+  }
+
+  function gridPanel(highlight) {
+    var marks = {};
+    if (highlight) {
+      var parts = highlight.split('|');
+      parts.forEach(function (p) {
+        var kv = p.split(':');
+        var r = +kv[0] - 1, c = +kv[1] - 1;   // tree 是 1-based，面板是 0-based
+        if (r >= 0 && r < m && c >= 0 && c < n) marks[r + ',' + c] = kv[2];
+      });
+    }
+    var rows = [];
+    for (var r = 0; r < m; r++) {
+      var line = [];
+      for (var c = 0; c < n; c++) line.push(String(mat[r][c]));
+      rows.push(line);
+    }
+    var rl = [], cl = [];
+    for (var t = 0; t < m; t++) rl.push(String(t));
+    for (var t2 = 0; t2 < n; t2++) cl.push(String(t2));
+    return Viz.grid(rows, { title: 'matrix（cur/new=被高亮结点管住的格）', marks: marks, rowLabels: rl, colLabels: cl });
+  }
+
+  function varsPanel(msg) {
+    return Viz.vars(msg);
+  }
+
+  function add(x, y, delta) {
+    for (var i = x; i <= m; i += lowbit(i)) {
+      for (var j = y; j <= n; j += lowbit(j)) {
+        tree[i][j] += delta;
+      }
+    }
+  }
+
+  function query(x, y) {
+    var sum = 0;
+    for (var i = x; i > 0; i -= lowbit(i)) {
+      for (var j = y; j > 0; j -= lowbit(j)) {
+        sum += tree[i][j];
+      }
+    }
+    return sum;
+  }
+
+  // 1) 初始化：逐格 add
+  for (var i2 = 0; i2 < m; i2++) {
+    for (var j2 = 0; j2 < n; j2++) {
+      add(i2 + 1, j2 + 1, mat[i2][j2]);
+    }
+  }
+  frames.push(Viz.frame('add(i + 1, j + 1, matrix[i][j]);',
+    '建树：每格值沿 lowbit 链累进，tree[i][j] 管住一块子矩形',
+    [gridPanel(null), varsPanel([{ name: '建树完成', v: m + '×' + n + ' 全部入树', cls: 'done' }])]));
+
+  // 2) 逐条操作；sum 的结果依次收集为 result（与 Java 导出的 out 对齐）
+  var ops = (input.ops || '').split(';');
+  var sums = [];
+  var snapDone = { upd: false, sum: false };
+  for (var oi = 0; oi < ops.length; oi++) {
+    var parts = ops[oi].trim().split(/\s+/);
+    if (parts[0] === 'u') {
+      var ur = +parts[1], uc = +parts[2], uv = +parts[3];
+      var old = nums[ur + 1][uc + 1];   // nums 是 1-based（第 0 行是 padding）
+      add(ur + 1, uc + 1, uv - old);
+      nums[ur + 1][uc + 1] = uv;
+      if (!snapDone.upd) {
+        snapDone.upd = true;
+        frames.push(Viz.frame('add(row + 1, col + 1, val - nums[row][col]);',
+          'update(' + ur + ',' + uc + ')：差值 ' + (uv - old) + ' 沿 lowbit 链修正所有覆盖它的结点',
+          [gridPanel((ur + 1) + ',' + (uc + 1) + ':new'), varsPanel([{ name: 'update(' + ur + ',' + uc + ')', v: old + ' → ' + uv, cls: 'new' }])]));
+      }
+    } else if (parts[0] === 's') {
+      var r1 = +parts[1], c1 = +parts[2], r2 = +parts[3], c2 = +parts[4];
+      var big = query(r2 + 1, c2 + 1);
+      var top = query(r1, c2 + 1);
+      var left = query(r2 + 1, c1);
+      var corner = query(r1, c1);
+      var res = big - top - left + corner;
+      sums.push(res);
+      if (!snapDone.sum) {
+        snapDone.sum = true;
+        var marks = (r1 + 1) + ',' + (c1 + 1) + ':cur|' + (r2 + 1) + ',' + (c2 + 1) + ':new';
+        frames.push(Viz.frame('return query(row2 + 1, col2 + 1) - query(row1, col2 + 1)',
+          'sumRegion(' + r1 + '..' + r2 + ',' + c1 + '..' + c2 + ')：四次前缀和容斥 = ' + big + '−' + top + '−' + left + '+' + corner + ' = ' + res,
+          [gridPanel(marks), varsPanel([{ name: 'sumRegion', v: res, cls: 'done' }])]));
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return sum;', 'query 沿 lowbit 下行把覆盖 (1,1)..(x,y) 的结点全加起来', [gridPanel(null), varsPanel([{ name: '复杂度', v: 'update/sumRegion 均 O(log²)', cls: 'done' }])]));
+  return { frames: frames, result: sums };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

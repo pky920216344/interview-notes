@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>猜数字游戏 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 575 / 1159</span>
+  <nav class="pn"><a href="0783.html">上一篇</a><a href="1099.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">299. </span>猜数字游戏</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 3</li><li class="algo">哈希表</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">计数</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">一遍扫：位置数字都对的是公牛；对不上的两侧各记一张数字计数表，奶牛 = 每种数字两侧计数取较小再求和。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先逐位比：<code>secret[i] == guess[i]</code> 就是公牛；对不上的数字分别进 <code>cntS</code>、<code>cntG</code> 计数表。</li><li>公牛的数字已经配对走掉，不进计数表，所以奶牛不会数重。</li><li>奶牛数 = <code>Σ min(cntS[d], cntG[d])</code>：能凑成多少对就多少头，多余的被扔掉。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">String</span> getHint(<span class="t">String</span> secret, <span class="t">String</span> guess) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> bulls = <span class="n">0</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] cntS = <span class="k">new</span> <span class="k">int</span>[<span class="n">10</span>], cntG = <span class="k">new</span> <span class="k">int</span>[<span class="n">10</span>];</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; secret.length(); i++) {</span><span class="ln"><span class="no">6</span>            <span class="k">char</span> s = secret.charAt(i), g = guess.charAt(i);</span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (s == g) bulls++;              <span class="c">// 数字和位置都对：公牛</span></span><span class="ln"><span class="no">8</span>            <span class="k">else</span> { cntS[s - <span class="s">'0'</span>]++; cntG[g - <span class="s">'0'</span>]++; }   <span class="c">// 对不上的数字各记一笔</span></span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="c">// 奶牛 = 每种数字在两侧非公牛部分计数取较小，再求和</span></span><span class="ln"><span class="no">11</span>        <span class="k">int</span> cows = <span class="n">0</span>;</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> d = <span class="n">0</span>; d &lt; <span class="n">10</span>; d++) cows += <span class="t">Math</span>.min(cntS[d], cntG[d]);</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> bulls + <span class="s">"A"</span> + cows + <span class="s">"B"</span>;</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你在和朋友一起玩 <a href="https://baike.baidu.com/item/%E7%8C%9C%E6%95%B0%E5%AD%97/83200?fromtitle=Bulls+and+Cows&amp;fromid=12003488&amp;fr=aladdin" target="_blank">猜数字（Bulls and Cows）</a>游戏，该游戏规则如下：</p>
+
+<p>写出一个秘密数字，并请朋友猜这个数字是多少。朋友每猜测一次，你就会给他一个包含下述信息的提示：</p>
+
+<ul>
+	<li>猜测数字中有多少位属于数字和确切位置都猜对了（称为 "Bulls"，公牛），</li>
+	<li>有多少位属于数字猜对了但是位置不对（称为 "Cows"，奶牛）。也就是说，这次猜测中有多少位非公牛数字可以通过重新排列转换成公牛数字。</li>
+</ul>
+
+<p>给你一个秘密数字&nbsp;<code>secret</code> 和朋友猜测的数字&nbsp;<code>guess</code> ，请你返回对朋友这次猜测的提示。</p>
+
+<p>提示的格式为 <code>"xAyB"</code> ，<code>x</code> 是公牛个数， <code>y</code> 是奶牛个数，<code>A</code> 表示公牛，<code>B</code>&nbsp;表示奶牛。</p>
+
+<p>请注意秘密数字和朋友猜测的数字都可能含有重复数字。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>secret = "1807", guess = "7810"
+<strong>输出：</strong>"1A3B"
+<strong>解释：</strong>数字和位置都对（公牛）用 '|' 连接，数字猜对位置不对（奶牛）的采用斜体加粗标识。
+"1807"
+  |
+"<em><strong>7</strong></em>8<em><strong>10</strong></em>"</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>secret = "1123", guess = "0111"
+<strong>输出：</strong>"1A1B"
+<strong>解释：</strong>数字和位置都对（公牛）用 '|' 连接，数字猜对位置不对（奶牛）的采用斜体加粗标识。
+"1123"        "1123"
+  |      or     |
+"01<em><strong>1</strong></em>1"        "011<em><strong>1</strong></em>"
+注意，两个不匹配的 1 中，只有一个会算作奶牛（数字猜对位置不对）。通过重新排列非公牛数字，其中仅有一个 1 可以成为公牛数字。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= secret.length, guess.length &lt;= 1000</code></li>
+	<li><code>secret.length == guess.length</code></li>
+	<li><code>secret</code> 和 <code>guess</code> 仅由数字组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public String getHint(String secret, String guess) {", "        int bulls = 0;", "        int[] cntS = new int[10], cntG = new int[10];", "        for (int i = 0; i < secret.length(); i++) {", "            char s = secret.charAt(i), g = guess.charAt(i);", "            if (s == g) bulls++;              // 数字和位置都对：公牛", "            else { cntS[s - '0']++; cntG[g - '0']++; }   // 对不上的数字各记一笔", "        }", "        // 奶牛 = 每种数字在两侧非公牛部分计数取较小，再求和", "        int cows = 0;", "        for (int d = 0; d < 10; d++) cows += Math.min(cntS[d], cntG[d]);", "        return bulls + \"A\" + cows + \"B\";", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 299. 猜数字游戏 —— 图解：复刻 Solution.java 的「一遍扫 + 计数配对」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { secret: '1807', guess: '7810' };
+
+function trace(input) {
+  var secret = input.secret, guess = input.guess, n = secret.length;
+  var frames = [];
+  var bulls = 0;
+  var cntS = {}, cntG = {};   // 数字 -> 非公牛位置的计数
+  var bullAt = {}, curAt = -1;
+
+  // secret / guess 双行面板：公牛位打 done，当前位打 cur，已计入的位打 win
+  function pairPanel() {
+    var ms = {}, mg = {}, i;
+    for (i = 0; i < n; i++) {
+      if (bullAt[i]) { ms[i] = 'done'; mg[i] = 'done'; }
+      else if (i in cntS || i in cntG) { ms[i] = 'win'; mg[i] = 'win'; }
+    }
+    if (curAt >= 0) { ms[curAt] = 'cur'; mg[curAt] = 'cur'; }
+    return [
+      Viz.cells(secret.split(''), { title: 'secret（绿 = 已计入计数，黄 = 公牛）', marks: ms }),
+      Viz.cells(guess.split(''), { title: 'guess', marks: mg })
+    ];
+  }
+
+  function cntPanel(minDigit) {
+    var rows = [];
+    for (var d = 0; d < 10; d++) {
+      var s = cntS[d] || 0, g = cntG[d] || 0;
+      if (s === 0 && g === 0) continue;
+      rows.push({ k: String(d), v: 'S×' + s + ' G×' + g + ' → 配 ' + Math.min(s, g), cls: d === minDigit ? 'hit' : '' });
+    }
+    return Viz.table('非公牛位置的数字计数', rows, { hint: '奶牛 = 每个数字取较小的一边' });
+  }
+
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  for (var i = 0; i < n; i++) {
+    var s = secret[i], g = guess[i];
+    curAt = i;
+    if (s === g) {
+      bulls++;
+      bullAt[i] = true;
+      if (i === 1) snap('if (s == g) bulls++;', i + ' 位上 ' + s + ' == ' + g + '：公牛 +1（不进计数）', pairPanel().concat([cntPanel(null)]));
+    } else {
+      cntS[s] = (cntS[s] || 0) + 1;
+      cntG[g] = (cntG[g] || 0) + 1;
+      if (i === 0) snap('if (s == g) bulls++;', i + ' 位上 ' + s + ' != ' + g + '：各进自己的计数', pairPanel().concat([cntPanel(null)]));
+    }
+  }
+  curAt = -1;
+
+  var cows = 0, minDigit = null, commons = [];
+  for (var d = 0; d < 10; d++) {
+    var a = cntS[d] || 0, b = cntG[d] || 0;
+    if (a && b) { cows += Math.min(a, b); minDigit = d; commons.push(d); }
+  }
+  snap('for (int d = 0; d < 10; d++) cows += Math.min(cntS[d], cntG[d]);',
+    '配对：共同数字 ' + commons.join('、') + ' 各取较小的一边，奶牛 = ' + cows,
+    pairPanel().concat([cntPanel(minDigit)]));
+
+  var out = bulls + 'A' + cows + 'B';
+  snap('return bulls + "A" + cows + "B";', '结果 ' + out + '：公牛 ' + bulls + ' 头、奶牛 ' + cows + ' 头',
+    pairPanel().concat([cntPanel(null)]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

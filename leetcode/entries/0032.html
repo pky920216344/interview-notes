@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最长有效括号 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 44 / 1159</span>
+  <nav class="pn"><a href="0022.html">上一篇</a><a href="0069.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">32. </span>最长有效括号</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 151</li><li class="algo">贪心</li><li class="tag">栈</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="tag">bracket-sequences</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">左右各扫一遍计数：相等就记 2×right，右括号多了就清零；反向再扫，改成左括号多了清零。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>正向扫：遇 <code>(</code> 令 <code>left++</code>，遇 <code>)</code> 令 <code>right++</code>。</li><li><code>left == right</code>：这一段刚好配平，长度是 <code>2 * right</code>，用来更新 <code>ans</code>。</li><li><code>right &gt; left</code>：多出来的 <code>)</code> 永远配不上，<code>left</code>、<code>right</code> 清零，从下一个字符重新数。</li><li>只正向扫不够：像 <code>(()</code> 这样 <code>(</code> 多出来时，<code>left</code> 永远比 <code>right</code> 大，答案记不到。所以<strong>再反向扫一遍</strong>，对称地换成 <code>left &gt; right</code> 时清零。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> longestValidParentheses(<span class="t">String</span> s) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">4</span>        <span class="c">// 正向扫：')' 多了，多出的那个永远配不上，清零</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span> left = <span class="n">0</span>, right = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) {</span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (s.charAt(i) == <span class="s">'('</span>) left++;</span><span class="ln"><span class="no">8</span>            <span class="k">else</span> right++;</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (left == right) ans = <span class="t">Math</span>.max(ans, <span class="n">2</span> * right);</span><span class="ln"><span class="no">10</span>            <span class="k">else</span> <span class="k">if</span> (right &gt; left) left = right = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="c">// 反向再扫：这回 '(' 多了才清零</span></span><span class="ln"><span class="no">13</span>        left = <span class="n">0</span>; right = <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> i = s.length() - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (s.charAt(i) == <span class="s">'('</span>) left++;</span><span class="ln"><span class="no">16</span>            <span class="k">else</span> right++;</span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (left == right) ans = <span class="t">Math</span>.max(ans, <span class="n">2</span> * left);</span><span class="ln"><span class="no">18</span>            <span class="k">else</span> <span class="k">if</span> (left &gt; right) left = right = <span class="n">0</span>;</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个只包含 <code>'('</code> 和 <code>')'</code> 的字符串，找出最长有效（格式正确且连续）括号 <span>子串</span> 的长度。</p>
+
+<p>左右括号匹配，即每个左括号都有对应的右括号将其闭合的字符串是格式正确的，比如&nbsp;<code>"(()())"</code>。</p>
+
+
+
+<div class="original__bRMd">
+<div>
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "(()"
+<strong>输出：</strong>2
+<strong>解释：</strong>最长有效括号子串是 "()"
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = ")()())"
+<strong>输出：</strong>4
+<strong>解释：</strong>最长有效括号子串是 "()()"
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = ""
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= s.length &lt;= 3 * 10<sup>4</sup></code></li>
+	<li><code>s[i]</code> 为 <code>'('</code> 或 <code>')'</code></li>
+</ul>
+</div>
+</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int longestValidParentheses(String s) {", "        int ans = 0;", "        // 正向扫：')' 多了，多出的那个永远配不上，清零", "        int left = 0, right = 0;", "        for (int i = 0; i < s.length(); i++) {", "            if (s.charAt(i) == '(') left++;", "            else right++;", "            if (left == right) ans = Math.max(ans, 2 * right);", "            else if (right > left) left = right = 0;", "        }", "        // 反向再扫：这回 '(' 多了才清零", "        left = 0; right = 0;", "        for (int i = s.length() - 1; i >= 0; i--) {", "            if (s.charAt(i) == '(') left++;", "            else right++;", "            if (left == right) ans = Math.max(ans, 2 * left);", "            else if (left > right) left = right = 0;", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 32. 最长有效括号 —— 图解：复刻 Solution.java 的「左右各扫一遍」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: ')()(()()' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+  var left = 0, right = 0, ans = 0;   // 对应 Java 里的 left、right、ans
+  var segFrom = 0;                    // 当前这一段从哪里开始数（Java 里不记，只用来画图）
+  var bestFrom = 0, bestTo = -1;      // ans 对应的那一段，同样只用来画图
+  var RESET_F = 'else if (right > left) left = right = 0;';
+  var EQ_F = 'ans = Math.max(ans, 2 * right);';
+  var BACK = 'for (int i = s.length() - 1; i >= 0; i--) {';
+  var EQ_B = 'ans = Math.max(ans, 2 * left);';
+
+  // 字符串面板：seg 是当前这一段（上次清零之后数过的字符）；bad 是刚被清零的那个括号；done 标出最终结果。
+  function strPanel(i, seg, bad, done) {
+    var marks = {};
+    var k;
+    if (seg) for (k = seg[0]; k <= seg[1]; k++) marks[k] = 'win';
+    if (done) for (k = done[0]; k <= done[1]; k++) marks[k] = 'done';
+    if (bad != null) marks[bad] = 'bad';
+    var range = null;
+    if (done) range = { from: done[0], to: done[1], label: 'ans = ' + ans };
+    else if (seg) range = { from: seg[0], to: seg[1], label: '本段 [' + seg[0] + ', ' + seg[1] + ']' };
+    return Viz.cells(s.split(''), {
+      title: '字符串 s',
+      marks: marks,
+      pointers: i != null ? [{ at: i, label: 'i', cls: 'p-cur' }] : [],
+      range: range
+    });
+  }
+
+  function varsPanel(chgLR, chgAns) {
+    return Viz.vars([
+      { name: 'left', v: left, cls: chgLR ? 'chg' : '' },
+      { name: 'right', v: right, cls: chgLR ? 'chg' : '' },
+      { name: 'ans', v: ans, cls: chgAns ? 'chg' : '' }
+    ]);
+  }
+
+  var fwdReset = null, fwdEq = null, bwdEq = null;   // 每类事件各挑一个关键时刻
+
+  // 一趟扫描：forward 为真是正向，否则是反向。和 Java 里的两个 for 循环一一对应。
+  function scan(forward) {
+    left = 0;
+    right = 0;
+    segFrom = forward ? 0 : n - 1;
+    for (var k = 0; k < n; k++) {
+      var i = forward ? k : n - 1 - k;
+      if (s[i] === '(') left++; else right++;
+      var lo = Math.min(segFrom, i), hi = Math.max(segFrom, i);
+      if (left === right) {
+        var len = 2 * right;          // 这时 left == right，Java 里正向写 2 * right，反向写 2 * left
+        if (len > ans) {
+          ans = len;
+          bestFrom = lo;
+          bestTo = hi;
+          var f = Viz.frame(forward ? EQ_F : EQ_B,
+            (forward ? '正向：' : '反向：') + 'left = right = ' + right + '，配平，长度 2×' + right + ' = ' + len,
+            [strPanel(i, [lo, hi]), varsPanel(false, true)]);
+          if (!forward) bwdEq = f;
+          else if (!fwdEq) fwdEq = f;
+        }
+      } else if (forward ? right > left : left > right) {
+        var l0 = left, r0 = right;
+        left = 0;
+        right = 0;
+        if (forward && !fwdReset) {
+          fwdReset = Viz.frame(RESET_F, 'right ' + r0 + ' > left ' + l0 + '：多出的 ")" 配不上，清零',
+            [strPanel(i, null, i), varsPanel(true, false)]);
+        }
+        segFrom = forward ? i + 1 : i - 1;    // 从下一个字符重新数
+      }
+    }
+  }
+
+  scan(true);
+  if (fwdReset) frames.push(fwdReset);
+  if (fwdEq) frames.push(fwdEq);
+  if (n > 0) {
+    // 正向扫完、反向开始之前：看看正向留下了什么
+    var endSeg = segFrom <= n - 1 ? [segFrom, n - 1] : null;
+    var why = left > right
+      ? '正向扫完：left ' + left + ' > right ' + right + '，还没配平；再反向扫一遍'
+      : '正向扫完，ans = ' + ans + '；再反向扫一遍';
+    frames.push(Viz.frame(BACK, why, [strPanel(n - 1, endSeg), varsPanel(false, false)]));
+  }
+
+  scan(false);
+  if (bwdEq) frames.push(bwdEq);
+
+  var txt = ans > 0 && ans <= 8 ? ' = "' + s.slice(bestFrom, bestTo + 1) + '"' : '';
+  frames.push(Viz.frame('return ans;',
+    ans > 0 ? 'ans = ' + ans + '：最长有效括号是 s[' + bestFrom + '..' + bestTo + ']' + txt : '没有任何有效括号，ans = 0',
+    [strPanel(null, null, null, ans > 0 ? [bestFrom, bestTo] : null), Viz.vars([{ name: 'ans', v: ans, cls: 'chg' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

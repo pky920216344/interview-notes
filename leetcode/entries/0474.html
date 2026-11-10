@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>一和零 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 614 / 1159</span>
+  <nav class="pn"><a href="0490.html">上一篇</a><a href="0505.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">474. </span>一和零</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="tag">knapsack-problem</li><li class="tag">0-1-knapsack</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">二维费用 01 背包：每串花掉若干个 0 和若干个 1，dp[i][j] 是剩这两种额度时的最大个数，两维都倒序更新。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先统计每个串的 <code>zeros</code>/<code>ones</code>，相当于物品的两件「体积」。</li><li><code>dp[i][j] = max(dp[i][j], dp[i-zeros][j-ones] + 1)</code>：选它或不选它。</li><li><code>i</code> 从 <code>m</code> 到 <code>zeros</code>、<code>j</code> 从 <code>n</code> 到 <code>ones</code> 双双倒序——正序会变成每个串可重复选。</li><li>答案就是满额度格 <code>dp[m][n]</code>，不需要遍历取最大。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(L × m × n)（L 为总字符数），空间复杂度 O(m × n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> findMaxForm(<span class="t">String</span>[] strs, <span class="k">int</span> m, <span class="k">int</span> n) {</span><span class="ln"><span class="no">3</span>        <span class="c">// dp[i][j]：0 的额度还剩 i、1 的额度还剩 j 时，能选出的最大字符串数</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[][] dp = <span class="k">new</span> <span class="k">int</span>[m + <span class="n">1</span>][n + <span class="n">1</span>];</span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="t">String</span> s : strs) {</span><span class="ln"><span class="no">6</span>            <span class="k">int</span> zeros = <span class="n">0</span>, ones = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; s.length(); k++) {</span><span class="ln"><span class="no">8</span>                <span class="k">if</span> (s.charAt(k) == <span class="s">'0'</span>) zeros++;</span><span class="ln"><span class="no">9</span>                <span class="k">else</span> ones++;</span><span class="ln"><span class="no">10</span>            }</span><span class="ln"><span class="no">11</span>            <span class="c">// 二维费用 01 背包：两个维度都倒序，保证每个字符串只选一次</span></span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> i = m; i &gt;= zeros; i--) {</span><span class="ln"><span class="no">13</span>                <span class="k">for</span> (<span class="k">int</span> j = n; j &gt;= ones; j--) {</span><span class="ln"><span class="no">14</span>                    dp[i][j] = <span class="t">Math</span>.max(dp[i][j], dp[i - zeros][j - ones] + <span class="n">1</span>);</span><span class="ln"><span class="no">15</span>                }</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> dp[m][n];</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个二进制字符串数组 <code>strs</code> 和两个整数 <code>m</code> 和 <code>n</code> 。</p>
+
+<div class="MachineTrans-Lines">
+<p class="MachineTrans-lang-zh-CN">请你找出并返回 <code>strs</code> 的最大子集的长度，该子集中 <strong>最多</strong> 有 <code>m</code> 个 <code>0</code> 和 <code>n</code> 个 <code>1</code> 。</p>
+
+<p class="MachineTrans-lang-zh-CN">如果 <code>x</code> 的所有元素也是 <code>y</code> 的元素，集合 <code>x</code> 是集合 <code>y</code> 的 <strong>子集</strong> 。</p>
+</div>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>strs = ["10", "0001", "111001", "1", "0"], m = 5, n = 3
+<strong>输出：</strong>4
+<strong>解释：</strong>最多有 5 个 0 和 3 个 1 的最大子集是 {"10","0001","1","0"} ，因此答案是 4 。
+其他满足题意但较小的子集包括 {"0001","1"} 和 {"10","1","0"} 。{"111001"} 不满足题意，因为它含 4 个 1 ，大于 n 的值 3 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>strs = ["10", "0", "1"], m = 1, n = 1
+<strong>输出：</strong>2
+<strong>解释：</strong>最大的子集是 {"0", "1"} ，所以答案是 2 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= strs.length &lt;= 600</code></li>
+	<li><code>1 &lt;= strs[i].length &lt;= 100</code></li>
+	<li><code>strs[i]</code>&nbsp;仅由&nbsp;<code>'0'</code> 和&nbsp;<code>'1'</code> 组成</li>
+	<li><code>1 &lt;= m, n &lt;= 100</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int findMaxForm(String[] strs, int m, int n) {", "        // dp[i][j]：0 的额度还剩 i、1 的额度还剩 j 时，能选出的最大字符串数", "        int[][] dp = new int[m + 1][n + 1];", "        for (String s : strs) {", "            int zeros = 0, ones = 0;", "            for (int k = 0; k < s.length(); k++) {", "                if (s.charAt(k) == '0') zeros++;", "                else ones++;", "            }", "            // 二维费用 01 背包：两个维度都倒序，保证每个字符串只选一次", "            for (int i = m; i >= zeros; i--) {", "                for (int j = n; j >= ones; j--) {", "                    dp[i][j] = Math.max(dp[i][j], dp[i - zeros][j - ones] + 1);", "                }", "            }", "        }", "        return dp[m][n];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 474. 一和零 —— 图解：二维费用背包，dp[i][j] 是「剩 i 个 0、j 个 1 额度」能选的最大个数。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { strs: ['10', '01', '1', '0'], m: 3, n: 2 };
+
+function trace(input) {
+  var strs = input.strs, m = input.m, n = input.n;
+  var frames = [];
+  var dp = [];
+  for (var i = 0; i <= m; i++) {
+    dp.push([]);
+    for (var j = 0; j <= n; j++) dp[i].push(0);
+  }
+
+  var INIT = 'int[][] dp = new int[m + 1][n + 1];';
+  var UPD = 'dp[i][j] = Math.max(dp[i][j], dp[i - zeros][j - ones] + 1);';
+  var RET = 'return dp[m][n];';
+
+  function dpPanel(marks, doneCell) {
+    var mk = {};
+    for (var k in (marks || {})) mk[k] = marks[k];
+    if (doneCell) mk[doneCell[0] + ',' + doneCell[1]] = 'done';
+    var rows = dp.map(function (row) { return row.slice(); });
+    return Viz.grid(rows, {
+      title: 'dp[i][j]：剩 i 个 0、j 个 1 额度时的最大个数',
+      marks: mk,
+      rowLabels: rows.map(function (_, r) { return 'i=' + r; }),
+      colLabels: rows[0].map(function (_, c) { return 'j=' + c; })
+    });
+  }
+
+  function varsPanel(s, zeros, ones) {
+    var items = [{ name: '额度', v: m + ' 个 0 / ' + n + ' 个 1', cls: '' }];
+    if (s != null) items.push({ name: '当前串 ' + s, v: zeros + ' 个 0、' + ones + ' 个 1', cls: 'chg' });
+    return Viz.vars(items);
+  }
+
+  function snap(at, key, marks, doneCell, s, zeros, ones) {
+    frames.push(Viz.frame(at, key, [dpPanel(marks, doneCell), varsPanel(s, zeros, ones)]));
+  }
+
+  snap(INIT, '开局：额度满格（' + m + ' 个 0、' + n + ' 个 1），一个串都没选，dp 全 0', null, null, null);
+
+  var last = strs.length - 1;
+  strs.forEach(function (s, si) {
+    var zeros = 0, ones = 0;
+    for (var k = 0; k < s.length; k++) {
+      if (s[k] === '0') zeros++;
+      else ones++;
+    }
+    var changed = {};
+    for (var i = m; i >= zeros; i--) {
+      for (var j = n; j >= ones; j--) {
+        var v = dp[i - zeros][j - ones] + 1;
+        if (v > dp[i][j]) {
+          dp[i][j] = v;
+          changed[i + ',' + j] = 'new';
+        }
+      }
+    }
+    if (si === 0) {
+      snap(UPD, '选 ' + s + '（' + zeros + ' 个 0、' + ones + ' 个 1）：从满额倒着更新，变亮的格子都多选了它',
+        changed, null, s, zeros, ones);
+    } else if (si === 1) {
+      snap(UPD, '再处理 ' + s + '：额度倒序保证它不会被重复计入', changed, null, s, zeros, ones);
+    } else if (si === last && last > 1) {
+      snap(UPD, '最后一个串 ' + s + ' 处理完：dp[' + m + '][' + n + ']=' + dp[m][n], changed, null, s, zeros, ones);
+    }
+  });
+
+  snap(RET, '全部处理完：答案 dp[' + m + '][' + n + '] = ' + dp[m][n], null, [m, n], null);
+
+  return { frames: frames, result: dp[m][n] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

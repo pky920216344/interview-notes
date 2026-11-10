@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>颜色交替的最短路径 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 506 / 1159</span>
+  <nav class="pn"><a href="1186.html">上一篇</a><a href="0713.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1129. </span>颜色交替的最短路径</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">广度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">BFS 的状态是「结点 + 上一条边的颜色」：每步必须换色，每状态只入队一次。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>把状态编码成 <code>0~n-1</code>（上条红，下一步只能走蓝）和 <code>n~2n-1</code>（上条蓝，只能走红），红蓝各建一张邻接表。</li><li>起点拆成两个状态（上条红、上条蓝）同时入队，距离都是 0；逐层 BFS，第一次到达某状态的层号就是最短距离。</li><li>某结点任一颜色状态第一次被到达时，就填 <code>answer[v]</code>；两状态都到不了才是 <code>-1</code>。</li><li>自环和平行边天然被 <code>vis</code> 挡掉，不需要特判。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + E)，空间复杂度 O(n + E)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] shortestAlternatingPaths(<span class="k">int</span> n, <span class="k">int</span>[][] redEdges, <span class="k">int</span>[][] blueEdges) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 状态 = 结点 + 上一条边的颜色。编号 0~n-1：上条红（下一步只能走蓝）；n~2n-1：上条蓝</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt;[] next = <span class="k">new</span> <span class="t">List</span>[<span class="n">2</span> * n];</span><span class="ln"><span class="no">7</span>        <span class="t">Arrays</span>.setAll(next, k -&gt; <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;());</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span>[] e : redEdges) next[n + e[<span class="n">0</span>]].add(e[<span class="n">1</span>]);</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span>[] e : blueEdges) next[e[<span class="n">0</span>]].add(n + e[<span class="n">1</span>]);</span><span class="ln"><span class="no">10</span>        <span class="k">int</span>[] ans = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">11</span>        <span class="t">Arrays</span>.fill(ans, -<span class="n">1</span>);</span><span class="ln"><span class="no">12</span>        ans[<span class="n">0</span>] = <span class="n">0</span>;</span><span class="ln"><span class="no">13</span>        <span class="k">boolean</span>[] vis = <span class="k">new</span> <span class="k">boolean</span>[<span class="n">2</span> * n];</span><span class="ln"><span class="no">14</span>        <span class="t">ArrayDeque</span>&lt;<span class="t">Integer</span>&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">15</span>        vis[<span class="n">0</span>] = vis[n] = <span class="k">true</span>;   <span class="c">// 起点拆成两个状态入队，两种首色都覆盖</span></span><span class="ln"><span class="no">16</span>        q.offer(<span class="n">0</span>);</span><span class="ln"><span class="no">17</span>        q.offer(n);</span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="k">int</span> d = <span class="n">1</span>; !q.isEmpty(); d++) {</span><span class="ln"><span class="no">19</span>            <span class="k">for</span> (<span class="k">int</span> sz = q.size(); sz &gt; <span class="n">0</span>; sz--) {</span><span class="ln"><span class="no">20</span>                <span class="k">int</span> cur = q.poll();</span><span class="ln"><span class="no">21</span>                <span class="k">for</span> (<span class="k">int</span> v : next[cur]) {</span><span class="ln"><span class="no">22</span>                    <span class="k">if</span> (vis[v]) <span class="k">continue</span>;</span><span class="ln"><span class="no">23</span>                    vis[v] = <span class="k">true</span>;</span><span class="ln"><span class="no">24</span>                    <span class="k">if</span> (ans[v % n] &lt; <span class="n">0</span>) ans[v % n] = d;</span><span class="ln"><span class="no">25</span>                    q.offer(v);</span><span class="ln"><span class="no">26</span>                }</span><span class="ln"><span class="no">27</span>            }</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个整数 <code>n</code>，即有向图中的节点数，其中节点标记为 <code>0</code> 到 <code>n - 1</code>。图中的每条边为红色或者蓝色，并且可能存在自环或平行边。</p>
+
+<p>给定两个数组&nbsp;<code>redEdges</code>&nbsp;和&nbsp;<code>blueEdges</code>，其中：</p>
+
+<ul>
+	<li><code>redEdges[i] = [a<sub>i</sub>, b<sub>i</sub>]</code>&nbsp;表示图中存在一条从节点&nbsp;<code>a<sub>i</sub></code>&nbsp;到节点&nbsp;<code>b<sub>i</sub></code>&nbsp;的红色有向边，</li>
+	<li><code>blueEdges[j] = [u<sub>j</sub>, v<sub>j</sub>]</code>&nbsp;表示图中存在一条从节点&nbsp;<code>u<sub>j</sub></code>&nbsp;到节点&nbsp;<code>v<sub>j</sub></code>&nbsp;的蓝色有向边。</li>
+</ul>
+
+<p>返回长度为 <code>n</code> 的数组&nbsp;<code>answer</code>，其中&nbsp;<code>answer[X]</code>&nbsp;是从节点&nbsp;<code>0</code>&nbsp;到节点&nbsp;<code>X</code>&nbsp;的红色边和蓝色边交替出现的最短路径的长度。如果不存在这样的路径，那么 <code>answer[x] = -1</code>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 3, red_edges = [[0,1],[1,2]], blue_edges = []
+<strong>输出：</strong>[0,1,-1]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 3, red_edges = [[0,1]], blue_edges = [[2,1]]
+<strong>输出：</strong>[0,1,-1]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 100</code></li>
+	<li><code>0 &lt;= redEdges.length,&nbsp;blueEdges.length &lt;= 400</code></li>
+	<li><code>redEdges[i].length == blueEdges[j].length == 2</code></li>
+	<li><code>0 &lt;= a<sub>i</sub>, b<sub>i</sub>, u<sub>j</sub>, v<sub>j</sub>&nbsp;&lt; n</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] shortestAlternatingPaths(int n, int[][] redEdges, int[][] blueEdges) {", "        // 状态 = 结点 + 上一条边的颜色。编号 0~n-1：上条红（下一步只能走蓝）；n~2n-1：上条蓝", "        List<Integer>[] next = new List[2 * n];", "        Arrays.setAll(next, k -> new ArrayList<>());", "        for (int[] e : redEdges) next[n + e[0]].add(e[1]);", "        for (int[] e : blueEdges) next[e[0]].add(n + e[1]);", "        int[] ans = new int[n];", "        Arrays.fill(ans, -1);", "        ans[0] = 0;", "        boolean[] vis = new boolean[2 * n];", "        ArrayDeque<Integer> q = new ArrayDeque<>();", "        vis[0] = vis[n] = true;   // 起点拆成两个状态入队，两种首色都覆盖", "        q.offer(0);", "        q.offer(n);", "        for (int d = 1; !q.isEmpty(); d++) {", "            for (int sz = q.size(); sz > 0; sz--) {", "                int cur = q.poll();", "                for (int v : next[cur]) {", "                    if (vis[v]) continue;", "                    vis[v] = true;", "                    if (ans[v % n] < 0) ans[v % n] = d;", "                    q.offer(v);", "                }", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1129. 颜色交替的最短路径 —— 图解：复刻 Solution.java 的状态 BFS，在关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 4, red: [[0, 1], [2, 3]], blue: [[1, 2], [3, 0]] };
+
+function trace(input) {
+  var n = input.n, red = input.red, blue = input.blue;
+  var nextR = [], nextB = [];
+  for (var k = 0; k < n; k++) { nextR.push([]); nextB.push([]); }
+  red.forEach(function (e) { nextR[e[0]].push(e[1]); });
+  blue.forEach(function (e) { nextB[e[0]].push(e[1]); });
+
+  var distR = [], distB = [];   // 行 0：上条红的状态；行 1：上条蓝。-1 = 未到达
+  for (var k2 = 0; k2 < n; k2++) { distR.push(-1); distB.push(-1); }
+  distR[0] = 0; distB[0] = 0;
+  var ans = [];
+  for (var k3 = 0; k3 < n; k3++) ans.push(-1);
+  ans[0] = 0;
+  var queue = [[0, 1], [0, 0]];   // [结点, 上条颜色]，0=红 1=蓝
+  var frames = [], traversals = 0;
+
+  function labels() {
+    var out = [];
+    for (var k = 0; k < n; k++) out.push(String(k));
+    return out;
+  }
+  function gridPanel(marks) {
+    var rows = [distR.slice(), distB.slice()].map(function (row) {
+      return row.map(function (v) { return v < 0 ? '·' : String(v); });
+    });
+    return Viz.grid(rows, {
+      title: '状态距离：上一条边颜色 × 结点', marks: marks || {},
+      rowLabels: ['上条红', '上条蓝'], colLabels: labels(), corner: '上条边 \\ 结点'
+    });
+  }
+  function snap(at, key, marks) { frames.push(Viz.frame(at, key, [gridPanel(marks)])); }
+
+  snap('vis[0] = vis[n] = true;', '起点 0 拆成「上条红」「上条蓝」两个状态入队，距离 0',
+    { '0,0': 'cur', '1,0': 'cur' });
+
+  for (var d = 1; queue.length > 0; d++) {
+    var layer = queue;
+    queue = [];
+    for (var s = 0; s < layer.length; s++) {
+      var node = layer[s][0], c = layer[s][1];
+      var adj = c === 0 ? nextB[node] : nextR[node];   // 上条红→走蓝，上条蓝→走红
+      for (var e = 0; e < adj.length; e++) {
+        var v = adj[e];
+        var row = c === 0 ? distB : distR;
+        if (row[v] >= 0) continue;
+        row[v] = d;
+        if (ans[v] < 0) ans[v] = d;
+        queue.push([v, 1 - c]);
+        traversals++;
+        if (traversals <= 3) {
+          var mk = {};
+          mk[c + ',' + node] = 'win';
+          mk[(1 - c) + ',' + v] = 'new';
+          snap('if (ans[v % n] < 0) ans[v % n] = d;',
+            '换色走' + (c === 0 ? '蓝' : '红') + '边 ' + node + '→' + v + '：距离 ' + d, mk);
+        }
+      }
+    }
+  }
+
+  var fin = {};
+  for (var k4 = 0; k4 < n; k4++) {
+    if (distR[k4] >= 0) fin['0,' + k4] = 'done';
+    if (distB[k4] >= 0) fin['1,' + k4] = 'done';
+  }
+  snap('return ans;', '扫完：answer = [' + ans.join(', ') + ']', fin);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

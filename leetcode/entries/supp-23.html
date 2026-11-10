@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>检测循环依赖 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 129 / 1159</span>
+  <nav class="pn"><a href="0498.html">上一篇</a><a href="0347.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">补充题23. </span>检测循环依赖</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 47</li><li class="algo">图算法</li><li class="aux">广度优先搜索</li><li class="st-warn" title="codetop 自行补充的条目，力扣上没有对应页面，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">拓扑排序 Kahn：依赖边 b→a 建邻接表和入度表，入度 0 的先完成并给后继减 1；最后完成数 &lt; n 就有环。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>edges[i] = [a, b]</code> 表示 a 依赖 b，建成边 <code>b → a</code>：b 的邻接表挂上 a，a 的入度加 1。</li><li>入度 0 的结点没有依赖，先入队；每弹出一个就给后继入度减 1，<strong>减到 0</strong> 才入队。</li><li>环上的结点入度永远减不到 0，进不了队列；队列排空后 <code>done == n</code> 无环，<code>done &lt; n</code> 就有环。</li><li>本条目力扣上没有页面：签名自定为 <code>canFinish(int n, int[][] edges)</code>，只做本地验证、不提交。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(V + E)，空间复杂度 O(V + E)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="c">/**</span></span><span class="ln"><span class="no">4</span><span class="c"> * codetop 补充题：检测循环依赖（力扣上无对应页面，本地验证）。</span></span><span class="ln"><span class="no">5</span><span class="c"> * edges[i] = [a, b] 表示 a 依赖 b（先完成 b 才能做 a），即有向边 b → a；</span></span><span class="ln"><span class="no">6</span><span class="c"> * 能用拓扑排序把 n 个结点全排完就没有循环依赖。</span></span><span class="ln"><span class="no">7</span><span class="c"> */</span></span><span class="ln"><span class="no">8</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">9</span>    <span class="k">public</span> <span class="k">boolean</span> canFinish(<span class="k">int</span> n, <span class="k">int</span>[][] edges) {</span><span class="ln"><span class="no">10</span>        <span class="c">// 邻接表 + 入度表：边 b → a</span></span><span class="ln"><span class="no">11</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; adj = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) adj.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;());</span><span class="ln"><span class="no">13</span>        <span class="k">int</span>[] inDegree = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span>[] e : edges) {</span><span class="ln"><span class="no">15</span>            adj.get(e[<span class="n">1</span>]).add(e[<span class="n">0</span>]);</span><span class="ln"><span class="no">16</span>            inDegree[e[<span class="n">0</span>]]++;</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="c">// 没有依赖的结点先入队</span></span><span class="ln"><span class="no">19</span>        <span class="t">Queue</span>&lt;<span class="t">Integer</span>&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">20</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (inDegree[i] == <span class="n">0</span>) queue.add(i);</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">int</span> done = <span class="n">0</span>;</span><span class="ln"><span class="no">24</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">25</span>            <span class="k">int</span> cur = queue.poll();</span><span class="ln"><span class="no">26</span>            done++;   <span class="c">// 弹出的当作已完成</span></span><span class="ln"><span class="no">27</span>            <span class="k">for</span> (<span class="k">int</span> next : adj.get(cur)) {</span><span class="ln"><span class="no">28</span>                <span class="c">// cur 完成后，依赖它的入度减 1，减到 0 就入队</span></span><span class="ln"><span class="no">29</span>                <span class="k">if</span> (--inDegree[next] == <span class="n">0</span>) queue.add(next);</span><span class="ln"><span class="no">30</span>            }</span><span class="ln"><span class="no">31</span>        }</span><span class="ln"><span class="no">32</span>        <span class="k">return</span> done == n;   <span class="c">// 环上的结点入度永远减不到 0</span></span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>这个条目没有现成的题面。</p></div></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "/**", " * codetop 补充题：检测循环依赖（力扣上无对应页面，本地验证）。", " * edges[i] = [a, b] 表示 a 依赖 b（先完成 b 才能做 a），即有向边 b → a；", " * 能用拓扑排序把 n 个结点全排完就没有循环依赖。", " */", "class Solution {", "    public boolean canFinish(int n, int[][] edges) {", "        // 邻接表 + 入度表：边 b → a", "        List<List<Integer>> adj = new ArrayList<>();", "        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());", "        int[] inDegree = new int[n];", "        for (int[] e : edges) {", "            adj.get(e[1]).add(e[0]);", "            inDegree[e[0]]++;", "        }", "        // 没有依赖的结点先入队", "        Queue<Integer> queue = new ArrayDeque<>();", "        for (int i = 0; i < n; i++) {", "            if (inDegree[i] == 0) queue.add(i);", "        }", "        int done = 0;", "        while (!queue.isEmpty()) {", "            int cur = queue.poll();", "            done++;   // 弹出的当作已完成", "            for (int next : adj.get(cur)) {", "                // cur 完成后，依赖它的入度减 1，减到 0 就入队", "                if (--inDegree[next] == 0) queue.add(next);", "            }", "        }", "        return done == n;   // 环上的结点入度永远减不到 0", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 补充题23 检测循环依赖 —— 图解：复刻 Solution.java 的「Kahn 拓扑排序判环」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 本条目没有力扣页面：edges[i] = [a, b] 表示 a 依赖 b，即有向边 b → a。
+
+var STORY_INPUT = { n: 4, edges: [[1, 0], [2, 1], [1, 2], [3, 0]] };
+
+function trace(input) {
+  var n = input.n;
+  var edges = input.edges;
+  var adj = [], inDeg = [], preds = [];
+  var i, k;
+  for (i = 0; i < n; i++) { adj.push([]); inDeg.push(0); preds.push([]); }
+  for (k = 0; k < edges.length; k++) {
+    var a = edges[k][0], b = edges[k][1];
+    adj[b].push(a);      // 边 b → a：a 依赖 b
+    inDeg[a]++;
+    preds[a].push(b);
+  }
+  var queue = [], done = 0, frames = [], snapped = {};
+
+  function indegPanel(chg) {
+    var rows = [];
+    for (i = 0; i < n; i++) {
+      rows.push({ k: String(i), v: String(inDeg[i]), cls: chg && chg[i] ? 'chg' : '' });
+    }
+    return Viz.table('入度表：结点 → 还差几个依赖', rows);
+  }
+  function adjPanel() {
+    var rows = [];
+    for (i = 0; i < n; i++) {
+      rows.push({ k: String(i), v: adj[i].length ? '解锁 ' + adj[i].join('、') : '（无后继）', cls: '' });
+    }
+    return Viz.table('邻接表：完成左边这个，解锁哪些结点', rows);
+  }
+  function queuePanel() {
+    return Viz.cells(queue.slice(), {
+      title: queue.length ? '队列（入度 0，可完成）' : '队列（空）', hideIndex: true,
+      pointers: queue.length ? [{ at: 0, label: '队首', cls: 'p-head' }] : []
+    });
+  }
+  function varsPanel() {
+    return Viz.vars([{ name: 'done', v: done, cls: 'chg' }, { name: 'n', v: n }]);
+  }
+
+  for (i = 0; i < n; i++) if (inDeg[i] === 0) queue.push(i);
+  frames.push(Viz.frame('if (inDegree[i] == 0) queue.add(i);',
+    '按依赖边 b→a 建表：只有 ' + (queue.length ? queue.join('、') : '没有人') + ' 没有依赖，先入队',
+    [adjPanel(), indegPanel(null), queuePanel()]));
+
+  while (queue.length) {
+    var cur = queue.shift();
+    done++;
+    if (!snapped.pop) {
+      snapped.pop = true;
+      frames.push(Viz.frame('done++;',
+        '弹出 ' + cur + ' 当作完成：后继 ' + (adj[cur].length ? adj[cur].join('、') : '无') + ' 的入度各减 1',
+        [indegPanel(null), queuePanel(), varsPanel()]));
+    }
+    for (k = 0; k < adj[cur].length; k++) {
+      var next = adj[cur][k];
+      inDeg[next]--;
+      if (inDeg[next] === 0) {
+        queue.push(next);
+        if (!snapped.zero) {
+          snapped.zero = true;
+          var chg = {};
+          chg[next] = true;
+          frames.push(Viz.frame('if (--inDegree[next] == 0) queue.add(next);',
+            next + ' 的入度归零入队；环上的结点减不到 0',
+            [indegPanel(chg), queuePanel(), varsPanel()]));
+        }
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return done == n;',
+    done === n
+      ? '队列空：done = ' + done + ' = n，全部能完成，返回 true'
+      : '队列空：done = ' + done + ' < n = ' + n + '，剩下的结点在环里，返回 false',
+    [indegPanel(null), queuePanel(), varsPanel()]));
+
+  return { frames: frames, result: done === n };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

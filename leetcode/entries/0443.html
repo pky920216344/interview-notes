@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>压缩字符串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 214 / 1159</span>
+  <nav class="pn"><a href="0111.html">上一篇</a><a href="0503.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">443. </span>压缩字符串</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 23</li><li class="algo">双指针</li><li class="tag">双指针</li><li class="tag">字符串</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">原地双指针：i 读出每段连续字符，write 写回「字符 + 位数（逐位写）」，返回新长度 write。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>i</code> 数出当前连续段的长度 <code>run</code>，<code>write</code> 指向下一个要写的位置；写的东西永远不超过读过的范围，原地安全。</li><li>每段先写字符本身；<code>run &gt; 1</code> 才写位数，多位数<strong>逐位写</strong>（12 写成 <code>'1','2'</code>），不能合成一个字符。</li><li>循环结束 <code>write</code> 就是新长度，超出部分无关紧要。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> compress(<span class="k">char</span>[] chars) {</span><span class="ln"><span class="no">3</span>        <span class="c">// write 是写指针：压缩结果下一个写到哪里；i 是读指针</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span> write = <span class="n">0</span>, i = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="k">while</span> (i &lt; chars.length) {</span><span class="ln"><span class="no">6</span>            <span class="k">char</span> c = chars[i];</span><span class="ln"><span class="no">7</span>            <span class="k">int</span> run = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>            <span class="c">// 数出这一段连续相同字符的长度</span></span><span class="ln"><span class="no">9</span>            <span class="k">while</span> (i &lt; chars.length &amp;&amp; chars[i] == c) { i++; run++; }</span><span class="ln"><span class="no">10</span>            chars[write++] = c;</span><span class="ln"><span class="no">11</span>            <span class="c">// 长度 &gt; 1 才写位数；多位数也逐位写（12 写成 '1','2'）</span></span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (run &gt; <span class="n">1</span>) {</span><span class="ln"><span class="no">13</span>                <span class="k">for</span> (<span class="k">char</span> d : <span class="t">String</span>.valueOf(run).toCharArray()) chars[write++] = d;</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> write;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符数组 <code>chars</code> ，请使用下述算法压缩：</p>
+
+<p>从一个空字符串 <code>s</code> 开始。对于 <code>chars</code> 中的每组 <strong>连续重复字符</strong> ：</p>
+
+<ul>
+	<li>如果这一组长度为 <code>1</code> ，则将字符追加到 <code>s</code> 中。</li>
+	<li>否则，需要向 <code>s</code> 追加字符，后跟这一组的长度。</li>
+</ul>
+
+<p>压缩后得到的字符串 <code>s</code> <strong>不应该直接返回</strong> ，需要转储到字符数组 <code>chars</code> 中。需要注意的是，如果组长度为 <code>10</code> 或 <code>10</code> 以上，则在 <code>chars</code> 数组中会被拆分为多个字符。</p>
+
+<p>请在 <strong>修改完输入数组后</strong> ，返回该数组的新长度。</p>
+
+<p>你必须设计并实现一个只使用常量额外空间的算法来解决此问题。</p>
+
+<p><strong>注意：</strong>数组中超出返回长度的字符无关紧要，应予忽略。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>chars = ["a","a","b","b","c","c","c"]
+<strong>输出：</strong>6
+<strong>解释：</strong>分组是 "aa"、"bb" 和 "ccc"，压缩为 "a2b2c3"。
+在原地修改输入数组之后，chars 的前 6 个字符应为 ["a","2","b","2","c","3"]。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>chars = ["a"]
+<strong>输出：</strong>1
+<strong>解释：</strong>唯一的组是 "a"，因为它是一个单独的字符，所以保持不变。
+在原地修改输入数组后，chars 的第一个字符应为 ["a"]。</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>chars = ["a","b","b","b","b","b","b","b","b","b","b","b","b"]
+<strong>输出：</strong>4
+<strong>解释：</strong>分组是 "a" 和 "bbbbbbbbbbbb"，压缩为"ab12"。
+在对输入数组进行原地修改后，chars 的前 4 个字符应为 ["a","b","1","2"]。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= chars.length &lt;= 2000</code></li>
+	<li><code>chars[i]</code> 可以是小写英文字母、大写英文字母、数字或符号</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int compress(char[] chars) {", "        // write 是写指针：压缩结果下一个写到哪里；i 是读指针", "        int write = 0, i = 0;", "        while (i < chars.length) {", "            char c = chars[i];", "            int run = 0;", "            // 数出这一段连续相同字符的长度", "            while (i < chars.length && chars[i] == c) { i++; run++; }", "            chars[write++] = c;", "            // 长度 > 1 才写位数；多位数也逐位写（12 写成 '1','2'）", "            if (run > 1) {", "                for (char d : String.valueOf(run).toCharArray()) chars[write++] = d;", "            }", "        }", "        return write;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 443. 压缩字符串 —— 图解：复刻 Solution.java 的原地双指针，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { chars: 'aabbccc' };
+
+function trace(input) {
+  var arr = input.chars.split('');
+  var frames = [];
+  var write = 0, i = 0;
+  var shot = { read: false, writeC: false, digits: false };
+
+  var INIT = 'int write = 0, i = 0;';
+  var READ = 'while (i < chars.length && chars[i] == c) { i++; run++; }';
+  var WRITEC = 'chars[write++] = c;';
+  var DIGITS = 'for (char d : String.valueOf(run).toCharArray()) chars[write++] = d;';
+
+  // 数组面板：[0, write) 已写好（new），[runFrom, i) 是正在数的段（win），i 是读指针
+  function cellsPanel(runFrom, curCls) {
+    var marks = {};
+    var k;
+    for (k = 0; k < write; k++) marks[k] = 'new';
+    for (k = runFrom; k < i && k < arr.length; k++) marks[k] = 'win';
+    if (i < arr.length && curCls) marks[i] = curCls;
+    var pointers = [];
+    if (i < arr.length) pointers.push({ at: i, label: 'i 读', cls: 'p-right' });
+    if (write < arr.length) pointers.push({ at: write, label: 'write 写', cls: 'p-left' });
+    return Viz.cells(arr, { title: 'chars（原地压缩中）', marks: marks, pointers: pointers });
+  }
+  function varsPanel(run) {
+    return Viz.vars([
+      { name: '读 i', v: i, cls: '' },
+      { name: '写 write', v: write, cls: '' },
+      { name: '段长 run', v: run == null ? '—' : run, cls: run != null && run > 1 ? 'chg' : '' }
+    ]);
+  }
+  function snap(at, key, runFrom, run) {
+    frames.push(Viz.frame(at, key, [cellsPanel(runFrom), varsPanel(run)]));
+  }
+
+  snap(INIT, 'write 是写指针、i 是读指针：压缩结果直接写回原数组前端', 0);
+
+  while (i < arr.length) {
+    var c = arr[i];
+    var runFrom = i;
+    var run = 0;
+    while (i < arr.length && arr[i] === c) { i++; run++; }
+    if (!shot.read) {
+      shot.read = true;
+      snap(READ, '数出第一段：' + run + ' 个「' + c + '」', runFrom, run);
+    }
+    arr[write++] = c;
+    if (!shot.writeC) {
+      shot.writeC = true;
+      snap(WRITEC, '段结束：先把字符「' + c + '」写到 write 位', runFrom, run);
+    }
+    if (run > 1) {
+      var digits = String(run).split('');
+      for (var d = 0; d < digits.length; d++) arr[write++] = digits[d];
+      if (!shot.digits) {
+        shot.digits = true;
+        snap(DIGITS, '位数 > 1 才写：逐位写进 write 后面（≥10 也逐位，如 12→1,2）', runFrom, run);
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return write;',
+    '压缩完成：新长度 ' + write + '，前缀是「' + arr.slice(0, write).join('') + '」',
+    [cellsPanel(arr.length), varsPanel(null)]));
+  return { frames: frames, result: [write, arr.slice(0, write).join('')] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

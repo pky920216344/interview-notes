@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>八皇后 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 339 / 1159</span>
+  <nav class="pn"><a href="offer-46.html">上一篇</a><a href="0171.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 08.12. </span>八皇后</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 12</li><li class="algo">回溯</li><li class="tag">数组</li><li class="tag">回溯</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">逐行回溯：每行选一列放皇后，用列集合 + 两条对角线集合 O(1) 判冲突；r−c、r+c 是对角线的编号。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>一行只能放一个皇后 → 按「行」回溯：<code>dfs(r)</code> 在第 <code>r</code> 行试每一列，放好就进 <code>dfs(r+1)</code>。</li><li>冲突用三组布尔集合 O(1) 判断：<code>cols[c]</code> 管列；主对角线 <code>r−c</code> 为定值（加 n 防负数），副对角线 <code>r+c</code> 为定值。</li><li>递归到 <code>r == n</code> 收一个解：每行按 <code>queens[r]</code> 拼出 <code>"....Q..."</code>；返回前记得回溯撤标记。</li><li>与 51. N 皇后同型；面试手写时先把「列 / r−c / r+c」三个集合的名字想清楚就不会乱。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n!)（剪枝后远小于），空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; solveNQueens(<span class="k">int</span> n) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] queens = <span class="k">new</span> <span class="k">int</span>[n];   <span class="c">// queens[r]：第 r 行的皇后放在哪一列</span></span><span class="ln"><span class="no">7</span>        dfs(<span class="n">0</span>, queens, <span class="k">new</span> <span class="k">boolean</span>[n], <span class="k">new</span> <span class="k">boolean</span>[<span class="n">2</span> * n], <span class="k">new</span> <span class="k">boolean</span>[<span class="n">2</span> * n], ans);</span><span class="ln"><span class="no">8</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="c">// 逐行放：cols 管列，d1 管主对角线（r−c 为定值），d2 管副对角线（r+c 为定值）</span></span><span class="ln"><span class="no">12</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span> r, <span class="k">int</span>[] queens, <span class="k">boolean</span>[] cols, <span class="k">boolean</span>[] d1, <span class="k">boolean</span>[] d2, <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; ans) {</span><span class="ln"><span class="no">13</span>        <span class="k">int</span> n = queens.length;</span><span class="ln"><span class="no">14</span>        <span class="k">if</span> (r == n) {</span><span class="ln"><span class="no">15</span>            <span class="t">List</span>&lt;<span class="t">String</span>&gt; board = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">16</span>            <span class="k">for</span> (<span class="k">int</span> q : queens) {</span><span class="ln"><span class="no">17</span>                <span class="k">char</span>[] row = <span class="k">new</span> <span class="k">char</span>[n];</span><span class="ln"><span class="no">18</span>                <span class="t">Arrays</span>.fill(row, <span class="s">'.'</span>);</span><span class="ln"><span class="no">19</span>                row[q] = <span class="s">'Q'</span>;</span><span class="ln"><span class="no">20</span>                board.add(<span class="k">new</span> <span class="t">String</span>(row));</span><span class="ln"><span class="no">21</span>            }</span><span class="ln"><span class="no">22</span>            ans.add(board);</span><span class="ln"><span class="no">23</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>        <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; n; c++) {</span><span class="ln"><span class="no">26</span>            <span class="k">int</span> a = r - c + n, b = r + c;</span><span class="ln"><span class="no">27</span>            <span class="c">// 列或任一条对角线已被占：这格不放</span></span><span class="ln"><span class="no">28</span>            <span class="k">if</span> (cols[c] || d1[a] || d2[b]) <span class="k">continue</span>;</span><span class="ln"><span class="no">29</span>            queens[r] = c;</span><span class="ln"><span class="no">30</span>            cols[c] = d1[a] = d2[b] = <span class="k">true</span>;</span><span class="ln"><span class="no">31</span>            dfs(r + <span class="n">1</span>, queens, cols, d1, d2, ans);</span><span class="ln"><span class="no">32</span>            cols[c] = d1[a] = d2[b] = <span class="k">false</span>;   <span class="c">// 回溯：撤掉占位，试下一列</span></span><span class="ln"><span class="no">33</span>        }</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>设计一种算法，打印 N 皇后在 N × N 棋盘上的各种摆法，其中每个皇后都不同行、不同列，也不在对角线上。这里的“对角线”指的是所有的对角线，不只是平分整个棋盘的那两条对角线。</p>
+
+<p><strong>注意：</strong>本题相对原题做了扩展</p>
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong> 输入</strong>：4
+<strong> 输出</strong>：[[".Q..","...Q","Q...","..Q."],["..Q.","Q...","...Q",".Q.."]]
+<strong> 解释：</strong>4 皇后问题存在如下两个不同的解法。
+[
+&nbsp;[".Q..", &nbsp;// 解法 1
+&nbsp; "...Q",
+&nbsp; "Q...",
+&nbsp; "..Q."],
+
+&nbsp;["..Q.", &nbsp;// 解法 2
+&nbsp; "Q...",
+&nbsp; "...Q",
+&nbsp; ".Q.."]
+]
+</pre>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<String>> solveNQueens(int n) {", "        List<List<String>> ans = new ArrayList<>();", "        int[] queens = new int[n];   // queens[r]：第 r 行的皇后放在哪一列", "        dfs(0, queens, new boolean[n], new boolean[2 * n], new boolean[2 * n], ans);", "        return ans;", "    }", "", "    // 逐行放：cols 管列，d1 管主对角线（r−c 为定值），d2 管副对角线（r+c 为定值）", "    private void dfs(int r, int[] queens, boolean[] cols, boolean[] d1, boolean[] d2, List<List<String>> ans) {", "        int n = queens.length;", "        if (r == n) {", "            List<String> board = new ArrayList<>();", "            for (int q : queens) {", "                char[] row = new char[n];", "                Arrays.fill(row, '.');", "                row[q] = 'Q';", "                board.add(new String(row));", "            }", "            ans.add(board);", "            return;", "        }", "        for (int c = 0; c < n; c++) {", "            int a = r - c + n, b = r + c;", "            // 列或任一条对角线已被占：这格不放", "            if (cols[c] || d1[a] || d2[b]) continue;", "            queens[r] = c;", "            cols[c] = d1[a] = d2[b] = true;", "            dfs(r + 1, queens, cols, d1, d2, ans);", "            cols[c] = d1[a] = d2[b] = false;   // 回溯：撤掉占位，试下一列", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 08.12. 八皇后 —— 图解：复刻 Solution.java 的「回溯 + 三组占用标记」，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 4 };
+
+function trace(input) {
+  var n = input.n;
+  var frames = [];
+  var INIT = 'dfs(0, queens, new boolean[n], new boolean[2 * n], new boolean[2 * n], ans);';
+  var CHECK = 'if (cols[c] || d1[a] || d2[b]) continue;';
+  var PLACE = 'dfs(r + 1, queens, cols, d1, d2, ans);';
+  var DONE = 'if (r == n) {';
+  var RET = 'return ans;';
+
+  var queens = [], cols = {}, d1 = {}, d2 = {};
+  var ans = [];
+  var shownCol = false, shownDiag = false, shownPlace = false, shownDone = false;
+
+  function gridPanel(marks) {
+    var rows = [];
+    for (var r = 0; r < n; r++) {
+      var row = [];
+      for (var c = 0; c < n; c++) row.push('.');
+      rows.push(row);
+    }
+    for (var q = 0; q < queens.length; q++) rows[q][queens[q]] = 'Q';
+    return Viz.grid(rows, { title: '棋盘（逐行从上往下放）', marks: marks || {} });
+  }
+
+  function varsPanel(extra) {
+    var items = [{ name: '已放到行', v: queens.length, cls: '' }];
+    if (extra) items = items.concat(extra);
+    return Viz.vars(items);
+  }
+
+  function dfs(r) {
+    if (r === n) {
+      ans.push(queens.slice());
+      if (!shownDone) {
+        shownDone = true;
+        var md = {};
+        for (var q = 0; q < n; q++) md[q + ',' + queens[q]] = 'done';
+        frames.push(Viz.frame(DONE, 'n 行都放下了：收集这个解，回溯找其他摆法',
+          [gridPanel(md), varsPanel()]));
+      }
+      return;
+    }
+    for (var c = 0; c < n; c++) {
+      var a = r - c + n, b = r + c;
+      var hit = cols[c] ? 'col' : (d1[a] ? 'd1' : (d2[b] ? 'd2' : null));
+      if (hit) {
+        if (hit === 'col' && !shownCol) {
+          shownCol = true;
+          var attacker = -1;
+          for (var q0 = 0; q0 < queens.length; q0++) if (queens[q0] === c) attacker = q0;
+          var m1 = {};
+          m1[r + ',' + c] = 'bad';
+          for (var q1 = 0; q1 < queens.length; q1++) m1[q1 + ',' + queens[q1]] = 'win';
+          frames.push(Viz.frame(CHECK, '(' + r + ',' + c + ') 与 (' + attacker + ',' + queens[attacker] + ') 同列：跳过',
+            [gridPanel(m1), varsPanel([{ name: '冲突', v: '同列', cls: 'bad' }])]));
+        } else if (hit !== 'col' && shownCol && !shownDiag) {
+          shownDiag = true;
+          var m2 = {};
+          m2[r + ',' + c] = 'bad';
+          for (var q2 = 0; q2 < queens.length; q2++) m2[q2 + ',' + queens[q2]] = 'win';
+          frames.push(Viz.frame(CHECK, '(' + r + ',' + c + ') 与上面的皇后共对角线：也跳过',
+            [gridPanel(m2), varsPanel([{ name: '冲突', v: hit === 'd1' ? '主对角线' : '副对角线', cls: 'bad' }])]));
+        }
+        continue;
+      }
+      queens.push(c);
+      cols[c] = d1[a] = d2[b] = true;
+      if (!shownPlace) {
+        shownPlace = true;
+        var m3 = {};
+        m3[r + ',' + c] = 'new';
+        frames.push(Viz.frame(PLACE, '第 ' + r + ' 行放 ' + c + ' 列：三组标记打上，进下一行',
+          [gridPanel(m3), varsPanel([{ name: '新标记', v: '列' + c + ' / 对角线', cls: 'chg' }])]));
+      }
+      dfs(r + 1);
+      cols[c] = d1[a] = d2[b] = false;
+      queens.pop();
+    }
+  }
+  frames.push(Viz.frame(INIT, '逐行放皇后：每行试每一列，过三道检查才放', [gridPanel({}), varsPanel()]));
+
+  dfs(0);
+
+  function toBoard(qs) {
+    var bd = [];
+    for (var r = 0; r < n; r++) {
+      var row = [];
+      for (var c = 0; c < n; c++) row.push('.');
+      row[qs[r]] = 'Q';
+      bd.push(row.join(''));
+    }
+    return bd;
+  }
+
+  var sortedBoards = ans.map(toBoard).sort(cmpBoards);
+  if (sortedBoards.length) {
+    var me = {};
+    for (var r2 = 0; r2 < n; r2++) me[r2 + ',' + sortedBoards[0][r2].indexOf('Q')] = 'done';
+    frames.push(Viz.frame(RET, '回溯完：' + n + ' 皇后共 ' + sortedBoards.length + ' 个解（图中是第一个）',
+      [gridPanel(me), Viz.vars([{ name: '解个数', v: sortedBoards.length, cls: 'done' }])]));
+  } else {
+    frames.push(Viz.frame(RET, '回溯完：' + n + ' 皇后在这种棋盘上无解',
+      [gridPanel({}), Viz.vars([{ name: '解个数', v: 0, cls: '' }])]));
+  }
+
+  return { frames: frames, result: sortedBoards };
+
+  function cmpBoards(x, y) {
+    for (var i = 0; i < x.length; i++) {
+      if (x[i] !== y[i]) return x[i] < y[i] ? -1 : 1;
+    }
+    return 0;
+  }
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

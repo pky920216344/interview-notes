@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>路径总和 III · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 272 / 1159</span>
+  <nav class="pn"><a href="0268.html">上一篇</a><a href="0306.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">437. </span>路径总和 III</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 15</li><li class="algo">前缀和/差分</li><li class="aux">哈希表</li><li class="aux">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">前缀和 + 哈希计数：从根往下累加 cur，以 node 结尾的 target 路径数 = 旧前缀 cur−target 的个数；回溯时把当前前缀撤销。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>cnt</code> 记「前缀和 → 出现次数」，先放 <code>cnt[0] = 1</code>：从根出发的路径也要能配上。</li><li>走到 <code>node</code>：<code>cur += node.val</code>；以它结尾、和为 <code>target</code> 的路径，等于前缀 <code>cur</code> 减去某个旧前缀后剩 <code>target</code>，所以查 <code>cnt[cur - target]</code>。</li><li>查完把 <code>cur</code> 计数 +1 再递归子树；<strong>回溯时必须把 <code>cur</code> 的计数撤销</strong>，否则左支路的前缀会被右支路误配上（跨支路的路径不存在）。</li><li>结点值可达 ±10⁹、路径长可达 10³，前缀和用 <code>long</code> 存。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> pathSum(<span class="t">TreeNode</span> root, <span class="k">int</span> targetSum) {</span><span class="ln"><span class="no">5</span>        <span class="c">// cnt：前缀和 → 出现次数；先放空前缀 0，从根出发的路径才配得上</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">Long</span>, <span class="t">Integer</span>&gt; cnt = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        cnt.put(<span class="n">0L</span>, <span class="n">1</span>);</span><span class="ln"><span class="no">8</span>        <span class="k">return</span> dfs(root, <span class="n">0L</span>, targetSum, cnt);</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="c">// cur：根到 node 的前缀和；返回这棵子树里贡献的合法路径数</span></span><span class="ln"><span class="no">12</span>    <span class="k">private</span> <span class="k">int</span> dfs(<span class="t">TreeNode</span> node, <span class="k">long</span> cur, <span class="k">int</span> target, <span class="t">Map</span>&lt;<span class="t">Long</span>, <span class="t">Integer</span>&gt; cnt) {</span><span class="ln"><span class="no">13</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>        cur += node.val;</span><span class="ln"><span class="no">15</span>        <span class="c">// 以 node 结尾、和为 target 的路径数 = 旧前缀 cur-target 的个数</span></span><span class="ln"><span class="no">16</span>        <span class="k">int</span> hits = cnt.getOrDefault(cur - target, <span class="n">0</span>);</span><span class="ln"><span class="no">17</span>        cnt.merge(cur, <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">18</span>        hits += dfs(node.left, cur, target, cnt);</span><span class="ln"><span class="no">19</span>        hits += dfs(node.right, cur, target, cnt);</span><span class="ln"><span class="no">20</span>        <span class="c">// 回溯撤销：这条支路的前缀不能被别的支路配上</span></span><span class="ln"><span class="no">21</span>        cnt.merge(cur, -<span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> hits;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个二叉树的根节点 <code>root</code> ，和一个整数 <code>targetSum</code> ，求该二叉树里节点值之和等于 <code>targetSum</code> 的 <strong>路径</strong> 的数目。</p>
+
+<p><strong>路径</strong> 不需要从根节点开始，也不需要在叶子节点结束，但是路径方向必须是向下的（只能从父节点到子节点）。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/a2bb246bc28a.jpg" style="width: 452px; " /></p>
+
+<pre>
+<strong>输入：</strong>root = [10,5,-3,3,2,null,11,3,-2,null,1], targetSum = 8
+<strong>输出：</strong>3
+<strong>解释：</strong>和等于 8 的路径有 3 条，如图所示。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [5,4,8,11,null,13,4,7,2,null,null,5,1], targetSum = 22
+<strong>输出：</strong>3
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li>二叉树的节点个数的范围是 <code>[0,1000]</code></li>
+	<li><meta charset="UTF-8" /><code>-10<sup>9</sup> <= Node.val <= 10<sup>9</sup></code> </li>
+	<li><code>-1000 <= targetSum <= 1000</code> </li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int pathSum(TreeNode root, int targetSum) {", "        // cnt：前缀和 → 出现次数；先放空前缀 0，从根出发的路径才配得上", "        Map<Long, Integer> cnt = new HashMap<>();", "        cnt.put(0L, 1);", "        return dfs(root, 0L, targetSum, cnt);", "    }", "", "    // cur：根到 node 的前缀和；返回这棵子树里贡献的合法路径数", "    private int dfs(TreeNode node, long cur, int target, Map<Long, Integer> cnt) {", "        if (node == null) return 0;", "        cur += node.val;", "        // 以 node 结尾、和为 target 的路径数 = 旧前缀 cur-target 的个数", "        int hits = cnt.getOrDefault(cur - target, 0);", "        cnt.merge(cur, 1, Integer::sum);", "        hits += dfs(node.left, cur, target, cnt);", "        hits += dfs(node.right, cur, target, cnt);", "        // 回溯撤销：这条支路的前缀不能被别的支路配上", "        cnt.merge(cur, -1, Integer::sum);", "        return hits;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 437. 路径总和 III —— 图解：复刻 Solution.java 的「前缀和 + 哈希计数 + 回溯撤销」，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, 2, 3, 3, null, null, 4], targetSum: 3 };
+
+function trace(input) {
+  var arr = input.root || [];
+  var target = input.targetSum;
+  // 层序数组 → 结点表：nodes[i] 是层序下标 i 的结点（null 位置是 null），带 l / r
+  var nodes = arr.map(function (v, i) { return v === null ? null : { v: v, idx: i, l: null, r: null }; });
+  var root = arr.length && nodes[0] ? nodes[0] : null;
+  if (root) {
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var cur0 = q.shift();
+      if (nodes[i]) { cur0.l = nodes[i]; q.push(nodes[i]); }
+      i++;
+      if (i < arr.length && nodes[i]) { cur0.r = nodes[i]; q.push(nodes[i]); }
+      i++;
+    }
+  }
+
+  var cnt = {};        // 前缀和 → 出现次数（对应 Java 的 cnt）
+  var frames = [], total = 0, path = [], exited = {}, hitEnds = {};
+  var seen = { hit: 0, back: false, trap: false };
+  cnt[0] = 1;
+
+  function treePanel(extra) {
+    var marks = {};
+    path.forEach(function (nd) { marks[nd.idx] = 'win'; });
+    for (var k in exited) marks[k] = 'dim';
+    if (extra) for (var k2 in extra) marks[k2] = extra[k2];
+    return Viz.tree(arr, { title: '二叉树（绿：根到当前结点的路径，灰：已回溯离开）', marks: marks });
+  }
+  function tablePanel(hitKey) {
+    var keys = Object.keys(cnt).map(Number).sort(function (a, b) { return a - b; });
+    return Viz.table('cnt：前缀和 → 出现次数', keys.map(function (k) {
+      return { k: String(k), v: String(cnt[k]), cls: k === hitKey ? 'hit' : '' };
+    }));
+  }
+  function varsPanel(chgTotal) {
+    var cur = path.length ? path.reduce(function (s, nd) { return s + nd.v; }, 0) : 0;
+    return Viz.vars([
+      { name: 'target', v: target },
+      { name: 'cur（前缀和）', v: cur },
+      { name: '已计路径', v: total, cls: chgTotal ? 'chg' : '' }
+    ]);
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+  function markAt(idx, cls) { var m = {}; if (idx != null && arr[idx] !== null) m[idx] = cls; return m; }
+
+  if (!root) {
+    snap('if (node == null) return 0;', '空树：一条路径都没有，返回 0',
+      [Viz.tree([], { title: '二叉树' }), tablePanel(null), varsPanel(false)]);
+    return { frames: frames, result: 0 };
+  }
+
+  snap('cnt.put(0L, 1);', 'cnt 先放空前缀 0：从根出发的路径也要能配上',
+    [treePanel({ 0: 'cur' }), tablePanel(null), varsPanel(false)]);
+
+  function dfs(node, cur) {
+    if (!node) return;
+    cur += node.v;
+    path.push(node);
+    var need = cur - target;
+    var hits = cnt[need] || 0;
+    if (hits > 0) {
+      total += hits;
+      hitEnds[node.idx] = 1;
+      if (seen.hit < 2) {
+        seen.hit++;
+        snap('int hits = cnt.getOrDefault(cur - target, 0);',
+          '到 ' + node.v + '：cur=' + cur + '，查 cur−target=' + need + ' 命中 ' + hits + ' 次 → 路径数 +' + hits,
+          [treePanel(markAt(node.idx, 'cur')), tablePanel(need), varsPanel(true)]);
+      }
+    } else if (seen.back && !seen.trap) {
+      seen.trap = true;
+      snap('int hits = cnt.getOrDefault(cur - target, 0);',
+        '到 ' + node.v + '：查 ' + need + ' 没配上——左支路的旧前缀已撤销，没误配',
+        [treePanel(markAt(node.idx, 'cur')), tablePanel(null), varsPanel(false)]);
+    }
+    cnt[cur] = (cnt[cur] || 0) + 1;
+    dfs(node.l, cur);
+    dfs(node.r, cur);
+    path.pop();
+    exited[node.idx] = 1;
+    // 回溯撤销当前前缀（表里留 0 和删掉等价，画面上删掉更清爽）
+    cnt[cur]--;
+    if (!cnt[cur]) delete cnt[cur];
+    if (!seen.back) {
+      seen.back = true;
+      snap('cnt.merge(cur, -1, Integer::sum);',
+        '回溯离开 ' + node.v + '：把前缀 ' + cur + ' 的计数撤销，别的支路看不见它',
+        [treePanel(null), tablePanel(null), varsPanel(false)]);
+    }
+    exited[node.idx] = 1;
+  }
+  dfs(root, 0);
+
+  var fm = {};
+  nodes.forEach(function (nd) { if (nd) fm[nd.idx] = 'dim'; });
+  for (var hk in hitEnds) fm[hk] = 'done';
+  snap('return hits;',
+    '扫完整棵树：和为 ' + target + ' 的路径共 ' + total + ' 条（绿 = 命中过的路径终点）',
+    [treePanel(fm), tablePanel(null), varsPanel(false)]);
+
+  return { frames: frames, result: total };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

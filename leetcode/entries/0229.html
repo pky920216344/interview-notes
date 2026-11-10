@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>多数元素 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 504 / 1159</span>
+  <nav class="pn"><a href="offer-53-ii.html">上一篇</a><a href="1186.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">229. </span>多数元素 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">模拟</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">计数</li><li class="tag">排序</li><li class="tag">boyer-moore-majority-vote-algorithm</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">摩尔投票推广：出现超过 n/3 的元素至多 2 个；两个候选互抵，最后再数一遍验票。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>出现超过 <code>n/3</code> 次的元素至多有 2 个：维护两个候选席位，各带一个计数。</li><li>当前数与某候选相同 → 该计数加一；某席位空 → 顶替入席；与两个候选都不同 → 三数互抵，两个计数各减一。</li><li>席位被顶替过就不可信：第二遍再数一次真实出现次数，严格大于 <code>n/3</code> 才收进答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; majorityElement(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 出现超过 n/3 的元素至多 2 个：维护两个候选席位及其计数</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span> v1 = <span class="n">0</span>, c1 = <span class="n">0</span>, v2 = <span class="n">0</span>, c2 = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) {</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (c1 &gt; <span class="n">0</span> &amp;&amp; x == v1) c1++;</span><span class="ln"><span class="no">9</span>            <span class="k">else</span> <span class="k">if</span> (c2 &gt; <span class="n">0</span> &amp;&amp; x == v2) c2++;</span><span class="ln"><span class="no">10</span>            <span class="k">else</span> <span class="k">if</span> (c1 == <span class="n">0</span>) { v1 = x; c1 = <span class="n">1</span>; }</span><span class="ln"><span class="no">11</span>            <span class="k">else</span> <span class="k">if</span> (c2 == <span class="n">0</span>) { v2 = x; c2 = <span class="n">1</span>; }</span><span class="ln"><span class="no">12</span>            <span class="k">else</span> { c1--; c2--; }   <span class="c">// 与两个候选都不同：三数互抵</span></span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="c">// 第二遍验票：候选不一定真的超过 n/3</span></span><span class="ln"><span class="no">15</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">16</span>        <span class="k">int</span> need = nums.length / <span class="n">3</span>;</span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (c1 &gt; <span class="n">0</span> &amp;&amp; count(nums, v1) &gt; need) ans.add(v1);</span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (c2 &gt; <span class="n">0</span> &amp;&amp; count(nums, v2) &gt; need) ans.add(v2);</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>    <span class="k">private</span> <span class="k">int</span> count(<span class="k">int</span>[] nums, <span class="k">int</span> v) {</span><span class="ln"><span class="no">23</span>        <span class="k">int</span> n = <span class="n">0</span>;</span><span class="ln"><span class="no">24</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) <span class="k">if</span> (x == v) n++;</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> n;</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个大小为&nbsp;<em>n&nbsp;</em>的整数数组，找出其中所有出现超过&nbsp;<code>⌊n / 3⌋</code>&nbsp;次的元素。</p>
+
+
+
+<p><strong>示例&nbsp;1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [3,2,3]
+<strong>输出：</strong>[3]</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1]
+<strong>输出：</strong>[1]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2]
+<strong>输出：</strong>[1,2]</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 5 * 10<sup>4</sup></code></li>
+	<li><code>-10<sup>9</sup> &lt;= nums[i] &lt;= 10<sup>9</sup></code></li>
+</ul>
+
+
+
+<p><strong>进阶：</strong>尝试设计时间复杂度为 O(n)、空间复杂度为 O(1)的算法解决此问题。</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> majorityElement(int[] nums) {", "        // 出现超过 n/3 的元素至多 2 个：维护两个候选席位及其计数", "        int v1 = 0, c1 = 0, v2 = 0, c2 = 0;", "        for (int x : nums) {", "            if (c1 > 0 && x == v1) c1++;", "            else if (c2 > 0 && x == v2) c2++;", "            else if (c1 == 0) { v1 = x; c1 = 1; }", "            else if (c2 == 0) { v2 = x; c2 = 1; }", "            else { c1--; c2--; }   // 与两个候选都不同：三数互抵", "        }", "        // 第二遍验票：候选不一定真的超过 n/3", "        List<Integer> ans = new ArrayList<>();", "        int need = nums.length / 3;", "        if (c1 > 0 && count(nums, v1) > need) ans.add(v1);", "        if (c2 > 0 && count(nums, v2) > need) ans.add(v2);", "        return ans;", "    }", "", "    private int count(int[] nums, int v) {", "        int n = 0;", "        for (int x : nums) if (x == v) n++;", "        return n;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 229. 多数元素 II —— 图解：复刻 Solution.java 的摩尔投票（两候选），在关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 2, 3, 2, 2, 1, 1] };
+
+function trace(input) {
+  var a = input.nums;
+  var frames = [];
+  var v1 = 0, c1 = 0, v2 = 0, c2 = 0;
+  var sawSeat1 = false, sawSeat2 = false, sawCancel = false, sawReSeat = false, sawMatch = false;
+
+  function seat(v, c) { return c > 0 ? v + '（计数 ' + c + '）' : '（空席）'; }
+  function tablePanel(title, rows) {
+    return Viz.table(title, rows || [
+      { k: '候选 1', v: seat(v1, c1) },
+      { k: '候选 2', v: seat(v2, c2) }
+    ]);
+  }
+  function cellsPanel(cur) {
+    var marks = {};
+    for (var k = 0; k < a.length; k++) if (cur != null && k < cur) marks[k] = 'dim';
+    if (cur != null) marks[cur] = 'cur';
+    return Viz.cells(a, { title: '数组 nums', marks: marks });
+  }
+  function snap(at, key, cur, title, rows) {
+    frames.push(Viz.frame(at, key, [cellsPanel(cur), tablePanel(title, rows)]));
+  }
+
+  for (var i = 0; i < a.length; i++) {
+    var x = a[i];
+    if (c1 > 0 && x === v1) {
+      c1++;
+    } else if (c2 > 0 && x === v2) {
+      c2++;
+      if (!sawMatch) {
+        sawMatch = true;
+        snap('else if (c2 > 0 && x == v2) c2++;', 'x=' + x + ' 与候选 2 相同：计数加一', i);
+      }
+    } else if (c1 === 0) {
+      v1 = x; c1 = 1;
+      if (!sawSeat1) {
+        sawSeat1 = true;
+        snap('else if (c1 == 0) { v1 = x; c1 = 1; }', 'x=' + x + '：候选 1 空席，' + x + ' 就位', i);
+      } else if (sawCancel && !sawReSeat) {
+        sawReSeat = true;
+        snap('else if (c1 == 0) { v1 = x; c1 = 1; }', '计数归零席位空出：x=' + x + ' 顶替候选 1', i);
+      }
+    } else if (c2 === 0) {
+      v2 = x; c2 = 1;
+      if (!sawSeat2) {
+        sawSeat2 = true;
+        snap('else if (c2 == 0) { v2 = x; c2 = 1; }', 'x=' + x + '：候选 2 空席，' + x + ' 就位', i);
+      }
+    } else {
+      c1--; c2--;
+      if (!sawCancel) {
+        sawCancel = true;
+        snap('else { c1--; c2--; }', 'x=' + x + ' 与两个候选都不同：三数互抵，计数各减一', i);
+      }
+    }
+  }
+
+  // 第二遍验票
+  var need = Math.floor(a.length / 3);
+  var r1 = 0, r2 = 0;
+  for (var k = 0; k < a.length; k++) {
+    if (c1 > 0 && a[k] === v1) r1++;
+    if (c2 > 0 && a[k] === v2) r2++;
+  }
+  var out = [];
+  if (c1 > 0 && r1 > need) out.push(v1);
+  if (c2 > 0 && r2 > need) out.push(v2);
+  out.sort(function (p, q) { return p - q; });
+
+  var rows = [];
+  if (c1 > 0) rows.push({ k: String(v1), v: '出现 ' + r1 + ' 次，需 > ' + need, cls: r1 > need ? 'hit' : '' });
+  if (c2 > 0) rows.push({ k: String(v2), v: '出现 ' + r2 + ' 次，需 > ' + need, cls: r2 > need ? 'hit' : '' });
+  snap('return ans;', '验票：超过 ⌊' + a.length + '/3⌋=' + need + ' 的才留下 → [' + out.join(', ') + ']',
+    null, '验票：候选的真实出现次数', rows);
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

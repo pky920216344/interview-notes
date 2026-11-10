@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>寻找两个正序数组的中位数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 37 / 1159</span>
+  <nav class="pn"><a href="0082.html">上一篇</a><a href="0142.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">4. </span>寻找两个正序数组的中位数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 175</li><li class="algo">二分查找</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">分治</li><li class="st-ok" title="你在力扣上已经通过这道题，本项目不重复提交；本页代码只做了本地验证">本人已 AC</li></ul>
+<p class="idea">在较短数组上二分「划分线」，让左半部分的最大值 ≤ 右半部分的最小值；中位数就由四个边界值算出。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>只在较短的 <code>nums1</code> 上二分（这样 <code>j</code> 不会越界）：左半共 <code>half = (m + n + 1) / 2</code> 个数，<code>nums1</code> 取 <code>i</code> 个，<code>nums2</code> 取 <code>j = half - i</code> 个，总数为奇数时左半多一个。</li><li>四个边界值 <code>l1</code>、<code>r1</code>、<code>l2</code>、<code>r2</code> 是两条划分线两侧紧挨着的数，越界的分别用 <code>MIN_VALUE</code>、<code>MAX_VALUE</code> 代替。</li><li><code>l1 &gt; r2</code>：<code>nums1</code> 取多了，<code>hi = i - 1</code>；<code>l2 &gt; r1</code>：取少了，<code>lo = i + 1</code>。</li><li>两个条件都不触发，划分就是对的：奇数个返回 <code>max(l1, l2)</code>，偶数个返回 <code>(max(l1, l2) + min(r1, r2)) / 2.0</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log min(m, n))，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">double</span> findMedianSortedArrays(<span class="k">int</span>[] nums1, <span class="k">int</span>[] nums2) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 只在较短的数组上二分，j 才不会越界</span></span><span class="ln"><span class="no">4</span>        <span class="k">if</span> (nums1.length &gt; nums2.length) {</span><span class="ln"><span class="no">5</span>            <span class="k">return</span> findMedianSortedArrays(nums2, nums1);</span><span class="ln"><span class="no">6</span>        }</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> m = nums1.length, n = nums2.length;</span><span class="ln"><span class="no">8</span>        <span class="c">// 左半部分共 half 个数，总数为奇数时左边多一个</span></span><span class="ln"><span class="no">9</span>        <span class="k">int</span> half = (m + n + <span class="n">1</span>) / <span class="n">2</span>;</span><span class="ln"><span class="no">10</span>        <span class="k">int</span> lo = <span class="n">0</span>, hi = m;</span><span class="ln"><span class="no">11</span>        <span class="k">while</span> (lo &lt;= hi) {</span><span class="ln"><span class="no">12</span>            <span class="c">// 划分线：nums1 左边取 i 个，nums2 左边取 j 个</span></span><span class="ln"><span class="no">13</span>            <span class="k">int</span> i = lo + (hi - lo) / <span class="n">2</span>, j = half - i;</span><span class="ln"><span class="no">14</span>            <span class="c">// 四个边界值，没有的用正负无穷代替</span></span><span class="ln"><span class="no">15</span>            <span class="k">int</span> l1 = i == <span class="n">0</span> ? <span class="t">Integer</span>.MIN_VALUE : nums1[i - <span class="n">1</span>];</span><span class="ln"><span class="no">16</span>            <span class="k">int</span> r1 = i == m ? <span class="t">Integer</span>.MAX_VALUE : nums1[i];</span><span class="ln"><span class="no">17</span>            <span class="k">int</span> l2 = j == <span class="n">0</span> ? <span class="t">Integer</span>.MIN_VALUE : nums2[j - <span class="n">1</span>];</span><span class="ln"><span class="no">18</span>            <span class="k">int</span> r2 = j == n ? <span class="t">Integer</span>.MAX_VALUE : nums2[j];</span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (l1 &gt; r2) {</span><span class="ln"><span class="no">20</span>                <span class="c">// nums1 取多了，划分线左移</span></span><span class="ln"><span class="no">21</span>                hi = i - <span class="n">1</span>;</span><span class="ln"><span class="no">22</span>            } <span class="k">else</span> <span class="k">if</span> (l2 &gt; r1) {</span><span class="ln"><span class="no">23</span>                <span class="c">// nums1 取少了，划分线右移</span></span><span class="ln"><span class="no">24</span>                lo = i + <span class="n">1</span>;</span><span class="ln"><span class="no">25</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">26</span>                <span class="c">// 左半最大 &lt;= 右半最小，划分正确</span></span><span class="ln"><span class="no">27</span>                <span class="k">int</span> leftMax = <span class="t">Math</span>.max(l1, l2);</span><span class="ln"><span class="no">28</span>                <span class="k">if</span> ((m + n) % <span class="n">2</span> == <span class="n">1</span>) <span class="k">return</span> leftMax;</span><span class="ln"><span class="no">29</span>                <span class="k">return</span> (leftMax + <span class="t">Math</span>.min(r1, r2)) / <span class="n">2.0</span>;</span><span class="ln"><span class="no">30</span>            }</span><span class="ln"><span class="no">31</span>        }</span><span class="ln"><span class="no">32</span>        <span class="c">// 两个数组都有序时，一定会在循环里返回</span></span><span class="ln"><span class="no">33</span>        <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定两个大小分别为 <code>m</code> 和 <code>n</code> 的正序（从小到大）数组&nbsp;<code>nums1</code> 和&nbsp;<code>nums2</code>。请你找出并返回这两个正序数组的 <strong>中位数</strong> 。</p>
+
+<p>算法的时间复杂度应该为 <code>O(log (m+n))</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums1 = [1,3], nums2 = [2]
+<strong>输出：</strong>2.00000
+<strong>解释：</strong>合并数组 = [1,2,3] ，中位数 2
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums1 = [1,2], nums2 = [3,4]
+<strong>输出：</strong>2.50000
+<strong>解释：</strong>合并数组 = [1,2,3,4] ，中位数 (2 + 3) / 2 = 2.5
+</pre>
+
+
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>nums1.length == m</code></li>
+	<li><code>nums2.length == n</code></li>
+	<li><code>0 &lt;= m &lt;= 1000</code></li>
+	<li><code>0 &lt;= n &lt;= 1000</code></li>
+	<li><code>1 &lt;= m + n &lt;= 2000</code></li>
+	<li><code>-10<sup>6</sup> &lt;= nums1[i], nums2[i] &lt;= 10<sup>6</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public double findMedianSortedArrays(int[] nums1, int[] nums2) {", "        // 只在较短的数组上二分，j 才不会越界", "        if (nums1.length > nums2.length) {", "            return findMedianSortedArrays(nums2, nums1);", "        }", "        int m = nums1.length, n = nums2.length;", "        // 左半部分共 half 个数，总数为奇数时左边多一个", "        int half = (m + n + 1) / 2;", "        int lo = 0, hi = m;", "        while (lo <= hi) {", "            // 划分线：nums1 左边取 i 个，nums2 左边取 j 个", "            int i = lo + (hi - lo) / 2, j = half - i;", "            // 四个边界值，没有的用正负无穷代替", "            int l1 = i == 0 ? Integer.MIN_VALUE : nums1[i - 1];", "            int r1 = i == m ? Integer.MAX_VALUE : nums1[i];", "            int l2 = j == 0 ? Integer.MIN_VALUE : nums2[j - 1];", "            int r2 = j == n ? Integer.MAX_VALUE : nums2[j];", "            if (l1 > r2) {", "                // nums1 取多了，划分线左移", "                hi = i - 1;", "            } else if (l2 > r1) {", "                // nums1 取少了，划分线右移", "                lo = i + 1;", "            } else {", "                // 左半最大 <= 右半最小，划分正确", "                int leftMax = Math.max(l1, l2);", "                if ((m + n) % 2 == 1) return leftMax;", "                return (leftMax + Math.min(r1, r2)) / 2.0;", "            }", "        }", "        // 两个数组都有序时，一定会在循环里返回", "        return 0;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 4. 寻找两个正序数组的中位数 —— 图解：复刻 Solution.java 的「在较短数组上二分划分线」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums1: [2, 9, 10, 12], nums2: [1, 3, 4, 5, 6, 20] };
+
+function trace(input) {
+  var nums1 = input.nums1.slice(), nums2 = input.nums2.slice();
+  if (nums1.length > nums2.length) { var tmp = nums1; nums1 = nums2; nums2 = tmp; }   // 保证 nums1 较短
+  var m = nums1.length, n = nums2.length;
+  var half = (m + n + 1) >> 1;
+  var lo = 0, hi = m;
+  var frames = [];
+  var rounds = 0;
+  var result = 0;
+
+  function show(v) { return v === -Infinity ? '-∞' : v === Infinity ? '+∞' : String(v); }
+
+  // 一个数组画成一排格子，划分线「|」插在左边取 cnt 个的位置（它自己也占一格）：
+  // 线左边青色，线黄色；线两侧的格子挂 lname、rname 两个标签（越界的没有格子，不挂）。
+  // chosen = [左边界要不要标绿, 右边界要不要标绿]，用来在最后一张图里标出参与计算的两个数。
+  function arrPanel(arr, cnt, title, lname, rname, lcls, rcls, chosen) {
+    var items = arr.slice(0, cnt).concat(['|'], arr.slice(cnt));
+    var marks = {}, pointers = [], x;
+    for (x = 0; x < cnt; x++) marks[x] = 'win';
+    marks[cnt] = 'cur';
+    if (cnt > 0) pointers.push({ at: cnt - 1, label: lname, cls: lcls });
+    if (cnt < arr.length) pointers.push({ at: cnt + 1, label: rname, cls: rcls });
+    if (chosen && chosen[0] && cnt > 0) marks[cnt - 1] = 'done';
+    if (chosen && chosen[1] && cnt < arr.length) marks[cnt + 1] = 'done';
+    return Viz.cells(items, { title: title, marks: marks, pointers: pointers, hideIndex: true });
+  }
+
+  function panels(i, j, chosen1, chosen2, vars) {
+    return [
+      arrPanel(nums1, i, 'nums1（较短）：划分线' + (rounds === 1 ? '先放中间，' : '') + '左边取 i = ' + i + ' 个', 'l1', 'r1', 'p-left', 'p-mid', chosen1),
+      arrPanel(nums2, j, 'nums2：划分线左边取 j = half - i = ' + half + ' - ' + i + ' = ' + j + ' 个', 'l2', 'r2', 'p-mid', 'p-left', chosen2),
+      Viz.vars(vars)
+    ];
+  }
+
+  function conds(l1, r1, l2, r2) {
+    return [
+      { name: 'l1 ≤ r2', v: show(l1) + ' ≤ ' + show(r2) + (l1 <= r2 ? ' ✓' : ' ✗') },
+      { name: 'l2 ≤ r1', v: show(l2) + ' ≤ ' + show(r1) + (l2 <= r1 ? ' ✓' : ' ✗') }
+    ];
+  }
+
+  while (lo <= hi) {
+    var i = lo + ((hi - lo) >> 1), j = half - i;
+    var l1 = i === 0 ? -Infinity : nums1[i - 1];
+    var r1 = i === m ? Infinity : nums1[i];
+    var l2 = j === 0 ? -Infinity : nums2[j - 1];
+    var r2 = j === n ? Infinity : nums2[j];
+    rounds++;
+    if (l1 > r2) {
+      if (rounds <= 4) {
+        frames.push(Viz.frame('hi = i - 1;', 'l1 = ' + show(l1) + ' > r2 = ' + show(r2) + '：nums1 取多了，线左移',
+          panels(i, j, null, null, conds(l1, r1, l2, r2))));
+      }
+      hi = i - 1;
+    } else if (l2 > r1) {
+      if (rounds <= 4) {
+        frames.push(Viz.frame('lo = i + 1;', 'l2 = ' + show(l2) + ' > r1 = ' + show(r1) + '：nums1 取少了，线右移',
+          panels(i, j, null, null, conds(l1, r1, l2, r2))));
+      }
+      lo = i + 1;
+    } else {
+      var leftMax = Math.max(l1, l2);
+      var rightMin = Math.min(r1, r2);
+      var odd = (m + n) % 2 === 1;
+      frames.push(Viz.frame('int leftMax = Math.max(l1, l2);', 'l1 ≤ r2 且 l2 ≤ r1 都成立：划分正确',
+        panels(i, j, null, null, conds(l1, r1, l2, r2))));
+      // 最后一张：标出参与计算的数（奇数个只用左半最大；偶数个再加右半最小）
+      var c1 = [l1 === leftMax, odd ? false : r1 === rightMin];
+      var c2 = [l2 === leftMax, odd ? false : r2 === rightMin];
+      var med;
+      if (odd) {
+        result = leftMax;
+        med = [{ name: '总数是奇数：左半最大 max(l1, l2)', v: leftMax }, { name: '中位数', v: leftMax, cls: 'chg' }];
+      } else {
+        result = (leftMax + rightMin) / 2;
+        med = [{ name: 'max(l1, l2)', v: leftMax }, { name: 'min(r1, r2)', v: rightMin },
+          { name: '中位数', v: '(' + leftMax + ' + ' + rightMin + ') / 2 = ' + result, cls: 'chg' }];
+      }
+      frames.push(Viz.frame(odd ? 'if ((m + n) % 2 == 1) return leftMax;' : 'return (leftMax + Math.min(r1, r2)) / 2.0;',
+        odd ? '总数是奇数：左半最大的 ' + leftMax + ' 就是中位数'
+            : '左半最大 ' + leftMax + '、右半最小 ' + rightMin + '：中位数 = ' + result,
+        panels(i, j, c1, c2, med)));
+      return { frames: frames, result: result };
+    }
+  }
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

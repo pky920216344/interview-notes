@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>柱状图中最大的矩形 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 193 / 1159</span>
+  <nav class="pn"><a href="0692.html">上一篇</a><a href="0494.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">84. </span>柱状图中最大的矩形</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 26</li><li class="algo">单调栈</li><li class="tag">栈</li><li class="tag">数组</li><li class="tag">单调栈</li><li class="tag">range-minimum-maximum-query</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">单调递增栈：来了更矮的柱子就把栈里更高的依次弹出结算——高 × (右边界 i − 左边界 − 1)；末尾用 0 哨兵清空栈。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每根柱子当「矩形高」时能撑到的宽度 = 右边第一个更矮的位置 − 左边第一个更矮的位置 − 1。</li><li>栈存下标、高度从底到顶严格递增；当前柱更矮时，栈顶的「右边第一个更矮」就是当前柱，弹出后新栈顶就是「左边第一个更矮」，宽一步算出。</li><li><code>i == n</code> 时补高度 0 的右哨兵把栈清空；栈空时左边界记 <code>-1</code>。</li><li>高度相等不弹（用 <code>h &lt; heights[栈顶]</code> 判断），同高的柱子由最后弹出的那根拿到完整宽度，答案不受影响。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> largestRectangleArea(<span class="k">int</span>[] heights) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 栈里放下标：从栈底到栈顶对应的高度严格递增</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] stack = <span class="k">new</span> <span class="k">int</span>[heights.length + <span class="n">1</span>];</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> top = -<span class="n">1</span>, ans = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="c">// i == n 时用高度 0 当右哨兵，把栈里剩下的柱子全部清算掉</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt;= heights.length; i++) {</span><span class="ln"><span class="no">8</span>            <span class="k">int</span> h = i == heights.length ? <span class="n">0</span> : heights[i];</span><span class="ln"><span class="no">9</span>            <span class="c">// 来了更矮的：栈顶柱子的左右边界都确定了，弹栈结算它的矩形</span></span><span class="ln"><span class="no">10</span>            <span class="k">while</span> (top &gt;= <span class="n">0</span> &amp;&amp; h &lt; heights[stack[top]]) {</span><span class="ln"><span class="no">11</span>                <span class="k">int</span> height = heights[stack[top--]];</span><span class="ln"><span class="no">12</span>                <span class="c">// 左边界 = 新栈顶（左边第一个更矮的），右边界 = i（右边第一个更矮的）</span></span><span class="ln"><span class="no">13</span>                <span class="k">int</span> left = top &lt; <span class="n">0</span> ? -<span class="n">1</span> : stack[top];</span><span class="ln"><span class="no">14</span>                ans = <span class="t">Math</span>.max(ans, height * (i - left - <span class="n">1</span>));</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>            stack[++top] = i;</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定 <em>n</em> 个非负整数，用来表示柱状图中各个柱子的高度。每个柱子彼此相邻，且宽度为 1 。</p>
+
+<p>求在该柱状图中，能够勾勒出来的矩形的最大面积。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<p><img src="../assets/img/ce07c4fa73a0.jpg" /></p>
+
+<pre>
+<strong>输入：</strong>heights = [2,1,5,6,2,3]
+<strong>输出：</strong>10
+<strong>解释：</strong>最大的矩形为图中红色区域，面积为 10
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img src="../assets/img/7e30fcbe92af.jpg" /></p>
+
+<pre>
+<strong>输入：</strong> heights = [2,4]
+<b>输出：</b> 4</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= heights.length <=10<sup>5</sup></code></li>
+	<li><code>0 <= heights[i] <= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int largestRectangleArea(int[] heights) {", "        // 栈里放下标：从栈底到栈顶对应的高度严格递增", "        int[] stack = new int[heights.length + 1];", "        int top = -1, ans = 0;", "        // i == n 时用高度 0 当右哨兵，把栈里剩下的柱子全部清算掉", "        for (int i = 0; i <= heights.length; i++) {", "            int h = i == heights.length ? 0 : heights[i];", "            // 来了更矮的：栈顶柱子的左右边界都确定了，弹栈结算它的矩形", "            while (top >= 0 && h < heights[stack[top]]) {", "                int height = heights[stack[top--]];", "                // 左边界 = 新栈顶（左边第一个更矮的），右边界 = i（右边第一个更矮的）", "                int left = top < 0 ? -1 : stack[top];", "                ans = Math.max(ans, height * (i - left - 1));", "            }", "            stack[++top] = i;", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 84. 柱状图中最大的矩形 —— 图解：复刻 Solution.java 的单调递增栈，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { heights: [2, 1, 5, 6, 2, 3] };
+
+function trace(input) {
+  var heights = input.heights, n = heights.length;
+  var frames = [];
+  var stack = [];   // 下标，高度从底到顶递增
+  var ans = 0, pops = 0, bestL = 0, bestR = -1;
+
+  // 柱高面板：win = 还在栈里，bad = 刚被弹出，done = 最大矩形的范围
+  function barPanel(o) {
+    var marks = {};
+    var k;
+    for (k = 0; k < n; k++) if (stack.indexOf(k) >= 0) marks[k] = 'win';
+    if (o.bad != null) marks[o.bad] = 'bad';
+    if (o.done) for (k = o.done[0]; k <= o.done[1]; k++) marks[k] = 'done';
+    var pointers = o.at != null && o.at < n ? [{ at: o.at, label: 'i', cls: 'p-cur' }] : [];
+    return Viz.cells(heights, { title: '柱高 heights', marks: marks, pointers: pointers });
+  }
+  function stackPanel() {
+    return Viz.cells(stack.map(function (idx) { return heights[idx]; }), {
+      title: '栈（存下标，高度底→顶递增）',
+      pointers: stack.length ? [{ at: stack.length - 1, label: '栈顶', cls: 'p-tail' }] : []
+    });
+  }
+  function varsPanel(area) {
+    return Viz.vars([
+      { name: '本根面积', v: area == null ? '—' : area, cls: area != null ? 'chg' : '' },
+      { name: 'ans', v: ans }
+    ]);
+  }
+
+  for (var i = 0; i <= n; i++) {
+    var h = i === n ? 0 : heights[i];
+    while (stack.length && h < heights[stack[stack.length - 1]]) {
+      var idx = stack.pop();
+      var left = stack.length ? stack[stack.length - 1] : -1;
+      var area = heights[idx] * (i - left - 1);
+      if (area > ans) { ans = area; bestL = left + 1; bestR = i - 1; }
+      pops++;
+      if (pops === 1) {
+        frames.push(Viz.frame('int height = heights[stack[top--]];',
+          'i=' + i + ' 来了更矮的 ' + h + '：栈顶 ' + heights[idx] + ' 的右边界就是 i，弹栈算出面积 ' + area,
+          [barPanel({ at: i, bad: idx }), stackPanel(), varsPanel(area)]));
+      } else if (pops === 2) {
+        frames.push(Viz.frame('ans = Math.max(ans, height * (i - left - 1));',
+          '接着弹 ' + heights[idx] + '：左边界是新栈顶 ' + (left < 0 ? -1 : left) + '，宽 ' + (i - left - 1) + ' → 面积 ' + area + '，刷新最大值',
+          [barPanel({ at: i, bad: idx }), stackPanel(), varsPanel(area)]));
+      } else if (pops === 3) {
+        frames.push(Viz.frame('int height = heights[stack[top--]];',
+          i === n ? '右哨兵 0 进场：把栈里剩的柱子全部弹出清算' : '连着弹栈：每根都以当前 i 为右边界结算',
+          [barPanel({ at: null, bad: idx }), stackPanel(), varsPanel(area)]));
+      }
+    }
+    stack.push(i);
+    if (i === 2) {
+      frames.push(Viz.frame('stack[++top] = i;',
+        '不比栈顶矮就直接进栈：栈里高度始终保持从底到顶递增',
+        [barPanel({ at: i }), stackPanel(), varsPanel(null)]));
+    }
+  }
+
+  frames.push(Viz.frame('return ans;',
+    n === 0 ? '空输入，返回 0'
+      : '扫完：最大矩形 = 高 ' + heights[bestL] + ' × 宽 ' + (bestR - bestL + 1) + ' = ' + ans + '（下标 ' + bestL + '..' + bestR + '）',
+    [barPanel({ at: null, done: bestR >= 0 ? [bestL, bestR] : null }), varsPanel(null)]));
+
+  return { frames: frames, result: ans };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

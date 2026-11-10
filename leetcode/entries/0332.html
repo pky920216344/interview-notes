@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>重新安排行程 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 629 / 1159</span>
+  <nav class="pn"><a href="0594.html">上一篇</a><a href="0745.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">332. </span>重新安排行程</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">图算法</li><li class="aux">堆</li><li class="aux">深度优先搜索/递归</li><li class="tag">深度优先搜索</li><li class="tag">图</li><li class="tag">数组</li><li class="tag">字符串</li><li class="tag">排序</li><li class="tag">eulerian-path</li><li class="tag">欧拉回路</li><li class="tag">堆（优先队列）</li><li class="tag">semi-eulerian-graph</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">Hierholzer：邻接表用小顶堆贪心走字典序最小的边；走到死路就弹栈记录，最后整体翻转成行程。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每个出发地挂一个 <code>PriorityQueue</code>：每次走堆顶（字典序最小的目的地），等于用掉那张票。</li><li><strong>Hierholzer 套路</strong>：一路贪心冲进死路，死路结点<strong>先进</strong> <code>route</code>；退栈时沿途结点再依次补进去——收集到的正好是行程的倒序。</li><li>收集完 <code>reverse</code> 一次即得字典序最小的完整行程；题目保证有解，不必判连通性。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(m·log m)（m = 机票数），空间复杂度 O(m)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; findItinerary(<span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; tickets) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 邻接表：出发地 → 目的地小顶堆，堆顶是字典序最小的去处</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">PriorityQueue</span>&lt;<span class="t">String</span>&gt;&gt; graph = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="t">List</span>&lt;<span class="t">String</span>&gt; t : tickets) {</span><span class="ln"><span class="no">8</span>            graph.computeIfAbsent(t.get(<span class="n">0</span>), k -&gt; <span class="k">new</span> <span class="t">PriorityQueue</span>&lt;&gt;()).add(t.get(<span class="n">1</span>));</span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; route = <span class="k">new</span> <span class="t">LinkedList</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        dfs(<span class="s">"JFK"</span>, graph, route);</span><span class="ln"><span class="no">12</span>        <span class="t">Collections</span>.reverse(route);   <span class="c">// 弹栈收集的是逆序，翻过来就是行程</span></span><span class="ln"><span class="no">13</span>        <span class="k">return</span> route;</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="t">String</span> from, <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">PriorityQueue</span>&lt;<span class="t">String</span>&gt;&gt; graph, <span class="t">List</span>&lt;<span class="t">String</span>&gt; route) {</span><span class="ln"><span class="no">17</span>        <span class="t">PriorityQueue</span>&lt;<span class="t">String</span>&gt; nexts = graph.get(from);</span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (nexts != <span class="k">null</span> &amp;&amp; !nexts.isEmpty()) {</span><span class="ln"><span class="no">19</span>            dfs(nexts.poll(), graph, route);   <span class="c">// 先把这里的邻边用完才回头</span></span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        route.add(from);   <span class="c">// 走到死路才记录：弹栈序恰好是行程的倒序</span></span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一份航线列表 <code>tickets</code> ，其中 <code>tickets[i] = [from<sub>i</sub>, to<sub>i</sub>]</code> 表示飞机出发和降落的机场地点。请你对该行程进行重新规划排序。</p>
+
+<p>所有这些机票都属于一个从 <code>JFK</code>（肯尼迪国际机场）出发的先生，所以该行程必须从 <code>JFK</code> 开始。如果存在多种有效的行程，请你按字典排序返回最小的行程组合。</p>
+
+<ul>
+	<li>例如，行程 <code>["JFK", "LGA"]</code> 与 <code>["JFK", "LGB"]</code> 相比就更小，排序更靠前。</li>
+</ul>
+
+<p>假定所有机票至少存在一种合理的行程。且所有的机票 必须都用一次 且 只能用一次。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/2255c7f7b55b.jpg" style="width: 382px; height: 222px;" />
+<pre>
+<strong>输入：</strong>tickets = [["MUC","LHR"],["JFK","MUC"],["SFO","SJC"],["LHR","SFO"]]
+<strong>输出：</strong>["JFK","MUC","LHR","SFO","SJC"]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/def267daa749.jpg" style="width: 222px; height: 230px;" />
+<pre>
+<strong>输入：</strong>tickets = [["JFK","SFO"],["JFK","ATL"],["SFO","ATL"],["ATL","JFK"],["ATL","SFO"]]
+<strong>输出：</strong>["JFK","ATL","JFK","SFO","ATL","SFO"]
+<strong>解释：</strong>另一种有效的行程是 ["JFK","SFO","ATL","JFK","ATL","SFO"] ，但是它字典排序更大更靠后。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= tickets.length <= 300</code></li>
+	<li><code>tickets[i].length == 2</code></li>
+	<li><code>from<sub>i</sub>.length == 3</code></li>
+	<li><code>to<sub>i</sub>.length == 3</code></li>
+	<li><code>from<sub>i</sub></code> 和 <code>to<sub>i</sub></code> 由大写英文字母组成</li>
+	<li><code>from<sub>i</sub> != to<sub>i</sub></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<String> findItinerary(List<List<String>> tickets) {", "        // 邻接表：出发地 → 目的地小顶堆，堆顶是字典序最小的去处", "        Map<String, PriorityQueue<String>> graph = new HashMap<>();", "        for (List<String> t : tickets) {", "            graph.computeIfAbsent(t.get(0), k -> new PriorityQueue<>()).add(t.get(1));", "        }", "        List<String> route = new LinkedList<>();", "        dfs(\"JFK\", graph, route);", "        Collections.reverse(route);   // 弹栈收集的是逆序，翻过来就是行程", "        return route;", "    }", "", "    private void dfs(String from, Map<String, PriorityQueue<String>> graph, List<String> route) {", "        PriorityQueue<String> nexts = graph.get(from);", "        while (nexts != null && !nexts.isEmpty()) {", "            dfs(nexts.poll(), graph, route);   // 先把这里的邻边用完才回头", "        }", "        route.add(from);   // 走到死路才记录：弹栈序恰好是行程的倒序", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 332. 重新安排行程 —— 图解：复刻 Solution.java 的「Hierholzer + 小顶堆」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { tickets: [['JFK', 'SFO'], ['JFK', 'ATL'], ['SFO', 'ATL'], ['ATL', 'JFK'], ['ATL', 'SFO']] };
+
+function trace(input) {
+  var tickets = input.tickets;
+  var frames = [];
+
+  // 邻接表：from → 排好序的目的地数组，shift 取堆顶（字典序最小）
+  var graph = {};
+  tickets.forEach(function (t) {
+    if (!graph[t[0]]) graph[t[0]] = [];
+    graph[t[0]].push(t[1]);
+  });
+  Object.keys(graph).forEach(function (k) { graph[k].sort(); });
+
+  function graphPanel() {
+    var froms = Object.keys(graph).sort();
+    return Viz.table('邻接表（每堆按字典序排，加粗=堆顶）', froms.map(function (f) {
+      var heap = graph[f];
+      var rows = heap.length ? heap.join('、') : '（用完了）';
+      return { k: f, v: rows, cls: '' };
+    }), { hint: '每次走堆顶，用掉一张票' });
+  }
+  function routePanel(newIdx, done) {
+    var marks = {};
+    if (newIdx != null && newIdx >= 0) marks[newIdx] = done ? 'done' : 'new';
+    return Viz.cells(route.length ? route : ['（还没弹出）'],
+      { title: 'route（弹栈序，最终要翻转）', marks: marks });
+  }
+
+  var route = [];
+  var fired = { dead: false, two: false };
+
+  frames.push(Viz.frame('graph.computeIfAbsent(t.get(0), k -> new PriorityQueue<>()).add(t.get(1));',
+    '邻接表建好：JFK、ATL、SFO 各有一个按字典序排的小顶堆',
+    [graphPanel(), routePanel(-1, false)]));
+
+  function dfs(from) {
+    var heap = graph[from];
+    while (heap && heap.length) {
+      dfs(heap.shift());
+    }
+    // 走到死路才记录：先进 route 的是行程的尾巴
+    route.push(from);
+    if (!fired.dead) {
+      fired.dead = true;
+      frames.push(Viz.frame('route.add(from);',
+        '一路走堆顶冲进死路 ' + from + '：它先弹栈，进的是 route 队头',
+        [graphPanel(), routePanel(route.length - 1, false)]));
+    } else if (!fired.two && route.length === 2) {
+      fired.two = true;
+      frames.push(Viz.frame('route.add(from);',
+        '退栈沿途继续弹：' + route.join('、') + '，都在行程的尾部',
+        [graphPanel(), routePanel(route.length - 1, false)]));
+    }
+  }
+  dfs('JFK');
+
+  frames.push(Viz.frame('Collections.reverse(route);',
+    '全部弹完：route 是行程的倒序',
+    [graphPanel(), routePanel(-1, false)]));
+
+  var result = route.slice().reverse();
+  frames.push(Viz.frame('return route;',
+    '翻转后：字典序最小的完整行程出来了',
+    [routePanel(-1, true)]));
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

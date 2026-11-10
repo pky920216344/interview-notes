@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>前缀和后缀搜索 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 630 / 1159</span>
+  <nav class="pn"><a href="0332.html">上一篇</a><a href="offer-47.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">745. </span>前缀和后缀搜索</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">哈希表</li><li class="aux">设计</li><li class="tag">设计</li><li class="tag">字典树</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">空间换时间：每个单词拆出全部「后缀#前缀」组合存哈希表（后建覆盖=自动取大下标），查询 O(1)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>词长 ≤ 7：一个词的后缀 ≤ 8 种 × 前缀 ≤ 8 种 ≤ 64 个键；<code>1e4</code> 个词也就几十万条，内存扛得住。</li><li>键 = <code>后缀 + '#' + 前缀</code>（<code>#</code> 防止前后缀拼在一起有歧义）；按下标顺序写入，同键后来覆盖 → 值天然是最大下标。</li><li>查询时拼出 <code>suff + '#' + pref</code> 直接查表，查不到返回 −1。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 建表 O(Σw²)，查询 O(1)，空间复杂度 O(Σw²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">WordFilter</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 键 = 后缀 + '#' + 前缀 → 最大下标；下标按序写入，同键后来者覆盖，天然取大</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt; map = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">WordFilter</span>(<span class="t">String</span>[] words) {</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; words.length; i++) {</span><span class="ln"><span class="no">9</span>            <span class="t">String</span> w = words[i];</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> s = <span class="n">0</span>; s &lt;= w.length(); s++) {         <span class="c">// 后缀：从空串到整词</span></span><span class="ln"><span class="no">11</span>                <span class="k">for</span> (<span class="k">int</span> p = <span class="n">0</span>; p &lt;= w.length(); p++) {     <span class="c">// 前缀：从空串到整词</span></span><span class="ln"><span class="no">12</span>                    map.put(w.substring(s) + <span class="s">'#'</span> + w.substring(<span class="n">0</span>, p), i);</span><span class="ln"><span class="no">13</span>                }</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="k">public</span> <span class="k">int</span> f(<span class="t">String</span> pref, <span class="t">String</span> suff) {</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> map.getOrDefault(suff + <span class="s">'#'</span> + pref, -<span class="n">1</span>);</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span><span class="ln"><span class="no">22</span> </span><span class="ln"><span class="no">23</span><span class="c">/**</span></span><span class="ln"><span class="no">24</span><span class="c"> * Your WordFilter object will be instantiated and called as such:</span></span><span class="ln"><span class="no">25</span><span class="c"> * WordFilter obj = new WordFilter(words);</span></span><span class="ln"><span class="no">26</span><span class="c"> * int param_1 = obj.f(pref,suff);</span></span><span class="ln"><span class="no">27</span><span class="c"> */</span></span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>设计一个包含一些单词的特殊词典，并能够通过前缀和后缀来检索单词。</p>
+
+<p>实现 <code>WordFilter</code> 类：</p>
+
+<ul>
+	<li><code>WordFilter(string[] words)</code> 使用词典中的单词 <code>words</code> 初始化对象。</li>
+	<li><code>f(string pref, string suff)</code> 返回词典中具有前缀&nbsp;<code>pref</code>&nbsp;和后缀 <code>suff</code>&nbsp;的单词的下标。如果存在不止一个满足要求的下标，返回其中 <strong>最大的下标</strong> 。如果不存在这样的单词，返回 <code>-1</code> 。</li>
+</ul>
+
+
+
+<p><strong>示例：</strong></p>
+
+<pre>
+<strong>输入</strong>
+["WordFilter", "f"]
+[[["apple"]], ["a", "e"]]
+<strong>输出</strong>
+[null, 0]
+<strong>解释</strong>
+WordFilter wordFilter = new WordFilter(["apple"]);
+wordFilter.f("a", "e"); // 返回 0 ，因为下标为 0 的单词：前缀 prefix = "a" 且 后缀 suffix = "e" 。
+</pre>
+&nbsp;
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= words.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= words[i].length &lt;= 7</code></li>
+	<li><code>1 &lt;= pref.length, suff.length &lt;= 7</code></li>
+	<li><code>words[i]</code>、<code>pref</code> 和 <code>suff</code> 仅由小写英文字母组成</li>
+	<li>最多对函数 <code>f</code> 执行 <code>10<sup>4</sup></code> 次调用</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class WordFilter {", "    // 键 = 后缀 + '#' + 前缀 → 最大下标；下标按序写入，同键后来者覆盖，天然取大", "    private final Map<String, Integer> map = new HashMap<>();", "", "    public WordFilter(String[] words) {", "        for (int i = 0; i < words.length; i++) {", "            String w = words[i];", "            for (int s = 0; s <= w.length(); s++) {         // 后缀：从空串到整词", "                for (int p = 0; p <= w.length(); p++) {     // 前缀：从空串到整词", "                    map.put(w.substring(s) + '#' + w.substring(0, p), i);", "                }", "            }", "        }", "    }", "", "    public int f(String pref, String suff) {", "        return map.getOrDefault(suff + '#' + pref, -1);", "    }", "}", "", "/**", " * Your WordFilter object will be instantiated and called as such:", " * WordFilter obj = new WordFilter(words);", " * int param_1 = obj.f(pref,suff);", " */"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 745. 前缀和后缀搜索 —— 图解：复刻 Solution.java 的「后缀#前缀 全组合哈希表」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { words: ['ab', 'aab'], pref: 'a', suff: 'b' };
+
+function trace(input) {
+  var words = input.words;
+  var pref = input.pref, suff = input.suff;
+  var frames = [];
+  var map = {};   // 键 = 后缀 + '#' + 前缀 → 最大下标
+
+  function suffixes(w) {
+    var out = [];
+    for (var s = 0; s <= w.length; s++) out.push(w.slice(s));
+    return out;
+  }
+  function prefixes(w) {
+    var out = [];
+    for (var p = 0; p <= w.length; p++) out.push(w.slice(0, p));
+    return out;
+  }
+  // 展示用：只挑第一个单词贡献的键（数量少、够说明结构）
+  var showKeys = suffixes(words[0]).map(function (s) {
+    return prefixes(words[0]).map(function (p) { return s + '#' + p; });
+  }).reduce(function (a, b) { return a.concat(b); }, []);
+  showKeys = Array.from(new Set(showKeys)).sort();
+
+  function tablePanel(highlightKey, changedKeys) {
+    return Viz.table('哈希表（后缀#前缀 → 下标）', showKeys.map(function (k) {
+      var v = map[k] == null ? '（还没有）' : String(map[k]);
+      var cls = k === highlightKey ? (changedKeys ? 'chg' : 'hit') : (changedKeys && changedKeys.indexOf(k) >= 0 ? 'chg' : '');
+      return { k: k, v: v, cls: cls };
+    }), { hint: '每个单词的全部「后缀#前缀」组合都记一次' });
+  }
+  function varsPanel(key, val) {
+    return Viz.vars([
+      { name: '键 = suff + # + pref', v: key == null ? '—' : key, cls: key != null ? 'chg' : '' },
+      { name: '查到的下标', v: val == null ? '—' : String(val), cls: '' }
+    ]);
+  }
+
+  // 1) 逐词建表
+  for (var i = 0; i < words.length; i++) {
+    var w = words[i], changed = [];
+    suffixes(w).forEach(function (s) {
+      prefixes(w).forEach(function (p) {
+        var k = s + '#' + p;
+        if (map[k] !== i) changed.push(k);
+        map[k] = i;
+      });
+    });
+    if (i === 0) {
+      frames.push(Viz.frame("map.put(w.substring(s) + '#' + w.substring(0, p), i);",
+        '单词 ab 先进表：9 个键全部记成 0',
+        [tablePanel(null, null), varsPanel(null, null)]));
+    } else {
+      frames.push(Viz.frame("map.put(w.substring(s) + '#' + w.substring(0, p), i);",
+        '单词 aab 进表：和 ab 重复的键被覆盖成 1（自动取大下标）',
+        [tablePanel(null, changed), varsPanel(null, null)]));
+    }
+  }
+
+  // 2) 查询：拼出 key 直接查表
+  var key = suff + '#' + pref;
+  frames.push(Viz.frame("return map.getOrDefault(suff + '#' + pref, -1);",
+    '查询 f(' + pref + ', ' + suff + ')：拼出键 ' + key + '，直接查表',
+    [tablePanel(key, null), varsPanel(key, map[key])]));
+
+  var ans = map[key] == null ? -1 : map[key];
+  frames.push(Viz.frame("return map.getOrDefault(suff + '#' + pref, -1);",
+    ans >= 0 ? '键 ' + key + ' = ' + ans + '：命中，返回下标 ' + ans : '表里没有这个键：返回 -1',
+    [tablePanel(key, null), varsPanel(key, ans)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

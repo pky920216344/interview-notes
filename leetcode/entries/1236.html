@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>网络爬虫 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 887 / 1159</span>
+  <nav class="pn"><a href="1372.html">上一篇</a><a href="1417.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1236. </span>网络爬虫</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">并发</li><li class="aux">广度优先搜索</li><li class="aux">哈希表</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">字符串</li><li class="tag">交互</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">线程池 + 「已见集合」并发的 BFS：worker 抓页面、同主机新链接继续入池；pending 计数归零时放闸收工。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>本质还是 BFS，只是队列的任务由线程池并发执行；正确性全靠 <code>ConcurrentHashMap.newKeySet()</code> 的 <code>seen.add</code> <strong>原子返回值</strong>：返回 true 才入队，天然去重。</li><li>主机过滤：截取 <code>://</code> 到下一个 <code>/</code> 之间为主机名，异主机链接直接丢弃。</li><li>收工判断是并发 BFS 的难点：<code>pending</code> 计「已提交未完成」的任务数，<strong>先 <code>incrementAndGet</code> 再提交</strong>子任务；某个任务把计数减到 0 时 <code>CountDownLatch</code> 放闸——0 意味着没有任何在飞的任务。</li><li>结果顺序并发下不定，判题按集合比对；本地用单线程 BFS 参考解对拍「可达集合一致 + 无重复」。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(页面数 + 链接数)，空间复杂度 O(url 数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="c">/*</span></span><span class="ln"><span class="no">2</span><span class="c"> * 力扣 1236 网络爬虫（会员题，本地验证即可，不提交）：</span></span><span class="ln"><span class="no">3</span><span class="c"> * 从 startUrl 出发抓取同一主机下的所有页面。HtmlParser 接口由力扣提供：</span></span><span class="ln"><span class="no">4</span><span class="c"> * interface HtmlParser { public List&lt;String&gt; getUrls(String url); }</span></span><span class="ln"><span class="no">5</span><span class="c"> */</span></span><span class="ln"><span class="no">6</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">7</span><span class="k">import</span> java.util.concurrent.*;</span><span class="ln"><span class="no">8</span><span class="k">import</span> java.util.concurrent.atomic.<span class="t">AtomicInteger</span>;</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="t">HtmlParser</span> parser;</span><span class="ln"><span class="no">12</span>    <span class="k">private</span> <span class="t">String</span> host;</span><span class="ln"><span class="no">13</span>    <span class="k">private</span> <span class="t">Set</span>&lt;<span class="t">String</span>&gt; seen;          <span class="c">// 已抓 / 已排队的 url：并发去重的唯一关卡</span></span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; ans;</span><span class="ln"><span class="no">15</span>    <span class="k">private</span> <span class="t">ExecutorService</span> pool;</span><span class="ln"><span class="no">16</span>    <span class="k">private</span> <span class="t">AtomicInteger</span> pending;     <span class="c">// 已提交还没干完的任务数</span></span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="t">CountDownLatch</span> done;</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; crawl(<span class="t">String</span> startUrl, <span class="t">HtmlParser</span> htmlParser) {</span><span class="ln"><span class="no">20</span>        parser = htmlParser;</span><span class="ln"><span class="no">21</span>        host = hostOf(startUrl);</span><span class="ln"><span class="no">22</span>        seen = <span class="t">ConcurrentHashMap</span>.newKeySet();</span><span class="ln"><span class="no">23</span>        ans = <span class="t">Collections</span>.synchronizedList(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;());</span><span class="ln"><span class="no">24</span>        seen.add(startUrl);</span><span class="ln"><span class="no">25</span>        ans.add(startUrl);</span><span class="ln"><span class="no">26</span>        pool = <span class="t">Executors</span>.newFixedThreadPool(<span class="n">8</span>);   <span class="c">// 多个工作线程并发抓取</span></span><span class="ln"><span class="no">27</span>        pending = <span class="k">new</span> <span class="t">AtomicInteger</span>(<span class="n">1</span>);</span><span class="ln"><span class="no">28</span>        done = <span class="k">new</span> <span class="t">CountDownLatch</span>(<span class="n">1</span>);</span><span class="ln"><span class="no">29</span>        submit(startUrl);</span><span class="ln"><span class="no">30</span>        <span class="k">try</span> {</span><span class="ln"><span class="no">31</span>            done.await();                         <span class="c">// 等最后一个任务收尾</span></span><span class="ln"><span class="no">32</span>        } <span class="k">catch</span> (<span class="t">InterruptedException</span> e) {</span><span class="ln"><span class="no">33</span>            <span class="t">Thread</span>.currentThread().interrupt();</span><span class="ln"><span class="no">34</span>        }</span><span class="ln"><span class="no">35</span>        pool.shutdownNow();</span><span class="ln"><span class="no">36</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">37</span>    }</span><span class="ln"><span class="no">38</span> </span><span class="ln"><span class="no">39</span>    <span class="c">// 抓一个 url：页面里的同主机新链接继续提交给线程池</span></span><span class="ln"><span class="no">40</span>    <span class="k">private</span> <span class="k">void</span> submit(<span class="t">String</span> url) {</span><span class="ln"><span class="no">41</span>        pool.execute(() -&gt; {</span><span class="ln"><span class="no">42</span>            <span class="k">for</span> (<span class="t">String</span> next : parser.getUrls(url)) {</span><span class="ln"><span class="no">43</span>                <span class="c">// seen.add 返回 true 说明我是第一个见它的：只有它有权入队</span></span><span class="ln"><span class="no">44</span>                <span class="k">if</span> (hostOf(next).equals(host) &amp;&amp; seen.add(next)) {</span><span class="ln"><span class="no">45</span>                    ans.add(next);</span><span class="ln"><span class="no">46</span>                    pending.incrementAndGet();    <span class="c">// 先计数再入队，收尾判断才不会漏任务</span></span><span class="ln"><span class="no">47</span>                    submit(next);</span><span class="ln"><span class="no">48</span>                }</span><span class="ln"><span class="no">49</span>            }</span><span class="ln"><span class="no">50</span>            <span class="k">if</span> (pending.decrementAndGet() == <span class="n">0</span>) done.countDown();   <span class="c">// 最后干完的放闸</span></span><span class="ln"><span class="no">51</span>        });</span><span class="ln"><span class="no">52</span>    }</span><span class="ln"><span class="no">53</span> </span><span class="ln"><span class="no">54</span>    <span class="c">// http://news.yahoo.com/news/topics/ -&gt; news.yahoo.com</span></span><span class="ln"><span class="no">55</span>    <span class="k">private</span> <span class="t">String</span> hostOf(<span class="t">String</span> url) {</span><span class="ln"><span class="no">56</span>        <span class="t">String</span> rest = url.substring(url.indexOf(<span class="s">"://"</span>) + <span class="n">3</span>);</span><span class="ln"><span class="no">57</span>        <span class="k">int</span> slash = rest.indexOf(<span class="s">'/'</span>);</span><span class="ln"><span class="no">58</span>        <span class="k">return</span> slash &lt; <span class="n">0</span> ? rest : rest.substring(<span class="n">0</span>, slash);</span><span class="ln"><span class="no">59</span>    }</span><span class="ln"><span class="no">60</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["/*", " * 力扣 1236 网络爬虫（会员题，本地验证即可，不提交）：", " * 从 startUrl 出发抓取同一主机下的所有页面。HtmlParser 接口由力扣提供：", " * interface HtmlParser { public List<String> getUrls(String url); }", " */", "import java.util.*;", "import java.util.concurrent.*;", "import java.util.concurrent.atomic.AtomicInteger;", "", "class Solution {", "    private HtmlParser parser;", "    private String host;", "    private Set<String> seen;          // 已抓 / 已排队的 url：并发去重的唯一关卡", "    private List<String> ans;", "    private ExecutorService pool;", "    private AtomicInteger pending;     // 已提交还没干完的任务数", "    private CountDownLatch done;", "", "    public List<String> crawl(String startUrl, HtmlParser htmlParser) {", "        parser = htmlParser;", "        host = hostOf(startUrl);", "        seen = ConcurrentHashMap.newKeySet();", "        ans = Collections.synchronizedList(new ArrayList<>());", "        seen.add(startUrl);", "        ans.add(startUrl);", "        pool = Executors.newFixedThreadPool(8);   // 多个工作线程并发抓取", "        pending = new AtomicInteger(1);", "        done = new CountDownLatch(1);", "        submit(startUrl);", "        try {", "            done.await();                         // 等最后一个任务收尾", "        } catch (InterruptedException e) {", "            Thread.currentThread().interrupt();", "        }", "        pool.shutdownNow();", "        return ans;", "    }", "", "    // 抓一个 url：页面里的同主机新链接继续提交给线程池", "    private void submit(String url) {", "        pool.execute(() -> {", "            for (String next : parser.getUrls(url)) {", "                // seen.add 返回 true 说明我是第一个见它的：只有它有权入队", "                if (hostOf(next).equals(host) && seen.add(next)) {", "                    ans.add(next);", "                    pending.incrementAndGet();    // 先计数再入队，收尾判断才不会漏任务", "                    submit(next);", "                }", "            }", "            if (pending.decrementAndGet() == 0) done.countDown();   // 最后干完的放闸", "        });", "    }", "", "    // http://news.yahoo.com/news/topics/ -> news.yahoo.com", "    private String hostOf(String url) {", "        String rest = url.substring(url.indexOf(\"://\") + 3);", "        int slash = rest.indexOf('/');", "        return slash < 0 ? rest : rest.substring(0, slash);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1236. 网络爬虫 —— 图解：复刻 Solution.java 的爬取流程（Java 是并发版，结果是确定的集合），拍四帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  urls: ['http://a/0', 'http://a/1', 'http://a/2', 'http://b/0', 'http://b/1', 'http://c/9'],
+  next: [['http://a/1', 'http://b/0', 'http://a/1'], ['http://a/0', 'http://a/2', 'http://c/9'],
+         ['http://a/2', 'http://b/1'], ['http://b/1', 'http://a/2'], ['http://a/0'], ['http://c/9']],
+  start: 'http://a/0'
+};
+
+function trace(input) {
+  var urls = input.urls, next = input.next, start = input.start;
+  var frames = [];
+  var linkOf = {};                                     // url -> 出链列表
+  urls.forEach(function (u, i) { linkOf[u] = next[i] || []; });
+  function host(u) { return u.substring(u.indexOf('://') + 3).split('/')[0]; }
+  var startHost = host(start);
+
+  // --- 与 Java 一致地爬：seen 去重、同主机过滤；队列顺序这里取确定性的 BFS ---
+  var seen = {}, state = {}, queue = [], out = [];
+  function mark(u, st) { if (!(u in state)) state[u] = st; }
+  seen[start] = true;
+  mark(start, 'cur');
+  queue.push(start);
+  var processed = 0;
+
+  function queuePanel() {
+    return Viz.cells(queue.length ? queue : ['（空）'], queue.map(function (u) { return state[u] === 'cur' ? 'cur' : 'done'; }),
+      '待抓队列（工作线程从这里取任务）');
+  }
+  function seenPanel(cur) {
+    var rows = urls.map(function (u) {
+      var st = state[u] || 'dim';
+      var label = st === 'done' ? '已抓' : st === 'cur' ? '待抓' : st === 'reject' ? '异主机丢弃' : '未发现';
+      return { k: u, v: label, cls: u === cur ? 'hit' : (st === 'cur' ? 'cur' : st === 'done' ? 'done' : st === 'reject' ? 'dim' : '') };
+    });
+    return Viz.table('已见集合 seen（并发去重的唯一关卡）', rows);
+  }
+
+  // 帧 1：起点入队
+  frames.push(Viz.frame('seen.add(startUrl);',
+    '起点 ' + start + ' 立刻标记为已见并入队：并发下每个 url 只能被第一个看见它的人抓',
+    [queuePanel(), seenPanel(start)]));
+
+  // 帧 2：抓起点页面的出链
+  var rejected = [], enqueued = [], skipped = [];
+  linkOf[start].forEach(function (u) {
+    if (host(u) !== startHost) { mark(u, 'reject'); rejected.push(u); }
+    else if (seen[u]) { mark(u, state[u]); skipped.push(u); }
+    else { seen[u] = true; mark(u, 'cur'); queue.push(u); enqueued.push(u); }
+  });
+  frames.push(Viz.frame('pending.incrementAndGet();',
+    '抓 ' + start + '：入队 ' + enqueued.length + ' 条新链接，丢弃 ' + rejected.length + ' 条异主机，跳过 ' + skipped.length + ' 条重复',
+    [queuePanel(), seenPanel(enqueued[0] || rejected[0] || start)]));
+
+  // 帧 3：把队列清空（每个 url 的出链同样处理）
+  while (processed < queue.length) {
+    var cur = queue[processed++];
+    state[cur] = 'done';
+    linkOf[cur].forEach(function (u) {
+      if (host(u) !== startHost) mark(u, 'reject');
+      else if (!seen[u]) { seen[u] = true; mark(u, 'cur'); queue.push(u); }
+      else mark(u, state[u]);
+    });
+    if (processed < queue.length) mark(queue[processed], 'cur');
+  }
+  frames.push(Viz.frame('if (pending.decrementAndGet() == 0) done.countDown();',
+    '队列清空：每抓完一个任务计数减一，最后一个归零的线程放闸（CountDownLatch）',
+    [queuePanel(), seenPanel(null)]));
+
+  // 帧 4：结果（按题面惯例排序输出，集合内容才是关键）
+  out = queue.slice().sort();
+  frames.push(Viz.frame('return ans;',
+    '全部抓完：同主机可达 ' + out.length + ' 个页面（并发顺序不定，结果按集合比对）',
+    [seenPanel(null), Viz.vars([{ name: '抓到页面数', v: out.length, cls: 'done' }])]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

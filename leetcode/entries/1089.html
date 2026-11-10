@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>复写零 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 776 / 1159</span>
+  <nav class="pn"><a href="0403.html">上一篇</a><a href="1240.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1089. </span>复写零</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 2</li><li class="algo">模拟</li><li class="aux">双指针</li><li class="tag">数组</li><li class="tag">双指针</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">两遍：先从左往右数出复写后的总长度、找到最后一个留得下的元素；再从右往左把元素放回复写后的位置，被挤出去的 0 只保留一个。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>第一遍扫一遍：非 0 占 1 格、0 占 2 格，累加出 <code>top</code>；<code>top</code> 第一次 <code>≥ n</code> 时停下，此时的 <code>i</code> 就是最后一个留得下的元素。</li><li>若 <code>top == n + 1</code>：末尾这个 0 只挤得下一格，先在 <code>arr[n-1]</code> 写一个 0，读指针、写指针各退一格。</li><li>第二遍 <code>i</code> 从右往左读、<code>j</code> 从右往左写：非 0 抄一格，0 连写两格；<code>j ≥ i</code> 恒成立，原地写不会踩到还没读的元素。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">void</span> duplicateZeros(<span class="k">int</span>[] arr) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = arr.length;</span><span class="ln"><span class="no">4</span>        <span class="c">// 第一遍：top 记复写后的总长度，i 记最后一个能留在数组里的原元素</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span> top = <span class="n">0</span>, i = -<span class="n">1</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">while</span> (top &lt; n) {</span><span class="ln"><span class="no">7</span>            i++;</span><span class="ln"><span class="no">8</span>            top += arr[i] == <span class="n">0</span> ? <span class="n">2</span> : <span class="n">1</span>;</span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="k">int</span> j = n - <span class="n">1</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">if</span> (top == n + <span class="n">1</span>) {          <span class="c">// 末尾这个 0 只挤得下一个：截断</span></span><span class="ln"><span class="no">12</span>            arr[j] = <span class="n">0</span>;</span><span class="ln"><span class="no">13</span>            j--;</span><span class="ln"><span class="no">14</span>            i--;</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="c">// 第二遍：从右往左，把留下的元素放回复写后的位置</span></span><span class="ln"><span class="no">17</span>        <span class="k">while</span> (i &gt;= <span class="n">0</span>) {</span><span class="ln"><span class="no">18</span>            arr[j] = arr[i];</span><span class="ln"><span class="no">19</span>            j--;</span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (arr[i] == <span class="n">0</span>) {       <span class="c">// 零要占两格，再补一个</span></span><span class="ln"><span class="no">21</span>                arr[j] = <span class="n">0</span>;</span><span class="ln"><span class="no">22</span>                j--;</span><span class="ln"><span class="no">23</span>            }</span><span class="ln"><span class="no">24</span>            i--;</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个长度固定的整数数组&nbsp;<code>arr</code> ，请你将该数组中出现的每个零都复写一遍，并将其余的元素向右平移。</p>
+
+<p>注意：请不要在超过该数组长度的位置写入元素。请对输入的数组&nbsp;<strong>就地&nbsp;</strong>进行上述修改，不要从函数返回任何东西。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [1,0,2,3,0,4,5,0]
+<strong>输出：</strong>[1,0,0,2,3,0,0,4]
+<strong>解释：</strong>调用函数后，输入的数组将被修改为：[1,0,0,2,3,0,0,4]</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>arr = [1,2,3]
+<strong>输出：</strong>[1,2,3]
+<strong>解释：</strong>调用函数后，输入的数组将被修改为：[1,2,3]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= arr.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= arr[i] &lt;= 9</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public void duplicateZeros(int[] arr) {", "        int n = arr.length;", "        // 第一遍：top 记复写后的总长度，i 记最后一个能留在数组里的原元素", "        int top = 0, i = -1;", "        while (top < n) {", "            i++;", "            top += arr[i] == 0 ? 2 : 1;", "        }", "        int j = n - 1;", "        if (top == n + 1) {          // 末尾这个 0 只挤得下一个：截断", "            arr[j] = 0;", "            j--;", "            i--;", "        }", "        // 第二遍：从右往左，把留下的元素放回复写后的位置", "        while (i >= 0) {", "            arr[j] = arr[i];", "            j--;", "            if (arr[i] == 0) {       // 零要占两格，再补一个", "                arr[j] = 0;", "                j--;", "            }", "            i--;", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1089. 复写零 —— 图解：复刻 Solution.java 的「先数长度、再从右往左原地写」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { arr: [1, 0, 2, 3, 0, 4] };
+
+function trace(input) {
+  var arr = input.arr.slice();
+  var n = arr.length;
+  var frames = [];
+
+  var TOP = 'top += arr[i] == 0 ? 2 : 1;';
+  var CUT = 'if (top == n + 1) {';
+  var COPY = 'arr[j] = arr[i];';
+  var ZERO = 'if (arr[i] == 0) {';
+
+  // 数组面板：下标 > j 的位置已定稿（done），刚写的是 new，i 指向下一个要读的原元素
+  function cellsPanel(marks, pointers) {
+    return Viz.cells(arr, { title: '数组 arr（原地修改）', marks: marks || {}, pointers: pointers || [] });
+  }
+  function varsPanel(items) { return Viz.vars(items || []); }
+  function snap(at, key, marks, pointers, vars) {
+    frames.push(Viz.frame(at, key, [cellsPanel(marks, pointers), varsPanel(vars)]));
+  }
+  function ptrs(i, j) {
+    var p = [];
+    if (i >= 0) p.push({ at: i, label: 'i 读', cls: 'p-cur' });
+    if (j >= 0) p.push({ at: j, label: 'j 写', cls: 'p-right' });
+    return p;
+  }
+
+  // 第一遍：数出复写后的总长度 top，i 停在最后一个留得下的原元素
+  var top = 0, i = -1;
+  while (top < n) {
+    i++;
+    top += arr[i] === 0 ? 2 : 1;
+  }
+  var kept = {};
+  for (var k = 0; k <= i; k++) kept[k] = k === i ? 'cur' : 'win';
+  snap(TOP, '第一遍数长度：0 占两格，数到 i=' + i + ' 时已要 ' + top + ' 格，后面的元素都挤不进来',
+    kept, [{ at: i, label: 'i 读', cls: 'p-cur' }],
+    [{ name: 'top（复写后总长）', v: String(top), cls: 'chg' }, { name: 'n（数组长度）', v: String(n), cls: '' }]);
+
+  var j = n - 1;
+  if (top === n + 1) {          // 末尾的 0 被截断：只保留一个
+    arr[j] = 0;
+    var cutAt = j;
+    j--;
+    i--;
+    var m = {};
+    m[cutAt] = 'new';
+    for (k = 0; k <= i; k++) m[k] = 'win';
+    snap(CUT, '超出一格：末尾这个 0 被截断，只把保留的那个写进最后一格',
+      m, ptrs(i, j), [{ name: 'top（复写后总长）', v: String(top), cls: '' }]);
+  }
+
+  // 第二遍：从右往左誊写
+  var shownCopy = false, shownZero = false;
+  while (i >= 0) {
+    arr[j] = arr[i];
+    var wroteFrom = j;
+    j--;
+    var isZero = arr[i] === 0;
+    if (isZero) { arr[j] = 0; j--; }
+    i--;
+    var mk = {};
+    for (k = j + 1; k < n; k++) mk[k] = k > wroteFrom - (isZero ? 2 : 1) ? 'new' : 'done';
+    var vs = [{ name: 'i（下一个读）', v: i >= 0 ? String(i) : '完' }, { name: 'j（下一个写）', v: j >= 0 ? String(j) : '完' }];
+    if (!shownCopy && !isZero && n >= 3) {
+      shownCopy = true;
+      snap(COPY, '从右往左誊写：非 0 抄一格，写的 j 永远不会落后于读的 i，不会被覆盖', mk, ptrs(i, j), vs);
+    }
+    if (!shownZero && isZero) {
+      shownZero = true;
+      snap(ZERO, '轮到 0：要写满两格，连着放两个 0', mk, ptrs(i, j), vs);
+    }
+  }
+
+  var done = {};
+  for (k = 0; k < n; k++) done[k] = 'done';
+  snap(COPY, '誊写完成：0 都占两格，多出来的部分被挤掉', done, [],
+    [{ name: '结果', v: JSON.stringify(arr), cls: 'done' }]);
+
+  return { frames: frames, result: arr };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

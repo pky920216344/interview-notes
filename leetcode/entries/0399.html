@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>除法求值 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 471 / 1159</span>
+  <nav class="pn"><a href="0814.html">上一篇</a><a href="0052.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">399. </span>除法求值</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">并查集</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">图</li><li class="tag">数组</li><li class="tag">字符串</li><li class="tag">最短路</li><li class="tag">floyd-warshall-algorithm</li><li class="tag">bellman-ford-algorithm</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">带权并查集：父指针挂树，ratio[i] 存「i 除以父结点的商」；同根的查询 x/y = ratio[x]/ratio[y]，不同根或没出现过给 -1。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每个变量一个结点；<code>a/b=v</code> 就把 a 的根挂到 b 的根下，并按 <code>a/b=v</code> 推出根之间的倍数 <code>ratio[ra] = v×ratio[b]/ratio[a]</code>。</li><li><code>find</code> 路径压缩时沿途 <code>ratio</code> 累乘，压缩后每个结点直接存「自己 / 根」。</li><li>查询 <code>x/y</code>：任一变量没出现过 → <code>-1</code>；两结点不同根（无传导关系）→ <code>-1</code>；同根 → <code>ratio[x]/ratio[y]</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O((m+q)·α)，空间复杂度 O(m)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// ratio[i]：i 除以父结点的商，即 i = ratio[i] × parent[i]</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">int</span>[] parent;</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">double</span>[] ratio;</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="k">double</span>[] calcEquation(<span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; equations, <span class="k">double</span>[] values, <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">String</span>&gt;&gt; queries) {</span><span class="ln"><span class="no">9</span>        <span class="c">// 变量编号：字符串 → 下标</span></span><span class="ln"><span class="no">10</span>        <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt; id = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="t">List</span>&lt;<span class="t">String</span>&gt; eq : equations) <span class="k">for</span> (<span class="t">String</span> v : eq) id.putIfAbsent(v, id.size());</span><span class="ln"><span class="no">12</span>        <span class="k">int</span> n = id.size();</span><span class="ln"><span class="no">13</span>        parent = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">14</span>        ratio = <span class="k">new</span> <span class="k">double</span>[n];</span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) { parent[i] = i; ratio[i] = <span class="n">1.0</span>; }</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; equations.size(); i++) {</span><span class="ln"><span class="no">17</span>            <span class="k">int</span> a = id.get(equations.get(i).get(<span class="n">0</span>)), b = id.get(equations.get(i).get(<span class="n">1</span>));</span><span class="ln"><span class="no">18</span>            <span class="c">// a / b = values[i]：把 a 的根挂到 b 的根下</span></span><span class="ln"><span class="no">19</span>            union(a, b, values[i]);</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">double</span>[] ans = <span class="k">new</span> <span class="k">double</span>[queries.size()];</span><span class="ln"><span class="no">22</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; queries.size(); i++) {</span><span class="ln"><span class="no">23</span>            <span class="t">Integer</span> x = id.get(queries.get(i).get(<span class="n">0</span>)), y = id.get(queries.get(i).get(<span class="n">1</span>));</span><span class="ln"><span class="no">24</span>            <span class="k">if</span> (x == <span class="k">null</span> || y == <span class="k">null</span>) { ans[i] = -<span class="n">1.0</span>; <span class="k">continue</span>; }</span><span class="ln"><span class="no">25</span>            <span class="k">int</span> rx = find(x), ry = find(y);</span><span class="ln"><span class="no">26</span>            <span class="c">// 同根：x = ratio[x]×根，y = ratio[y]×根，相除即为答案</span></span><span class="ln"><span class="no">27</span>            ans[i] = rx == ry ? ratio[x] / ratio[y] : -<span class="n">1.0</span>;</span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span> </span><span class="ln"><span class="no">32</span>    <span class="k">private</span> <span class="k">void</span> union(<span class="k">int</span> a, <span class="k">int</span> b, <span class="k">double</span> v) {</span><span class="ln"><span class="no">33</span>        <span class="k">int</span> ra = find(a), rb = find(b);</span><span class="ln"><span class="no">34</span>        <span class="k">if</span> (ra == rb) <span class="k">return</span>;</span><span class="ln"><span class="no">35</span>        parent[ra] = rb;</span><span class="ln"><span class="no">36</span>        <span class="c">// 由 a/b=v 推出 ra/rb = v×ratio[b]/ratio[a]</span></span><span class="ln"><span class="no">37</span>        ratio[ra] = v * ratio[b] / ratio[a];</span><span class="ln"><span class="no">38</span>    }</span><span class="ln"><span class="no">39</span> </span><span class="ln"><span class="no">40</span>    <span class="c">// 路径压缩：沿途 ratio 累乘成「自己 / 根」</span></span><span class="ln"><span class="no">41</span>    <span class="k">private</span> <span class="k">int</span> find(<span class="k">int</span> x) {</span><span class="ln"><span class="no">42</span>        <span class="k">if</span> (parent[x] == x) <span class="k">return</span> x;</span><span class="ln"><span class="no">43</span>        <span class="k">int</span> root = find(parent[x]);</span><span class="ln"><span class="no">44</span>        ratio[x] *= ratio[parent[x]];</span><span class="ln"><span class="no">45</span>        parent[x] = root;</span><span class="ln"><span class="no">46</span>        <span class="k">return</span> root;</span><span class="ln"><span class="no">47</span>    }</span><span class="ln"><span class="no">48</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个变量对数组 <code>equations</code> 和一个实数值数组 <code>values</code> 作为已知条件，其中 <code>equations[i] = [A<sub>i</sub>, B<sub>i</sub>]</code> 和 <code>values[i]</code> 共同表示等式 <code>A<sub>i</sub> / B<sub>i</sub> = values[i]</code> 。每个 <code>A<sub>i</sub></code> 或 <code>B<sub>i</sub></code> 是一个表示单个变量的字符串。</p>
+
+<p>另有一些以数组 <code>queries</code> 表示的问题，其中 <code>queries[j] = [C<sub>j</sub>, D<sub>j</sub>]</code> 表示第 <code>j</code> 个问题，请你根据已知条件找出 <code>C<sub>j</sub> / D<sub>j</sub> = ?</code> 的结果作为答案。</p>
+
+<p>返回 <strong>所有问题的答案</strong> 。如果存在某个无法确定的答案，则用 <code>-1.0</code> 替代这个答案。如果问题中出现了给定的已知条件中没有出现的字符串，也需要用 <code>-1.0</code> 替代这个答案。</p>
+
+<p><strong>注意：</strong>输入总是有效的。你可以假设除法运算中不会出现除数为 0 的情况，且不存在任何矛盾的结果。</p>
+
+<p><strong>注意：</strong>未在等式列表中出现的变量是未定义的，因此无法确定它们的答案。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>equations = [["a","b"],["b","c"]], values = [2.0,3.0], queries = [["a","c"],["b","a"],["a","e"],["a","a"],["x","x"]]
+<strong>输出：</strong>[6.00000,0.50000,-1.00000,1.00000,-1.00000]
+<strong>解释：</strong>
+条件：<em>a / b = 2.0</em>, <em>b / c = 3.0</em>
+问题：<em>a / c = ?</em>, <em>b / a = ?</em>, <em>a / e = ?</em>, <em>a / a = ?</em>, <em>x / x = ?</em>
+结果：[6.0, 0.5, -1.0, 1.0, -1.0 ]
+注意：x 是未定义的 =&gt; -1.0</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>equations = [["a","b"],["b","c"],["bc","cd"]], values = [1.5,2.5,5.0], queries = [["a","c"],["c","b"],["bc","cd"],["cd","bc"]]
+<strong>输出：</strong>[3.75000,0.40000,5.00000,0.20000]
+</pre>
+
+<p><strong class="example">示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>equations = [["a","b"]], values = [0.5], queries = [["a","b"],["b","a"],["a","c"],["x","y"]]
+<strong>输出：</strong>[0.50000,2.00000,-1.00000,-1.00000]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= equations.length &lt;= 20</code></li>
+	<li><code>equations[i].length == 2</code></li>
+	<li><code>1 &lt;= A<sub>i</sub>.length, B<sub>i</sub>.length &lt;= 5</code></li>
+	<li><code>values.length == equations.length</code></li>
+	<li><code>0.0 &lt; values[i] &lt;= 20.0</code></li>
+	<li><code>1 &lt;= queries.length &lt;= 20</code></li>
+	<li><code>queries[i].length == 2</code></li>
+	<li><code>1 &lt;= C<sub>j</sub>.length, D<sub>j</sub>.length &lt;= 5</code></li>
+	<li><code>A<sub>i</sub>, B<sub>i</sub>, C<sub>j</sub>, D<sub>j</sub></code> 由小写英文字母与数字组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    // ratio[i]：i 除以父结点的商，即 i = ratio[i] × parent[i]", "    private int[] parent;", "    private double[] ratio;", "", "    public double[] calcEquation(List<List<String>> equations, double[] values, List<List<String>> queries) {", "        // 变量编号：字符串 → 下标", "        Map<String, Integer> id = new HashMap<>();", "        for (List<String> eq : equations) for (String v : eq) id.putIfAbsent(v, id.size());", "        int n = id.size();", "        parent = new int[n];", "        ratio = new double[n];", "        for (int i = 0; i < n; i++) { parent[i] = i; ratio[i] = 1.0; }", "        for (int i = 0; i < equations.size(); i++) {", "            int a = id.get(equations.get(i).get(0)), b = id.get(equations.get(i).get(1));", "            // a / b = values[i]：把 a 的根挂到 b 的根下", "            union(a, b, values[i]);", "        }", "        double[] ans = new double[queries.size()];", "        for (int i = 0; i < queries.size(); i++) {", "            Integer x = id.get(queries.get(i).get(0)), y = id.get(queries.get(i).get(1));", "            if (x == null || y == null) { ans[i] = -1.0; continue; }", "            int rx = find(x), ry = find(y);", "            // 同根：x = ratio[x]×根，y = ratio[y]×根，相除即为答案", "            ans[i] = rx == ry ? ratio[x] / ratio[y] : -1.0;", "        }", "        return ans;", "    }", "", "    private void union(int a, int b, double v) {", "        int ra = find(a), rb = find(b);", "        if (ra == rb) return;", "        parent[ra] = rb;", "        // 由 a/b=v 推出 ra/rb = v×ratio[b]/ratio[a]", "        ratio[ra] = v * ratio[b] / ratio[a];", "    }", "", "    // 路径压缩：沿途 ratio 累乘成「自己 / 根」", "    private int find(int x) {", "        if (parent[x] == x) return x;", "        int root = find(parent[x]);", "        ratio[x] *= ratio[parent[x]];", "        parent[x] = root;", "        return root;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 399 除法求值 —— 图解：带权并查集，ratio[x] 是 x 除以父结点的商；同根的查询用 ratio 相除。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  equations: [['a', 'b'], ['b', 'c']],
+  values: [2, 3],
+  queries: [['a', 'c'], ['b', 'a'], ['a', 'e']]
+};
+
+function trace(input) {
+  var equations = input.equations, values = input.values, queries = input.queries;
+  var frames = [];
+
+  // 变量编号，与 Java 的 id 完全一致
+  var id = {}, names = [];
+  equations.forEach(function (eq) {
+    eq.forEach(function (v) { if (!(v in id)) { id[v] = names.length; names.push(v); } });
+  });
+  var n = names.length;
+  var parent = [], ratio = [];
+  for (var i = 0; i < n; i++) { parent.push(i); ratio.push(1); }
+
+  var UNION_P = 'parent[ra] = rb;';
+  var UNION_R = 'ratio[ra] = v * ratio[b] / ratio[a];';
+  var FIND = 'ratio[x] *= ratio[parent[x]];';
+  var ANS = 'ans[i] = rx == ry ? ratio[x] / ratio[y] : -1.0;';
+  var MISS = 'if (x == null || y == null) { ans[i] = -1.0; continue; }';
+
+  function parentPanel(marks) {
+    var rows = names.map(function (nm, idx) {
+      var same = parent[idx] === idx;
+      return { k: nm, v: same ? nm + '（根）' : names[parent[idx]], cls: (marks && marks[idx]) || '' };
+    });
+    return Viz.table('parent[]：i → 父结点', rows, { hint: '根指向自己' });
+  }
+  function ratioPanel(marks) {
+    var rows = names.map(function (nm, idx) {
+      return { k: nm, v: String(ratio[idx]), cls: (marks && marks[idx]) || '' };
+    });
+    return Viz.table('ratio[]：i = ratio[i] × parent[i]', rows, { hint: 'i 除以父结点的商' });
+  }
+  function qPanel(lines) {
+    return Viz.vars(lines);
+  }
+  function snap(at, key, pMarks, rMarks, lines) {
+    frames.push(Viz.frame(at, key, [parentPanel(pMarks), ratioPanel(rMarks), qPanel(lines)]));
+  }
+
+  // 与 Java 相同的带权并查集
+  function find(x) {
+    if (parent[x] === x) return x;
+    var root = find(parent[x]);
+    ratio[x] *= ratio[parent[x]];
+    parent[x] = root;
+    compressed = x;
+    return root;
+  }
+  var compressed = -1;   // 最近一次 find 里被压缩的结点，拍快照用
+
+  // 1) 逐条等式建并查集：前两次 union 各拍一张
+  var snapU1 = false, snapU2 = false;
+  equations.forEach(function (eq, ei) {
+    var a = id[eq[0]], b = id[eq[1]];
+    var ra = find(a), rb = find(b);
+    if (ra === rb) return;
+    parent[ra] = rb;
+    ratio[ra] = values[ei] * ratio[b] / ratio[a];
+    var pm = {}, rm = {};
+    pm[ra] = 'new';
+    rm[ra] = 'new';
+    var lines = [
+      { name: '等式', v: eq[0] + ' / ' + eq[1] + ' = ' + values[ei], cls: 'cur' },
+      { name: '含义', v: eq[0] + ' = ' + ratio[ra] + ' × ' + names[ra], cls: '' }
+    ];
+    if (!snapU1) {
+      snapU1 = true;
+      snap(UNION_R, '等式 ' + eq[0] + '/' + eq[1] + '=' + values[ei] + '：' + names[ra] + ' 挂到 ' + names[rb] + ' 下，ratio 记下倍数', pm, rm, lines);
+    } else if (!snapU2) {
+      snapU2 = true;
+      snap(UNION_P, '第二个等式：' + names[ra] + ' 挂到 ' + names[rb] + ' 下，两棵树串成一条链', pm, rm, lines);
+    }
+  });
+
+  // 2) 逐个查询：未知变量直接 -1；同根的用 ratio 相除
+  var snapFind = false, snapAns = false, snapMiss = false;
+  var out = [];
+  queries.forEach(function (qr) {
+    var x = id[qr[0]], y = id[qr[1]];
+    var lines = [{ name: '查询', v: qr[0] + ' / ' + qr[1], cls: 'cur' }];
+    if (x === undefined || y === undefined) {
+      out.push(-1);
+      if (!snapMiss) {
+        snapMiss = true;
+        lines.push({ name: '结果', v: '-1（没在等式里出现过）', cls: 'bad' });
+        snap(MISS, qr[0] + '、' + qr[1] + ' 至少一个没在任何等式里出现过：直接 -1', {}, {}, lines);
+      }
+      return;
+    }
+    compressed = -1;
+    var rx = find(x), ry = find(y);
+    if (compressed >= 0 && !snapFind) {
+      snapFind = true;
+      var fm = {}, rm = {};
+      fm[compressed] = 'hit';
+      rm[compressed] = 'hit';
+      lines.push({ name: 'find ' + names[compressed], v: 'ratio 沿途累乘 = ' + ratio[compressed] + '，即 ' + names[compressed] + ' = ' + ratio[compressed] + ' × 根', cls: 'hit' });
+      snap(FIND, '查询 ' + qr[0] + '/' + qr[1] + '：find 沿 parent 爬到根，沿途 ratio 累乘成「自己 / 根」', fm, rm, lines);
+    }
+    var ans = rx === ry ? ratio[x] / ratio[y] : -1;
+    out.push(ans);
+    if (!snapAns) {
+      snapAns = true;
+      lines.push({ name: '答案', v: qr[0] + ' / ' + qr[1] + ' = ' + ratio[x] + ' / ' + ratio[y] + ' = ' + ans, cls: 'new' });
+      snap(ANS, '同根：都是「ratio × 根」，根约掉，' + qr[0] + '/' + qr[1] + ' = ratio[' + qr[0] + ']/ratio[' + qr[1] + ']', {}, {}, lines);
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

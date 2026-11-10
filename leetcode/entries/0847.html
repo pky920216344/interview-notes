@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>访问所有节点的最短路径 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 817 / 1159</span>
+  <nav class="pn"><a href="offer-57.html">上一篇</a><a href="0834.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">847. </span>访问所有节点的最短路径</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">广度优先搜索</li><li class="aux">位运算</li><li class="tag">位运算</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="tag">动态规划</li><li class="tag">位掩码</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">状态压缩 BFS：状态 = (已访问集合 mask, 当前结点)；从每个结点同时出发层序扩展，第一次 mask 全 1 的步数即答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>走的路会重复经过结点，普通「结点已访问」不适用；把<strong>访问过的结点集合</strong>压成一个 mask，状态 <code>(mask, 结点)</code> 定死整条路的信息。</li><li>每个状态只入队一次（<code>seen[1&lt;&lt;n][n]</code>）；起点不唯一，把 <code>n</code> 个 <code>(1&lt;&lt;i, i)</code> 全部当第 0 层。</li><li>BFS 按层计数：第一次出队时 <code>mask == (1&lt;&lt;n)-1</code>，当前步数就是最短路径长度。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(2ⁿ·n)（n ≤ 12），空间复杂度 O(2ⁿ·n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> shortestPathLength(<span class="k">int</span>[][] graph) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = graph.length, full = (<span class="n">1</span> &lt;&lt; n) - <span class="n">1</span>;</span><span class="ln"><span class="no">6</span>        <span class="c">// 状态 = (已访问集合 mask, 当前结点)；同一状态只入队一次</span></span><span class="ln"><span class="no">7</span>        <span class="k">boolean</span>[][] seen = <span class="k">new</span> <span class="k">boolean</span>[<span class="n">1</span> &lt;&lt; n][n];</span><span class="ln"><span class="no">8</span>        <span class="t">Queue</span>&lt;<span class="k">int</span>[]&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">10</span>            seen[<span class="n">1</span> &lt;&lt; i][i] = <span class="k">true</span>;</span><span class="ln"><span class="no">11</span>            q.add(<span class="k">new</span> <span class="k">int</span>[]{<span class="n">1</span> &lt;&lt; i, i});   <span class="c">// 从任何结点出发都可以</span></span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">for</span> (<span class="k">int</span> step = <span class="n">0</span>; !q.isEmpty(); step++) {</span><span class="ln"><span class="no">14</span>            <span class="k">for</span> (<span class="k">int</span> sz = q.size(); sz &gt; <span class="n">0</span>; sz--) {</span><span class="ln"><span class="no">15</span>                <span class="k">int</span>[] cur = q.poll();</span><span class="ln"><span class="no">16</span>                <span class="k">if</span> (cur[<span class="n">0</span>] == full) <span class="k">return</span> step;   <span class="c">// 第一次凑齐所有结点就是最短</span></span><span class="ln"><span class="no">17</span>                <span class="k">for</span> (<span class="k">int</span> next : graph[cur[<span class="n">1</span>]]) {</span><span class="ln"><span class="no">18</span>                    <span class="k">int</span> nMask = cur[<span class="n">0</span>] | <span class="n">1</span> &lt;&lt; next;</span><span class="ln"><span class="no">19</span>                    <span class="k">if</span> (!seen[nMask][next]) {</span><span class="ln"><span class="no">20</span>                        seen[nMask][next] = <span class="k">true</span>;</span><span class="ln"><span class="no">21</span>                        q.add(<span class="k">new</span> <span class="k">int</span>[]{nMask, next});</span><span class="ln"><span class="no">22</span>                    }</span><span class="ln"><span class="no">23</span>                }</span><span class="ln"><span class="no">24</span>            }</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> <span class="n">0</span>;   <span class="c">// n=1 时第一层就命中 full，到不了这里</span></span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>存在一个由 <code>n</code> 个节点组成的无向连通图，图中的节点按从 <code>0</code> 到 <code>n - 1</code> 编号。</p>
+
+<p>给你一个数组 <code>graph</code> 表示这个图。其中，<code>graph[i]</code> 是一个列表，由所有与节点 <code>i</code> 直接相连的节点组成。</p>
+
+<p>返回能够访问所有节点的最短路径的长度。你可以在任一节点开始和停止，也可以多次重访节点，并且可以重用边。</p>
+
+
+
+<ol>
+</ol>
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/4983e03103b9.jpg" style="width: 222px; height: 183px;" />
+<pre>
+<strong>输入：</strong>graph = [[1,2,3],[0],[0],[0]]
+<strong>输出：</strong>4
+<strong>解释：</strong>一种可能的路径为 [1,0,2,0,3]</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/4c180d6323e6.jpg" style="width: 382px; height: 222px;" /></p>
+
+<pre>
+<strong>输入：</strong>graph = [[1],[0,2,4],[1,3,4],[2],[1,2]]
+<strong>输出：</strong>4
+<strong>解释：</strong>一种可能的路径为 [0,1,4,2,3]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == graph.length</code></li>
+	<li><code>1 &lt;= n &lt;= 12</code></li>
+	<li><code>0 &lt;= graph[i].length &lt;&nbsp;n</code></li>
+	<li><code>graph[i]</code> 不包含 <code>i</code></li>
+	<li>如果 <code>graph[a]</code> 包含 <code>b</code> ，那么 <code>graph[b]</code> 也包含 <code>a</code></li>
+	<li>输入的图总是连通图</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int shortestPathLength(int[][] graph) {", "        int n = graph.length, full = (1 << n) - 1;", "        // 状态 = (已访问集合 mask, 当前结点)；同一状态只入队一次", "        boolean[][] seen = new boolean[1 << n][n];", "        Queue<int[]> q = new ArrayDeque<>();", "        for (int i = 0; i < n; i++) {", "            seen[1 << i][i] = true;", "            q.add(new int[]{1 << i, i});   // 从任何结点出发都可以", "        }", "        for (int step = 0; !q.isEmpty(); step++) {", "            for (int sz = q.size(); sz > 0; sz--) {", "                int[] cur = q.poll();", "                if (cur[0] == full) return step;   // 第一次凑齐所有结点就是最短", "                for (int next : graph[cur[1]]) {", "                    int nMask = cur[0] | 1 << next;", "                    if (!seen[nMask][next]) {", "                        seen[nMask][next] = true;", "                        q.add(new int[]{nMask, next});", "                    }", "                }", "            }", "        }", "        return 0;   // n=1 时第一层就命中 full，到不了这里", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 847. 访问所有节点的最短路径 —— 图解：复刻 Solution.java 的 (mask, 结点) 状态 BFS，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { graph: [[1, 2, 3], [0], [0], [0]] };
+
+function trace(input) {
+  var graph = input.graph;
+  var n = graph.length;
+  var full = (1 << n) - 1;
+  var frames = [];
+  var SEED = 'q.add(new int[]{1 << i, i});';
+  var EXPAND = 'q.add(new int[]{nMask, next});';
+  var SEEN = 'if (!seen[nMask][next]) {';
+  var DONE = 'if (cur[0] == full) return step;';
+
+  var seen = {};
+  var queue = [];
+  for (var i = 0; i < n; i++) {
+    seen[(1 << i) * n + i] = true;
+    queue.push([1 << i, i]);
+  }
+
+  function maskPanel(mask, newBit, cls) {
+    var items = [], marks = {};
+    for (var b = 0; b < n; b++) {
+      items.push((mask >>> b) & 1);
+      if ((mask >>> b) & 1) marks[b] = b === newBit ? (cls || 'new') : 'win';
+    }
+    return Viz.cells(items, { title: 'mask（从左到右 = 结点 0…' + (n - 1) + '，1 = 已访问过）', marks: marks });
+  }
+  function queuePanel(curState) {
+    var rows = queue.slice(0, 6).map(function (st) {
+      var bits = '';
+      for (var b = n - 1; b >= 0; b--) bits += (st[0] >>> b) & 1;
+      return { k: '0b' + bits, v: '在结点 ' + st[1], cls: curState && st[0] === curState[0] && st[1] === curState[1] ? 'hit' : '' };
+    });
+    return Viz.table('队列里的状态 (mask, 结点)' + (queue.length > 6 ? '（只显示前 6 个）' : ''), rows);
+  }
+  function varsPanel(mask, node, step, extra) {
+    var items = [
+      { name: 'step', v: String(step) },
+      { name: '队列长度', v: String(queue.length) }
+    ];
+    if (extra) items.push({ name: extra[0], v: extra[1], cls: 'done' });
+    return Viz.vars(items);
+  }
+  function snap(at, key, mask, newBit, cls, curState, step, extra) {
+    frames.push(Viz.frame(at, key, [maskPanel(mask, newBit, cls), queuePanel(curState), varsPanel(mask, curState ? curState[1] : null, step, extra)]));
+  }
+
+  snap(SEED, '开局：从任何结点出发都行，每个起点各带只含自己的 mask 入队', 1, null, null, null, 0);
+
+  var step = 0;
+  var showedExpand = false, showedSeen = false;
+  while (queue.length) {
+    for (var sz = queue.length; sz > 0; sz--) {
+      var cur = queue.shift();
+      if (cur[0] === full) {
+        snap(DONE, 'mask 全 1：第一次凑齐所有结点，走的步数就是最短路径', cur[0], null, 'done', cur, step, ['最短路径', String(step)]);
+        return { frames: frames, result: step };
+      }
+      var nbs = graph[cur[1]];
+      for (var k = 0; k < nbs.length; k++) {
+        var next = nbs[k];
+        var nMask = cur[0] | (1 << next);
+        if (!seen[nMask * n + next]) {
+          seen[nMask * n + next] = true;
+          queue.push([nMask, next]);
+          if (!showedExpand && nMask !== cur[0]) {
+            showedExpand = true;
+            snap(EXPAND, '走出一步到结点 ' + next + '：mask 把它点亮（新 1 位标绿）', nMask, next, 'new', cur, step);
+          }
+        } else if (!showedSeen) {
+          showedSeen = true;
+          snap(SEEN, '状态 (mask, 结点) 之前见过：不再入队，重复走只会更慢', nMask, null, 'dim', cur, step);
+        }
+      }
+    }
+    step++;
+  }
+  return { frames: frames, result: 0 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

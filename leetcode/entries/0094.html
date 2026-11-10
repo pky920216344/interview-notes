@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉树的中序遍历 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 47 / 1159</span>
+  <nav class="pn"><a href="0148.html">上一篇</a><a href="0232.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">94. </span>二叉树的中序遍历</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 144</li><li class="algo">深度优先搜索/递归</li><li class="tag">栈</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉树</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">Morris 遍历：给左子树最右的结点临时接一条线索指回当前结点，走完左子树能回来，回来时再断开线索。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>pre</code> 是 <code>cur</code> 左子树里最右的结点（<code>cur.left</code> 一路向右，遇到空或线索就停），也就是 <code>cur</code> 的中序前驱。</li><li><strong>建线索</strong>：<code>pre.right == null</code>，说明第一次到 <code>cur</code>。令 <code>pre.right = cur</code>（给自己留一条回来的路），再进左子树。</li><li><strong>断线索</strong>：沿线索回到 <code>cur</code> 时，<code>pre.right == cur</code>，说明左子树已走完。令 <code>pre.right = null</code> 还原，再访问 <code>cur</code>，走右边。</li><li>没有左子树的结点：直接访问，走 <code>cur.right</code>；这条右指针可能就是线索，会带你回到祖先。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; inorderTraversal(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="t">TreeNode</span> cur = root;</span><span class="ln"><span class="no">7</span>        <span class="k">while</span> (cur != <span class="k">null</span>) {</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (cur.left != <span class="k">null</span>) {</span><span class="ln"><span class="no">9</span>                <span class="c">// pre 是 cur 的中序前驱：左子树里最右的结点</span></span><span class="ln"><span class="no">10</span>                <span class="c">// 向右走遇到空，或遇到指回 cur 的线索就停</span></span><span class="ln"><span class="no">11</span>                <span class="t">TreeNode</span> pre = cur.left;</span><span class="ln"><span class="no">12</span>                <span class="k">while</span> (pre.right != <span class="k">null</span> &amp;&amp; pre.right != cur) pre = pre.right;</span><span class="ln"><span class="no">13</span>                <span class="k">if</span> (pre.right == <span class="k">null</span>) {</span><span class="ln"><span class="no">14</span>                    <span class="c">// 第一次到 cur：建线索 pre -&gt; cur，再进左子树</span></span><span class="ln"><span class="no">15</span>                    pre.right = cur;</span><span class="ln"><span class="no">16</span>                    cur = cur.left;</span><span class="ln"><span class="no">17</span>                    <span class="k">continue</span>;</span><span class="ln"><span class="no">18</span>                }</span><span class="ln"><span class="no">19</span>                <span class="c">// 第二次回到 cur：左子树走完了，断开线索</span></span><span class="ln"><span class="no">20</span>                pre.right = <span class="k">null</span>;</span><span class="ln"><span class="no">21</span>            }</span><span class="ln"><span class="no">22</span>            <span class="c">// 没有左子树，或线索已断：访问 cur，再往右走</span></span><span class="ln"><span class="no">23</span>            ans.add(cur.val);</span><span class="ln"><span class="no">24</span>            cur = cur.right;</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个二叉树的根节点 <code>root</code> ，返回 <em>它的 <strong>中序</strong>&nbsp;遍历</em> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/daed062cbb2b.jpg" style="height: 200px; width: 125px;" />
+<pre>
+<strong>输入：</strong>root = [1,null,2,3]
+<strong>输出：</strong>[1,3,2]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = []
+<strong>输出：</strong>[]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [1]
+<strong>输出：</strong>[1]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中节点数目在范围 <code>[0, 100]</code> 内</li>
+	<li><code>-100 &lt;= Node.val &lt;= 100</code></li>
+</ul>
+
+
+
+<p><strong>进阶:</strong>&nbsp;递归算法很简单，你可以通过迭代算法完成吗？</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Integer> inorderTraversal(TreeNode root) {", "        List<Integer> ans = new ArrayList<>();", "        TreeNode cur = root;", "        while (cur != null) {", "            if (cur.left != null) {", "                // pre 是 cur 的中序前驱：左子树里最右的结点", "                // 向右走遇到空，或遇到指回 cur 的线索就停", "                TreeNode pre = cur.left;", "                while (pre.right != null && pre.right != cur) pre = pre.right;", "                if (pre.right == null) {", "                    // 第一次到 cur：建线索 pre -> cur，再进左子树", "                    pre.right = cur;", "                    cur = cur.left;", "                    continue;", "                }", "                // 第二次回到 cur：左子树走完了，断开线索", "                pre.right = null;", "            }", "            // 没有左子树，或线索已断：访问 cur，再往右走", "            ans.add(cur.val);", "            cur = cur.right;", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 94. 二叉树的中序遍历 —— 图解：复刻 Solution.java 的 Morris 遍历，在 5 个关键时刻拍快照。
+// 重点是同一条线索的一生：建线索 → 沿线索回来 → 断线索。线索本身画不出来，用结点下方的小标签「→x」表示：
+// 这个结点的右指针此刻临时指着 x。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [4, 2, 6, 1, 3, 5, 7] };
+
+function trace(input) {
+  var frames = [];
+
+  // 力扣层序数组 -> 结点；idx 是结点在数组里的下标，图解里的 marks / labels 靠它定位
+  function build(arr) {
+    if (!arr.length || arr[0] === null) return null;
+    var root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var n = q.shift();
+      if (i < arr.length) { if (arr[i] !== null) { n.left = { idx: i, val: arr[i], left: null, right: null }; q.push(n.left); } i++; }
+      if (i < arr.length) { if (arr[i] !== null) { n.right = { idx: i, val: arr[i], left: null, right: null }; q.push(n.right); } i++; }
+    }
+    return root;
+  }
+
+  var root = build(input.root);
+  var BUILD = 'pre.right = cur;';
+  var MOVE = 'cur = cur.right;';
+  var CUT = 'pre.right = null;';
+  var VISIT = 'ans.add(cur.val);';
+
+  var ans = [];
+  var visited = {};   // 已经访问（写进 ans）的结点下标
+
+  // 绿 = 已访问；extra 里的下标按给定的类画；labels 是结点下方的小标签
+  function tree(title, extra, labels) {
+    var marks = {};
+    Object.keys(visited).forEach(function (k) { marks[k] = 'done'; });
+    Object.keys(extra).forEach(function (k) { marks[k] = extra[k]; });
+    return Viz.tree(input.root, { title: title, marks: marks, labels: labels });
+  }
+  function ansPanel(newest) {
+    var marks = {};
+    ans.forEach(function (v, i) { marks[i] = i === ans.length - 1 && newest ? 'cur' : 'done'; });
+    return Viz.cells(ans, { title: ans.length ? 'ans（访问顺序）' : 'ans（访问顺序，还是空的）', marks: marks });
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+  var curTag = function (n) { return { at: n.idx, label: 'cur', cls: 'p-cur' }; };
+
+  var cur = root;
+  var first = null;          // 第一条线索：{ pre, cur }，图解就盯着它
+  var brokeFirst = false;    // 刚刚断开了这条线索
+  var seen = { follow: false, cut: false, visit: false };
+
+  while (cur !== null) {
+    if (cur.left !== null) {
+      var pre = cur.left;
+      var spine = [pre];                     // cur.left 一路向右的结点，pre 是最后一个
+      while (pre.right !== null && pre.right !== cur) { pre = pre.right; spine.push(pre); }
+      if (pre.right === null) {
+        pre.right = cur;                     // 第一次到 cur：建线索
+        if (first === null) {
+          first = { pre: pre, cur: cur };
+          var m1 = {};
+          spine.forEach(function (n) { m1[n.idx] = 'win'; });
+          m1[cur.idx] = 'cur';
+          snap(BUILD, '建线索：' + pre.val + ' 是 ' + cur.val + ' 左子树最右的结点（pre），右边是空，让它指回 ' + cur.val,
+            [tree('二叉树（青 = 沿 cur.left 一路向右找 pre；pre→x 表示它的右指针临时指向 x）', m1,
+              [curTag(cur), { at: pre.idx, label: 'pre→' + cur.val, cls: 'p-prev' }]), ansPanel(false)]);
+        }
+        cur = cur.left;
+        continue;
+      }
+      if (first !== null && !seen.cut && cur === first.cur && pre === first.pre) {
+        seen.cut = true;                     // 第二次回到 cur：线索还在，下一行把它断开
+        brokeFirst = true;
+        var m3 = {};
+        m3[pre.idx] = 'bad';
+        m3[cur.idx] = 'cur';
+        snap(CUT, '回到 ' + cur.val + '：' + pre.val + ' 的线索正指着 ' + cur.val + '，左子树走完了，断开线索',
+          [tree('二叉树（红 = 即将断开的线索）', m3,
+            [curTag(cur), { at: pre.idx, label: 'pre→' + cur.val, cls: 'p-fast' }]), ansPanel(false)]);
+      }
+      pre.right = null;
+    }
+    ans.push(cur.val);
+    visited[cur.idx] = true;
+    if (brokeFirst && !seen.visit) {
+      seen.visit = true;
+      var m4 = {};
+      m4[cur.idx] = 'cur';
+      snap(VISIT, '线索已断开，树恢复原样；访问 ' + cur.val + '，再去右子树',
+        [tree('二叉树（黄 = 刚访问的结点，绿 = 已访问）', m4, [curTag(cur)]), ansPanel(true)]);
+    }
+    var prev = cur;
+    cur = cur.right;
+    if (first !== null && !seen.follow && prev === first.pre && cur === first.cur) {
+      seen.follow = true;                    // 访问完 pre，沿线索一步回到 cur
+      var m2 = {};
+      m2[cur.idx] = 'cur';
+      snap(MOVE, '访问 ' + prev.val + ' 后沿右指针走：它是线索，一步回到 ' + cur.val,
+        [tree('二叉树（→x 表示该结点的右指针临时指向 x）', m2,
+          [curTag(cur), { at: prev.idx, label: '→' + cur.val, cls: 'p-next' }]), ansPanel(true)]);
+    }
+  }
+
+  snap('return ans;', '遍历完：线索全部断开，树和原来一样',
+    [tree('二叉树（绿 = 已访问）', {}, []), ansPanel(false)]);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>将二叉搜索树转化为排序的双向链表 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 133 / 1159</span>
+  <nav class="pn"><a href="0026.html">上一篇</a><a href="0958.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 36. </span>将二叉搜索树转化为排序的双向链表</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 47</li><li class="algo">深度优先搜索/递归</li><li class="aux">链表</li><li class="tag">栈</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉搜索树</li><li class="tag">链表</li><li class="tag">二叉树</li><li class="tag">双向链表</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">BST 中序递归：访问 cur 时和上一个访问的 last 互连前驱后继，最后首尾连成环，返回最左结点。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>中序遍历 BST 得到升序序列：维护 <code>last</code>（上一个访问的结点），访问 <code>cur</code> 时 <code>last.right = cur</code>、<code>cur.left = last</code>。</li><li>第一个（最左）访问的结点没有前驱，记为表头 <code>first</code>，也是最终返回值。</li><li>遍历完后 <code>last</code> 是最大结点：<code>last.right = first</code>、<code>first.left = last</code> 首尾成环。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)（递归栈）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="c">/*</span></span><span class="ln"><span class="no">2</span><span class="c">// Definition for a Node.</span></span><span class="ln"><span class="no">3</span><span class="c">class Node {</span></span><span class="ln"><span class="no">4</span><span class="c">    public int val;</span></span><span class="ln"><span class="no">5</span><span class="c">    public Node left;</span></span><span class="ln"><span class="no">6</span><span class="c">    public Node right;</span></span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span><span class="c">    public Node() {}</span></span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span><span class="c">    public Node(int _val) {</span></span><span class="ln"><span class="no">11</span><span class="c">        val = _val;</span></span><span class="ln"><span class="no">12</span><span class="c">    }</span></span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span><span class="c">    public Node(int _val,Node _left,Node _right) {</span></span><span class="ln"><span class="no">15</span><span class="c">        val = _val;</span></span><span class="ln"><span class="no">16</span><span class="c">        left = _left;</span></span><span class="ln"><span class="no">17</span><span class="c">        right = _right;</span></span><span class="ln"><span class="no">18</span><span class="c">    }</span></span><span class="ln"><span class="no">19</span><span class="c">};</span></span><span class="ln"><span class="no">20</span><span class="c">*/</span></span><span class="ln"><span class="no">21</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">22</span>    <span class="c">// first：最左结点，链表表头；last：上一个访问的结点</span></span><span class="ln"><span class="no">23</span>    <span class="k">private</span> <span class="t">Node</span> first, last;</span><span class="ln"><span class="no">24</span> </span><span class="ln"><span class="no">25</span>    <span class="k">public</span> <span class="t">Node</span> treeToDoublyList(<span class="t">Node</span> root) {</span><span class="ln"><span class="no">26</span>        <span class="k">if</span> (root == <span class="k">null</span>) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">27</span>        first = last = <span class="k">null</span>;</span><span class="ln"><span class="no">28</span>        inorder(root);</span><span class="ln"><span class="no">29</span>        <span class="c">// 遍历完 last 是最大结点：首尾相连成环</span></span><span class="ln"><span class="no">30</span>        last.right = first;</span><span class="ln"><span class="no">31</span>        first.left = last;</span><span class="ln"><span class="no">32</span>        <span class="k">return</span> first;</span><span class="ln"><span class="no">33</span>    }</span><span class="ln"><span class="no">34</span> </span><span class="ln"><span class="no">35</span>    <span class="c">// 中序遍历：访问 cur 时，它的前驱就是 last</span></span><span class="ln"><span class="no">36</span>    <span class="k">private</span> <span class="k">void</span> inorder(<span class="t">Node</span> cur) {</span><span class="ln"><span class="no">37</span>        <span class="k">if</span> (cur == <span class="k">null</span>) <span class="k">return</span>;</span><span class="ln"><span class="no">38</span>        inorder(cur.left);</span><span class="ln"><span class="no">39</span>        <span class="c">// last 为空说明 cur 最左，记为表头</span></span><span class="ln"><span class="no">40</span>        <span class="k">if</span> (last == <span class="k">null</span>) first = cur;</span><span class="ln"><span class="no">41</span>        <span class="c">// 否则接到 last 后面，双向互连</span></span><span class="ln"><span class="no">42</span>        <span class="k">else</span> { last.right = cur; cur.left = last; }</span><span class="ln"><span class="no">43</span>        last = cur;</span><span class="ln"><span class="no">44</span>        inorder(cur.right);</span><span class="ln"><span class="no">45</span>    }</span><span class="ln"><span class="no">46</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>将一个 <strong>二叉搜索树</strong> 就地转化为一个 <strong>已排序的双向循环链表</strong> 。</p>
+
+<p>对于双向循环列表，你可以将左右孩子指针作为双向循环链表的前驱和后继指针，第一个节点的前驱是最后一个节点，最后一个节点的后继是第一个节点。</p>
+
+<p>特别地，我们希望可以 <strong>就地</strong> 完成转换操作。当转化完成以后，树中节点的左指针需要指向前驱，树中节点的右指针需要指向后继。还需要返回链表中最小元素的指针。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [4,2,5,1,3] 
+
+<img src="../assets/img/daf86da46fbc.png" />
+<strong>输出：</strong>[1,2,3,4,5]
+
+<strong>解释：</strong>下图显示了转化后的二叉搜索树，实线表示后继关系，虚线表示前驱关系。
+<img src="../assets/img/2ac14c4eb7d7.png" />
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [2,1,3]
+<strong>输出：</strong>[1,2,3]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = []
+<strong>输出：</strong>[]
+<strong>解释：</strong>输入是空树，所以输出也是空链表。
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [1]
+<strong>输出：</strong>[1]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>-1000 &lt;= Node.val &lt;= 1000</code></li>
+	<li><code>Node.left.val &lt; Node.val &lt; Node.right.val</code></li>
+	<li><code>Node.val</code> 的所有值都是独一无二的</li>
+	<li><code>0 &lt;= Number of Nodes &lt;= 2000</code></li>
+</ul>
+
+<p>注意：本题与主站 426 题相同：<a href="https://leetcode.cn/problems/convert-binary-search-tree-to-sorted-doubly-linked-list/" rel="noopener noreferrer" target="_blank">https://leetcode.cn/problems/convert-binary-search-tree-to-sorted-doubly-linked-list/</a></p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["/*", "// Definition for a Node.", "class Node {", "    public int val;", "    public Node left;", "    public Node right;", "", "    public Node() {}", "", "    public Node(int _val) {", "        val = _val;", "    }", "", "    public Node(int _val,Node _left,Node _right) {", "        val = _val;", "        left = _left;", "        right = _right;", "    }", "};", "*/", "class Solution {", "    // first：最左结点，链表表头；last：上一个访问的结点", "    private Node first, last;", "", "    public Node treeToDoublyList(Node root) {", "        if (root == null) return null;", "        first = last = null;", "        inorder(root);", "        // 遍历完 last 是最大结点：首尾相连成环", "        last.right = first;", "        first.left = last;", "        return first;", "    }", "", "    // 中序遍历：访问 cur 时，它的前驱就是 last", "    private void inorder(Node cur) {", "        if (cur == null) return;", "        inorder(cur.left);", "        // last 为空说明 cur 最左，记为表头", "        if (last == null) first = cur;", "        // 否则接到 last 后面，双向互连", "        else { last.right = cur; cur.left = last; }", "        last = cur;", "        inorder(cur.right);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// offer-36（LCR 155）. 二叉搜索树与双向链表 —— 图解：复刻 Solution.java 的中序递归 + last 指针，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [4, 2, 5, 1, 3] };
+
+function trace(input) {
+  var arr = input.root;
+  var frames = [];
+
+  // 建树：结点带 val、left、right、在层序数组里的下标 arrIdx
+  function build(a) {
+    if (!a.length || a[0] === null || a[0] === undefined) return null;
+    var root = { val: a[0], left: null, right: null, arrIdx: 0 };
+    var q = [root], i = 1;
+    while (q.length && i < a.length) {
+      var nd = q.shift();
+      if (i < a.length) { if (a[i] !== null && a[i] !== undefined) { nd.left = { val: a[i], left: null, right: null, arrIdx: i }; q.push(nd.left); } i++; }
+      if (i < a.length) { if (a[i] !== null && a[i] !== undefined) { nd.right = { val: a[i], left: null, right: null, arrIdx: i }; q.push(nd.right); } i++; }
+    }
+    return root;
+  }
+
+  var root = build(arr);
+  if (root === null) return { frames: frames, result: [] };
+
+  // 树面板：结构始终是原 BST（静态），灰 = 已访问，黄 = 当前访问
+  function treePanel(curNd, visited) {
+    var marks = {}, labels = [];
+    for (var i = 0; i < visited.length; i++) marks[visited[i].arrIdx] = 'dim';
+    if (curNd) {
+      marks[curNd.arrIdx] = 'cur';
+      labels.push({ at: curNd.arrIdx, label: 'cur', cls: 'p-cur' });
+    }
+    return Viz.tree(arr, { title: 'BST（中序 = 升序）', marks: marks, labels: labels });
+  }
+
+  // 链表面板：已串好的部分（first..last），双向箭头
+  function listPanel(chain, closing) {
+    var edges = [];
+    for (var i = 0; i + 1 < chain.length; i++) { edges.push([i, i + 1]); edges.push([i + 1, i]); }
+    if (closing && chain.length >= 2) edges.push([chain.length - 1, 0, 'new']);
+    var nulls = closing ? [] : (chain.length ? [chain.length - 1] : []);
+    var pointers = [];
+    if (chain.length) {
+      pointers.push({ at: 0, label: 'first', cls: 'p-head' });
+      pointers.push({ at: chain.length - 1, label: 'last', cls: 'p-tail' });
+    }
+    return Viz.list(chain, { title: closing ? '双向循环链表（首尾相连）' : '已串好的双向链表', edges: edges, nulls: nulls, pointers: pointers });
+  }
+
+  var first = null, last = null, cur = null;
+  var visited = [], chain = [];
+  var fired = { v1: false, v2: false, v4: false };
+
+  frames.push(Viz.frame('inorder(root);',
+    'BST 中序遍历的顺序就是链表顺序，边访问边接前驱后继',
+    [treePanel(null, visited), listPanel(chain, false)]));
+
+  function inorder(nd) {
+    if (nd === null) return;
+    inorder(nd.left);
+    cur = nd;
+    if (last === null) first = nd;
+    else { last.right = nd; nd.left = last; }
+    last = nd;
+    visited.push(nd);
+    chain.push(nd.val);
+    if (visited.length === 1 && !fired.v1) {
+      fired.v1 = true;
+      frames.push(Viz.frame('if (last == null) first = cur;',
+        '中序到最左的 ' + nd.val + '：last 为空 → 它就是表头 first',
+        [treePanel(cur, visited), listPanel(chain, false)]));
+    }
+    if (visited.length === 2 && !fired.v2) {
+      fired.v2 = true;
+      frames.push(Viz.frame('else { last.right = cur; cur.left = last; }',
+        '访问 ' + nd.val + '：接到 last（' + chain[chain.length - 2] + '）后面，双向互连',
+        [treePanel(cur, visited), listPanel(chain, false)]));
+    }
+    if (visited.length === 4 && !fired.v4) {
+      fired.v4 = true;
+      frames.push(Viz.frame('else { last.right = cur; cur.left = last; }',
+        '中序依次往后串：已到 ' + nd.val + '，last 跟着右移',
+        [treePanel(cur, visited), listPanel(chain, false)]));
+    }
+    inorder(nd.right);
+  }
+
+  inorder(root);
+
+  // 收尾帧：首尾相连成环
+  if (chain.length >= 2) {
+    frames.push(Viz.frame('first.left = last;',
+      '遍历完：尾 ' + last.val + ' 接回头 ' + first.val + '，成双向循环链表',
+      [treePanel(null, visited), listPanel(chain, true)]));
+  }
+
+  // result：从 first 沿 right 走一圈的值
+  var out = [], p = first, steps = chain.length;
+  for (var i = 0; i < steps; i++) { out.push(p.val); p = p.right; }
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

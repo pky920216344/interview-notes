@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>课程表 IV · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1001 / 1159</span>
+  <nav class="pn"><a href="0466.html">上一篇</a><a href="lcp-07.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1462. </span>课程表 IV</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">图算法</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="tag">拓扑排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">n ≤ 100 直接跑 Floyd 传递闭包：把先修对放进布尔矩阵，三重循环逐个中转点把「u→k 且 k→v」连成「u→v」，查询直接查表。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>reach[u][v]</code> 表示 u 是 v 的先修课程；先把直接先修对填进矩阵。</li><li>三重循环枚举中转点 <code>k</code>：<code>reach[u][k] &amp;&amp; reach[k][v]</code> 则 <code>reach[u][v] = true</code>，跑完就是传递闭包。</li><li>每个查询 <code>[u,v]</code> 直接读 <code>reach[u][v]</code>，把 10⁴ 个查询都变成 O(1) 查表。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n³ + q)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">Boolean</span>&gt; checkIfPrerequisite(<span class="k">int</span> numCourses, <span class="k">int</span>[][] prerequisites, <span class="k">int</span>[][] queries) {</span><span class="ln"><span class="no">5</span>        <span class="c">// reach[u][v]：u 是不是 v 的（直接或间接）先修课程</span></span><span class="ln"><span class="no">6</span>        <span class="k">boolean</span>[][] reach = <span class="k">new</span> <span class="k">boolean</span>[numCourses][numCourses];</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span>[] p : prerequisites) reach[p[<span class="n">0</span>]][p[<span class="n">1</span>]] = <span class="k">true</span>;</span><span class="ln"><span class="no">8</span>        <span class="c">// Floyd 传递闭包：若 u 能到 k 且 k 能到 v，则 u 能到 v</span></span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; numCourses; k++)</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> u = <span class="n">0</span>; u &lt; numCourses; u++)</span><span class="ln"><span class="no">11</span>                <span class="k">for</span> (<span class="k">int</span> v = <span class="n">0</span>; v &lt; numCourses; v++)</span><span class="ln"><span class="no">12</span>                    <span class="k">if</span> (reach[u][k] &amp;&amp; reach[k][v]) reach[u][v] = <span class="k">true</span>;</span><span class="ln"><span class="no">13</span>        <span class="t">List</span>&lt;<span class="t">Boolean</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span>[] q : queries) ans.add(reach[q[<span class="n">0</span>]][q[<span class="n">1</span>]]);</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你总共需要上<meta charset="UTF-8" />&nbsp;<code>numCourses</code>&nbsp;门课，课程编号依次为 <code>0</code>&nbsp;到&nbsp;<code>numCourses-1</code>&nbsp;。你会得到一个数组&nbsp;<code>prerequisite</code> ，其中<meta charset="UTF-8" />&nbsp;<code>prerequisites[i] = [a<sub>i</sub>, b<sub>i</sub>]</code>&nbsp;表示如果你想选<meta charset="UTF-8" />&nbsp;<code>b<sub>i</sub></code> 课程，你<strong> 必须</strong> 先选<meta charset="UTF-8" />&nbsp;<code>a<sub>i</sub></code>&nbsp;课程。</p>
+
+<ul>
+	<li>有的课会有直接的先修课程，比如如果想上课程 <code>1</code>&nbsp;，你必须先上课程 <code>0</code>&nbsp;，那么会以 <code>[0,1]</code>&nbsp;数对的形式给出先修课程数对。</li>
+</ul>
+
+<p>先决条件也可以是 <strong>间接</strong> 的。如果课程 <code>a</code> 是课程 <code>b</code> 的先决条件，课程 <code>b</code> 是课程 <code>c</code> 的先决条件，那么课程 <code>a</code> 就是课程 <code>c</code> 的先决条件。</p>
+
+<p>你也得到一个数组<meta charset="UTF-8" />&nbsp;<code>queries</code>&nbsp;，其中<meta charset="UTF-8" />&nbsp;<code>queries[j] = [u<sub>j</sub>, v<sub>j</sub>]</code>。对于第 <code>j</code> 个查询，您应该回答课程<meta charset="UTF-8" />&nbsp;<code>u<sub>j</sub></code>&nbsp;是否是课程<meta charset="UTF-8" />&nbsp;<code>v<sub>j</sub></code>&nbsp;的先决条件。</p>
+
+<p>返回一个布尔数组 <code>answer</code> ，其中 <code>answer[j]</code> 是第 <code>j</code> 个查询的答案。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/84e599c08591.jpg" /></p>
+
+<pre>
+<strong>输入：</strong>numCourses = 2, prerequisites = [[1,0]], queries = [[0,1],[1,0]]
+<strong>输出：</strong>[false,true]
+<strong>解释：</strong>[1, 0] 数对表示在你上课程 0 之前必须先上课程 1。
+课程 0 不是课程 1 的先修课程，但课程 1 是课程 0 的先修课程。
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>numCourses = 2, prerequisites = [], queries = [[1,0],[0,1]]
+<strong>输出：</strong>[false,false]
+<strong>解释：</strong>没有先修课程对，所以每门课程之间是独立的。
+</pre>
+
+<p><strong class="example">示例 3：</strong></p>
+
+<p><img alt="" src="../assets/img/450523dc4bd7.jpg" /></p>
+
+<pre>
+<strong>输入：</strong>numCourses = 3, prerequisites = [[1,2],[1,0],[2,0]], queries = [[1,0],[1,2]]
+<strong>输出：</strong>[true,true]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<p><meta charset="UTF-8" /></p>
+
+<ul>
+	<li><code>2 &lt;= numCourses &lt;= 100</code></li>
+	<li><code>0 &lt;= prerequisites.length &lt;= (numCourses * (numCourses - 1) / 2)</code></li>
+	<li><code>prerequisites[i].length == 2</code></li>
+	<li><code>0 &lt;= a<sub>i</sub>, b<sub>i</sub>&nbsp;&lt;= numCourses - 1</code></li>
+	<li><code>a<sub>i</sub>&nbsp;!= b<sub>i</sub></code></li>
+	<li>每一对<meta charset="UTF-8" />&nbsp;<code>[a<sub>i</sub>, b<sub>i</sub>]</code>&nbsp;都 <strong>不同</strong></li>
+	<li>先修课程图中没有环。</li>
+	<li><code>1 &lt;= queries.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= u<sub>i</sub>, v<sub>i</sub>&nbsp;&lt;= numCourses - 1</code></li>
+	<li><code>u<sub>i</sub>&nbsp;!= v<sub>i</sub></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<Boolean> checkIfPrerequisite(int numCourses, int[][] prerequisites, int[][] queries) {", "        // reach[u][v]：u 是不是 v 的（直接或间接）先修课程", "        boolean[][] reach = new boolean[numCourses][numCourses];", "        for (int[] p : prerequisites) reach[p[0]][p[1]] = true;", "        // Floyd 传递闭包：若 u 能到 k 且 k 能到 v，则 u 能到 v", "        for (int k = 0; k < numCourses; k++)", "            for (int u = 0; u < numCourses; u++)", "                for (int v = 0; v < numCourses; v++)", "                    if (reach[u][k] && reach[k][v]) reach[u][v] = true;", "        List<Boolean> ans = new ArrayList<>();", "        for (int[] q : queries) ans.add(reach[q[0]][q[1]]);", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1462. 课程安排 IV —— 图解：复刻 Solution.java 的 Floyd 传递闭包，在 4 个关键时刻拍快照。
+// 矩阵 reach[u][v] 逐轮被「中转点」填满；青色 = 这一步新连通的对。约定见 site/assets/viz.js。
+
+var STORY_INPUT = { numCourses: 4, prerequisites: [[1, 0], [2, 1], [3, 2]], queries: [[3, 0], [0, 3]] };
+
+function trace(input) {
+  var n = input.numCourses;
+  var reach = [];
+  for (var i = 0; i < n; i++) { reach.push([]); for (var j = 0; j < n; j++) reach[i].push(false); }
+  var frames = [];
+
+  var labels = [];
+  for (var w = 0; w < n; w++) labels.push(String(w));
+  function grid(marks) {
+    var rows = reach.map(function (r) { return r.map(function (b) { return b ? '✓' : '·'; }); });
+    return Viz.grid(rows, { title: 'reach[u][v]：u 是 v 的（间接）先修课程吗', rowLabels: labels, colLabels: labels, corner: 'u \\ v', marks: marks || {} });
+  }
+  function snap(at, key, marks) { frames.push(Viz.frame(at, key, [grid(marks)])); }
+
+  var INIT = 'reach[p[0]][p[1]] = true;';
+  var FLOYD = 'if (reach[u][k] && reach[k][v]) reach[u][v] = true;';
+  var QUERY = 'ans.add(reach[q[0]][q[1]]);';
+
+  // 1) 直接先修对先进矩阵
+  var m0 = {};
+  input.prerequisites.forEach(function (p) { reach[p[0]][p[1]] = true; m0[p[0] + ',' + p[1]] = 'new'; });
+  if (input.prerequisites.length) snap(INIT, '先填直接先修对：[a,b] 表示选 b 前必须先选 a', m0);
+
+  // 2) Floyd：逐个中转点 k，u→k 且 k→v 就把 u→v 连上（必须跑完全部 k，截图只拍前两次）
+  var shown = 0;
+  for (var k = 0; k < n; k++) {
+    var added = [];
+    for (var u = 0; u < n; u++)
+      for (var v = 0; v < n; v++)
+        if (!reach[u][v] && reach[u][k] && reach[k][v]) { reach[u][v] = true; added.push(u + ',' + v); }
+    if (added.length && shown < 2) {
+      var mk = {};
+      added.forEach(function (c) { mk[c] = 'new'; });
+      snap(FLOYD, '中转点 k=' + k + '：新连通 ' + added.length + ' 对（青色）', mk);
+      shown++;
+    }
+  }
+
+  // 3) 查询直接查表
+  var mq = {};
+  var ans = input.queries.map(function (q) {
+    if (q[0] < n && q[1] < n) mq[q[0] + ',' + q[1]] = 'cur';
+    return q[0] < n && q[1] < n ? reach[q[0]][q[1]] : false;
+  });
+  if (input.queries.length) snap(QUERY, '查询查表：一格 ✓ 一格 ·，答案是 [' + ans.join(',') + ']', mq);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

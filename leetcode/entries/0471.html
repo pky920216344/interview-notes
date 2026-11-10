@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>编码最短长度的字符串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 873 / 1159</span>
+  <nav class="pn"><a href="0606.html">上一篇</a><a href="0920.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">471. </span>编码最短长度的字符串</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">区间 DP：dp[i][j] = min(原样, 折叠成 次数[单位最优编码], 从 k 切开拼接两段最优)；按长度从小到大算。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i][j]</code> 表示 <code>s[i..j]</code> 的最短编码，按区间长度从小到大填表；任何最优编码要么是整段折叠，要么在某个位置切成两半各自编码。</li><li>折叠：若整段是前 <code>p</code> 个字符重复 <code>len/p</code> 次形成（<code>len % p == 0</code> 且逐字符对得上），候选就是 <code>次数[dp[单位]]</code>——单位直接用它的最优编码，所以<strong>嵌套折叠自动覆盖</strong>（<code>abbbabbbc</code> → <code>2[abbb]c</code>，整串 → <code>2[2[abbb]c]</code>）。</li><li>三个候选取长度最小者；并列时保留先算出的那个，两边（Java/图解）顺序一致。</li><li><code>k[...]</code> 形式长度至少 4，所以很短的子串折叠自然落选，不用特判。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n^3)，空间复杂度 O(n^2)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">String</span> encode(<span class="t">String</span> s) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">4</span>        <span class="c">// dp[i][j]：s[i..j] 的最短编码；短区间先算好，长区间在它们之上拼</span></span><span class="ln"><span class="no">5</span>        <span class="t">String</span>[][] dp = <span class="k">new</span> <span class="t">String</span>[n][n];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> len = <span class="n">1</span>; len &lt;= n; len++) {</span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>, j = i + len - <span class="n">1</span>; j &lt; n; i++, j++) {</span><span class="ln"><span class="no">8</span>                <span class="t">String</span> best = s.substring(i, j + <span class="n">1</span>);</span><span class="ln"><span class="no">9</span>                <span class="t">String</span> folded = fold(s, i, j, dp);   <span class="c">// 整段折叠：次数[单位编码]</span></span><span class="ln"><span class="no">10</span>                <span class="k">if</span> (folded != <span class="k">null</span> &amp;&amp; folded.length() &lt; best.length()) best = folded;</span><span class="ln"><span class="no">11</span>                <span class="k">for</span> (<span class="k">int</span> k = i; k &lt; j; k++) {        <span class="c">// 从中间切开，两段各自最优编码拼接</span></span><span class="ln"><span class="no">12</span>                    <span class="t">String</span> joined = dp[i][k] + dp[k + <span class="n">1</span>][j];</span><span class="ln"><span class="no">13</span>                    <span class="k">if</span> (joined.length() &lt; best.length()) best = joined;</span><span class="ln"><span class="no">14</span>                }</span><span class="ln"><span class="no">15</span>                dp[i][j] = best;</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> dp[<span class="n">0</span>][n - <span class="n">1</span>];</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>    <span class="c">// 枚举所有周期 p（整段 = 前 p 个字符重复 len/p 次），返回最短的折叠形式，没有则 null</span></span><span class="ln"><span class="no">22</span>    <span class="k">private</span> <span class="t">String</span> fold(<span class="t">String</span> s, <span class="k">int</span> i, <span class="k">int</span> j, <span class="t">String</span>[][] dp) {</span><span class="ln"><span class="no">23</span>        <span class="k">int</span> len = j - i + <span class="n">1</span>;</span><span class="ln"><span class="no">24</span>        <span class="t">String</span> best = <span class="k">null</span>;</span><span class="ln"><span class="no">25</span>        <span class="k">for</span> (<span class="k">int</span> p = <span class="n">1</span>; p * <span class="n">2</span> &lt;= len; p++) {</span><span class="ln"><span class="no">26</span>            <span class="k">if</span> (len % p != <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">27</span>            <span class="k">boolean</span> ok = <span class="k">true</span>;</span><span class="ln"><span class="no">28</span>            <span class="k">for</span> (<span class="k">int</span> k = i + p; k &lt;= j &amp;&amp; ok; k++) ok = s.charAt(k) == s.charAt(k - p);</span><span class="ln"><span class="no">29</span>            <span class="k">if</span> (!ok) <span class="k">continue</span>;</span><span class="ln"><span class="no">30</span>            <span class="t">String</span> cand = (len / p) + <span class="s">"["</span> + dp[i][i + p - <span class="n">1</span>] + <span class="s">"]"</span>;</span><span class="ln"><span class="no">31</span>            <span class="k">if</span> (best == <span class="k">null</span> || cand.length() &lt; best.length()) best = cand;</span><span class="ln"><span class="no">32</span>        }</span><span class="ln"><span class="no">33</span>        <span class="k">return</span> best;</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public String encode(String s) {", "        int n = s.length();", "        // dp[i][j]：s[i..j] 的最短编码；短区间先算好，长区间在它们之上拼", "        String[][] dp = new String[n][n];", "        for (int len = 1; len <= n; len++) {", "            for (int i = 0, j = i + len - 1; j < n; i++, j++) {", "                String best = s.substring(i, j + 1);", "                String folded = fold(s, i, j, dp);   // 整段折叠：次数[单位编码]", "                if (folded != null && folded.length() < best.length()) best = folded;", "                for (int k = i; k < j; k++) {        // 从中间切开，两段各自最优编码拼接", "                    String joined = dp[i][k] + dp[k + 1][j];", "                    if (joined.length() < best.length()) best = joined;", "                }", "                dp[i][j] = best;", "            }", "        }", "        return dp[0][n - 1];", "    }", "", "    // 枚举所有周期 p（整段 = 前 p 个字符重复 len/p 次），返回最短的折叠形式，没有则 null", "    private String fold(String s, int i, int j, String[][] dp) {", "        int len = j - i + 1;", "        String best = null;", "        for (int p = 1; p * 2 <= len; p++) {", "            if (len % p != 0) continue;", "            boolean ok = true;", "            for (int k = i + p; k <= j && ok; k++) ok = s.charAt(k) == s.charAt(k - p);", "            if (!ok) continue;", "            String cand = (len / p) + \"[\" + dp[i][i + p - 1] + \"]\";", "            if (best == null || cand.length() < best.length()) best = cand;", "        }", "        return best;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 471. 编码最短长度的字符串 —— 图解：复刻 Solution.java 的「区间 DP + 周期折叠」，在关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'ababab' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+  var SUB = 'String best = s.substring(i, j + 1);';
+  var FOLD = 'if (best == null || cand.length() < best.length()) best = cand;';
+  var ASSIGN = 'dp[i][j] = best;';
+  var RET = 'return dp[0][n - 1];';
+
+  var dp = [];
+  var a, b;
+  for (a = 0; a < n; a++) {
+    dp.push([]);
+    for (b = 0; b < n; b++) dp[a].push(null);
+  }
+
+  function gridPanel(marks) {
+    var rows = dp.map(function (row) {
+      return row.map(function (v) { return v === null ? '' : v; });
+    });
+    return Viz.grid(rows, { title: 'dp[i][j]：s[i..j] 的最短编码', marks: marks || {}, corner: '' });
+  }
+  function varsPanel(items) {
+    return Viz.vars(items);
+  }
+
+  var foldSnapped = false, diagSnapped = false, assignSnapped = false;
+
+  // 与 Java 相同的折叠枚举：p 从小到大，len 能整除且逐字符对得上才算周期
+  function fold(i, j) {
+    var len = j - i + 1;
+    var best = null;
+    for (var p = 1; p * 2 <= len; p++) {
+      if (len % p !== 0) continue;
+      var ok = true;
+      for (var k = i + p; k <= j && ok; k++) ok = s[k] === s[k - p];
+      if (!ok) continue;
+      var cand = (len / p) + '[' + dp[i][i + p - 1] + ']';
+      if (best === null || cand.length < best.length) {
+        best = cand;
+        if (i === 0 && j === n - 1 && !foldSnapped) {
+          foldSnapped = true;
+          frames.push(Viz.frame(FOLD,
+            '整段是 ' + s.slice(i, i + p) + ' × ' + (len / p) + '：折叠成 ' + cand + '（' + cand.length + ' < ' + n + '）',
+            [gridPanel({ ['0,' + (n - 1)]: 'cur' }),
+             varsPanel([{ name: '原样编码', v: s }, { name: '折叠候选', v: cand, cls: 'new' }])]));
+        }
+      }
+    }
+    return best;
+  }
+
+  for (var len = 1; len <= n; len++) {
+    for (var i = 0, j = i + len - 1; j < n; i++, j++) {
+      var best = s.substring(i, j + 1);
+      if (len === 1 && !diagSnapped) {
+        diagSnapped = true;
+        frames.push(Viz.frame(SUB, '长度 1：单字符的最短编码就是它自己', [gridPanel({ '0,0': 'new' })]));
+      }
+      var folded = fold(i, j);
+      if (folded !== null && folded.length < best.length) best = folded;
+      for (var k = i; k < j; k++) {
+        var joined = dp[i][k] + dp[k + 1][j];
+        if (joined.length < best.length) best = joined;
+      }
+      dp[i][j] = best;
+      if (i === 0 && j === n - 1 && !assignSnapped) {
+        assignSnapped = true;
+        frames.push(Viz.frame(ASSIGN, 'dp[0][' + (n - 1) + '] = ' + best + '：整串的最短编码定了', [gridPanel({ ['0,' + (n - 1)]: 'new' })]));
+      }
+    }
+  }
+
+  frames.push(Viz.frame(RET, '返回 ' + dp[0][n - 1], [
+    gridPanel({ ['0,' + (n - 1)]: 'done' }),
+    varsPanel([{ name: '结果', v: dp[0][n - 1], cls: 'done' }])
+  ]));
+  return { frames: frames, result: dp[0][n - 1] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

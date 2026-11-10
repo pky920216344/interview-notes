@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>在二叉树中分配硬币 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1040 / 1159</span>
+  <nav class="pn"><a href="0775.html">上一篇</a><a href="0774.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">979. </span>在二叉树中分配硬币</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉树</li><li class="tag">dp-on-trees</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">后序 DFS 算每棵子树的净流量（硬币数−结点数）：每条边必须运送 |净流量| 枚，累加即答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>子树的<strong>净流量</strong> = 子树硬币数 − 子树结点数：正 = 多余的要送出去，负 = 缺口要补进来。</li><li>后序遍历：先算左右孩子的净流量；父结点处 <code>ans += |左流量| + |右流量|</code>——每条边都要过这些硬币，一次移一枚。</li><li>自己的流量 = <code>val + 左 + 右 − 1</code>，继续交给父结点；每条边的运送次数下界就是 |净流量|，且可以达到。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)（递归栈）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">int</span> ans;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> distributeCoins(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">5</span>        ans = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        flow(root);</span><span class="ln"><span class="no">7</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="c">// 返回子树的净流量 = 硬币数 − 结点数：正 = 多余的要送走，负 = 缺口要补</span></span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">int</span> flow(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">13</span>        <span class="k">int</span> l = flow(node.left);</span><span class="ln"><span class="no">14</span>        <span class="k">int</span> r = flow(node.right);</span><span class="ln"><span class="no">15</span>        ans += <span class="t">Math</span>.abs(l) + <span class="t">Math</span>.abs(r);   <span class="c">// 每条边都要运 |净流量| 枚硬币，一次移动运一枚</span></span><span class="ln"><span class="no">16</span>        <span class="k">return</span> node.val + l + r - <span class="n">1</span>;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个有 <code>n</code> 个结点的二叉树的根结点 <code>root</code> ，其中树中每个结点 <code>node</code> 都对应有 <code>node.val</code> 枚硬币。整棵树上一共有 <code>n</code> 枚硬币。</p>
+
+<p>在一次移动中，我们可以选择两个相邻的结点，然后将一枚硬币从其中一个结点移动到另一个结点。移动可以是从父结点到子结点，或者从子结点移动到父结点。</p>
+
+<p>返回使每个结点上 <strong>只有</strong> 一枚硬币所需的 <strong>最少</strong> 移动次数。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+<img alt="" src="../assets/img/dd8d4afe7f28.png" style="width: 250px; height: 236px;" />
+<pre>
+<strong>输入：</strong>root = [3,0,0]
+<strong>输出：</strong>2
+<strong>解释：</strong>一枚硬币从根结点移动到左子结点，一枚硬币从根结点移动到右子结点。
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+<img alt="" src="../assets/img/77ec5f978b3e.png" style="width: 250px; height: 236px;" />
+<pre>
+<strong>输入：</strong>root = [0,3,0]
+<strong>输出：</strong>3
+<strong>解释：</strong>将两枚硬币从根结点的左子结点移动到根结点（两次移动）。然后，将一枚硬币从根结点移动到右子结点。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中节点的数目为 <code>n</code></li>
+	<li><code>1 &lt;= n &lt;= 100</code></li>
+	<li><code>0 &lt;= Node.val &lt;= n</code></li>
+	<li>所有 <code>Node.val</code> 的值之和是 <code>n</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private int ans;", "", "    public int distributeCoins(TreeNode root) {", "        ans = 0;", "        flow(root);", "        return ans;", "    }", "", "    // 返回子树的净流量 = 硬币数 − 结点数：正 = 多余的要送走，负 = 缺口要补", "    private int flow(TreeNode node) {", "        if (node == null) return 0;", "        int l = flow(node.left);", "        int r = flow(node.right);", "        ans += Math.abs(l) + Math.abs(r);   // 每条边都要运 |净流量| 枚硬币，一次移动运一枚", "        return node.val + l + r - 1;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 979. 在二叉树中分配硬币 —— 图解：复刻 Solution.java 的「子树净流量」后序 DFS，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { tree: [0, 3, 0] };
+
+function trace(input) {
+  var arr = input.tree;
+  var frames = [];
+
+  function build(a) {
+    if (!a.length || a[0] === null) return null;
+    var root = { idx: 0, val: a[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < a.length) {
+      var nd = q.shift();
+      if (i < a.length) { if (a[i] !== null) { nd.left = { idx: i, val: a[i], left: null, right: null }; q.push(nd.left); } i++; }
+      if (i < a.length) { if (a[i] !== null) { nd.right = { idx: i, val: a[i], left: null, right: null }; q.push(nd.right); } i++; }
+    }
+    return root;
+  }
+  var root = build(arr);
+
+  var SIG = 'public int distributeCoins(TreeNode root) {';
+  var ADD = 'ans += Math.abs(l) + Math.abs(r);';
+  var RET = 'return node.val + l + r - 1;';
+  var DONE = 'return ans;';
+
+  var ans = 0;
+  var flowAt = {};       // 层序下标 -> 已算出的净流量
+  var fired = { leaf: false, add: false, root: false };
+
+  function treePanel(curIdx) {
+    var marks = {}, labels = [];
+    (function walk(nd) {
+      if (!nd) return;
+      if (nd.idx in flowAt) { marks[nd.idx] = 'win'; labels.push({ at: nd.idx, label: '流量' + fmt(flowAt[nd.idx]), cls: 'p-cur' }); }
+      else labels.push({ at: nd.idx, label: nd.val + '枚', cls: 'p-prev' });
+      walk(nd.left);
+      walk(nd.right);
+    })(root);
+    if (curIdx != null) marks[curIdx] = 'cur';
+    return Viz.tree(arr, { title: '硬币树（结点上 = 硬币数；有流量的标净流量）', marks: marks, labels: labels });
+  }
+
+  function fmt(v) { return v > 0 ? '+' + v : String(v); }
+
+  function varsPanel(items) { return Viz.vars(items); }
+
+  frames.push(Viz.frame(SIG, '目标：每个结点恰好 1 枚。把每棵子树看成一个账户：硬币数 − 结点数 = 净流量',
+    [treePanel(null), varsPanel([{ name: 'ans', v: 0 }])]));
+
+  function flow(nd) {
+    if (!nd) return 0;
+    var l = flow(nd.left);
+    var r = flow(nd.right);
+    var f = nd.val + l + r - 1;
+    flowAt[nd.idx] = f;
+    if (nd.idx === 1 && !fired.leaf) {
+      fired.leaf = true;
+      frames.push(Viz.frame(RET, '后序先算孩子：这棵子树 ' + nd.val + ' 枚硬币、1 个结点，净多 ' + f + ' 枚要送出去',
+        [treePanel(nd.idx), varsPanel([{ name: '子树净流量', v: fmt(f), cls: 'chg' }])]));
+    }
+    if (nd === root && !fired.add) {
+      fired.add = true;
+      frames.push(Viz.frame(ADD, '根汇合：左子树多 ' + l + ' 枚、右子树缺 ' + (-r) + ' 枚——两条边分别要运 ' + Math.abs(l) + ' 次、' + Math.abs(r) + ' 次',
+        [treePanel(nd.idx), varsPanel([
+          { name: '|左流量|', v: Math.abs(l), cls: 'chg' },
+          { name: '|右流量|', v: Math.abs(r), cls: 'chg' },
+          { name: 'ans', v: ans + Math.abs(l) + Math.abs(r) }
+        ])]));
+    }
+    ans += Math.abs(l) + Math.abs(r);
+    if (nd === root && !fired.root) {
+      fired.root = true;
+      frames.push(Viz.frame(RET, '根的净流量 = ' + nd.val + ' + (' + l + ') + (' + r + ') − 1 = ' + f + '：整棵树不多不少',
+        [treePanel(nd.idx), varsPanel([{ name: '根净流量', v: fmt(f) }, { name: 'ans', v: ans }])]));
+    }
+    return f;
+  }
+  flow(root);
+
+  frames.push(Viz.frame(DONE, '每条边运 |净流量| 枚、一枚一次就是最少移动：答案 ' + ans,
+    [treePanel(null), varsPanel([{ name: 'ans', v: ans, cls: 'done' }])]));
+  return { frames: frames, result: ans };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

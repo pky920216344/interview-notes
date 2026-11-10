@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>四数相加 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 396 / 1159</span>
+  <nav class="pn"><a href="0716.html">上一篇</a><a href="0918.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">454. </span>四数相加 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 8</li><li class="algo">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">分两组：A+B 的所有和先哈希计数，再对每个 C+D 的和 s 查 -s 出现几次，累加出全部组合数。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>四个数分两组两两求和：<code>A+B</code> 的和最多 n² 种，先 O(n²) 全部数进哈希表 <code>cnt</code>。</li><li>对 <code>C+D</code> 的每个和 s，答案加上 <code>cnt[-s]</code>——四数之和为 0 当且仅当表里有 <code>-s</code>。</li><li>同一个和出现多次要累加次数（<code>merge</code>），表里没有就用 <code>getOrDefault</code> 兜 0，别让缺键中断。</li><li>不需要考虑下标去重：<code>(i,j,k,l)</code> 只要四数和为 0 就是一个合法元组，直接累加即可。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> fourSumCount(<span class="k">int</span>[] nums1, <span class="k">int</span>[] nums2, <span class="k">int</span>[] nums3, <span class="k">int</span>[] nums4) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 先把 A+B 的每种和出现多少次数进哈希表</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; cnt = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> a : nums1) {</span><span class="ln"><span class="no">8</span>            <span class="k">for</span> (<span class="k">int</span> b : nums2) {</span><span class="ln"><span class="no">9</span>                cnt.merge(a + b, <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">10</span>            }</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">13</span>        <span class="c">// C+D 每得到一个和 s，就凑出 cnt 中 -s 那么多组答案</span></span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> c : nums3) {</span><span class="ln"><span class="no">15</span>            <span class="k">for</span> (<span class="k">int</span> d : nums4) {</span><span class="ln"><span class="no">16</span>                ans += cnt.getOrDefault(-(c + d), <span class="n">0</span>);</span><span class="ln"><span class="no">17</span>            }</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你四个整数数组 <code>nums1</code>、<code>nums2</code>、<code>nums3</code> 和 <code>nums4</code> ，数组长度都是 <code>n</code> ，请你计算有多少个元组 <code>(i, j, k, l)</code> 能满足：</p>
+
+<ul>
+	<li><code>0 &lt;= i, j, k, l &lt; n</code></li>
+	<li><code>nums1[i] + nums2[j] + nums3[k] + nums4[l] == 0</code></li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums1 = [1,2], nums2 = [-2,-1], nums3 = [-1,2], nums4 = [0,2]
+<strong>输出：</strong>2
+<strong>解释：</strong>
+两个元组如下：
+1. (0, 0, 0, 1) -&gt; nums1[0] + nums2[0] + nums3[0] + nums4[1] = 1 + (-2) + (-1) + 2 = 0
+2. (1, 1, 0, 0) -&gt; nums1[1] + nums2[1] + nums3[0] + nums4[0] = 2 + (-1) + (-1) + 0 = 0
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums1 = [0], nums2 = [0], nums3 = [0], nums4 = [0]
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p>&nbsp; <strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == nums1.length</code></li>
+	<li><code>n == nums2.length</code></li>
+	<li><code>n == nums3.length</code></li>
+	<li><code>n == nums4.length</code></li>
+	<li><code>1 &lt;= n &lt;= 200</code></li>
+	<li><code>-2<sup>28</sup> &lt;= nums1[i], nums2[i], nums3[i], nums4[i] &lt;= 2<sup>28</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int fourSumCount(int[] nums1, int[] nums2, int[] nums3, int[] nums4) {", "        // 先把 A+B 的每种和出现多少次数进哈希表", "        Map<Integer, Integer> cnt = new HashMap<>();", "        for (int a : nums1) {", "            for (int b : nums2) {", "                cnt.merge(a + b, 1, Integer::sum);", "            }", "        }", "        int ans = 0;", "        // C+D 每得到一个和 s，就凑出 cnt 中 -s 那么多组答案", "        for (int c : nums3) {", "            for (int d : nums4) {", "                ans += cnt.getOrDefault(-(c + d), 0);", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 454. 四数相加 II —— 图解：复刻 Solution.java 的「两两分组 + 哈希计数」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums1: [1, 2], nums2: [-2, -1], nums3: [-1, 2], nums4: [0, 2] };
+
+function trace(input) {
+  var cnt = {};   // 和(字符串) -> 出现次数，对应 Java 里的 cnt
+  var frames = [];
+  var isStory = input === STORY_INPUT;
+  var captured = {};
+
+  // 计数表面板：键按数值排序；hitCh 是这一步刚查到的键（没有则都不亮）
+  function tablePanel(hitKey) {
+    var keys = Object.keys(cnt).map(Number).sort(function (a, b) { return a - b; });
+    return Viz.table('cnt：A+B 的和 → 出现次数', keys.map(function (k) {
+      return { k: String(k), v: String(cnt[k]), cls: k === hitKey ? 'hit' : '' };
+    }), { hint: '查不到的键就是 0 组' });
+  }
+  function varsPanel(s, need, ans, changed) {
+    return Viz.vars([
+      { name: 'c + d', v: String(s) },
+      { name: '需要 -(c+d)', v: String(need) },
+      { name: 'ans', v: String(ans), cls: changed ? 'new' : '' }
+    ]);
+  }
+  function push(tag, at, key, hitKey, s, need, ans, changed) {
+    if (!isStory || captured[tag]) return;
+    captured[tag] = true;
+    frames.push(Viz.frame(at, key, [tablePanel(hitKey), varsPanel(s, need, ans, changed)]));
+  }
+
+  var MERGE = 'cnt.merge(a + b, 1, Integer::sum);';
+  var ADD = 'ans += cnt.getOrDefault(-(c + d), 0);';
+
+  // 第一遍：A+B 全部和进表
+  for (var i = 0; i < input.nums1.length; i++) {
+    for (var j = 0; j < input.nums2.length; j++) {
+      var sum = input.nums1[i] + input.nums2[j];
+      cnt[sum] = (cnt[sum] || 0) + 1;
+    }
+  }
+  var built = Object.keys(cnt).map(Number).sort(function (a, b) { return a - b; })
+    .map(function (k) { return k + '×' + cnt[k]; }).join('、');
+  push('build', MERGE, 'A+B 的 4 个和进表：' + built + '，和为 0 的有 2 组 (i,j)',
+    null, null, null, 0, false);
+
+  // 第二遍：C+D 每个和查 -s
+  var ans = 0;
+  for (var k = 0; k < input.nums3.length; k++) {
+    for (var l = 0; l < input.nums4.length; l++) {
+      var c = input.nums3[k], d = input.nums4[l];
+      var s2 = c + d;
+      var need = -s2;
+      var got = cnt[need] || 0;
+      ans += got;
+      push('cd' + k + '-' + l, ADD,
+        'c=' + c + ', d=' + d + '：和 ' + s2 + '，查 ' + need + (got ? ' → 命中 ' + got + ' 组' : ' → 表里没有，加 0'),
+        got ? need : null, s2, need, ans, got > 0);
+    }
+  }
+  push('done', ADD, '四对 (c,d) 都查完：ans = 2，就是 2 组符合条件的下标组合',
+    null, null, null, ans, false);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

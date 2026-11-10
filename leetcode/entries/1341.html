@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>电影评分 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1131 / 1159</span>
+  <nav class="pn"><a href="1168.html">上一篇</a><a href="0514.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1341. </span>电影评分</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">SQL</li><li class="tag">数据库</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">两段查询各自「按月过滤 → GROUP BY 聚合 → 排序取第一」，UNION ALL 拼成单列 results。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><strong>用户段不限月份</strong>（官方示例解释把 1 月的评分也算进「评论电影数量」），电影段才限 February 2020——这是本题最大的坑。</li><li>月份过滤用<strong>半开区间</strong> <code>created_at &gt;= '2020-02-01' AND &lt; '2020-03-01'</code>——比 DATE_FORMAT 稳（能用上索引）。</li><li>用户段：<code>COUNT(*)</code> 降序、名字典序升序，<code>LIMIT 1</code>；电影段：<code>AVG(rating)</code> 降序、同规则。</li><li><strong>UNION ALL 拼接</strong>：两个查询各自内部排序后只取 1 行，UNION ALL 保证两行都保留（UNION 会去重，两行不同时无差，但语义上 ALL 更对）。</li><li>带括号分段 + 各自 LIMIT 是「每组取第一」类题的固定套路；MySQL 里子查询带 ORDER BY/LIMIT 必须有括号。</li></ul></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 SQL 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span>-- 1341（codetop 1341）电影评分（MySQL）</span><span class="ln"><span class="no">2</span>-- 题意：Movies(movie_id, title)、Users(user_id, name)、MovieRating(movie_id, user_id, rating, created_at)。</span><span class="ln"><span class="no">3</span>-- 两段结果合并成单列 results：</span><span class="ln"><span class="no">4</span>--   ① 评论电影数量最多的用户名（不限时间，并列取字典序小）；</span><span class="ln"><span class="no">5</span>--   ② 2020 年 2 月平均分最高的电影名（并列取字典序小）。</span><span class="ln"><span class="no">6</span>-- 用户段不限月份是本题最大的坑（官方示例解释里 1 月的评分也计入 Daniel 的 3 部）。</span><span class="ln"><span class="no">7</span>-- 用 UNION ALL 拼两段各自 ORDER BY + LIMIT 1 的查询。</span><span class="ln"><span class="no">8</span>(SELECT u.name AS results</span><span class="ln"><span class="no">9</span>FROM MovieRating mr</span><span class="ln"><span class="no">10</span>JOIN Users u ON u.user_id = mr.user_id</span><span class="ln"><span class="no">11</span>GROUP BY mr.user_id, u.name</span><span class="ln"><span class="no">12</span>ORDER BY COUNT(*) DESC, u.name ASC</span><span class="ln"><span class="no">13</span>LIMIT 1)</span><span class="ln"><span class="no">14</span>UNION ALL</span><span class="ln"><span class="no">15</span>(SELECT m.title AS results</span><span class="ln"><span class="no">16</span>FROM MovieRating mr</span><span class="ln"><span class="no">17</span>JOIN Movies m ON m.movie_id = mr.movie_id</span><span class="ln"><span class="no">18</span>WHERE mr.created_at &gt;= '2020-02-01'</span><span class="ln"><span class="no">19</span>  AND mr.created_at &lt; '2020-03-01'</span><span class="ln"><span class="no">20</span>GROUP BY mr.movie_id, m.title</span><span class="ln"><span class="no">21</span>ORDER BY AVG(mr.rating) DESC, m.title ASC</span><span class="ln"><span class="no">22</span>LIMIT 1);</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>表：<code>Movies</code></p>
+
+<pre>
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| movie_id      | int     |
+| title         | varchar |
++---------------+---------+
+movie_id 是这个表的主键(具有唯一值的列)。
+title 是电影的名字。
+每部电影都有一个唯一的 title。</pre>
+
+<p>表：<code>Users</code></p>
+
+<pre>
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| user_id       | int     |
+| name          | varchar |
++---------------+---------+
+user_id 是表的主键(具有唯一值的列)。
+'name' 列具有唯一值。</pre>
+
+<p>表：<code>MovieRating</code></p>
+
+<pre>
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| movie_id      | int     |
+| user_id       | int     |
+| rating        | int     |
+| created_at    | date    |
++---------------+---------+
+(movie_id, user_id) 是这个表的主键(具有唯一值的列的组合)。
+这个表包含用户在其评论中对电影的评分 rating 。
+created_at 是用户的点评日期。 
+</pre>
+
+
+
+<p>请你编写一个解决方案：</p>
+
+<ul>
+	<li>查找评论电影数量最多的用户名。如果出现平局，返回字典序较小的用户名。</li>
+	<li>查找在 <code>February 2020</code><strong> 平均评分最高</strong> 的电影名称。如果出现平局，返回字典序较小的电影名称。</li>
+</ul>
+
+<p><strong>字典序</strong> ，即按字母在字典中出现顺序对字符串排序，字典序较小则意味着排序靠前。</p>
+
+<p>返回结果格式如下例所示。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+Movies 表：
++-------------+--------------+
+| movie_id    |  title       |
++-------------+--------------+
+| 1           | Avengers     |
+| 2           | Frozen 2     |
+| 3           | Joker        |
++-------------+--------------+
+Users 表：
++-------------+--------------+
+| user_id     |  name        |
++-------------+--------------+
+| 1           | Daniel       |
+| 2           | Monica       |
+| 3           | Maria        |
+| 4           | James        |
++-------------+--------------+
+MovieRating 表：
++-------------+--------------+--------------+-------------+
+| movie_id    | user_id      | rating       | created_at  |
++-------------+--------------+--------------+-------------+
+| 1           | 1            | 3            | 2020-01-12  |
+| 1           | 2            | 4            | 2020-02-11  |
+| 1           | 3            | 2            | 2020-02-12  |
+| 1           | 4            | 1            | 2020-01-01  |
+| 2           | 1            | 5            | 2020-02-17  | 
+| 2           | 2            | 2            | 2020-02-01  | 
+| 2           | 3            | 2            | 2020-03-01  |
+| 3           | 1            | 3            | 2020-02-22  | 
+| 3           | 2            | 4            | 2020-02-25  | 
++-------------+--------------+--------------+-------------+
+<strong>输出：</strong>
+Result 表：
++--------------+
+| results      |
++--------------+
+| Daniel       |
+| Frozen 2     |
++--------------+
+<strong>解释：</strong>
+Daniel 和 Monica 都点评了 3 部电影（"Avengers", "Frozen 2" 和 "Joker"） 但是 Daniel 字典序比较小。
+Frozen 2 和 Joker 在 2 月的评分都是 3.5，但是 Frozen 2 的字典序比较小。
+</pre>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["-- 1341（codetop 1341）电影评分（MySQL）", "-- 题意：Movies(movie_id, title)、Users(user_id, name)、MovieRating(movie_id, user_id, rating, created_at)。", "-- 两段结果合并成单列 results：", "--   ① 评论电影数量最多的用户名（不限时间，并列取字典序小）；", "--   ② 2020 年 2 月平均分最高的电影名（并列取字典序小）。", "-- 用户段不限月份是本题最大的坑（官方示例解释里 1 月的评分也计入 Daniel 的 3 部）。", "-- 用 UNION ALL 拼两段各自 ORDER BY + LIMIT 1 的查询。", "(SELECT u.name AS results", "FROM MovieRating mr", "JOIN Users u ON u.user_id = mr.user_id", "GROUP BY mr.user_id, u.name", "ORDER BY COUNT(*) DESC, u.name ASC", "LIMIT 1)", "UNION ALL", "(SELECT m.title AS results", "FROM MovieRating mr", "JOIN Movies m ON m.movie_id = mr.movie_id", "WHERE mr.created_at >= '2020-02-01'", "  AND mr.created_at < '2020-03-01'", "GROUP BY mr.movie_id, m.title", "ORDER BY AVG(mr.rating) DESC, m.title ASC", "LIMIT 1);"]}</script>
+
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

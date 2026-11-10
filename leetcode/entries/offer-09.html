@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>图书整理 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 123 / 1159</span>
+  <nav class="pn"><a href="0075.html">上一篇</a><a href="0074.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 09. </span>图书整理 II</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 48</li><li class="algo">栈</li><li class="aux">设计</li><li class="tag">栈</li><li class="tag">设计</li><li class="tag">队列</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">双栈摊还：in 只管入队；out 空了才把 in 整个倒过去，out 的栈顶永远是队首。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>appendTail</code> 直接压进 <code>in</code>；<code>deleteHead</code> 先保证 <code>out</code> 里有货，再从 <code>out</code> 弹栈顶。</li><li><strong><code>out</code> 空了才倒</strong>：把 <code>in</code> 逐个弹出压进 <code>out</code>，先进的元素正好翻到 <code>out</code> 栈顶。</li><li><code>out</code> 非空时绝不能倒，否则新元素会跑到老元素前面，队首顺序就乱了。</li><li>两个栈都空返回 <code>-1</code>；每个元素最多入栈、出栈、倒手各一次，均摊 <code>O(1)</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1)（摊还），空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">CQueue</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// in 只管入队，out 只管出队；out 的栈顶就是队首</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; in = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; out = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">CQueue</span>() {</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="k">void</span> appendTail(<span class="k">int</span> value) {</span><span class="ln"><span class="no">12</span>        in.push(value);</span><span class="ln"><span class="no">13</span>    }</span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span>    <span class="k">public</span> <span class="k">int</span> deleteHead() {</span><span class="ln"><span class="no">16</span>        <span class="c">// out 空了才把 in 整个倒过去：先进的元素正好翻到 out 栈顶</span></span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (out.isEmpty()) {</span><span class="ln"><span class="no">18</span>            <span class="k">while</span> (!in.isEmpty()) out.push(in.pop());</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> out.isEmpty() ? -<span class="n">1</span> : out.pop();</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>读者来到图书馆排队借还书，图书管理员使用两个书车来完成整理借还书的任务。书车中的书从下往上叠加存放，图书管理员每次只能拿取书车顶部的书。排队的读者会有两种操作：</p>
+
+<ul>
+	<li><code>push(bookID)</code>：把借阅的书籍还到图书馆。</li>
+	<li><code>pop()</code>：从图书馆中借出书籍。</li>
+</ul>
+
+<p>为了保持图书的顺序，图书管理员每次取出供读者借阅的书籍是 <strong>最早</strong> 归还到图书馆的书籍。你需要返回 <strong>每次读者借出书的值</strong> 。</p>
+
+<p>如果没有归还的书可以取出，返回&nbsp;<code>-1</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>
+["BookQueue", "push", "push", "pop"]
+[[], [1], [2], []]
+<strong>输出：</strong>[null,null,null,1]
+<strong>解释：
+</strong>MyQueue myQueue = new MyQueue();
+myQueue.push(1); // queue is: [1]
+myQueue.push(2); // queue is: [1, 2] (leftmost is front of the queue)
+myQueue.pop(); // return 1, queue is [2]</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= bookID &lt;= 10000</code></li>
+	<li>最多会对 <code>push</code>、<code>pop</code> 进行 <code>10000</code> 次调用</li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class CQueue {", "    // in 只管入队，out 只管出队；out 的栈顶就是队首", "    private final Deque<Integer> in = new ArrayDeque<>();", "    private final Deque<Integer> out = new ArrayDeque<>();", "", "    public CQueue() {", "    }", "", "    public void appendTail(int value) {", "        in.push(value);", "    }", "", "    public int deleteHead() {", "        // out 空了才把 in 整个倒过去：先进的元素正好翻到 out 栈顶", "        if (out.isEmpty()) {", "            while (!in.isEmpty()) out.push(in.pop());", "        }", "        return out.isEmpty() ? -1 : out.pop();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 剑指 Offer 09. 用两个栈实现队列 —— 图解：复刻 Solution.java 的「输入栈 + 输出栈」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { ops: [['append', 1], ['append', 2], ['delete'], ['append', 3], ['delete'], ['delete'], ['delete']] };
+
+function trace(input) {
+  var inS = [], outS = [];   // 从栈底到栈顶，对应 Java 里的 in、out
+  var out = [];              // 每次 delete 的返回值
+  var frames = [];
+  var snapped = {};
+
+  // 栈面板：从左到右是栈底到栈顶，top 标在栈顶
+  function stackPanel(title, arr, hi) {
+    var marks = {};
+    if (hi && arr.length) marks[arr.length - 1] = hi;
+    return Viz.cells(arr.slice(), {
+      title: title + (arr.length ? '' : '（空）'), marks: marks, hideIndex: true,
+      pointers: arr.length ? [{ at: arr.length - 1, label: 'top', cls: 'p-mid' }] : []
+    });
+  }
+  function panels(hiIn, hiOut) {
+    return [stackPanel('输入栈 in（append 进这里）', inS, hiIn), stackPanel('输出栈 out（队首在栈顶）', outS, hiOut)];
+  }
+
+  input.ops.forEach(function (op, k) {
+    if (op[0] === 'append') {
+      inS.push(op[1]);
+      var next = input.ops[k + 1];   // 一串连续 append 的最后一个之后拍
+      if (!snapped.push && next && next[0] !== 'append') {
+        snapped.push = true;
+        frames.push(Viz.frame('in.push(value);', 'appendTail 只压 in：' + inS.join('、') + ' 依次入栈', panels('cur', null)));
+      }
+    } else {
+      if (outS.length === 0) {
+        var moved = inS.length > 0;
+        while (inS.length) outS.push(inS.pop());
+        if (moved && !snapped.move) {
+          snapped.move = true;
+          frames.push(Viz.frame('while (!in.isEmpty()) out.push(in.pop());',
+            'out 空了才倒：in 整个翻过去，先进队的 ' + outS[outS.length - 1] + ' 到栈顶', panels(null, 'cur')));
+        }
+      } else if (!snapped.keep && inS.length > 0) {
+        snapped.keep = true;
+        frames.push(Viz.frame('if (out.isEmpty()) {',
+          'out 还有货就不倒：' + inS.join('、') + ' 留在 in 排着，队首仍是 out 栈顶', panels(null, 'cur')));
+      }
+      var v = outS.length ? outS.pop() : -1;
+      out.push(v);
+      if (v === -1) {
+        if (!snapped.empty) {
+          snapped.empty = true;
+          frames.push(Viz.frame('return out.isEmpty() ? -1 : out.pop();',
+            '两个栈都空：deleteHead 返回 -1', panels(null, null)));
+        }
+      } else if (!snapped.pop) {
+        snapped.pop = true;
+        frames.push(Viz.frame('return out.isEmpty() ? -1 : out.pop();',
+          'deleteHead 弹出 out 栈顶 ' + v + '，就是队首', panels(null, null)));
+      }
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

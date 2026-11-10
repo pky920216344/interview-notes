@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>公交路线 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 838 / 1159</span>
+  <nav class="pn"><a href="0278.html">上一篇</a><a href="1411.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">815. </span>公交路线</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">广度优先搜索</li><li class="aux">哈希表</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">BFS 建在「线路」上而不是站点上：起点所在线路先入队，坐一条新线路即到达它的全部站点；共站即可换乘。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>「坐一辆车」是 BFS 的一步：换乘靠共站，所以先建倒排表 <code>站点 → 线路</code>。</li><li>起点所在线路全部入队（坐第 1 辆车）；出队一条线路就扫它沿路的站：命中终点返回，否则把共站的没坐过的线路入队。</li><li><code>taken[]</code> 防线路重复入队；<code>seenStops</code> 让每站的线路表只展开一次，总时间与站点总数成正比。</li><li>起点即终点返回 <code>0</code>；起点或终点不在任何线路上返回 <code>-1</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(Σ 线路长度)，空间复杂度 O(Σ 线路长度)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> numBusesToDestination(<span class="k">int</span>[][] routes, <span class="k">int</span> source, <span class="k">int</span> target) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 本来就在终点：一辆车都不用坐</span></span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (source == target) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="c">// 站点 → 经过它的线路：换乘只发生在「共站」的线路之间</span></span><span class="ln"><span class="no">8</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; stopToRoutes = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; routes.length; r++)</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> s : routes[r])</span><span class="ln"><span class="no">11</span>                stopToRoutes.computeIfAbsent(s, k -&gt; <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;()).add(r);</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>        <span class="c">// BFS 的单位是「线路」：起点所在线路全部入队，坐过的线路不再坐</span></span><span class="ln"><span class="no">14</span>        <span class="t">Queue</span>&lt;<span class="t">Integer</span>&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">15</span>        <span class="k">boolean</span>[] taken = <span class="k">new</span> <span class="k">boolean</span>[routes.length];</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> r : stopToRoutes.getOrDefault(source, <span class="t">Collections</span>.emptyList())) {</span><span class="ln"><span class="no">17</span>            taken[r] = <span class="k">true</span>;</span><span class="ln"><span class="no">18</span>            q.add(r);</span><span class="ln"><span class="no">19</span>        }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>        <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; seenStops = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">22</span>        seenStops.add(source);   <span class="c">// 起点的线路已在队里，不用再展开</span></span><span class="ln"><span class="no">23</span>        <span class="k">int</span> buses = <span class="n">1</span>;   <span class="c">// 队列里的线路都是「坐 1 辆车就能上车」的</span></span><span class="ln"><span class="no">24</span>        <span class="k">while</span> (!q.isEmpty()) {</span><span class="ln"><span class="no">25</span>            <span class="k">for</span> (<span class="k">int</span> size = q.size(); size &gt; <span class="n">0</span>; size--) {</span><span class="ln"><span class="no">26</span>                <span class="k">int</span> r = q.poll();</span><span class="ln"><span class="no">27</span>                <span class="c">// 这条车沿路每个站：是终点就返回；共站的线路发展进来（每站只展开一次）</span></span><span class="ln"><span class="no">28</span>                <span class="k">for</span> (<span class="k">int</span> s : routes[r]) {</span><span class="ln"><span class="no">29</span>                    <span class="k">if</span> (s == target) <span class="k">return</span> buses;</span><span class="ln"><span class="no">30</span>                    <span class="k">if</span> (seenStops.add(s)) {</span><span class="ln"><span class="no">31</span>                        <span class="k">for</span> (<span class="k">int</span> nr : stopToRoutes.get(s)) {</span><span class="ln"><span class="no">32</span>                            <span class="k">if</span> (!taken[nr]) {</span><span class="ln"><span class="no">33</span>                                taken[nr] = <span class="k">true</span>;</span><span class="ln"><span class="no">34</span>                                q.add(nr);</span><span class="ln"><span class="no">35</span>                            }</span><span class="ln"><span class="no">36</span>                        }</span><span class="ln"><span class="no">37</span>                    }</span><span class="ln"><span class="no">38</span>                }</span><span class="ln"><span class="no">39</span>            }</span><span class="ln"><span class="no">40</span>            buses++;</span><span class="ln"><span class="no">41</span>        }</span><span class="ln"><span class="no">42</span>        <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">43</span>    }</span><span class="ln"><span class="no">44</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个数组 <code>routes</code> ，表示一系列公交线路，其中每个 <code>routes[i]</code> 表示一条公交线路，第 <code>i</code> 辆公交车将会在上面循环行驶。</p>
+
+<ul>
+	<li>例如，路线 <code>routes[0] = [1, 5, 7]</code> 表示第 <code>0</code> 辆公交车会一直按序列 <code>1 -> 5 -> 7 -> 1 -> 5 -> 7 -> 1 -> ...</code> 这样的车站路线行驶。</li>
+</ul>
+
+<p>现在从 <code>source</code> 车站出发（初始时不在公交车上），要前往 <code>target</code> 车站。 期间仅可乘坐公交车。</p>
+
+<p>求出 <strong>最少乘坐的公交车数量</strong> 。如果不可能到达终点车站，返回 <code>-1</code> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>routes = [[1,2,7],[3,6,7]], source = 1, target = 6
+<strong>输出：</strong>2
+<strong>解释：</strong>最优策略是先乘坐第一辆公交车到达车站 7 , 然后换乘第二辆公交车到车站 6 。 
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>routes = [[7,12],[4,5,15],[6],[15,19],[9,12,13]], source = 15, target = 12
+<strong>输出：</strong>-1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= routes.length <= 500</code>.</li>
+	<li><code>1 <= routes[i].length <= 10<sup>5</sup></code></li>
+	<li><code>routes[i]</code> 中的所有值 <strong>互不相同</strong></li>
+	<li><code>sum(routes[i].length) <= 10<sup>5</sup></code></li>
+	<li><code>0 <= routes[i][j] < 10<sup>6</sup></code></li>
+	<li><code>0 <= source, target < 10<sup>6</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int numBusesToDestination(int[][] routes, int source, int target) {", "        // 本来就在终点：一辆车都不用坐", "        if (source == target) return 0;", "        // 站点 → 经过它的线路：换乘只发生在「共站」的线路之间", "        Map<Integer, List<Integer>> stopToRoutes = new HashMap<>();", "        for (int r = 0; r < routes.length; r++)", "            for (int s : routes[r])", "                stopToRoutes.computeIfAbsent(s, k -> new ArrayList<>()).add(r);", "", "        // BFS 的单位是「线路」：起点所在线路全部入队，坐过的线路不再坐", "        Queue<Integer> q = new ArrayDeque<>();", "        boolean[] taken = new boolean[routes.length];", "        for (int r : stopToRoutes.getOrDefault(source, Collections.emptyList())) {", "            taken[r] = true;", "            q.add(r);", "        }", "", "        Set<Integer> seenStops = new HashSet<>();", "        seenStops.add(source);   // 起点的线路已在队里，不用再展开", "        int buses = 1;   // 队列里的线路都是「坐 1 辆车就能上车」的", "        while (!q.isEmpty()) {", "            for (int size = q.size(); size > 0; size--) {", "                int r = q.poll();", "                // 这条车沿路每个站：是终点就返回；共站的线路发展进来（每站只展开一次）", "                for (int s : routes[r]) {", "                    if (s == target) return buses;", "                    if (seenStops.add(s)) {", "                        for (int nr : stopToRoutes.get(s)) {", "                            if (!taken[nr]) {", "                                taken[nr] = true;", "                                q.add(nr);", "                            }", "                        }", "                    }", "                }", "            }", "            buses++;", "        }", "        return -1;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 815. 公交路线 —— 图解：复刻 Solution.java 的「以线路为单位的 BFS」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { routes: [[1, 2, 7], [3, 6, 7]], source: 1, target: 6 };
+
+function trace(input) {
+  var routes = input.routes, source = input.source, target = input.target;
+  var frames = [];
+  var INIT = 'for (int r : stopToRoutes.getOrDefault(source, Collections.emptyList())) {';
+  var SCAN = 'for (int s : routes[r]) {';
+  var HIT = 'if (s == target) return buses;';
+  var RET = 'return -1;';
+
+  if (source === target) {
+    frames.push(Viz.frame(RET, '起点就是终点：一辆车都不用坐，返回 0',
+      [Viz.vars([{ name: 'source', v: source }, { name: 'target', v: target }, { name: '结果', v: 0 }])]));
+    return { frames: frames, result: 0 };
+  }
+
+  // 站点 → 线路倒排表
+  var stopToRoutes = {};
+  routes.forEach(function (r, ri) {
+    r.forEach(function (s) {
+      if (!stopToRoutes[s]) stopToRoutes[s] = [];
+      stopToRoutes[s].push(ri);
+    });
+  });
+
+  function tablePanel() {
+    var stops = Object.keys(stopToRoutes).map(Number).sort(function (a, b) { return a - b; });
+    var rows = stops.map(function (s) {
+      var mark = '';
+      if (s === source) mark = 'hit';
+      else if (s === target) mark = 'cur';
+      return { k: '站 ' + s, v: '线路 ' + stopToRoutes[s].join(','), cls: mark };
+    });
+    return Viz.table('站点 → 经过它的线路', rows);
+  }
+  function varsPanel(q, buses, note) {
+    return Viz.vars([
+      { name: '队列里的线路', v: q.length ? q.join(', ') : '（空）' },
+      { name: '已坐车数 buses', v: buses },
+      { name: '说明', v: note || '—' }
+    ]);
+  }
+  var q = [], taken = {}, seen = {}, buses = 1;
+  seen[source] = true;   // 与 Java 相同：起点的线路已在队里，不用再展开
+  function snap(at, key, note) {
+    frames.push(Viz.frame(at, key, [tablePanel(), varsPanel(q, buses, note)]));
+  }
+
+  // 起点所在线路全部入队
+  var seed = stopToRoutes[source] || [];
+  seed.forEach(function (r) { taken[r] = true; q.push(r); });
+  snap(INIT, '起点站 ' + source + ' 在线路 ' + seed.join(',') + ' 上：全部入队，坐第 1 辆车',
+    '起点站用高亮标出');
+
+  var head = 0, capturedScan = false;
+  var found = false;
+  while (head < q.length) {
+    var size = q.length - head;
+    var layerAdded = [];
+    for (var k = 0; k < size; k++) {
+      var r = q[head++];
+      for (var j = 0; j < routes[r].length; j++) {
+        var s = routes[r][j];
+        if (s === target) {
+          if (!found) {
+            found = true;
+            snap(HIT, '扫线路 ' + r + ' 的站点：站 ' + s + ' 就是终点，共坐 ' + buses + ' 辆车',
+              '线路 ' + r + ' 沿途到达终点');
+          }
+          return { frames: frames, result: buses };
+        }
+        if (!seen[s]) {   // 同一站的线路表只展开一次
+          seen[s] = true;
+          (stopToRoutes[s] || []).forEach(function (nr) {
+            if (!taken[nr]) { taken[nr] = true; q.push(nr); layerAdded.push(nr); }
+          });
+        }
+      }
+    }
+    if (!capturedScan && layerAdded.length > 0) {
+      capturedScan = true;
+      snap(SCAN, '扫完这一批线路：共站就能换乘，新线路 ' + layerAdded.join(',') + ' 入队（下一层）',
+        '换乘 = 共站的线路互相连通');
+    }
+    buses++;
+  }
+  snap(RET, '能坐的线路都坐完了，还没到终点：返回 -1', '—');
+
+  return { frames: frames, result: -1 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

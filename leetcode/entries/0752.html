@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>打开转盘锁 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 314 / 1159</span>
+  <nav class="pn"><a href="0172.html">上一篇</a><a href="0547.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">752. </span>打开转盘锁</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 13</li><li class="algo">广度优先搜索</li><li class="aux">哈希表</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">bidirectional-search</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">BFS 逐层：每转一次是一层；死亡数字一开始就挡进 visited，第一次转到 target 的层数就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>状态就是 4 位字符串，每个拨轮 ±1 共 8 个邻居；BFS 的层数 = 最少转动次数。</li><li>死亡数字直接放进 <code>visited</code>（或先判 <code>0000</code> 是死锁返回 -1），它们永远不入队。</li><li><code>target</code> 是 <code>0000</code> 特判返回 0；<code>for (sz = queue.size())</code> 一圈一层，<code>step</code> 即层数。</li><li>生成邻居时先查是否 <code>target</code> 再查 <code>visited</code>，第一次转到就返回。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(10^4)，空间复杂度 O(10^4)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> openLock(<span class="t">String</span>[] deadends, <span class="t">String</span> target) {</span><span class="ln"><span class="no">5</span>        <span class="t">Set</span>&lt;<span class="t">String</span>&gt; dead = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;(<span class="t">Arrays</span>.asList(deadends));</span><span class="ln"><span class="no">6</span>        <span class="k">if</span> (dead.contains(<span class="s">"0000"</span>)) <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">if</span> (target.equals(<span class="s">"0000"</span>)) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="c">// visited 一开始就装下死亡数字：死锁状态永远进不了队</span></span><span class="ln"><span class="no">9</span>        <span class="t">Set</span>&lt;<span class="t">String</span>&gt; visited = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;(dead);</span><span class="ln"><span class="no">10</span>        <span class="t">Deque</span>&lt;<span class="t">String</span>&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        queue.add(<span class="s">"0000"</span>);</span><span class="ln"><span class="no">12</span>        visited.add(<span class="s">"0000"</span>);</span><span class="ln"><span class="no">13</span>        <span class="k">int</span> step = <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>        <span class="c">// 一圈一层：这一圈入队的，都是 step 次转动能到的</span></span><span class="ln"><span class="no">15</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">16</span>            step++;</span><span class="ln"><span class="no">17</span>            <span class="k">for</span> (<span class="k">int</span> sz = queue.size(); sz &gt; <span class="n">0</span>; sz--) {</span><span class="ln"><span class="no">18</span>                <span class="t">String</span> cur = queue.poll();</span><span class="ln"><span class="no">19</span>                <span class="k">char</span>[] cs = cur.toCharArray();</span><span class="ln"><span class="no">20</span>                <span class="c">// 每个拨轮 ±1，共 8 个邻居</span></span><span class="ln"><span class="no">21</span>                <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; <span class="n">4</span>; i++) {</span><span class="ln"><span class="no">22</span>                    <span class="k">char</span> old = cs[i];</span><span class="ln"><span class="no">23</span>                    <span class="k">for</span> (<span class="k">int</span> d = -<span class="n">1</span>; d &lt;= <span class="n">1</span>; d += <span class="n">2</span>) {</span><span class="ln"><span class="no">24</span>                        cs[i] = (<span class="k">char</span>) (<span class="s">'0'</span> + (old - <span class="s">'0'</span> + d + <span class="n">10</span>) % <span class="n">10</span>);</span><span class="ln"><span class="no">25</span>                        <span class="t">String</span> next = <span class="k">new</span> <span class="t">String</span>(cs);</span><span class="ln"><span class="no">26</span>                        <span class="k">if</span> (next.equals(target)) <span class="k">return</span> step;</span><span class="ln"><span class="no">27</span>                        <span class="k">if</span> (visited.add(next)) queue.add(next);</span><span class="ln"><span class="no">28</span>                    }</span><span class="ln"><span class="no">29</span>                    cs[i] = old;</span><span class="ln"><span class="no">30</span>                }</span><span class="ln"><span class="no">31</span>            }</span><span class="ln"><span class="no">32</span>        }</span><span class="ln"><span class="no">33</span>        <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你有一个带有四个圆形拨轮的转盘锁。每个拨轮都有10个数字： <code>'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'</code> 。每个拨轮可以自由旋转：例如把 <code>'9'</code> 变为&nbsp;<code>'0'</code>，<code>'0'</code> 变为 <code>'9'</code> 。每次旋转都只能旋转一个拨轮的一位数字。</p>
+
+<p>锁的初始数字为 <code>'0000'</code> ，一个代表四个拨轮的数字的字符串。</p>
+
+<p>列表 <code>deadends</code> 包含了一组死亡数字，一旦拨轮的数字和列表里的任何一个元素相同，这个锁将会被永久锁定，无法再被旋转。</p>
+
+<p>字符串 <code>target</code> 代表可以解锁的数字，你需要给出解锁需要的最小旋转次数，如果无论如何不能解锁，返回 <code>-1</code> 。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入：</strong>deadends = ["0201","0101","0102","1212","2002"], target = "0202"
+<strong>输出：</strong>6
+<strong>解释：</strong>
+可能的移动序列为 "0000" -&gt; "1000" -&gt; "1100" -&gt; "1200" -&gt; "1201" -&gt; "1202" -&gt; "0202"。
+注意 "0000" -&gt; "0001" -&gt; "0002" -&gt; "0102" -&gt; "0202" 这样的序列是不能解锁的，
+因为当拨动到 "0102" 时这个锁就会被锁定。
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> deadends = ["8888"], target = "0009"
+<strong>输出：</strong>1
+<strong>解释：</strong>把最后一位反向旋转一次即可 "0000" -&gt; "0009"。
+</pre>
+
+<p><strong>示例 3:</strong></p>
+
+<pre>
+<strong>输入:</strong> deadends = ["8887","8889","8878","8898","8788","8988","7888","9888"], target = "8888"
+<strong>输出：</strong>-1
+<strong>解释：</strong>无法旋转到目标数字且不被锁定。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;=&nbsp;deadends.length &lt;= 500</code></li>
+	<li><code><font face="monospace">deadends[i].length == 4</font></code></li>
+	<li><code><font face="monospace">target.length == 4</font></code></li>
+	<li><code>target</code> <strong>不在</strong> <code>deadends</code> 之中</li>
+	<li><code>target</code> 和 <code>deadends[i]</code> 仅由若干位数字组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int openLock(String[] deadends, String target) {", "        Set<String> dead = new HashSet<>(Arrays.asList(deadends));", "        if (dead.contains(\"0000\")) return -1;", "        if (target.equals(\"0000\")) return 0;", "        // visited 一开始就装下死亡数字：死锁状态永远进不了队", "        Set<String> visited = new HashSet<>(dead);", "        Deque<String> queue = new ArrayDeque<>();", "        queue.add(\"0000\");", "        visited.add(\"0000\");", "        int step = 0;", "        // 一圈一层：这一圈入队的，都是 step 次转动能到的", "        while (!queue.isEmpty()) {", "            step++;", "            for (int sz = queue.size(); sz > 0; sz--) {", "                String cur = queue.poll();", "                char[] cs = cur.toCharArray();", "                // 每个拨轮 ±1，共 8 个邻居", "                for (int i = 0; i < 4; i++) {", "                    char old = cs[i];", "                    for (int d = -1; d <= 1; d += 2) {", "                        cs[i] = (char) ('0' + (old - '0' + d + 10) % 10);", "                        String next = new String(cs);", "                        if (next.equals(target)) return step;", "                        if (visited.add(next)) queue.add(next);", "                    }", "                    cs[i] = old;", "                }", "            }", "        }", "        return -1;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 752. 打开转盘锁 —— 图解：复刻 Solution.java 的「逐层 BFS」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { deadends: ['0102'], target: '0202' };
+
+function trace(input) {
+  var dead = {};
+  (input.deadends || []).forEach(function (d) { dead[d] = true; });
+  var target = input.target;
+  if (dead['0000']) return { frames: [], result: -1 };
+  if (target === '0000') return { frames: [], result: 0 };
+
+  var visited = {};
+  Object.keys(dead).forEach(function (d) { visited[d] = true; });
+  visited['0000'] = true;
+  var queue = ['0000'];
+  var step = 0;
+  var frames = [];
+  var shot = { first: false, deadHit: false };
+
+  var ADDQ = 'if (visited.add(next)) queue.add(next);';
+  var HIT = 'if (next.equals(target)) return step;';
+
+  function varsPanel() {
+    return Viz.vars([
+      { name: 'step（第几层）', v: String(step), cls: '' },
+      { name: '队列长度', v: String(queue.length), cls: '' }
+    ]);
+  }
+
+  // 正在展开的结点把候选邻居排一排：bad 撞死亡数字，dim 已访问，new 新入队，cur 就是 target
+  function fanoutPanel(cur, cands, marks) {
+    return Viz.cells(cands, {
+      title: '展开 ' + cur + '：各拨轮 ±1 的候选邻居', marks: marks, hideIndex: true
+    });
+  }
+
+  frames.push(Viz.frame('queue.add("0000");', '开局：0000 入队；死亡数字一开始就挡进 visited',
+    [Viz.table('visited（死亡数字预先装进来）', Object.keys(dead).map(function (d) {
+      return { k: d, v: '死锁', cls: 'bad' };
+    }).concat([{ k: '0000', v: '起点', cls: 'win' }]), { hint: '（表里的一律不再入队）' }), varsPanel()]));
+
+  while (queue.length) {
+    step++;
+    var sz = queue.length;
+    for (var s = 0; s < sz; s++) {
+      var cur = queue.shift();
+      var cs = cur.split('');
+      var cands = [], marks = {}, deadHit = false;
+      for (var i = 0; i < 4; i++) {
+        var old = cs[i];
+        for (var d = -1; d <= 1; d += 2) {
+          cs[i] = String((Number(old) + d + 10) % 10);
+          var next = cs.join('');
+          var isTarget = next === target;
+          if (isTarget) marks[cands.length] = 'cur';
+          else if (next in dead) { marks[cands.length] = 'bad'; deadHit = true; }
+          else if (next in visited) marks[cands.length] = 'dim';
+          else marks[cands.length] = 'new';
+          cands.push(next);
+          if (isTarget) {
+            frames.push(Viz.frame(HIT, '第 ' + step + ' 层从 ' + cur + ' 转出 ' + next + '：正是 target，返回 ' + step,
+              [fanoutPanel(cur, cands, marks), varsPanel()]));
+            return { frames: frames, result: step };
+          }
+          if (!(next in visited)) { visited[next] = true; queue.push(next); }
+          cs[i] = old;
+        }
+      }
+      if (!shot.first) {
+        shot.first = true;
+        frames.push(Viz.frame(ADDQ, '第 1 层展开完：' + cur + ' 的 8 个候选全部入队',
+          [fanoutPanel(cur, cands, marks), varsPanel()]));
+      } else if (deadHit && !shot.deadHit) {
+        shot.deadHit = true;
+        frames.push(Viz.frame(ADDQ, '展开 ' + cur + '：撞上死亡数字的候选（红）不能入队',
+          [fanoutPanel(cur, cands, marks), varsPanel()]));
+      }
+    }
+  }
+
+  frames.push(Viz.frame('return -1;', '队列空了还没到 target：被死亡数字围死，返回 -1', [varsPanel()]));
+  return { frames: frames, result: -1 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

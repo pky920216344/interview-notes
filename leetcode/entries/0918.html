@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>环形子数组的最大和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 397 / 1159</span>
+  <nav class="pn"><a href="0454.html">上一篇</a><a href="0035.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">918. </span>环形子数组的最大和</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 8</li><li class="algo">动态规划</li><li class="tag">队列</li><li class="tag">数组</li><li class="tag">分治</li><li class="tag">动态规划</li><li class="tag">单调队列</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">一趟扫描同时跑最大 Kadane 和最小 Kadane：答案 = max(普通最大和, 总和 − 最小子数组和)，全负要特判。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>环形最大子数组只有两种形态：不跨缝（普通 Kadane 的 <code>bestMax</code>），或跨缝（把中间一段最小子数组挖掉）。</li><li>跨缝的最大和 = <code>total - bestMin</code>；最小子数组用同款 Kadane 顺带求出：<code>curMin = min(curMin + v, v)</code>。</li><li><strong>全负特判</strong>：此时 <code>bestMin == total</code>，环形公式会算出空环的 0；<code>bestMax &lt; 0</code> 就直接返回 <code>bestMax</code>。</li><li>单元素数组也成立：<code>total - bestMin = 0</code> 不会盖过 <code>bestMax</code> 本身。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> maxSubarraySumCircular(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 一趟扫描同时跑最大 Kadane 和最小 Kadane，顺带累加总和</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span> total = <span class="n">0</span>, curMax = <span class="n">0</span>, bestMax = <span class="t">Integer</span>.MIN_VALUE;</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> curMin = <span class="n">0</span>, bestMin = <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> v : nums) {</span><span class="ln"><span class="no">7</span>            curMax = <span class="t">Math</span>.max(curMax + v, v);</span><span class="ln"><span class="no">8</span>            bestMax = <span class="t">Math</span>.max(bestMax, curMax);</span><span class="ln"><span class="no">9</span>            curMin = <span class="t">Math</span>.min(curMin + v, v);</span><span class="ln"><span class="no">10</span>            bestMin = <span class="t">Math</span>.min(bestMin, curMin);</span><span class="ln"><span class="no">11</span>            total += v;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="c">// 全负时 bestMin == total，环形公式会算出空环的 0，直接返回普通最大</span></span><span class="ln"><span class="no">14</span>        <span class="k">if</span> (bestMax &lt; <span class="n">0</span>) <span class="k">return</span> bestMax;</span><span class="ln"><span class="no">15</span>        <span class="c">// 跨缝的最大子数组 = 总和 - 挖掉的中间最小子数组</span></span><span class="ln"><span class="no">16</span>        <span class="k">return</span> <span class="t">Math</span>.max(bestMax, total - bestMin);</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个长度为 <code>n</code> 的<strong>环形整数数组</strong>&nbsp;<code>nums</code>&nbsp;，返回<em>&nbsp;<code>nums</code>&nbsp;的非空 <strong>子数组</strong> 的最大可能和&nbsp;</em>。</p>
+
+<p><strong>环形数组</strong><em>&nbsp;</em>意味着数组的末端将会与开头相连呈环状。形式上， <code>nums[i]</code> 的下一个元素是 <code>nums[(i + 1) % n]</code> ， <code>nums[i]</code>&nbsp;的前一个元素是 <code>nums[(i - 1 + n) % n]</code> 。</p>
+
+<p><strong>子数组</strong> 最多只能包含固定缓冲区&nbsp;<code>nums</code>&nbsp;中的每个元素一次。形式上，对于子数组&nbsp;<code>nums[i], nums[i + 1], ..., nums[j]</code>&nbsp;，不存在&nbsp;<code>i &lt;= k1, k2 &lt;= j</code>&nbsp;其中&nbsp;<code>k1 % n == k2 % n</code>&nbsp;。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,-2,3,-2]
+<strong>输出：</strong>3
+<strong>解释：</strong>从子数组 [3] 得到最大和 3
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [5,-3,5]
+<strong>输出：</strong>10
+<strong>解释：</strong>从子数组 [5,5] 得到最大和 5 + 5 = 10
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [3,-2,2,-3]
+<strong>输出：</strong>3
+<strong>解释：</strong>从子数组 [3] 和 [3,-2,2] 都可以得到最大和 3
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == nums.length</code></li>
+	<li><code>1 &lt;= n &lt;= 3 * 10<sup>4</sup></code></li>
+	<li><code>-3 * 10<sup>4</sup>&nbsp;&lt;= nums[i] &lt;= 3 * 10<sup>4</sup></code>​​​​​​​</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int maxSubarraySumCircular(int[] nums) {", "        // 一趟扫描同时跑最大 Kadane 和最小 Kadane，顺带累加总和", "        int total = 0, curMax = 0, bestMax = Integer.MIN_VALUE;", "        int curMin = 0, bestMin = Integer.MAX_VALUE;", "        for (int v : nums) {", "            curMax = Math.max(curMax + v, v);", "            bestMax = Math.max(bestMax, curMax);", "            curMin = Math.min(curMin + v, v);", "            bestMin = Math.min(bestMin, curMin);", "            total += v;", "        }", "        // 全负时 bestMin == total，环形公式会算出空环的 0，直接返回普通最大", "        if (bestMax < 0) return bestMax;", "        // 跨缝的最大子数组 = 总和 - 挖掉的中间最小子数组", "        return Math.max(bestMax, total - bestMin);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 918. 环形子数组的最大和 —— 图解：复刻 Solution.java 的「双 Kadane」，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [5, -3, 5] };
+
+function trace(input) {
+  var nums = input.nums, n = nums.length;
+  var frames = [];
+  var isStory = input === STORY_INPUT;
+
+  var total = 0, curMax = 0, bestMax = -Infinity, curMin = 0, bestMin = Infinity;
+  var cl = 0, cr = -1, ml = 0, mr = -1;   // curMax / curMin 当前段的区间
+  var maxL = 0, maxR = -1, minL = 0, minR = -1;
+
+  function varsPanel(extra) {
+    var items = [
+      { name: 'bestMax', v: String(bestMax) },
+      { name: 'bestMin', v: String(bestMin) },
+      { name: 'total', v: String(total) }
+    ];
+    if (extra) items = items.concat(extra);
+    return Viz.vars(items);
+  }
+  function snap(at, key, marks, range, extra) {
+    if (!isStory) return;
+    frames.push(Viz.frame(at, key, [
+      Viz.cells(nums, { title: '数组 nums', marks: marks || {}, range: range || null }),
+      varsPanel(extra)
+    ]));
+  }
+
+  snap('int curMin = 0, bestMin = Integer.MAX_VALUE;',
+    '一趟扫描同时维护两套 Kadane：bestMax 记普通最大，bestMin 记要挖掉的最小段',
+    {}, null, null);
+
+  for (var i = 0; i < n; i++) {
+    var v = nums[i];
+    if (curMax + v >= v) cr = i; else { cl = i; cr = i; }
+    curMax = Math.max(curMax + v, v);
+    if (curMax > bestMax) { bestMax = curMax; maxL = cl; maxR = cr; }
+    if (curMin + v <= v) mr = i; else { ml = i; mr = i; }
+    curMin = Math.min(curMin + v, v);
+    if (curMin < bestMin) { bestMin = curMin; minL = ml; minR = mr; }
+    total += v;
+
+    if (isStory && i === 0) {
+      snap('bestMax = Math.max(bestMax, curMax);',
+        '开头 5：普通最大记 5；最小 Kadane 也从 5 出发（还没遇到负数）',
+        (function () { var m = {}; m[0] = 'win'; return m; })(),
+        { from: 0, to: 0, label: '最大段 [5]' });
+    }
+    if (isStory && i === 1) {
+      snap('curMin = Math.min(curMin + v, v);',
+        '遇到 -3：最小段重置成 [-3] = -3 并记住，它就是将来跨缝要挖掉的洞',
+        (function () { var m = {}; m[1] = 'cur'; return m; })(),
+        { from: 1, to: 1, label: '最小段 [-3]' });
+    }
+    if (isStory && i === 2) {
+      snap('total += v;',
+        '结尾 5 把整段抬到 7：普通最大是 [5,-3,5]；此时 total = 7',
+        (function () { var m = {}; m[0] = 'win'; m[1] = 'win'; m[2] = 'win'; return m; })(),
+        { from: 0, to: 2, label: '普通最大 [5,-3,5]' });
+    }
+  }
+
+  snap('if (bestMax < 0) return bestMax;',
+    'bestMax = 7 ≥ 0：不是全负数组，不用特判，走环形公式',
+    (function () { var m = {}; m[0] = 'win'; m[1] = 'win'; m[2] = 'win'; return m; })(),
+    { from: 0, to: 2, label: '普通最大 [5,-3,5]' });
+
+  snap('return Math.max(bestMax, total - bestMin);',
+    '环形 = total 7 − bestMin (−3) = 10 > 7：挖掉 -3 跨缝连两个 5，答案 10',
+    (function () { var m = {}; m[0] = 'done'; m[1] = 'bad'; m[2] = 'done'; return m; })(),
+    null,
+    [{ name: '环形 = total−bestMin', v: '10', cls: 'new' }]);
+
+  return { frames: frames, result: bestMax < 0 ? bestMax : Math.max(bestMax, total - bestMin) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

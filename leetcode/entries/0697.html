@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>数组的度 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 545 / 1159</span>
+  <nav class="pn"><a href="0116.html">上一篇</a><a href="0805.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">697. </span>数组的度</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 4</li><li class="algo">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">一遍哈希记每个值的「次数、首下标、末下标」；度数 = 最大次数，答案 = 并列值里末−首+1 的最小值。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>和原数组度数相等的子数组，必须<strong>完整包住</strong>某个最高频值的所有出现位置。</li><li>一遍扫描，哈希表给每个值记 <code>出现次数 / 首次下标 / 末次下标</code>。</li><li>扫完先取最大次数 <code>deg</code>；再在同为 <code>deg</code> 的值里挑 <code>末 − 首 + 1</code> 最小的，就是答案。</li><li>不用真的枚举子数组：跨度最小的那段 <code>[首, 末]</code> 内部其他值出现几次无所谓。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> findShortestSubArray(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 每个值记 [出现次数, 首次下标, 末次下标]，一遍扫描填好</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="k">int</span>[]&gt; info = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; nums.length; i++) {</span><span class="ln"><span class="no">8</span>            <span class="k">int</span>[] t = info.get(nums[i]);</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (t == <span class="k">null</span>) info.put(nums[i], <span class="k">new</span> <span class="k">int</span>[]{<span class="n">1</span>, i, i});</span><span class="ln"><span class="no">10</span>            <span class="k">else</span> { t[<span class="n">0</span>]++; t[<span class="n">2</span>] = i; }</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="c">// 度 = 最大出现次数；答案 = 取到该次数的值里「末-首+1」最小的</span></span><span class="ln"><span class="no">13</span>        <span class="k">int</span> deg = <span class="n">0</span>, ans = <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span>[] t : info.values()) {</span><span class="ln"><span class="no">15</span>            <span class="k">int</span> len = t[<span class="n">2</span>] - t[<span class="n">1</span>] + <span class="n">1</span>;</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (t[<span class="n">0</span>] &gt; deg || (t[<span class="n">0</span>] == deg &amp;&amp; len &lt; ans)) { deg = t[<span class="n">0</span>]; ans = len; }</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个非空且只包含非负数的整数数组&nbsp;<code>nums</code>，数组的 <strong>度</strong> 的定义是指数组里任一元素出现频数的最大值。</p>
+
+<p>你的任务是在 <code>nums</code> 中找到与&nbsp;<code>nums</code>&nbsp;拥有相同大小的度的最短连续子数组，返回其长度。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,2,3,1]
+<strong>输出：</strong>2
+<strong>解释：</strong>
+输入数组的度是 2 ，因为元素 1 和 2 的出现频数最大，均为 2 。
+连续子数组里面拥有相同度的有如下所示：
+[1, 2, 2, 3, 1], [1, 2, 2, 3], [2, 2, 3, 1], [1, 2, 2], [2, 2, 3], [2, 2]
+最短连续子数组 [2, 2] 的长度为 2 ，所以返回 2 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,2,3,1,4,2]
+<strong>输出：</strong>6
+<strong>解释：</strong>
+数组的度是 3 ，因为元素 2 重复出现 3 次。
+所以 [2,2,3,1,4,2] 是最短子数组，因此返回 6 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>nums.length</code>&nbsp;在 <code>1</code> 到 <code>50,000</code> 范围内。</li>
+	<li><code>nums[i]</code>&nbsp;是一个在 <code>0</code> 到 <code>49,999</code> 范围内的整数。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int findShortestSubArray(int[] nums) {", "        // 每个值记 [出现次数, 首次下标, 末次下标]，一遍扫描填好", "        Map<Integer, int[]> info = new HashMap<>();", "        for (int i = 0; i < nums.length; i++) {", "            int[] t = info.get(nums[i]);", "            if (t == null) info.put(nums[i], new int[]{1, i, i});", "            else { t[0]++; t[2] = i; }", "        }", "        // 度 = 最大出现次数；答案 = 取到该次数的值里「末-首+1」最小的", "        int deg = 0, ans = 0;", "        for (int[] t : info.values()) {", "            int len = t[2] - t[1] + 1;", "            if (t[0] > deg || (t[0] == deg && len < ans)) { deg = t[0]; ans = len; }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 697. 数组的度 —— 图解：复刻 Solution.java 的「次数 + 首末下标」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 2, 2, 3, 1] };
+
+function trace(input) {
+  var nums = input.nums || [];
+  var frames = [];
+  var info = {};   // 值 -> [次数, 首下标, 末下标]，对应 Java 的 info
+  var order = [];  // 值的首现顺序，表格才稳定
+
+  var UPD = 'if (t[0] > deg || (t[0] == deg && len < ans)) { deg = t[0]; ans = len; }';
+  var RET = 'return ans;';
+
+  /** 把值 v 出现过的位置都标上 cls。 */
+  function spanMarks(v, cls) {
+    var m = {};
+    for (var i = 0; i < nums.length; i++) if (nums[i] === v) m[i] = cls;
+    return m;
+  }
+  function tablePanel(hitVal) {
+    var rows = order.map(function (v) {
+      var t = info[v];
+      return { k: String(v), v: '×' + t[0] + '，[' + t[1] + ',' + t[2] + ']',
+               cls: v === hitVal ? 'hit' : '' };
+    });
+    return Viz.table('每个值：次数、首末下标', rows, { hint: '跨度 = 末 − 首 + 1' });
+  }
+  function cellsPanel(marks, range) {
+    return Viz.cells(nums, { title: 'nums', marks: marks || {}, range: range || null });
+  }
+  function varsPanel(deg, ans, chg) {
+    return Viz.vars([
+      { name: '度 deg', v: deg, cls: '' },
+      { name: 'ans', v: ans, cls: chg ? 'chg' : '' }
+    ]);
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  // 1) 一遍扫描记次数和首末下标
+  for (var i = 0; i < nums.length; i++) {
+    var v = nums[i];
+    if (!(v in info)) { info[v] = [1, i, i]; order.push(v); }
+    else { info[v][0]++; info[v][2] = i; }
+  }
+  snap(UPD, '一遍扫描：每个值记下出现次数和首、末下标', [cellsPanel(), tablePanel()]);
+
+  // 2) 取度最大、跨度最短的值；第一处更新和最后一处更新各拍一张
+  var deg = 0, ans = 0, updates = 0, lastHit = null;
+  order.forEach(function (v) {
+    var t = info[v], len = t[2] - t[1] + 1;
+    if (t[0] > deg || (t[0] === deg && len < ans)) {
+      deg = t[0]; ans = len; updates++; lastHit = v;
+      if (updates === 1)
+        snap(UPD, '先扫到 ' + v + '：度升到 ' + deg + '，暂用它的跨度 ' + len,
+          [cellsPanel(spanMarks(v, 'win')), tablePanel(v), varsPanel(deg, ans, true)]);
+    }
+  });
+  if (updates > 1)
+    snap(UPD, '并列度 ' + deg + ' 里 ' + lastHit + ' 的跨度只有 ' + ans + '，答案缩小',
+      [cellsPanel(spanMarks(lastHit, 'win')), tablePanel(lastHit), varsPanel(deg, ans, true)]);
+
+  // 3) 结果：赢家的首末区间
+  var w = info[lastHit];
+  snap(RET, '最短子数组是值 ' + lastHit + ' 的首末区间，长度 ' + ans,
+    [cellsPanel(spanMarks(lastHit, 'done'), { from: w[1], to: w[2], label: '长度 ' + ans }),
+     varsPanel(deg, ans, false)]);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

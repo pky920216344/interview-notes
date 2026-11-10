@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>接雨水 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 32 / 1159</span>
+  <nav class="pn"><a href="0160.html">上一篇</a><a href="0019.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">42. </span>接雨水</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 201</li><li class="algo">双指针</li><li class="tag">栈</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">动态规划</li><li class="tag">单调栈</li><li class="st-ok" title="你在力扣上已经通过这道题，本项目不重复提交；本页代码只做了本地验证">本人已 AC</li></ul>
+<p class="idea">左右双指针往中间走，哪一侧已见的最高柱子矮，就先结算哪一侧：它的水位由自己这侧的最高柱子决定。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每格的水量 = <code>min(左边最高, 右边最高) - 自身高度</code>，双指针不用预先算出两个最大值数组。</li><li><code>leftMax</code>、<code>rightMax</code> 分别记 <code>left</code>、<code>right</code> 一路扫过的最高柱子，先更新再比较。</li><li><code>leftMax &lt; rightMax</code>：右边至少有一根更高的柱子，所以 <code>left</code> 这格水位就是 <code>leftMax</code>，结算后 <code>left++</code>。</li><li>否则对称地结算 <code>right</code>，再 <code>right--</code>；两指针相遇时，那一格不用算（水量一定是 0）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> trap(<span class="k">int</span>[] height) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> left = <span class="n">0</span>, right = height.length - <span class="n">1</span>;</span><span class="ln"><span class="no">4</span>        <span class="c">// 两侧已见过的最高柱子</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span> leftMax = <span class="n">0</span>, rightMax = <span class="n">0</span>, ans = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">while</span> (left &lt; right) {</span><span class="ln"><span class="no">7</span>            leftMax = <span class="t">Math</span>.max(leftMax, height[left]);</span><span class="ln"><span class="no">8</span>            rightMax = <span class="t">Math</span>.max(rightMax, height[right]);</span><span class="ln"><span class="no">9</span>            <span class="c">// 较矮的一侧水位已定：对面至少有一根更高的柱子</span></span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (leftMax &lt; rightMax) {</span><span class="ln"><span class="no">11</span>                ans += leftMax - height[left];</span><span class="ln"><span class="no">12</span>                left++;</span><span class="ln"><span class="no">13</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">14</span>                ans += rightMax - height[right];</span><span class="ln"><span class="no">15</span>                right--;</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定&nbsp;<code>n</code> 个非负整数表示每个宽度为 <code>1</code> 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/0fc9878b0edf.png" style="height: 161px; width: 412px;" /></p>
+
+<pre>
+<strong>输入：</strong>height = [0,1,0,2,1,0,1,3,2,1,2,1]
+<strong>输出：</strong>6
+<strong>解释：</strong>上面是由数组 [0,1,0,2,1,0,1,3,2,1,2,1] 表示的高度图，在这种情况下，可以接 6 个单位的雨水（蓝色部分表示雨水）。 
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>height = [4,2,0,3,2,5]
+<strong>输出：</strong>9
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == height.length</code></li>
+	<li><code>1 &lt;= n &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= height[i] &lt;= 10<sup>5</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int trap(int[] height) {", "        int left = 0, right = height.length - 1;", "        // 两侧已见过的最高柱子", "        int leftMax = 0, rightMax = 0, ans = 0;", "        while (left < right) {", "            leftMax = Math.max(leftMax, height[left]);", "            rightMax = Math.max(rightMax, height[right]);", "            // 较矮的一侧水位已定：对面至少有一根更高的柱子", "            if (leftMax < rightMax) {", "                ans += leftMax - height[left];", "                left++;", "            } else {", "                ans += rightMax - height[right];", "                right--;", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 42. 接雨水 —— 图解：复刻 Solution.java 的「左右双指针 + 两侧已见最大高度」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { height: [3, 0, 2, 0, 4, 0, 1, 2] };
+
+function trace(input) {
+  var h = input.height;
+  var n = h.length;
+  var H = 1;                       // 柱状图的行数 = 最高的柱子（至少 1 行）
+  var c0;
+  for (c0 = 0; c0 < n; c0++) if (h[c0] > H) H = h[c0];
+  var water = [], settled = [];    // 每一格接到的水、是否已经结算
+  for (c0 = 0; c0 < n; c0++) { water.push(0); settled.push(false); }
+  var left = 0, right = n - 1, leftMax = 0, rightMax = 0, ans = 0;
+  var frames = [];
+  var shown = {};                  // 每种关键时刻只拍第一次
+
+  // 柱状图：青色是柱子，蓝色是已结算的水；L、R 所在列的柱子用橙色
+  function chart(withPointers) {
+    var rows = [], marks = {}, rowLabels = [], colLabels = [], r, c;
+    for (r = 0; r < H; r++) {
+      var level = H - r, row = [];
+      for (c = 0; c < n; c++) {
+        row.push('');
+        if (level <= h[c]) marks[r + ',' + c] = withPointers && (c === left || c === right) ? 'cur' : 'win';
+        else if (settled[c] && level <= h[c] + water[c]) marks[r + ',' + c] = 'new';
+      }
+      rows.push(row);
+      rowLabels.push(String(level));
+    }
+    for (c = 0; c < n; c++) {
+      colLabels.push(!withPointers ? String(c) : (c === left && c === right ? 'LR' : c === left ? 'L' : c === right ? 'R' : String(c)));
+    }
+    return Viz.grid(rows, { title: '柱状图：蓝色是接到的水，L、R 是左右指针', marks: marks, rowLabels: rowLabels, colLabels: colLabels });
+  }
+  function status(ansChanged) {
+    return Viz.vars([
+      { name: 'leftMax', v: leftMax },
+      { name: 'rightMax', v: rightMax },
+      { name: 'ans', v: ans, cls: ansChanged ? 'chg' : '' }
+    ]);
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  while (left < right) {
+    leftMax = Math.max(leftMax, h[left]);
+    rightMax = Math.max(rightMax, h[right]);
+    if (!shown.init) {
+      shown.init = true;
+      snap('rightMax = Math.max(rightMax, height[right]);', 'L、R 在两端；leftMax、rightMax 记各自一侧最高的柱子',
+        [chart(true), status(false)]);
+    }
+    if (leftMax < rightMax) {
+      var gainL = leftMax - h[left];
+      ans += gainL;
+      water[left] = gainL;
+      settled[left] = true;
+      if (!shown.left && gainL > 0) {
+        shown.left = true;
+        snap('ans += leftMax - height[left];', 'leftMax=' + leftMax + ' < rightMax=' + rightMax + '：左边水位由 ' + leftMax + ' 定，这格接 ' + gainL,
+          [chart(true), status(true)]);
+      }
+      left++;
+    } else {
+      var gainR = rightMax - h[right];
+      ans += gainR;
+      water[right] = gainR;
+      settled[right] = true;
+      if (!shown.right && gainR > 0) {
+        shown.right = true;
+        snap('ans += rightMax - height[right];', 'leftMax=' + leftMax + ' ≥ rightMax=' + rightMax + '：右边水位由 ' + rightMax + ' 定，这格接 ' + gainR,
+          [chart(true), status(true)]);
+      }
+      right--;
+    }
+  }
+  snap('return ans;', 'L、R 相遇，累计接到的水就是答案：' + ans, [chart(false), status(false)]);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

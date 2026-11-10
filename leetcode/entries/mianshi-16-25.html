@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LRU 缓存 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 322 / 1159</span>
+  <nav class="pn"><a href="0452.html">上一篇</a><a href="0127.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 16.25. </span>LRU 缓存</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 12</li><li class="algo">设计</li><li class="aux">哈希表</li><li class="aux">链表</li><li class="tag">设计</li><li class="tag">哈希表</li><li class="tag">链表</li><li class="tag">双向链表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">哈希表 + 双向链表（同 146）：哈希表 O(1) 定位结点，链表按「最近使用」排序；访问就挪表头，满了删表尾。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>HashMap&lt;key, 结点&gt;</code> 负责 O(1) 找到结点；双向链表维护顺序：<code>head.next</code> 最近使用，<code>tail.prev</code> 最久没用。</li><li>用两个<strong>哨兵</strong> <code>head</code>、<code>tail</code>，插入删除不用判空（面试版和 146 同一套写法）。</li><li><code>get</code>：查不到返回 <code>-1</code>；查到先 <code>moveToHead</code> 再返回值。</li><li><code>put</code>：已有就更新值并挪表头；没有就先判满（满了删 <code>tail.prev</code>，<strong>同时从哈希表移除</strong>），再把新结点插表头。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(1)，空间复杂度 O(capacity)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">LRUCache</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">static</span> <span class="k">class</span> <span class="t">Node</span> {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> key, val;</span><span class="ln"><span class="no">6</span>        <span class="t">Node</span> prev, next;</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>        <span class="t">Node</span>(<span class="k">int</span> key, <span class="k">int</span> val) {</span><span class="ln"><span class="no">9</span>            <span class="k">this</span>.key = key;</span><span class="ln"><span class="no">10</span>            <span class="k">this</span>.val = val;</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>    }</span><span class="ln"><span class="no">13</span> </span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="k">final</span> <span class="k">int</span> capacity;</span><span class="ln"><span class="no">15</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Node</span>&gt; map = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">16</span>    <span class="c">// 两个哨兵：head.next 是最近用过的，tail.prev 是最久没用的</span></span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Node</span> head = <span class="k">new</span> <span class="t">Node</span>(<span class="n">0</span>, <span class="n">0</span>), tail = <span class="k">new</span> <span class="t">Node</span>(<span class="n">0</span>, <span class="n">0</span>);</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    <span class="k">public</span> <span class="t">LRUCache</span>(<span class="k">int</span> capacity) {</span><span class="ln"><span class="no">20</span>        <span class="k">this</span>.capacity = capacity;</span><span class="ln"><span class="no">21</span>        head.next = tail;</span><span class="ln"><span class="no">22</span>        tail.prev = head;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span> </span><span class="ln"><span class="no">25</span>    <span class="k">public</span> <span class="k">int</span> get(<span class="k">int</span> key) {</span><span class="ln"><span class="no">26</span>        <span class="t">Node</span> node = map.get(key);</span><span class="ln"><span class="no">27</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">28</span>        moveToHead(node);                     <span class="c">// 刚访问过 = 最近使用</span></span><span class="ln"><span class="no">29</span>        <span class="k">return</span> node.val;</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span> </span><span class="ln"><span class="no">32</span>    <span class="k">public</span> <span class="k">void</span> put(<span class="k">int</span> key, <span class="k">int</span> value) {</span><span class="ln"><span class="no">33</span>        <span class="t">Node</span> node = map.get(key);</span><span class="ln"><span class="no">34</span>        <span class="k">if</span> (node != <span class="k">null</span>) {                   <span class="c">// 已有：更新值并挪到表头</span></span><span class="ln"><span class="no">35</span>            node.val = value;</span><span class="ln"><span class="no">36</span>            moveToHead(node);</span><span class="ln"><span class="no">37</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">38</span>        }</span><span class="ln"><span class="no">39</span>        <span class="k">if</span> (map.size() == capacity) {         <span class="c">// 满了：先删表尾（最久没用）</span></span><span class="ln"><span class="no">40</span>            <span class="t">Node</span> last = tail.prev;</span><span class="ln"><span class="no">41</span>            remove(last);</span><span class="ln"><span class="no">42</span>            map.remove(last.key);</span><span class="ln"><span class="no">43</span>        }</span><span class="ln"><span class="no">44</span>        node = <span class="k">new</span> <span class="t">Node</span>(key, value);</span><span class="ln"><span class="no">45</span>        map.put(key, node);</span><span class="ln"><span class="no">46</span>        addToHead(node);</span><span class="ln"><span class="no">47</span>    }</span><span class="ln"><span class="no">48</span> </span><span class="ln"><span class="no">49</span>    <span class="k">private</span> <span class="k">void</span> moveToHead(<span class="t">Node</span> node) {</span><span class="ln"><span class="no">50</span>        remove(node);</span><span class="ln"><span class="no">51</span>        addToHead(node);</span><span class="ln"><span class="no">52</span>    }</span><span class="ln"><span class="no">53</span> </span><span class="ln"><span class="no">54</span>    <span class="k">private</span> <span class="k">void</span> remove(<span class="t">Node</span> node) {</span><span class="ln"><span class="no">55</span>        node.prev.next = node.next;</span><span class="ln"><span class="no">56</span>        node.next.prev = node.prev;</span><span class="ln"><span class="no">57</span>    }</span><span class="ln"><span class="no">58</span> </span><span class="ln"><span class="no">59</span>    <span class="k">private</span> <span class="k">void</span> addToHead(<span class="t">Node</span> node) {</span><span class="ln"><span class="no">60</span>        node.next = head.next;</span><span class="ln"><span class="no">61</span>        node.prev = head;</span><span class="ln"><span class="no">62</span>        head.next.prev = node;</span><span class="ln"><span class="no">63</span>        head.next = node;</span><span class="ln"><span class="no">64</span>    }</span><span class="ln"><span class="no">65</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>设计和构建一个“最近最少使用”缓存，该缓存会删除最近最少使用的项目。缓存应该从键映射到值(允许你插入和检索特定键对应的值)，并在初始化时指定最大容量。当缓存被填满时，它应该删除最近最少使用的项目。</p>
+
+<p>它应该支持以下操作： 获取数据 <code>get</code> 和 写入数据 <code>put</code> 。</p>
+
+<p>获取数据 <code>get(key)</code> - 如果密钥 (key) 存在于缓存中，则获取密钥的值（总是正数），否则返回 -1。<br />
+写入数据 <code>put(key, value)</code> - 如果密钥不存在，则写入其数据值。当缓存容量达到上限时，它应该在写入新数据之前删除最近最少使用的数据值，从而为新的数据值留出空间。</p>
+
+<p><strong>示例：</strong></p>
+
+<pre>
+LRUCache cache = new LRUCache( 2 /* 缓存容量 */ );
+
+cache.put(1, 1);
+cache.put(2, 2);
+cache.get(1);       // 返回  1
+cache.put(3, 3);    // 该操作会使得密钥 2 作废
+cache.get(2);       // 返回 -1 (未找到)
+cache.put(4, 4);    // 该操作会使得密钥 1 作废
+cache.get(1);       // 返回 -1 (未找到)
+cache.get(3);       // 返回  3
+cache.get(4);       // 返回  4
+</pre>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class LRUCache {", "    private static class Node {", "        int key, val;", "        Node prev, next;", "", "        Node(int key, int val) {", "            this.key = key;", "            this.val = val;", "        }", "    }", "", "    private final int capacity;", "    private final Map<Integer, Node> map = new HashMap<>();", "    // 两个哨兵：head.next 是最近用过的，tail.prev 是最久没用的", "    private final Node head = new Node(0, 0), tail = new Node(0, 0);", "", "    public LRUCache(int capacity) {", "        this.capacity = capacity;", "        head.next = tail;", "        tail.prev = head;", "    }", "", "    public int get(int key) {", "        Node node = map.get(key);", "        if (node == null) return -1;", "        moveToHead(node);                     // 刚访问过 = 最近使用", "        return node.val;", "    }", "", "    public void put(int key, int value) {", "        Node node = map.get(key);", "        if (node != null) {                   // 已有：更新值并挪到表头", "            node.val = value;", "            moveToHead(node);", "            return;", "        }", "        if (map.size() == capacity) {         // 满了：先删表尾（最久没用）", "            Node last = tail.prev;", "            remove(last);", "            map.remove(last.key);", "        }", "        node = new Node(key, value);", "        map.put(key, node);", "        addToHead(node);", "    }", "", "    private void moveToHead(Node node) {", "        remove(node);", "        addToHead(node);", "    }", "", "    private void remove(Node node) {", "        node.prev.next = node.next;", "        node.next.prev = node.prev;", "    }", "", "    private void addToHead(Node node) {", "        node.next = head.next;", "        node.prev = head;", "        head.next.prev = node;", "        head.next = node;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 16.25 LRU 缓存 —— 图解：复刻 Solution.java 的「哈希表 + 双向链表 + 哨兵」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { capacity: 2, ops: [['put', 1, 1], ['put', 2, 2], ['get', 1], ['put', 3, 3], ['get', 2]] };
+
+function trace(input) {
+  var cap = input.capacity;
+  var order = [];    // 链表从表头到表尾：左边最近使用，右边最久没用
+  var val = {};      // key -> 值（结点里存的）
+  var out = [];
+  var frames = [];
+  var putSnap = false, hitSnap = false, evictSnap = false, insertSnap = false, missSnap = false;
+
+  function listPanel(marks) {
+    var items = order.map(function (k) { return k + ':' + val[k]; });
+    var pointers = order.length ? [{ at: 0, label: 'head', cls: 'p-head' }, { at: order.length - 1, label: 'tail', cls: 'p-tail' }] : [];
+    return Viz.list(items, { title: '双向链表（左=最近使用，右=最久没用）', marks: marks || {}, pointers: pointers });
+  }
+  function mapPanel() {
+    var keys = Object.keys(val).map(Number).sort(function (a, b) { return a - b; });
+    return Viz.table('哈希表 map：key → 结点', keys.map(function (k) { return { k: String(k), v: k + ':' + val[k], cls: '' }; }));
+  }
+  function snap(at, key, marks) { frames.push(Viz.frame(at, key, [listPanel(marks), mapPanel()])); }
+  function moveToFront(k) { order.splice(order.indexOf(k), 1); order.unshift(k); }
+
+  input.ops.forEach(function (op) {
+    var k = op[1];
+    if (op[0] === 'get') {
+      if (!(k in val)) {
+        out.push(-1);
+        if (!missSnap) {
+          missSnap = true;
+          snap('if (node == null) return -1;', 'get(' + k + ')：哈希表里查不到，直接返回 -1', {});
+        }
+        return;
+      }
+      moveToFront(k);
+      out.push(val[k]);
+      if (!hitSnap) {
+        hitSnap = true;
+        var m = {};
+        m[0] = 'cur';
+        snap('private void moveToHead(Node node) {', 'get(' + k + ') 命中：结点摘下来接到表头（最近使用），返回 ' + val[k], m);
+      }
+    } else {
+      if (k in val) { val[k] = op[2]; moveToFront(k); return; }   // 已有：更新值 + 挪表头
+      if (order.length === cap) {
+        var last = order[order.length - 1];
+        if (!evictSnap) {
+          evictSnap = true;
+          var m2 = {};
+          m2[order.length - 1] = 'bad';
+          snap('Node last = tail.prev;', '容量满：put(' + k + ',' + op[2] + ') 前先删表尾 ' + last + '（最久没用）', m2);
+        }
+        order.pop();
+        delete val[last];
+      }
+      val[k] = op[2];
+      order.unshift(k);
+      if (!putSnap) {
+        putSnap = true;
+        var m3 = {};
+        m3[0] = 'new';
+        snap('node = new Node(key, value);', 'put(' + k + ',' + op[2] + ')：新结点插到表头，哈希表记下 key → 结点', m3);
+      } else if (evictSnap && !insertSnap) {
+        insertSnap = true;
+        var m4 = {};
+        m4[0] = 'new';
+        snap('map.put(key, node);', '淘汰完再插新结点 ' + k + '：接在表头，链表恢复满容量', m4);
+      }
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

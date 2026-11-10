@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最长递增子序列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 19 / 1159</span>
+  <nav class="pn"><a href="0121.html">上一篇</a><a href="0236.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">300. </span>最长递增子序列</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 276</li><li class="algo">动态规划</li><li class="aux">二分查找</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">动态规划</li><li class="tag">longest-increasing-subsequence</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">贪心 + 二分：tails[k] 是长度 k+1 的递增子序列的最小末尾；每个数二分覆盖，tails 长度即答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>tails[k]</code> 是长度为 <code>k+1</code> 的严格递增子序列里最小的末尾：末尾越小，越容易接上后面的数。<code>tails</code> 本身严格递增，所以能二分。</li><li>对每个 <code>x</code>，二分找 <code>tails</code> 里<strong>第一个 <code>&gt;= x</code></strong> 的位置 <code>lo</code>，把 <code>tails[lo]</code> 改成 <code>x</code>；若 <code>lo == size</code>（<code>x</code> 比所有末尾都大），就接在最后并 <code>size++</code>。</li><li>找 <code>&gt;= x</code> 而不是 <code>&gt; x</code>：要求严格递增，等于 <code>x</code> 的末尾只能被覆盖，不能往后接（<code>7 7 7</code> 的答案是 <code>1</code>）。</li><li>答案是 <code>size</code>。<code>tails</code> 不一定是一条真实的子序列，只有它的长度有意义。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> lengthOfLIS(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">3</span>        <span class="c">// tails[k]：长度为 k+1 的递增子序列的最小末尾</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] tails = <span class="k">new</span> <span class="k">int</span>[nums.length];</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> size = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) {</span><span class="ln"><span class="no">7</span>            <span class="c">// 二分找 tails 里第一个 &gt;= x 的位置</span></span><span class="ln"><span class="no">8</span>            <span class="k">int</span> lo = <span class="n">0</span>, hi = size;</span><span class="ln"><span class="no">9</span>            <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">10</span>                <span class="k">int</span> mid = (lo + hi) / <span class="n">2</span>;</span><span class="ln"><span class="no">11</span>                <span class="k">if</span> (tails[mid] &lt; x) lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">12</span>                <span class="k">else</span> hi = mid;</span><span class="ln"><span class="no">13</span>            }</span><span class="ln"><span class="no">14</span>            <span class="c">// 比所有末尾都大就接在最后，否则覆盖它</span></span><span class="ln"><span class="no">15</span>            tails[lo] = x;</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (lo == size) size++;</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> size;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> ，找到其中最长严格递增子序列的长度。</p>
+
+<p><strong>子序列&nbsp;</strong>是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，<code>[3,6,2,7]</code> 是数组 <code>[0,3,1,6,2,2,7]</code> 的<span>子序列</span>。</p>
+&nbsp;
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [10,9,2,5,3,7,101,18]
+<strong>输出：</strong>4
+<strong>解释：</strong>最长递增子序列是 [2,3,7,101]，因此长度为 4 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [0,1,0,3,2,3]
+<strong>输出：</strong>4
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [7,7,7,7,7,7,7]
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 2500</code></li>
+	<li><code>-10<sup>4</sup> &lt;= nums[i] &lt;= 10<sup>4</sup></code></li>
+</ul>
+
+
+
+<p><b>进阶：</b></p>
+
+<ul>
+	<li>你能将算法的时间复杂度降低到&nbsp;<code>O(n log(n))</code> 吗?</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int lengthOfLIS(int[] nums) {", "        // tails[k]：长度为 k+1 的递增子序列的最小末尾", "        int[] tails = new int[nums.length];", "        int size = 0;", "        for (int x : nums) {", "            // 二分找 tails 里第一个 >= x 的位置", "            int lo = 0, hi = size;", "            while (lo < hi) {", "                int mid = (lo + hi) / 2;", "                if (tails[mid] < x) lo = mid + 1;", "                else hi = mid;", "            }", "            // 比所有末尾都大就接在最后，否则覆盖它", "            tails[lo] = x;", "            if (lo == size) size++;", "        }", "        return size;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 300. 最长递增子序列 —— 图解：复刻 Solution.java 的「贪心 + 二分」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [10, 9, 2, 5, 3, 7, 101, 18] };
+
+function trace(input) {
+  var nums = input.nums;
+  var tails = [];      // 只存已用的部分：tails.length 就是 Java 里的 size
+  var frames = [];
+  var PUT = 'tails[lo] = x;';
+  var GROW = 'if (lo == size) size++;';
+
+  function numsPanel(i) {
+    var marks = {};
+    if (i != null) marks[i] = 'cur';
+    return Viz.cells(nums, {
+      title: i != null ? 'nums（x 是正在处理的数）' : 'nums',
+      marks: marks,
+      pointers: i != null ? [{ at: i, label: 'x', cls: 'p-cur' }] : []
+    });
+  }
+
+  // tails 面板：lo 是二分找到、刚被写入的位置；done 为真时整排标成结果。
+  function tailsPanel(lo, done) {
+    var marks = {};
+    var k;
+    if (done) for (k = 0; k < tails.length; k++) marks[k] = 'done';
+    else marks[lo] = 'cur';
+    return Viz.cells(tails, {
+      title: done ? 'tails（有几个数，答案就是几）' : 'tails[k]：长度为 k+1 的递增子序列的最小末尾',
+      marks: marks,
+      pointers: done ? [] : [{ at: lo, label: 'lo', cls: 'p-left' }]
+    });
+  }
+
+  var replaced = false;   // 已经拍过「覆盖」那一张
+  var grown = false;      // 已经拍过「接在最后」那一张
+  for (var i = 0; i < nums.length; i++) {
+    var x = nums[i];
+    var lo = 0, hi = tails.length;    // 二分：第一个 >= x 的位置
+    while (lo < hi) {
+      var mid = (lo + hi) >> 1;
+      if (tails[mid] < x) lo = mid + 1;
+      else hi = mid;
+    }
+    var old = tails[lo];
+    var append = lo === tails.length;
+    tails[lo] = x;
+
+    if (i === 0) {
+      frames.push(Viz.frame(PUT, 'x = ' + x + '：tails 还是空的，直接放进 tails[0]',
+        [numsPanel(i), tailsPanel(lo)]));
+    } else if (!append && lo >= 1 && !replaced) {
+      replaced = true;
+      frames.push(Viz.frame(PUT, 'x = ' + x + '：第一个 ≥ ' + x + ' 的是 tails[' + lo + '] = ' + old + '，用 ' + x + ' 顶掉它',
+        [numsPanel(i), tailsPanel(lo)]));
+    } else if (append && replaced && !grown) {
+      grown = true;
+      frames.push(Viz.frame(GROW, 'x = ' + x + '：比所有末尾都大，接在最后，长度变成 ' + tails.length,
+        [numsPanel(i), tailsPanel(lo)]));
+    }
+  }
+
+  frames.push(Viz.frame('return size;', '扫完：tails 里有 ' + tails.length + ' 个数，答案就是 ' + tails.length,
+    [numsPanel(null), tailsPanel(null, true)]));
+
+  return { frames: frames, result: tails.length };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

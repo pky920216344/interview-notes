@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最长回文子序列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 158 / 1159</span>
+  <nav class="pn"><a href="offer-10-i.html">上一篇</a><a href="offer-10-ii.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">516. </span>最长回文子序列</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 37</li><li class="algo">动态规划</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">区间 DP：dp[i][j] 是 s[i..j] 的最长回文子序列长度，两端相等就内部 +2，不相等就丢一头取大；i 倒序保证依赖先算好。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i][j]</code>：区间 <code>s[i..j]</code> 的答案。<code>s[i] == s[j]</code> 时 <code>dp[i][j] = dp[i+1][j-1] + 2</code>（这对端子一定同时在回文里）；否则 <code>max(dp[i+1][j], dp[i][j-1])</code>。</li><li><code>dp[i+1][j-1]</code> 在 <code>j == i+1</code> 时是空区间，数组默认 0 正好当空串用，不用特判。</li><li><strong>i 必须倒序</strong>（从 n-1 往 0），这样算 <code>dp[i][j]</code> 时第 <code>i+1</code> 行已经就绪；对角线 <code>dp[i][i] = 1</code> 是边界。</li><li>答案是 <code>dp[0][n-1]</code>；想压空间可用一维滚动，但二维更好背。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n²)（可压到 O(n)）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> longestPalindromeSubseq(<span class="t">String</span> s) {</span><span class="ln"><span class="no">3</span>        <span class="c">// dp[i][j]：s[i..j] 里最长回文子序列的长度</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[][] dp = <span class="k">new</span> <span class="k">int</span>[n][n];</span><span class="ln"><span class="no">6</span>        <span class="c">// i 从右往左：算 dp[i][j] 时 dp[i+1][...] 必须已经算好</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = n - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">8</span>            dp[i][i] = <span class="n">1</span>;                             <span class="c">// 单个字符自己就是回文</span></span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> j = i + <span class="n">1</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">10</span>                <span class="k">if</span> (s.charAt(i) == s.charAt(j)) {</span><span class="ln"><span class="no">11</span>                    dp[i][j] = dp[i + <span class="n">1</span>][j - <span class="n">1</span>] + <span class="n">2</span>;  <span class="c">// 两端配成一对，加上中间部分</span></span><span class="ln"><span class="no">12</span>                } <span class="k">else</span> {</span><span class="ln"><span class="no">13</span>                    dp[i][j] = <span class="t">Math</span>.max(dp[i + <span class="n">1</span>][j], dp[i][j - <span class="n">1</span>]);   <span class="c">// 两端配不上，丢掉一头</span></span><span class="ln"><span class="no">14</span>                }</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> dp[<span class="n">0</span>][n - <span class="n">1</span>];</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个字符串 <code>s</code> ，找出其中最长的回文子序列，并返回该序列的长度。</p>
+
+<p>子序列定义为：不改变剩余字符顺序的情况下，删除某些字符或者不删除任何字符形成的一个序列。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "bbbab"
+<strong>输出：</strong>4
+<strong>解释：</strong>一个可能的最长回文子序列为 "bbbb" 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "cbbd"
+<strong>输出：</strong>2
+<strong>解释：</strong>一个可能的最长回文子序列为 "bb" 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= s.length <= 1000</code></li>
+	<li><code>s</code> 仅由小写英文字母组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int longestPalindromeSubseq(String s) {", "        // dp[i][j]：s[i..j] 里最长回文子序列的长度", "        int n = s.length();", "        int[][] dp = new int[n][n];", "        // i 从右往左：算 dp[i][j] 时 dp[i+1][...] 必须已经算好", "        for (int i = n - 1; i >= 0; i--) {", "            dp[i][i] = 1;                             // 单个字符自己就是回文", "            for (int j = i + 1; j < n; j++) {", "                if (s.charAt(i) == s.charAt(j)) {", "                    dp[i][j] = dp[i + 1][j - 1] + 2;  // 两端配成一对，加上中间部分", "                } else {", "                    dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);   // 两端配不上，丢掉一头", "                }", "            }", "        }", "        return dp[0][n - 1];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 516. 最长回文子序列 —— 图解：复刻 Solution.java 的区间 DP，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'bbbab' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+  var dp = [];
+  for (var r = 0; r < n; r++) {
+    dp.push([]);
+    for (var c2 = 0; c2 < n; c2++) dp[r].push(0);
+  }
+  var DIAG = 'dp[i][i] = 1;';
+  var EQ = 'dp[i][j] = dp[i + 1][j - 1] + 2;';
+  var NE = 'dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);';
+  var RET = 'return dp[0][n - 1];';
+  var firedEq = false, firedNe = false;
+
+  // DP 表面板：行 i、列 j；下三角没意义画空，未算到的格显示 0（和 Java 内存一致）
+  function gridPanel(marks) {
+    var rows = [], m = marks || {};
+    for (var i = 0; i < n; i++) {
+      var row = [];
+      for (var j = 0; j < n; j++) row.push(j < i ? '' : String(dp[i][j]));
+      rows.push(row);
+    }
+    var lbl = [];
+    for (j = 0; j < n; j++) lbl.push(String(j));
+    return Viz.grid(rows, { title: 'dp[i][j]：s[i..j] 里最长回文子序列长度', marks: m, rowLabels: lbl, colLabels: lbl, corner: 'i＼j' });
+  }
+
+  for (var i = n - 1; i >= 0; i--) {
+    dp[i][i] = 1;
+    if (i === n - 1) {   // 第 1 帧：右下角起算
+      var m0 = {};
+      m0[(n - 1) + ',' + (n - 1)] = 'new';
+      frames.push(Viz.frame(DIAG, '从右下角起算：单个字符自己就是回文，dp[i][i] = 1',
+        [gridPanel(m0), Viz.vars([{ name: 'i', v: i }, { name: 'j', v: n - 1, cls: 'chg' }])]));
+    }
+    for (var j = i + 1; j < n; j++) {
+      if (s[i] === s[j]) {
+        dp[i][j] = dp[i + 1][j - 1] + 2;
+        if (!firedEq && j - i >= 2) {   // 第 2 帧：两端配上成一对
+          firedEq = true;
+          var me = {};
+          me[i + ',' + j] = 'new';
+          me[(i + 1) + ',' + (j - 1)] = 'hit';
+          frames.push(Viz.frame(EQ, 's[' + i + ']=s[' + j + ']=\'' + s[i] + '\'：两端配成一对，dp[' + i + '][' + j + '] = 内部 dp[' + (i + 1) + '][' + (j - 1) + '] + 2 = ' + dp[i][j],
+            [gridPanel(me), Viz.vars([{ name: 'dp[i][j]', v: dp[i][j], cls: 'chg' }])]));
+        }
+      } else {
+        dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
+        if (!firedNe && j - i >= 2) {   // 第 3 帧：配不上就丢一头
+          firedNe = true;
+          var mn = {};
+          mn[i + ',' + j] = 'new';
+          mn[(i + 1) + ',' + j] = 'hit';
+          mn[i + ',' + (j - 1)] = 'hit';
+          frames.push(Viz.frame(NE, 's[' + i + ']=\'' + s[i] + '\' ≠ s[' + j + ']=\'' + s[j] + '\'：丢掉一头，max(dp[' + (i + 1) + '][' + j + '], dp[' + i + '][' + (j - 1) + ']) = ' + dp[i][j],
+            [gridPanel(mn), Viz.vars([{ name: 'dp[i][j]', v: dp[i][j], cls: 'chg' }])]));
+        }
+      }
+    }
+  }
+
+  var mf = {};
+  mf['0,' + (n - 1)] = 'done';
+  frames.push(Viz.frame(RET, '算到左上角：dp[0][' + (n - 1) + '] = ' + dp[0][n - 1] + '，就是整个串的答案',
+    [gridPanel(mf), Viz.vars([{ name: '答案', v: dp[0][n - 1], cls: 'chg' }])]));
+
+  return { frames: frames, result: dp[0][n - 1] };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

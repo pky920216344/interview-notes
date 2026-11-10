@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>寻找旋转排序数组中的最小值 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 105 / 1159</span>
+  <nav class="pn"><a href="0079.html">上一篇</a><a href="0138.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">153. </span>寻找旋转排序数组中的最小值</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 59</li><li class="algo">二分查找</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">二分：拿 nums[mid] 和 nums[hi] 比；mid 更大说明最小值在右半，mid 更小说明 mid 自己可能是答案，hi 收到 mid。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>旋转数组 = 两段升序拼接，最小值是第二段的开头；<code>[lo, hi]</code> 里永远留着答案。</li><li><code>nums[mid] &gt; nums[hi]</code>：断点（最小值）一定在 mid 右边，<code>lo = mid + 1</code>。</li><li><code>nums[mid] &lt; nums[hi]</code>：mid 到 hi 这段有序，最小值在 <code>[lo, mid]</code>；<strong>mid 可能就是答案，所以 <code>hi = mid</code> 而不是 mid-1</strong>。</li><li>元素互不相同保证比较无歧义；<code>lo == hi</code> 时区间只剩 1 格，即最小值。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> findMin(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> lo = <span class="n">0</span>, hi = nums.length - <span class="n">1</span>;</span><span class="ln"><span class="no">4</span>        <span class="c">// [lo, hi] 里永远留着最小值；元素互不相同，比较不会歧义</span></span><span class="ln"><span class="no">5</span>        <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">6</span>            <span class="k">int</span> mid = lo + (hi - lo) / <span class="n">2</span>;</span><span class="ln"><span class="no">7</span>            <span class="k">if</span> (nums[mid] &gt; nums[hi]) {</span><span class="ln"><span class="no">8</span>                <span class="c">// mid 比右端大：断点在 mid 右边，最小值在 (mid, hi]</span></span><span class="ln"><span class="no">9</span>                lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">10</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">11</span>                <span class="c">// mid 比右端小：mid 右侧有序，最小值在 [lo, mid]，mid 自己可能是答案</span></span><span class="ln"><span class="no">12</span>                hi = mid;</span><span class="ln"><span class="no">13</span>            }</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> nums[lo];</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">已知一个长度为 <code>n</code> 的数组，预先按照升序排列，经由 <code>1</code> 到 <code>n</code> 次 <strong>旋转</strong> 后，得到输入数组。例如，原数组 <code>nums = [0,1,2,4,5,6,7]</code> 在变化后可能得到：
+<ul>
+	<li>若旋转 <code>4</code> 次，则可以得到 <code>[4,5,6,7,0,1,2]</code></li>
+	<li>若旋转 <code>7</code> 次，则可以得到 <code>[0,1,2,4,5,6,7]</code></li>
+</ul>
+
+<p>注意，数组 <code>[a[0], a[1], a[2], ..., a[n-1]]</code> <strong>旋转一次</strong> 的结果为数组 <code>[a[n-1], a[0], a[1], a[2], ..., a[n-2]]</code> 。</p>
+
+<p>给你一个元素值 <strong>互不相同</strong> 的数组 <code>nums</code> ，它原来是一个升序排列的数组，并按上述情形进行了多次旋转。请你找出并返回数组中的 <strong>最小元素</strong> 。</p>
+
+<p>你必须设计一个时间复杂度为&nbsp;<code>O(log n)</code> 的算法解决此问题。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [3,4,5,1,2]
+<strong>输出：</strong>1
+<strong>解释：</strong>原数组为 [1,2,3,4,5] ，旋转 3 次得到输入数组。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [4,5,6,7,0,1,2]
+<strong>输出：</strong>0
+<strong>解释：</strong>原数组为 [0,1,2,4,5,6,7] ，旋转 4 次得到输入数组。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [11,13,15,17]
+<strong>输出：</strong>11
+<strong>解释：</strong>原数组为 [11,13,15,17] ，旋转 4 次得到输入数组。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == nums.length</code></li>
+	<li><code>1 &lt;= n &lt;= 5000</code></li>
+	<li><code>-5000 &lt;= nums[i] &lt;= 5000</code></li>
+	<li><code>nums</code> 中的所有整数 <strong>互不相同</strong></li>
+	<li><code>nums</code> 原来是一个升序排序的数组，并进行了 <code>1</code> 至 <code>n</code> 次旋转</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int findMin(int[] nums) {", "        int lo = 0, hi = nums.length - 1;", "        // [lo, hi] 里永远留着最小值；元素互不相同，比较不会歧义", "        while (lo < hi) {", "            int mid = lo + (hi - lo) / 2;", "            if (nums[mid] > nums[hi]) {", "                // mid 比右端大：断点在 mid 右边，最小值在 (mid, hi]", "                lo = mid + 1;", "            } else {", "                // mid 比右端小：mid 右侧有序，最小值在 [lo, mid]，mid 自己可能是答案", "                hi = mid;", "            }", "        }", "        return nums[lo];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 153. 寻找旋转排序数组最小值 —— 图解：复刻 Solution.java 的二分，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [4, 5, 6, 7, 0, 1, 2] };
+
+function trace(input) {
+  var nums = input.nums;
+  var n = nums.length;
+  var frames = [];
+  var lo = 0, hi = n - 1;
+
+  var MID = 'int mid = lo + (hi - lo) / 2;';
+  var GO_R = 'lo = mid + 1;';
+  var GO_L = 'hi = mid;';
+  var RET = 'return nums[lo];';
+
+  // 数组：区间 [lo, hi] 标 win（还留着答案），区间外 dim，mid 标 cur
+  function numsPanel(marks, pointers, rangeLabel) {
+    var m = {};
+    for (var i = 0; i < n; i++) m[i] = (i >= lo && i <= hi) ? 'win' : 'dim';
+    if (marks) for (var k in marks) m[k] = marks[k];
+    var range = lo <= hi ? { from: lo, to: hi, label: rangeLabel || '候选区间 [lo, hi]' } : null;
+    return Viz.cells(nums.slice(), { title: 'nums（亮 = 候选区间）', marks: m, pointers: pointers || [], range: range });
+  }
+  function snap(at, key, marks, pointers, rangeLabel) {
+    frames.push(Viz.frame(at, key, [numsPanel(marks, pointers, rangeLabel)]));
+  }
+
+  var first = true;
+  while (lo < hi) {
+    var mid = (lo + hi) >> 1;
+    if (first) {
+      first = false;
+      snap(MID, '先看中点：nums[' + mid + ']=' + nums[mid] + '，和最右的 nums[' + hi + ']=' + nums[hi] + ' 比',
+        { mid: 'cur' }, [{ at: mid, label: 'mid', cls: 'p-mid' }]);
+    }
+    if (nums[mid] > nums[hi]) {
+      if (!frames.some(function (f) { return f.at === GO_R; })) {
+        snap(GO_R, 'nums[' + mid + ']=' + nums[mid] + ' > nums[' + hi + ']=' + nums[hi] + '：断点在右边，lo 跳到 mid+1',
+          { mid: 'cur' }, [{ at: mid, label: 'mid', cls: 'p-mid' }]);
+      }
+      lo = mid + 1;
+    } else {
+      if (!frames.some(function (f) { return f.at === GO_L; })) {
+        snap(GO_L, 'nums[' + mid + ']=' + nums[mid] + ' < nums[' + hi + ']=' + nums[hi] + '：mid 自己可能是最小值，hi 收到 mid',
+          { mid: 'cur' }, [{ at: mid, label: 'mid', cls: 'p-mid' }]);
+      }
+      hi = mid;
+    }
+  }
+
+  snap(RET, 'lo、hi 相遇：nums[' + lo + ']=' + nums[lo] + ' 就是最小值',
+    { lo: 'done' }, [{ at: lo, label: 'lo=hi', cls: 'p-mid' }], '候选区间只剩 1 格');
+
+  return { frames: frames, result: nums[lo] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

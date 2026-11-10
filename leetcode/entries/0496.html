@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>下一个更大元素 I · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 592 / 1159</span>
+  <nav class="pn"><a href="0856.html">上一篇</a><a href="1277.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">496. </span>下一个更大元素 I</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 3</li><li class="algo">单调栈</li><li class="aux">哈希表</li><li class="tag">栈</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">nums2 从右往左扫、维护严格递减栈：弹掉 ≤ 当前值的栈顶后，栈顶就是它的下一个更大元素，存进哈希表；nums1 直接查表。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>栈里存「右边还在等更大元素的值」，从底到顶严格递减。</li><li>当前值 <code>x</code> 先把栈里 <code>≤ x</code> 的全部弹出：它们比 <code>x</code> 小又更远，永远当不了任何人的答案。</li><li>弹完后栈顶（没有就 <code>-1</code>）就是 <code>x</code> 的下一个更大元素，记进哈希表，再把 <code>x</code> 入栈；最后 <code>nums1</code> 逐个查表。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n1 + n2)，空间复杂度 O(n2)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] nextGreaterElement(<span class="k">int</span>[] nums1, <span class="k">int</span>[] nums2) {</span><span class="ln"><span class="no">5</span>        <span class="c">// next[v]：v 在 nums2 里右边第一个比它大的数；没有记 -1</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; next = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();   <span class="c">// 从底到顶严格递减</span></span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = nums2.length - <span class="n">1</span>; i &gt;= <span class="n">0</span>; i--) {</span><span class="ln"><span class="no">9</span>            <span class="k">int</span> x = nums2[i];</span><span class="ln"><span class="no">10</span>            <span class="c">// 不比 x 大的值永远当不了答案，弹掉</span></span><span class="ln"><span class="no">11</span>            <span class="k">while</span> (!stack.isEmpty() &amp;&amp; stack.peek() &lt;= x) stack.pop();</span><span class="ln"><span class="no">12</span>            next.put(x, stack.isEmpty() ? -<span class="n">1</span> : stack.peek());</span><span class="ln"><span class="no">13</span>            stack.push(x);</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="k">int</span>[] ans = <span class="k">new</span> <span class="k">int</span>[nums1.length];</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; nums1.length; i++) ans[i] = next.get(nums1[i]);</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p><code>nums1</code>&nbsp;中数字&nbsp;<code>x</code>&nbsp;的 <strong>下一个更大元素</strong> 是指&nbsp;<code>x</code>&nbsp;在&nbsp;<code>nums2</code> 中对应位置 <strong>右侧</strong> 的 <strong>第一个</strong> 比&nbsp;<code>x</code>大的元素。</p>
+
+<p>给你两个<strong> 没有重复元素</strong> 的数组&nbsp;<code>nums1</code> 和&nbsp;<code>nums2</code> ，下标从 <strong>0</strong> 开始计数，其中<code>nums1</code>&nbsp;是&nbsp;<code>nums2</code>&nbsp;的子集。</p>
+
+<p>对于每个 <code>0 &lt;= i &lt; nums1.length</code> ，找出满足 <code>nums1[i] == nums2[j]</code> 的下标 <code>j</code> ，并且在 <code>nums2</code> 确定 <code>nums2[j]</code> 的 <strong>下一个更大元素</strong> 。如果不存在下一个更大元素，那么本次查询的答案是 <code>-1</code> 。</p>
+
+<p>返回一个长度为&nbsp;<code>nums1.length</code> 的数组<em> </em><code>ans</code><em> </em>作为答案，满足<em> </em><code>ans[i]</code><em> </em>是如上所述的 <strong>下一个更大元素</strong> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums1 = [4,1,2], nums2 = [1,3,4,2].
+<strong>输出：</strong>[-1,3,-1]
+<strong>解释：</strong>nums1 中每个值的下一个更大元素如下所述：
+- 4 ，用加粗斜体标识，nums2 = [1,3,<strong>4</strong>,2]。不存在下一个更大元素，所以答案是 -1 。
+- 1 ，用加粗斜体标识，nums2 = [<em><strong>1</strong></em>,3,4,2]。下一个更大元素是 3 。
+- 2 ，用加粗斜体标识，nums2 = [1,3,4,<em><strong>2</strong></em>]。不存在下一个更大元素，所以答案是 -1 。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums1 = [2,4], nums2 = [1,2,3,4].
+<strong>输出：</strong>[3,-1]
+<strong>解释：</strong>nums1 中每个值的下一个更大元素如下所述：
+- 2 ，用加粗斜体标识，nums2 = [1,<em><strong>2</strong></em>,3,4]。下一个更大元素是 3 。
+- 4 ，用加粗斜体标识，nums2 = [1,2,3,<em><strong>4</strong></em>]。不存在下一个更大元素，所以答案是 -1 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums1.length &lt;= nums2.length &lt;= 1000</code></li>
+	<li><code>0 &lt;= nums1[i], nums2[i] &lt;= 10<sup>4</sup></code></li>
+	<li><code>nums1</code>和<code>nums2</code>中所有整数 <strong>互不相同</strong></li>
+	<li><code>nums1</code> 中的所有整数同样出现在 <code>nums2</code> 中</li>
+</ul>
+
+
+
+<p><strong>进阶：</strong>你可以设计一个时间复杂度为 <code>O(nums1.length + nums2.length)</code> 的解决方案吗？</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] nextGreaterElement(int[] nums1, int[] nums2) {", "        // next[v]：v 在 nums2 里右边第一个比它大的数；没有记 -1", "        Map<Integer, Integer> next = new HashMap<>();", "        Deque<Integer> stack = new ArrayDeque<>();   // 从底到顶严格递减", "        for (int i = nums2.length - 1; i >= 0; i--) {", "            int x = nums2[i];", "            // 不比 x 大的值永远当不了答案，弹掉", "            while (!stack.isEmpty() && stack.peek() <= x) stack.pop();", "            next.put(x, stack.isEmpty() ? -1 : stack.peek());", "            stack.push(x);", "        }", "        int[] ans = new int[nums1.length];", "        for (int i = 0; i < nums1.length; i++) ans[i] = next.get(nums1[i]);", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 496. 下一个更大元素 I —— 图解：复刻 Solution.java 的「单调栈建表 + nums1 查表」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums1: [4, 1, 2], nums2: [1, 3, 4, 2] };
+
+function trace(input) {
+  var nums1 = input.nums1;
+  var nums2 = input.nums2;
+  var n2 = nums2.length;
+  var next = {};    // 值 -> 下一个更大元素，没有是 -1
+  var stack = [];   // 单调栈：从底到顶递减，末尾是栈顶
+  var frames = [];
+  var poppedOnce = false;
+  var keptOnce = false;
+
+  function nums2Panel(i) {
+    var marks = {};
+    for (var k = 0; k < n2; k++) marks[k] = k > i ? 'dim' : (k === i ? 'cur' : '');
+    return Viz.cells(nums2, { title: 'nums2（从右往左扫）', marks: marks });
+  }
+
+  function stackPanel(topCls) {
+    var marks = {};
+    if (stack.length) marks[stack.length - 1] = topCls || 'chg';
+    return Viz.cells(stack, {
+      title: '栈：右边待配对的值（右端是栈顶，从底到顶递减）',
+      marks: marks,
+      pointers: stack.length ? [{ at: stack.length - 1, label: '栈顶', cls: 'p-cur' }] : []
+    });
+  }
+
+  function snap(at, key, i, topCls) {
+    frames.push(Viz.frame(at, key, [nums2Panel(i), stackPanel(topCls)]));
+  }
+
+  for (var i = n2 - 1; i >= 0; i--) {
+    var x = nums2[i];
+    var popped = false;
+    while (stack.length && stack[stack.length - 1] <= x) { stack.pop(); popped = true; }
+    var ng = stack.length ? stack[stack.length - 1] : -1;
+    next[x] = ng;
+    stack.push(x);
+    if (i === n2 - 1) {
+      snap('next.put(x, stack.isEmpty() ? -1 : stack.peek());', x + ' 右边没有数：记 -1', i, 'new');
+    } else if (popped && !poppedOnce) {
+      poppedOnce = true;
+      snap('while (!stack.isEmpty() && stack.peek() <= x) stack.pop();',
+        x + ' 弹掉栈里 ≤ 它的值' + (ng === -1 ? '，栈空记 -1' : '，栈顶 ' + ng + ' 即答案'), i, 'new');
+    } else if (!popped && !keptOnce) {
+      keptOnce = true;
+      snap('next.put(x, stack.isEmpty() ? -1 : stack.peek());', x + ' 的栈顶 ' + ng + ' 更大，直接记下', i, 'new');
+    }
+  }
+
+  var ans = [];
+  for (var j = 0; j < nums1.length; j++) ans.push(next[nums1[j]]);
+  frames.push(Viz.frame('return ans;', 'nums1 逐个查表 → ' + JSON.stringify(ans), [
+    Viz.cells(nums1, { title: 'nums1', marks: {} }),
+    Viz.table('next：值 → 下一个更大元素', Object.keys(next).map(function (k) {
+      return { k: k, v: String(next[k]), cls: nums1.indexOf(Number(k)) >= 0 ? 'hit' : '' };
+    }))
+  ]));
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

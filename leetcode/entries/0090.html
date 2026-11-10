@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>子集 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 462 / 1159</span>
+  <nav class="pn"><a href="1254.html">上一篇</a><a href="0976.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">90. </span>子集 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">回溯</li><li class="tag">位运算</li><li class="tag">数组</li><li class="tag">回溯</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">先排序，回溯生成子集；同层里「和前一个元素相同且不是第一个」的分支直接跳过，就不会出现重复子集。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>排序后相同元素相邻；回溯树上每一层 = 「本层从 <code>start</code> 开始选哪个数」，每个结点收下一次 <code>path</code>。</li><li>去重规则：<code>i &gt; start &amp;&amp; nums[i] == nums[i-1]</code> 就 <code>continue</code>——同一层里同值的数只允许选<strong>第一个</strong>，后面的整棵分支剪掉。</li><li>和「树层去重」区分：<code>i &gt; start</code> 只限制同层；往下递归传 <code>i + 1</code>，同一条路径上可以继续选相同值（如 <code>[1,2,2]</code>）。</li><li>结果规模就是 2^n 个（去重后的），每个子集复制一份收进 <code>ans</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n × 2^n)，空间复杂度 O(n)（不计输出）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; subsetsWithDup(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        <span class="t">Arrays</span>.sort(nums);                       <span class="c">// 排序后相同元素相邻，同层判重才成立</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        dfs(nums, <span class="n">0</span>, <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(), ans);</span><span class="ln"><span class="no">8</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="c">// 从 start 开始选数；path 是正在搭建的子集</span></span><span class="ln"><span class="no">12</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span>[] nums, <span class="k">int</span> start, <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; path, <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans) {</span><span class="ln"><span class="no">13</span>        ans.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(path));          <span class="c">// 树上每个结点都对应一个子集，先收下</span></span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> i = start; i &lt; nums.length; i++) {</span><span class="ln"><span class="no">15</span>            <span class="c">// 同层去重：不是本层第一个、又和前一个元素相同，整个分支跳过</span></span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (i &gt; start &amp;&amp; nums[i] == nums[i - <span class="n">1</span>]) <span class="k">continue</span>;</span><span class="ln"><span class="no">17</span>            path.add(nums[i]);</span><span class="ln"><span class="no">18</span>            dfs(nums, i + <span class="n">1</span>, path, ans);</span><span class="ln"><span class="no">19</span>            path.remove(path.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> ，其中可能包含重复元素，请你返回该数组所有可能的 <span>子集</span>（幂集）。</p>
+
+<p>解集 <strong>不能</strong> 包含重复的子集。返回的解集中，子集可以按 <strong>任意顺序</strong> 排列。</p>
+
+<div class="original__bRMd">
+<div>
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,2]
+<strong>输出：</strong>[[],[1],[1,2],[1,2,2],[2],[2,2]]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [0]
+<strong>输出：</strong>[[],[0]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 10</code></li>
+	<li><code>-10 &lt;= nums[i] &lt;= 10</code></li>
+</ul>
+</div>
+</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<Integer>> subsetsWithDup(int[] nums) {", "        Arrays.sort(nums);                       // 排序后相同元素相邻，同层判重才成立", "        List<List<Integer>> ans = new ArrayList<>();", "        dfs(nums, 0, new ArrayList<>(), ans);", "        return ans;", "    }", "", "    // 从 start 开始选数；path 是正在搭建的子集", "    private void dfs(int[] nums, int start, List<Integer> path, List<List<Integer>> ans) {", "        ans.add(new ArrayList<>(path));          // 树上每个结点都对应一个子集，先收下", "        for (int i = start; i < nums.length; i++) {", "            // 同层去重：不是本层第一个、又和前一个元素相同，整个分支跳过", "            if (i > start && nums[i] == nums[i - 1]) continue;", "            path.add(nums[i]);", "            dfs(nums, i + 1, path, ans);", "            path.remove(path.size() - 1);", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 90. 子集 II —— 图解：复刻 Solution.java 的「排序 + 回溯同层去重」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 2, 2] };
+
+function trace(input) {
+  var nums = input.nums.slice().sort(function (a, b) { return a - b; });   // 对应 Java 里排好序的 nums
+  var ans = [];          // 每项是一个子集（数组），生成顺序和 Java 的回溯一致
+  var path = [];
+  var frames = [];
+  var didEntry = false, didPush = false, didSkip = false;
+
+  function numsPanel() {
+    var marks = {};
+    for (var k = 0; k < nums.length; k++) {
+      if (k < start) marks[k] = 'dim';          // 本层已经决定过要不要的
+      else marks[k] = k === i ? 'cur' : (k === i - 1 && i > start ? 'hit' : '');
+    }
+    return Viz.cells(nums, { title: 'nums（已排序；cur = 正在决定，hit = 它前一个）', marks: marks });
+  }
+
+  function pathPanel() {
+    return Viz.cells(path.length ? path.slice() : ['∅'], { title: 'path：当前子集', hideIndex: true });
+  }
+
+  function ansPanel() {
+    var rows = [];
+    for (var k = 0; k < ans.length; k++) rows.push({ k: String(k + 1), v: '[' + ans[k].join(',') + ']', cls: '' });
+    return Viz.table('ans：已收下 ' + ans.length + ' 个子集', rows);
+  }
+
+  function snap(at, key) {
+    if (frames.length >= 6) return;
+    frames.push(Viz.frame(at, key, [numsPanel(), ans.length <= 24 ? ansPanel() : pathPanel()]));
+  }
+
+  // 和 Java 相同的回溯；i、start 供面板取值（算法本体用局部变量 it，避免递归互相踩）
+  var i = 0, start = 0;
+  function dfs(s) {
+    start = s;
+    ans.push(path.slice());
+    if (!didEntry) { didEntry = true; snap('ans.add(new ArrayList<>(path));', '进入 dfs 就先收下当前 path：[] 也是合法子集'); }
+    for (var it = s; it < nums.length; it++) {
+      i = it;
+      start = s;
+      if (i > s && nums[i] === nums[i - 1]) {
+        if (!didSkip) {
+          didSkip = true;
+          snap('if (i > start && nums[i] == nums[i - 1]) continue;',
+            'i=' + i + ' 和前一个相同、又不是本层第一个：跳过，这整棵分支剪掉');
+        }
+        continue;
+      }
+      path.push(nums[i]);
+      if (!didPush) {
+        didPush = true;
+        snap('path.add(nums[i]);', '本层选 nums[' + i + ']=' + nums[i] + '：path 加入它，下层从 i+1 接着选');
+      }
+      dfs(i + 1);
+      path.pop();
+    }
+  }
+
+  snap('Arrays.sort(nums);', '开局：先排序，让相同元素挨在一起，才好同层判重');
+  dfs(0);
+
+  // 规范化：和 Java 导出一致，子集列表按字典序排序后输出
+  function cmp(a, b) {
+    for (var k = 0; k < Math.min(a.length, b.length); k++) {
+      if (a[k] !== b[k]) return a[k] < b[k] ? -1 : 1;
+    }
+    return a.length - b.length;
+  }
+  ans.sort(cmp);
+  snap('return ans;', '回溯完毕：共 ' + ans.length + ' 个子集，无重复（图里按字典序展示）');
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>岛屿数量 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 659 / 1159</span>
+  <nav class="pn"><a href="0564.html">上一篇</a><a href="0448.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">305. </span>岛屿数量 II</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">并查集</li><li class="tag">并查集</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">并查集动态加陆：新格子自成一块，四邻有陆就 union（每并一次 count−1），count 就是当前岛数。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>格子 <code>(r,c)</code> 编号 <code>r·n+c</code>；<code>parent[id] = -1</code> 表示还是水，加陆时先自成一块，<code>count++</code>。</li><li>扫四邻：邻居已是陆地就 <code>union</code>，每成功合并一次 <code>count--</code>；四邻连着多座岛时一次全并掉。</li><li>重复往同一格加陆直接跳过（parent 已非 −1），岛屿数不变。</li><li><code>find</code> 里 <code>parent[x] = parent[parent[x]]</code> 路径减半，均摊近 O(1)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(q·α)（q 次操作，近常数），空间复杂度 O(m·n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">/**</span></span><span class="ln"><span class="no">5</span><span class="c">     * 305. 岛屿数量 II（会员题，无力扣模板，这里自定约定）：</span></span><span class="ln"><span class="no">6</span><span class="c">     * m×n 网格初始全是水，按 positions 顺序逐个把格子变成陆地；</span></span><span class="ln"><span class="no">7</span><span class="c">     * 返回数组，第 i 项是加上第 i 块陆地之后的岛屿数量（重复加同一格不算新陆地）。</span></span><span class="ln"><span class="no">8</span><span class="c">     */</span></span><span class="ln"><span class="no">9</span>    <span class="k">public</span> <span class="k">int</span>[] numIslands2(<span class="k">int</span> m, <span class="k">int</span> n, <span class="k">int</span>[][] positions) {</span><span class="ln"><span class="no">10</span>        <span class="k">int</span>[] parent = <span class="k">new</span> <span class="k">int</span>[m * n];</span><span class="ln"><span class="no">11</span>        <span class="t">Arrays</span>.fill(parent, -<span class="n">1</span>);   <span class="c">// -1 表示还不是陆地</span></span><span class="ln"><span class="no">12</span>        <span class="k">int</span> count = <span class="n">0</span>;</span><span class="ln"><span class="no">13</span>        <span class="k">int</span>[] out = <span class="k">new</span> <span class="k">int</span>[positions.length];</span><span class="ln"><span class="no">14</span>        <span class="k">int</span>[][] dirs = {{-<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">0</span>, -<span class="n">1</span>}, {<span class="n">0</span>, <span class="n">1</span>}};</span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; positions.length; i++) {</span><span class="ln"><span class="no">16</span>            <span class="k">int</span> id = positions[i][<span class="n">0</span>] * n + positions[i][<span class="n">1</span>];</span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (parent[id] == -<span class="n">1</span>) {          <span class="c">// 重复添加直接跳过，岛屿数不变</span></span><span class="ln"><span class="no">18</span>                parent[id] = id;</span><span class="ln"><span class="no">19</span>                count++;</span><span class="ln"><span class="no">20</span>                <span class="k">for</span> (<span class="k">int</span>[] d : dirs) {       <span class="c">// 四邻有陆地就合并，每合并一次岛屿数 -1</span></span><span class="ln"><span class="no">21</span>                    <span class="k">int</span> r = positions[i][<span class="n">0</span>] + d[<span class="n">0</span>], c = positions[i][<span class="n">1</span>] + d[<span class="n">1</span>];</span><span class="ln"><span class="no">22</span>                    <span class="k">if</span> (r &lt; <span class="n">0</span> || r &gt;= m || c &lt; <span class="n">0</span> || c &gt;= n || parent[r * n + c] == -<span class="n">1</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">23</span>                    <span class="k">if</span> (union(parent, id, r * n + c)) count--;</span><span class="ln"><span class="no">24</span>                }</span><span class="ln"><span class="no">25</span>            }</span><span class="ln"><span class="no">26</span>            out[i] = count;</span><span class="ln"><span class="no">27</span>        }</span><span class="ln"><span class="no">28</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span> </span><span class="ln"><span class="no">31</span>    <span class="k">private</span> <span class="k">int</span> find(<span class="k">int</span>[] parent, <span class="k">int</span> x) {</span><span class="ln"><span class="no">32</span>        <span class="k">while</span> (parent[x] != x) {</span><span class="ln"><span class="no">33</span>            parent[x] = parent[parent[x]];   <span class="c">// 路径减半，边走边压</span></span><span class="ln"><span class="no">34</span>            x = parent[x];</span><span class="ln"><span class="no">35</span>        }</span><span class="ln"><span class="no">36</span>        <span class="k">return</span> x;</span><span class="ln"><span class="no">37</span>    }</span><span class="ln"><span class="no">38</span> </span><span class="ln"><span class="no">39</span>    <span class="k">private</span> <span class="k">boolean</span> union(<span class="k">int</span>[] parent, <span class="k">int</span> a, <span class="k">int</span> b) {</span><span class="ln"><span class="no">40</span>        a = find(parent, a);</span><span class="ln"><span class="no">41</span>        b = find(parent, b);</span><span class="ln"><span class="no">42</span>        <span class="k">if</span> (a == b) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">43</span>        parent[a] = b;</span><span class="ln"><span class="no">44</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">45</span>    }</span><span class="ln"><span class="no">46</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    /**", "     * 305. 岛屿数量 II（会员题，无力扣模板，这里自定约定）：", "     * m×n 网格初始全是水，按 positions 顺序逐个把格子变成陆地；", "     * 返回数组，第 i 项是加上第 i 块陆地之后的岛屿数量（重复加同一格不算新陆地）。", "     */", "    public int[] numIslands2(int m, int n, int[][] positions) {", "        int[] parent = new int[m * n];", "        Arrays.fill(parent, -1);   // -1 表示还不是陆地", "        int count = 0;", "        int[] out = new int[positions.length];", "        int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};", "        for (int i = 0; i < positions.length; i++) {", "            int id = positions[i][0] * n + positions[i][1];", "            if (parent[id] == -1) {          // 重复添加直接跳过，岛屿数不变", "                parent[id] = id;", "                count++;", "                for (int[] d : dirs) {       // 四邻有陆地就合并，每合并一次岛屿数 -1", "                    int r = positions[i][0] + d[0], c = positions[i][1] + d[1];", "                    if (r < 0 || r >= m || c < 0 || c >= n || parent[r * n + c] == -1) continue;", "                    if (union(parent, id, r * n + c)) count--;", "                }", "            }", "            out[i] = count;", "        }", "        return out;", "    }", "", "    private int find(int[] parent, int x) {", "        while (parent[x] != x) {", "            parent[x] = parent[parent[x]];   // 路径减半，边走边压", "            x = parent[x];", "        }", "        return x;", "    }", "", "    private boolean union(int[] parent, int a, int b) {", "        a = find(parent, a);", "        b = find(parent, b);", "        if (a == b) return false;", "        parent[a] = b;", "        return true;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 305. 岛屿数量 II —— 图解：复刻 Solution.java 的「并查集动态加陆 + 四邻合并」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { m: 3, n: 3, positions: [[0, 0], [2, 2], [0, 2], [2, 0], [1, 1], [0, 1]] };
+
+function trace(input) {
+  var m = input.m, n = input.n;
+  var parent = [];   // 网格 (r,c) 编号 r*n+c；-1 表示水
+  for (var i = 0; i < m * n; i++) parent[i] = -1;
+  var count = 0;
+  var frames = [];
+  var out = [];
+
+  function rootOf(x) { while (parent[x] !== x) x = parent[x]; return x; }
+
+  function boardPanel(markKind) {
+    var rows = [], marks = {};
+    for (var r = 0; r < m; r++) {
+      var row = [];
+      for (var c = 0; c < n; c++) {
+        var id = r * n + c;
+        if (parent[id] === -1) { row.push('·'); continue; }
+        row.push(String(rootOf(id)));   // 用根编号区分不同岛屿
+      }
+      rows.push(row);
+    }
+    if (markKind) marks[Math.floor(markKind.at / n) + ',' + (markKind.at % n)] = markKind.cls;
+    return Viz.grid(rows, { title: '网格（· 水；数字 = 所属岛的根编号）', marks: marks });
+  }
+  function countPanel(fresh) {
+    return Viz.vars([{ name: 'count（当前岛屿数）', v: count, cls: fresh ? 'cur' : '' }]);
+  }
+  function snap(at, key, markKind, fresh) {
+    frames.push(Viz.frame(at, key, [boardPanel(markKind), countPanel(fresh)]));
+  }
+
+  var newSnaps = 0, mergePre = false, mergePost = false;
+  for (var i = 0; i < input.positions.length; i++) {
+    var r = input.positions[i][0], c = input.positions[i][1];
+    var id = r * n + c;
+    if (parent[id] !== -1) { out.push(count); continue; }
+    parent[id] = id;
+    count++;
+    // 看看四邻里有几「座」不同岛屿（去重后再数）：决定这张图是「新增」还是「合并」
+    var dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    var seenRoots = {};
+    for (var d = 0; d < 4; d++) {
+      var nr = r + dirs[d][0], nc = c + dirs[d][1];
+      if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;
+      var nid = nr * n + nc;
+      if (parent[nid] !== -1) seenRoots[rootOf(nid)] = true;
+    }
+    var distinct = Object.keys(seenRoots).length;
+    if (distinct === 0 && newSnaps < 2) {
+      newSnaps++;
+      snap('parent[id] = id;', '加 (' + r + ',' + c + ')：四邻都是水，自成一座新岛，count=' + count,
+        { at: id, cls: 'new' }, true);
+    }
+    if (distinct >= 2 && !mergePre) {
+      mergePre = true;
+      snap('for (int[] d : dirs) {', '加上 (' + r + ',' + c + ')、合并前：四邻连着 ' + distinct + ' 座不同的岛，马上全并成一个',
+        { at: id, cls: 'cur' }, false);
+    }
+    for (var d2 = 0; d2 < 4; d2++) {
+      var nr2 = r + dirs[d2][0], nc2 = c + dirs[d2][1];
+      if (nr2 < 0 || nr2 >= m || nc2 < 0 || nc2 >= n) continue;
+      var nid2 = nr2 * n + nc2;
+      if (parent[nid2] === -1) continue;
+      var ra = rootOf(id), rb = rootOf(nid2);
+      if (ra !== rb) { parent[ra] = rb; count--; }
+    }
+    if (distinct >= 2 && !mergePost) {
+      mergePost = true;
+      snap('if (union(parent, id, r * n + c)) count--;', '加完 (' + r + ',' + c + ')：' + (distinct + 1) + ' 座岛并成 1 座，count 从 ' + (count + distinct) + ' 降到 ' + count,
+        { at: id, cls: 'done' }, true);
+    }
+    out.push(count);
+  }
+
+  snap('return out;', '全部加完：每次操作后的岛屿数依次是 ' + out.join('、'), null, true);
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

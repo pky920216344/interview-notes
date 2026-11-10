@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉树最大宽度 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 82 / 1159</span>
+  <nav class="pn"><a href="0560.html">上一篇</a><a href="0098.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">662. </span>二叉树最大宽度</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 84</li><li class="algo">广度优先搜索</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">二叉树</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">BFS 给结点编号（根 1，孩子 2i、2i+1），每层宽度 = 最右编号 - 最左编号 + 1，取所有层的最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>结点、编号两个队列同步进出，一层一层处理；<code>first</code> 记本层最左结点的编号。</li><li>每弹出一个就用 <code>idx - first + 1</code> 更新答案，本层最后一个弹出的编号就是最右端。</li><li>中间的空位没有结点但占用编号（比如只有右孩子 2i+1，编号 2i 缺席），宽度自然把空位算进去。</li><li>编号必须用 <code>long</code>（int 乘 2 会溢出）；深链连 long 都会回绕，但同层「末 - 首」差值不受影响。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> widthOfBinaryTree(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="c">// 两个队列：结点 + 编号（根 1，孩子 2i 和 2i+1）</span></span><span class="ln"><span class="no">7</span>        <span class="t">Queue</span>&lt;<span class="t">TreeNode</span>&gt; nodes = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="t">Queue</span>&lt;<span class="t">Long</span>&gt; ids = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        nodes.add(root);</span><span class="ln"><span class="no">10</span>        ids.add(<span class="n">1L</span>);</span><span class="ln"><span class="no">11</span>        <span class="k">while</span> (!nodes.isEmpty()) {</span><span class="ln"><span class="no">12</span>            <span class="k">int</span> sz = nodes.size();</span><span class="ln"><span class="no">13</span>            <span class="k">long</span> first = <span class="n">0</span>;</span><span class="ln"><span class="no">14</span>            <span class="c">// first 记本层最左结点的编号，层宽 = 首尾编号差 + 1</span></span><span class="ln"><span class="no">15</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; sz; i++) {</span><span class="ln"><span class="no">16</span>                <span class="t">TreeNode</span> node = nodes.poll();</span><span class="ln"><span class="no">17</span>                <span class="k">long</span> idx = ids.poll();</span><span class="ln"><span class="no">18</span>                <span class="k">if</span> (i == <span class="n">0</span>) first = idx;</span><span class="ln"><span class="no">19</span>                ans = <span class="t">Math</span>.max(ans, (<span class="k">int</span>) (idx - first + <span class="n">1</span>));</span><span class="ln"><span class="no">20</span>                <span class="k">if</span> (node.left != <span class="k">null</span>) {</span><span class="ln"><span class="no">21</span>                    nodes.add(node.left);</span><span class="ln"><span class="no">22</span>                    ids.add(idx * <span class="n">2</span>);</span><span class="ln"><span class="no">23</span>                }</span><span class="ln"><span class="no">24</span>                <span class="k">if</span> (node.right != <span class="k">null</span>) {</span><span class="ln"><span class="no">25</span>                    nodes.add(node.right);</span><span class="ln"><span class="no">26</span>                    ids.add(idx * <span class="n">2</span> + <span class="n">1</span>);</span><span class="ln"><span class="no">27</span>                }</span><span class="ln"><span class="no">28</span>            }</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一棵二叉树的根节点 <code>root</code> ，返回树的 <strong>最大宽度</strong> 。</p>
+
+<p>树的 <strong>最大宽度</strong> 是所有层中最大的 <strong>宽度</strong> 。</p>
+
+<div class="original__bRMd">
+<div>
+<p>每一层的 <strong>宽度</strong> 被定义为该层最左和最右的非空节点（即，两个端点）之间的长度。将这个二叉树视作与满二叉树结构相同，两端点间会出现一些延伸到这一层的 <code>null</code> 节点，这些 <code>null</code> 节点也计入长度。</p>
+
+<p>题目数据保证答案将会在&nbsp; <strong>32 位</strong> 带符号整数范围内。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/5505f6f958ab.jpg" style="width: 359px; height: 302px;" />
+<pre>
+<strong>输入：</strong>root = [1,3,2,5,3,null,9]
+<strong>输出：</strong>4
+<strong>解释：</strong>最大宽度出现在树的第 3 层，宽度为 4 (5,3,null,9) 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/dada482f6f04.jpg" style="width: 442px; height: 422px;" />
+<pre>
+<strong>输入：</strong>root = [1,3,2,5,null,null,9,6,null,7]
+<strong>输出：</strong>7
+<strong>解释：</strong>最大宽度出现在树的第 4 层，宽度为 7 (6,null,null,null,null,null,7) 。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+<img alt="" src="../assets/img/12bc89404bf1.jpg" style="width: 289px; height: 299px;" />
+<pre>
+<strong>输入：</strong>root = [1,3,2,5]
+<strong>输出：</strong>2
+<strong>解释：</strong>最大宽度出现在树的第 2 层，宽度为 2 (3,2) 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中节点的数目范围是 <code>[1, 3000]</code></li>
+	<li><code>-100 &lt;= Node.val &lt;= 100</code></li>
+</ul>
+</div>
+</div>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int widthOfBinaryTree(TreeNode root) {", "        int ans = 0;", "        // 两个队列：结点 + 编号（根 1，孩子 2i 和 2i+1）", "        Queue<TreeNode> nodes = new ArrayDeque<>();", "        Queue<Long> ids = new ArrayDeque<>();", "        nodes.add(root);", "        ids.add(1L);", "        while (!nodes.isEmpty()) {", "            int sz = nodes.size();", "            long first = 0;", "            // first 记本层最左结点的编号，层宽 = 首尾编号差 + 1", "            for (int i = 0; i < sz; i++) {", "                TreeNode node = nodes.poll();", "                long idx = ids.poll();", "                if (i == 0) first = idx;", "                ans = Math.max(ans, (int) (idx - first + 1));", "                if (node.left != null) {", "                    nodes.add(node.left);", "                    ids.add(idx * 2);", "                }", "                if (node.right != null) {", "                    nodes.add(node.right);", "                    ids.add(idx * 2 + 1);", "                }", "            }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 662. 二叉树最大宽度 —— 图解：复刻 Solution.java 的「BFS 给结点编号」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, 3, 2, 5, 3, null, 9] };
+
+function trace(input) {
+  var arr = input.root || [];
+  // 层序数组 → 结点表：nodes[i] 是层序下标 i 的结点（null 位置是 null），带 l / r
+  var nodes = arr.map(function (v, i) { return v === null ? null : { v: v, idx: i, l: null, r: null }; });
+  var root = arr.length && nodes[0] ? nodes[0] : null;
+  if (root) {
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var cur = q.shift();
+      if (nodes[i]) { cur.l = nodes[i]; q.push(nodes[i]); }
+      i++;
+      if (i < arr.length && nodes[i]) { cur.r = nodes[i]; q.push(nodes[i]); }
+      i++;
+    }
+  }
+
+  var frames = [];
+  var ans = 0, bestDepth = 0;
+  var levels = [];   // 已处理完的每层结点
+  var idOf = {};     // 入过队的结点 → 编号（标签用）
+
+  var FIRST = 'if (i == 0) first = idx;';
+  var MAXA = 'ans = Math.max(ans, (int) (idx - first + 1));';
+  var PUSHR = 'ids.add(idx * 2 + 1);';
+
+  function labelsOf() {
+    var labels = [];
+    nodes.forEach(function (n) {
+      if (n && idOf[n.idx] !== undefined) labels.push({ at: n.idx, label: 'id=' + idOf[n.idx] });
+    });
+    return labels;
+  }
+  function treePanel(marks) {
+    return Viz.tree(arr, { title: '二叉树（标签是编号）', marks: marks, labels: labelsOf() });
+  }
+  function queuePanel(queue) {
+    var items = queue.map(function (e) { return e.node.v + ':' + e.id; });
+    var pointers = queue.length ? [{ at: 0, label: '队头', cls: 'p-head' }] : [];
+    return Viz.cells(items, { title: '队列（结点:编号，左端队头）', pointers: pointers });
+  }
+  function snap(at, key, marks, queue) {
+    frames.push(Viz.frame(at, key, [treePanel(marks), queuePanel(queue)]));
+  }
+  function kidsText(queue) {
+    return queue.map(function (e) { return e.node.v + '←' + e.id; }).join('、');
+  }
+  function processedMarks(cls) {
+    var m = {};
+    levels.forEach(function (lv) { lv.forEach(function (n) { m[n.idx] = cls; }); });
+    return m;
+  }
+
+  if (!root) {
+    return { frames: frames, result: 0 };
+  }
+
+  var queue = [{ node: root, id: 1 }];
+  idOf[root.idx] = 1;
+  var marks0 = {};
+  marks0[root.idx] = 'cur';
+  snap('nodes.add(root);', '开局：根入队，编号 1；孩子编号按 2i、2i+1 推', marks0, queue);
+
+  var depth = 0;
+  while (queue.length) {
+    var sz = queue.length;
+    var levelNodes = [];
+    var first = 0, last = 0;
+    for (var i = 0; i < sz; i++) {
+      var e = queue.shift();
+      if (i === 0) first = e.id;
+      last = e.id;
+      if (e.id - first + 1 > ans) { ans = e.id - first + 1; bestDepth = depth; }
+      levelNodes.push(e.node);
+      if (e.node.l) { queue.push({ node: e.node.l, id: e.id * 2 }); idOf[e.node.l.idx] = e.id * 2; }
+      if (e.node.r) { queue.push({ node: e.node.r, id: e.id * 2 + 1 }); idOf[e.node.r.idx] = e.id * 2 + 1; }
+    }
+    levels.push(levelNodes);
+    var marks, kids, gap;
+    if (depth === 0) {
+      marks = {};
+      marks[root.idx] = 'done';
+      queue.forEach(function (e2) { marks[e2.node.idx] = 'new'; });
+      kids = kidsText(queue);
+      snap(FIRST, '弹出 ' + root.v + '：本层 first = ' + first + '，宽 ' + (last - first + 1) +
+        (kids ? '；孩子 ' + kids + ' 入队' : '；没有孩子，队列空了'), marks, queue);
+    } else if (depth === 1) {
+      marks = processedMarks('dim');
+      queue.forEach(function (e2) { marks[e2.node.idx] = 'new'; });
+      kids = kidsText(queue);
+      gap = queue.length >= 2 && queue[queue.length - 1].id - queue[0].id + 1 > queue.length;
+      snap(PUSHR, gap
+        ? '孩子编号 2i、2i+1：' + kids + '；缺的编号就是空位'
+        : (kids ? '孩子编号 2i、2i+1：' + kids + ' 入队' : '本层没有孩子入队'),
+        marks, queue);
+    } else if (depth === 2) {
+      marks = processedMarks('dim');
+      levelNodes.forEach(function (n) { marks[n.idx] = 'win'; });
+      queue.forEach(function (e2) { marks[e2.node.idx] = 'new'; });
+      snap(MAXA, '本层最右 ' + last + ' - 最左 ' + first + ' + 1 = ' + (last - first + 1) + '：空位也计入宽度', marks, queue);
+    }
+    depth++;
+  }
+
+  var finalMarks = {};
+  nodes.forEach(function (n) { if (n) finalMarks[n.idx] = 'dim'; });
+  (levels[bestDepth] || []).forEach(function (n) { finalMarks[n.idx] = 'done'; });
+  snap('return ans;', '各层宽度取最大：第 ' + (bestDepth + 1) + ' 层最宽，返回 ' + ans, finalMarks, []);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

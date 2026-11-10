@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最小覆盖子串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 50 / 1159</span>
+  <nav class="pn"><a href="0031.html">上一篇</a><a href="0322.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">76. </span>最小覆盖子串</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 136</li><li class="algo">滑动窗口</li><li class="aux">哈希表</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">滑动窗口</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">滑动窗口：右指针扩张到覆盖 t，再收缩左指针求最短；lack 记还缺几种字符，O(1) 判断是否覆盖。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>need[c]</code> 是窗口里还缺几个 <code>c</code>（负数表示多出来的），<code>lack</code> 是还没凑够的字符种类数；先用 <code>t</code> 填好。</li><li><code>right</code> 右移读入字符：<code>--need[c] == 0</code> 说明 <code>c</code> 刚好凑齐，<code>lack--</code>。</li><li><code>lack == 0</code> 就是窗口已覆盖 <code>t</code>：先更新最短答案，再移出 <code>s[left]</code>；<code>++need[d] &gt; 0</code> 说明 <code>d</code> 又缺了，<code>lack++</code>，收缩停止。</li><li>每个字符最多进窗口、出窗口各一次；没找到时 <code>bestLen</code> 还是初值，返回空串。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(|s| + |t|)，空间复杂度 O(Σ)（Σ 为字符集大小）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">String</span> minWindow(<span class="t">String</span> s, <span class="t">String</span> t) {</span><span class="ln"><span class="no">3</span>        <span class="c">// need[c]：窗口里还缺几个 c，负数表示多出来的</span></span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] need = <span class="k">new</span> <span class="k">int</span>[<span class="n">128</span>];</span><span class="ln"><span class="no">5</span>        <span class="c">// lack：还没凑够的字符种类数，为 0 即已覆盖 t</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span> lack = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">char</span> c : t.toCharArray()) {</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (need[c]++ == <span class="n">0</span>) lack++;</span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="k">int</span> left = <span class="n">0</span>, bestL = <span class="n">0</span>, bestLen = <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> right = <span class="n">0</span>; right &lt; s.length(); right++) {</span><span class="ln"><span class="no">12</span>            <span class="c">// 读入的字符刚好补齐，缺的种类少一种</span></span><span class="ln"><span class="no">13</span>            <span class="k">if</span> (--need[s.charAt(right)] == <span class="n">0</span>) lack--;</span><span class="ln"><span class="no">14</span>            <span class="c">// 已覆盖：尽量收缩左边，每一步都试着更新最短</span></span><span class="ln"><span class="no">15</span>            <span class="k">while</span> (lack == <span class="n">0</span>) {</span><span class="ln"><span class="no">16</span>                <span class="k">if</span> (right - left + <span class="n">1</span> &lt; bestLen) {</span><span class="ln"><span class="no">17</span>                    bestLen = right - left + <span class="n">1</span>;</span><span class="ln"><span class="no">18</span>                    bestL = left;</span><span class="ln"><span class="no">19</span>                }</span><span class="ln"><span class="no">20</span>                <span class="c">// 移出的字符重新变成「缺」，覆盖就被破坏了</span></span><span class="ln"><span class="no">21</span>                <span class="k">if</span> (++need[s.charAt(left++)] &gt; <span class="n">0</span>) lack++;</span><span class="ln"><span class="no">22</span>            }</span><span class="ln"><span class="no">23</span>        }</span><span class="ln"><span class="no">24</span>        <span class="k">if</span> (bestLen == <span class="t">Integer</span>.MAX_VALUE) <span class="k">return</span> <span class="s">""</span>;</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> s.substring(bestL, bestL + bestLen);</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定两个字符串&nbsp;<code>s</code> 和&nbsp;<code>t</code>，长度分别是&nbsp;<code>m</code> 和&nbsp;<code>n</code>，返回 s 中的&nbsp;<strong>最短窗口 <span>子串</span></strong>，使得该子串包含 <code>t</code> 中的每一个字符（<strong>包括重复字符</strong>）。如果没有这样的子串，返回空字符串<em>&nbsp;</em><code>""</code>。</p>
+
+<p>测试用例保证答案唯一。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "ADOBECODEBANC", t = "ABC"
+<strong>输出：</strong>"BANC"
+<strong>解释：</strong>最小覆盖子串 "BANC" 包含来自字符串 t 的 'A'、'B' 和 'C'。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "a", t = "a"
+<strong>输出：</strong>"a"
+<strong>解释：</strong>整个字符串 s 是最小覆盖子串。
+</pre>
+
+<p><strong>示例 3:</strong></p>
+
+<pre>
+<strong>输入:</strong> s = "a", t = "aa"
+<strong>输出:</strong> ""
+<strong>解释:</strong> t 中两个字符 'a' 均应包含在 s 的子串中，
+因此没有符合条件的子字符串，返回空字符串。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == s.length</code></li>
+	<li><code>n == t.length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 10<sup>5</sup></code></li>
+	<li><code>s</code> 和 <code>t</code> 由英文字母组成</li>
+</ul>
+
+
+<strong>进阶：</strong>你能设计一个在 <code>O(m + n)</code> 时间内解决此问题的算法吗？</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public String minWindow(String s, String t) {", "        // need[c]：窗口里还缺几个 c，负数表示多出来的", "        int[] need = new int[128];", "        // lack：还没凑够的字符种类数，为 0 即已覆盖 t", "        int lack = 0;", "        for (char c : t.toCharArray()) {", "            if (need[c]++ == 0) lack++;", "        }", "        int left = 0, bestL = 0, bestLen = Integer.MAX_VALUE;", "        for (int right = 0; right < s.length(); right++) {", "            // 读入的字符刚好补齐，缺的种类少一种", "            if (--need[s.charAt(right)] == 0) lack--;", "            // 已覆盖：尽量收缩左边，每一步都试着更新最短", "            while (lack == 0) {", "                if (right - left + 1 < bestLen) {", "                    bestLen = right - left + 1;", "                    bestL = left;", "                }", "                // 移出的字符重新变成「缺」，覆盖就被破坏了", "                if (++need[s.charAt(left++)] > 0) lack++;", "            }", "        }", "        if (bestLen == Integer.MAX_VALUE) return \"\";", "        return s.substring(bestL, bestL + bestLen);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 76. 最小覆盖子串 —— 图解：复刻 Solution.java 的「滑动窗口 + need[] + lack」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'ADOBECBA', t: 'ABC' };
+
+function trace(input) {
+  var s = input.s, t = input.t;
+  var n = s.length;
+  var need = {};      // 字符 -> 还缺几个，对应 Java 里的 need[c]（没出现过的字符就是 0）
+  var order = [];     // t 里出现的字符，按首次出现的顺序，表格才稳定
+  var lack = 0;       // 还缺几种字符
+  var left = 0, bestL = 0, bestLen = Infinity;   // Java 里是 Integer.MAX_VALUE
+  var frames = [];
+  var shown = {};     // 每种关键时刻只拍第一次
+
+  function get(c) { return need[c] || 0; }
+
+  // 字符串面板：窗口 [left, right]（right 为 -1 时不画窗口）；done = 最短答案的范围
+  function strPanel(right, done) {
+    var marks = {}, i;
+    if (right >= 0) for (i = left; i <= right; i++) marks[i] = 'win';
+    if (done) for (i = done[0]; i <= done[1]; i++) marks[i] = 'done';
+    var pointers = right >= 0 ? [{ at: left, label: 'left', cls: 'p-left' }, { at: right, label: 'right', cls: 'p-right' }] : [];
+    var range = right >= left ? { from: left, to: right, label: '窗口' } : null;
+    return Viz.cells(s.split(''), { title: '字符串 s', marks: marks, pointers: pointers, range: range });
+  }
+  // need 表：t 里每种字符还缺几个；focus 是这一步要强调的字符，cls 是强调的方式
+  function needPanel(focus, cls) {
+    return Viz.table('need[c]：窗口里还缺几个 c（0 是刚好够，负数是多了）',
+      order.map(function (c) { return { k: c, v: String(get(c)), cls: c === focus ? cls : '' }; }));
+  }
+  function lackPanel(changed) {
+    return Viz.vars([{ name: 'lack（还缺几种）', v: lack, cls: changed ? 'chg' : '' }]);
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  for (var q = 0; q < t.length; q++) {
+    var ct = t[q];
+    if (get(ct) === 0) { order.push(ct); lack++; }   // 对应 if (need[c]++ == 0) lack++;
+    need[ct] = get(ct) + 1;
+  }
+  snap('int left = 0, bestL = 0', 'need 记每种字符还缺几个，lack 记还缺几种', [strPanel(-1), needPanel(), lackPanel(false)]);
+
+  for (var right = 0; right < n; right++) {
+    var c = s[right];
+    need[c] = get(c) - 1;
+    var gained = need[c] === 0;
+    if (gained) lack--;
+    if (gained && !shown.gain) {
+      shown.gain = true;
+      snap('if (--need[s.charAt(right)] == 0) lack--;', '读入「' + c + '」：它刚好补齐，lack 减 1',
+        [strPanel(right), needPanel(c, 'chg'), lackPanel(true)]);
+    }
+    if (lack === 0 && !shown.cover) {
+      shown.cover = true;
+      snap('while (lack == 0) {', 'right 扩到「' + c + '」：lack 变成 0，窗口覆盖了 t',
+        [strPanel(right), needPanel(), lackPanel(false)]);
+    }
+    var shrunk = 0;   // 这一轮已经收缩了几步
+    while (lack === 0) {
+      if (right - left + 1 < bestLen) { bestLen = right - left + 1; bestL = left; }
+      var d = s[left];
+      // need[d] 为 0 说明 d 刚好够用，再移出去就缺了，收缩到头
+      if (get(d) === 0 && shrunk > 0 && !shown.limit) {
+        shown.limit = true;
+        snap('if (++need[s.charAt(left++)] > 0) lack++;', '收缩到头：再移出「' + d + '」就缺它，窗口长 ' + (right - left + 1),
+          [strPanel(right), needPanel(d, 'hit'), lackPanel(false)]);
+      }
+      need[d] = get(d) + 1;
+      left++;
+      if (need[d] > 0) lack++;
+      shrunk++;
+    }
+  }
+
+  var found = bestLen !== Infinity;
+  var result = found ? s.substring(bestL, bestL + bestLen) : '';
+  snap(found ? 'return s.substring(' : 'return "";', found ? '扫完：最短覆盖子串是「' + result + '」' : '没有窗口能覆盖 t，返回空串',
+    [strPanel(-1, found ? [bestL, bestL + bestLen - 1] : null)]);
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

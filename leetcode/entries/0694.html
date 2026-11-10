@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>不同岛屿的数量 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 430 / 1159</span>
+  <nav class="pn"><a href="supp-12.html">上一篇</a><a href="0621.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">694. </span>不同岛屿的数量</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 6</li><li class="algo">深度优先搜索/递归</li><li class="aux">哈希表</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">矩阵</li><li class="tag">排序</li><li class="tag">哈希函数</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">DFS 每座岛时把格子坐标换成相对起点的偏移，排序拼成串塞进哈希集合，串的种类数就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>从左上往右下扫，遇到 <code>1</code> 就 DFS 整座岛，同时把岛淹成 <code>0</code>，保证每座岛只收一次。</li><li>收集时记<strong>相对起点的偏移</strong> <code>(r−r0, c−c0)</code>：平移不改偏移，形状就与位置无关了。</li><li>偏移对<strong>排序后拼成串</strong>，作为这座岛的形状指纹；同一形状无论 DFS 从哪开始都得到同一串。</li><li>答案 = 形状指纹去重后的个数。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn·log(mn))，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="c">/*</span></span><span class="ln"><span class="no">2</span><span class="c"> * 力扣 694 不同岛屿的数量（会员题，本地验证即可，不提交）：</span></span><span class="ln"><span class="no">3</span><span class="c"> * 0/1 矩阵，1 是陆地；岛 = 四连通的 1 块。形状相同（允许平移）的岛只算一种，</span></span><span class="ln"><span class="no">4</span><span class="c"> * 返回不同形状岛的个数。</span></span><span class="ln"><span class="no">5</span><span class="c"> */</span></span><span class="ln"><span class="no">6</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">9</span>    <span class="k">public</span> <span class="k">int</span> countDistinctIslands(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">10</span>        <span class="t">Set</span>&lt;<span class="t">String</span>&gt; shapes = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; grid.length; r++)</span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; grid[<span class="n">0</span>].length; c++)</span><span class="ln"><span class="no">13</span>                <span class="c">// 扫到一个新岛：DFS 收集形状，顺手把它淹成 0</span></span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (grid[r][c] == <span class="n">1</span>) {</span><span class="ln"><span class="no">15</span>                    <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; cells = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">16</span>                    dfs(grid, r, c, r, c, cells);</span><span class="ln"><span class="no">17</span>                    shapes.add(key(cells));</span><span class="ln"><span class="no">18</span>                }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> shapes.size();</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>    <span class="c">// 收集整座岛的格子，坐标换成相对起点 (r0,c0) 的偏移</span></span><span class="ln"><span class="no">23</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span>[][] g, <span class="k">int</span> r, <span class="k">int</span> c, <span class="k">int</span> r0, <span class="k">int</span> c0, <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; cells) {</span><span class="ln"><span class="no">24</span>        <span class="k">if</span> (r &lt; <span class="n">0</span> || r &gt;= g.length || c &lt; <span class="n">0</span> || c &gt;= g[<span class="n">0</span>].length || g[r][c] != <span class="n">1</span>) <span class="k">return</span>;</span><span class="ln"><span class="no">25</span>        g[r][c] = <span class="n">0</span>;</span><span class="ln"><span class="no">26</span>        cells.add(<span class="k">new</span> <span class="k">int</span>[]{r - r0, c - c0});</span><span class="ln"><span class="no">27</span>        dfs(g, r + <span class="n">1</span>, c, r0, c0, cells);</span><span class="ln"><span class="no">28</span>        dfs(g, r - <span class="n">1</span>, c, r0, c0, cells);</span><span class="ln"><span class="no">29</span>        dfs(g, r, c + <span class="n">1</span>, r0, c0, cells);</span><span class="ln"><span class="no">30</span>        dfs(g, r, c - <span class="n">1</span>, r0, c0, cells);</span><span class="ln"><span class="no">31</span>    }</span><span class="ln"><span class="no">32</span> </span><span class="ln"><span class="no">33</span>    <span class="c">// 偏移排序后拼成串：同一形状无论从哪个格子出发都得到同一个串</span></span><span class="ln"><span class="no">34</span>    <span class="k">private</span> <span class="t">String</span> key(<span class="t">List</span>&lt;<span class="k">int</span>[]&gt; cells) {</span><span class="ln"><span class="no">35</span>        cells.sort((a, b) -&gt; a[<span class="n">0</span>] != b[<span class="n">0</span>] ? a[<span class="n">0</span>] - b[<span class="n">0</span>] : a[<span class="n">1</span>] - b[<span class="n">1</span>]);</span><span class="ln"><span class="no">36</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">37</span>        <span class="k">for</span> (<span class="k">int</span>[] p : cells) sb.append(p[<span class="n">0</span>]).append(<span class="s">','</span>).append(p[<span class="n">1</span>]).append(<span class="s">';'</span>);</span><span class="ln"><span class="no">38</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">39</span>    }</span><span class="ln"><span class="no">40</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["/*", " * 力扣 694 不同岛屿的数量（会员题，本地验证即可，不提交）：", " * 0/1 矩阵，1 是陆地；岛 = 四连通的 1 块。形状相同（允许平移）的岛只算一种，", " * 返回不同形状岛的个数。", " */", "import java.util.*;", "", "class Solution {", "    public int countDistinctIslands(int[][] grid) {", "        Set<String> shapes = new HashSet<>();", "        for (int r = 0; r < grid.length; r++)", "            for (int c = 0; c < grid[0].length; c++)", "                // 扫到一个新岛：DFS 收集形状，顺手把它淹成 0", "                if (grid[r][c] == 1) {", "                    List<int[]> cells = new ArrayList<>();", "                    dfs(grid, r, c, r, c, cells);", "                    shapes.add(key(cells));", "                }", "        return shapes.size();", "    }", "", "    // 收集整座岛的格子，坐标换成相对起点 (r0,c0) 的偏移", "    private void dfs(int[][] g, int r, int c, int r0, int c0, List<int[]> cells) {", "        if (r < 0 || r >= g.length || c < 0 || c >= g[0].length || g[r][c] != 1) return;", "        g[r][c] = 0;", "        cells.add(new int[]{r - r0, c - c0});", "        dfs(g, r + 1, c, r0, c0, cells);", "        dfs(g, r - 1, c, r0, c0, cells);", "        dfs(g, r, c + 1, r0, c0, cells);", "        dfs(g, r, c - 1, r0, c0, cells);", "    }", "", "    // 偏移排序后拼成串：同一形状无论从哪个格子出发都得到同一个串", "    private String key(List<int[]> cells) {", "        cells.sort((a, b) -> a[0] != b[0] ? a[0] - b[0] : a[1] - b[1]);", "        StringBuilder sb = new StringBuilder();", "        for (int[] p : cells) sb.append(p[0]).append(',').append(p[1]).append(';');", "        return sb.toString();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 694 不同岛屿的数量 —— 图解：复刻 Solution.java 的「DFS 收集相对坐标做形状哈希」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[1, 1, 0], [1, 0, 0], [0, 0, 1], [0, 1, 1]] };
+
+function trace(input) {
+  var grid = input.grid, m = grid.length, n = grid[0].length;
+  var frames = [];
+  var fired = { first: false, add: false, key: false };
+  var visited = [];   // 已淹掉的陆地 "r,c"
+
+  function gridPanel(extra) {
+    var marks = {};
+    visited.forEach(function (p) { marks[p] = 'win'; });
+    Object.keys(extra || {}).forEach(function (k) { marks[k] = extra[k]; });
+    var rows = grid.map(function (row) { return row.slice(); });
+    return Viz.grid(rows, { title: 'grid（1 是陆地）', marks: marks });
+  }
+
+  function coordPanel(cells, title) {
+    var rows = cells.map(function (p, i) {
+      return { k: '第 ' + (i + 1) + ' 格', v: '(' + p[0] + ',' + p[1] + ')', cls: i === cells.length - 1 ? 'new' : '' };
+    });
+    return Viz.table(title, rows, { hint: '坐标已换成相对起点的偏移' });
+  }
+
+  function shapesPanel(shapes, fresh) {
+    var rows = shapes.map(function (s, i) {
+      return { k: '形状 ' + (i + 1), v: s, cls: i === fresh ? 'new' : '' };
+    });
+    return Viz.table('形状集合（去重）', rows, { hint: '同一形状只记一次' });
+  }
+
+  // 复刻 Java：相对坐标收集 + 排序成串
+  var shapes = [];
+  var curCells = [];
+
+  function dfs(r, c, r0, c0) {
+    if (r < 0 || r >= m || c < 0 || c >= n || grid[r][c] !== 1) return;
+    grid[r][c] = 0;
+    visited.push(r + ',' + c);
+    curCells.push([r - r0, c - c0]);
+    if (!fired.add && curCells.length === 1) {
+      fired.add = true;
+      var extra = {};
+      extra[r + ',' + c] = 'cur';
+      frames.push(Viz.frame('cells.add(new int[]{r - r0, c - c0});',
+        'DFS 每踩到一格就记下相对起点 (' + r0 + ',' + c0 + ') 的偏移 (' + (r - r0) + ',' + (c - c0) + ')',
+        [gridPanel(extra), coordPanel(curCells, '当前岛已收集的偏移')]));
+    }
+    dfs(r + 1, c, r0, c0);
+    dfs(r - 1, c, r0, c0);
+    dfs(r, c + 1, r0, c0);
+    dfs(r, c - 1, r0, c0);
+  }
+
+  function key(cells) {
+    var s = cells.slice().sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+    return s.map(function (p) { return p[0] + ',' + p[1] + ';'; }).join('');
+  }
+
+  for (var r = 0; r < m; r++)
+    for (var c = 0; c < n; c++)
+      if (grid[r][c] === 1) {
+        if (!fired.first) {
+          fired.first = true;
+          var extra0 = {};
+          extra0[r + ',' + c] = 'cur';
+          frames.push(Viz.frame('if (grid[r][c] == 1) {',
+            '扫到没见过的陆地 (' + r + ',' + c + ')：这是一座新岛，DFS 把它整个收下来',
+            [gridPanel(extra0), shapesPanel(shapes, -1)]));
+        }
+        curCells = [];
+        dfs(r, c, r, c);
+        var k = key(curCells);
+        var fresh = shapes.indexOf(k);
+        if (fresh < 0) { shapes.push(k); fresh = shapes.length - 1; }
+        if (!fired.key) {
+          fired.key = true;
+          frames.push(Viz.frame('shapes.add(key(cells));',
+            '偏移排序后拼成串放进集合：形状一样的岛会得到同一个串，只留一份',
+            [gridPanel({}), shapesPanel(shapes, fresh)]));
+        }
+      }
+
+  frames.push(Viz.frame('return shapes.size();',
+    '全部岛收完：不同形状共 ' + shapes.length + ' 种',
+    [gridPanel({}), shapesPanel(shapes, -1)]));
+
+  return { frames: frames, result: shapes.length };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

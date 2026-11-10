@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最小差值 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 701 / 1159</span>
+  <nav class="pn"><a href="lcp-18.html">上一篇</a><a href="1668.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">910. </span>最小差值 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">排序后只有「在哪分割」一种自由度：前段全部 +k、后段全部 -k，枚举分割点用 max/min 直接算新差值，取最小。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>同加同减不改变最大最小差，所以最优解一定长这样：排序后某一段全 <code>+k</code>，其余全 <code>-k</code>，只有分割点要枚举。</li><li>分割后差值 = <code>max(nums[i]+k, 末尾-k) - min(开头+k, nums[i+1]-k)</code>，四端点直接算，不用重建数组。</li><li>先按「全 +k」把答案设为 <code>末尾 - 开头</code>，再逐个分割点收紧；分割点在末尾之前不存在（全 <code>+k</code> 已算过）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> smallestRangeII(<span class="k">int</span>[] nums, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="t">Arrays</span>.sort(nums);</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">7</span>        <span class="c">// 全部同加同减不改变差值，等于全部 +k 的基准答案</span></span><span class="ln"><span class="no">8</span>        <span class="k">int</span> ans = nums[n - <span class="n">1</span>] - nums[<span class="n">0</span>];</span><span class="ln"><span class="no">9</span>        <span class="c">// 枚举分割点：前 i+1 个 +k，其余 -k（只有「在哪分割」一种自由度）</span></span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n - <span class="n">1</span>; i++) {</span><span class="ln"><span class="no">11</span>            <span class="c">// 前段最大是 nums[i]+k，后段最大是末尾 -k</span></span><span class="ln"><span class="no">12</span>            <span class="k">int</span> high = <span class="t">Math</span>.max(nums[i] + k, nums[n - <span class="n">1</span>] - k);</span><span class="ln"><span class="no">13</span>            <span class="c">// 首元素 +k 与分割后第一个 -k 里取小者</span></span><span class="ln"><span class="no">14</span>            <span class="k">int</span> low = <span class="t">Math</span>.min(nums[<span class="n">0</span>] + k, nums[i + <span class="n">1</span>] - k);</span><span class="ln"><span class="no">15</span>            ans = <span class="t">Math</span>.min(ans, high - low);</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code>，和一个整数&nbsp;<code>k</code> 。</p>
+
+<p>对于每个下标 <code>i</code>（<code>0 &lt;= i &lt; nums.length</code>），将 <code>nums[i]</code> 变成 <code>nums[i] + k</code> 或 <code>nums[i] - k</code> 。</p>
+
+<p><code>nums</code> 的 <strong>分数</strong> 是 <code>nums</code> 中最大元素和最小元素的差值。</p>
+
+<p>在更改每个下标对应的值之后，返回 <code>nums</code> 的最小 <strong>分数</strong> 。</p>
+
+
+
+<ol>
+</ol>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1], k = 0
+<strong>输出：</strong>0
+<strong>解释：</strong>分数 = max(nums) - min(nums) = 1 - 1 = 0 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [0,10], k = 2
+<strong>输出：</strong>6
+<strong>解释：</strong>将数组变为 [2, 8] 。分数 = max(nums) - min(nums) = 8 - 2 = 6 。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,3,6], k = 3
+<strong>输出：</strong>3
+<strong>解释：</strong>将数组变为 [4, 6, 3] 。分数 = max(nums) - min(nums) = 6 - 3 = 3 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= nums[i] &lt;= 10<sup>4</sup></code></li>
+	<li><code>0 &lt;= k &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int smallestRangeII(int[] nums, int k) {", "        Arrays.sort(nums);", "        int n = nums.length;", "        // 全部同加同减不改变差值，等于全部 +k 的基准答案", "        int ans = nums[n - 1] - nums[0];", "        // 枚举分割点：前 i+1 个 +k，其余 -k（只有「在哪分割」一种自由度）", "        for (int i = 0; i < n - 1; i++) {", "            // 前段最大是 nums[i]+k，后段最大是末尾 -k", "            int high = Math.max(nums[i] + k, nums[n - 1] - k);", "            // 首元素 +k 与分割后第一个 -k 里取小者", "            int low = Math.min(nums[0] + k, nums[i + 1] - k);", "            ans = Math.min(ans, high - low);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 910. 最小差值 II —— 图解：排序后枚举分割点（前段 +k、后段 -k），在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 3, 6], k: 3 };
+
+function trace(input) {
+  var nums = input.nums.slice().sort(function (a, b) { return a - b; });
+  var k = input.k;
+  var n = nums.length;
+  var frames = [];
+  var ans = nums[n - 1] - nums[0];
+  var bestI = -1, bestHigh = 0, bestLow = 0;
+
+  var HIGH = 'int high = Math.max(nums[i] + k, nums[n - 1] - k);';
+  var LOW = 'int low = Math.min(nums[0] + k, nums[i + 1] - k);';
+
+  function varsPanel(high, low) {
+    var items = [{ name: 'ans', v: ans, cls: 'chg' }];
+    if (high != null) items.push({ name: 'high', v: high, cls: '' });
+    if (low != null) items.push({ name: 'low', v: low, cls: '' });
+    return Viz.vars(items);
+  }
+
+  // 分割点左侧是「将要 +k」的前段（win），右侧是「将要 -k」的后段（dim）
+  function splitPanel(i) {
+    var marks = {};
+    for (var j = 0; j < n; j++) marks[j] = j <= i ? 'win' : 'dim';
+    var pointers = [{ at: i + 1, label: '分割', cls: 'p-cur' }];
+    return Viz.cells(nums, { title: '排序后的 nums', marks: marks, pointers: pointers });
+  }
+
+  frames.push(Viz.frame('int ans = nums[n - 1] - nums[0];',
+    '先按「全部 +k」取基准：差值就是 ' + nums[0] + ' 与 ' + nums[n - 1] + ' 的差 ' + ans,
+    [Viz.cells(nums, { title: '排序后的 nums', marks: {} }), varsPanel(null, null)]));
+
+  for (var i = 0; i < n - 1; i++) {
+    var high = Math.max(nums[i] + k, nums[n - 1] - k);
+    if (i === 0) frames.push(Viz.frame(HIGH,
+      '分割在 ' + nums[i] + ' 后面：前段 +' + k + '、后段 -' + k,
+      [splitPanel(i), varsPanel(null, null)]));
+    var low = Math.min(nums[0] + k, nums[i + 1] - k);
+    var improved = high - low < ans;
+    if (improved) { ans = high - low; bestI = i; bestHigh = high; bestLow = low; }
+    if (i === n - 2) frames.push(Viz.frame(LOW,
+      '最后一档：high=' + high + '、low=' + low + (improved ? '，ans 收窄到 ' + ans : '，ans 仍是 ' + ans),
+      [splitPanel(i), varsPanel(high, low)]));
+  }
+
+  var donePanel;
+  if (bestI >= 0) {
+    donePanel = splitPanel(bestI);
+  } else {
+    var marks0 = {};
+    for (var j = 0; j < n; j++) marks0[j] = 'done';
+    donePanel = Viz.cells(nums, { title: '排序后的 nums', marks: marks0 });
+  }
+  frames.push(Viz.frame('return ans;',
+    bestI >= 0 ? '最优分割取到差 ' + ans + '（high=' + bestHigh + '、low=' + bestLow + '）' : '没有更好的分割：返回基准 ' + ans,
+    [donePanel, varsPanel(null, null)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

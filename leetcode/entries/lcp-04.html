@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>覆盖 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1129 / 1159</span>
+  <nav class="pn"><a href="mianshi-03-03.html">上一篇</a><a href="1168.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">LCP 04. </span>覆盖</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">图算法</li><li class="aux">深度优先搜索/递归</li><li class="tag">位运算</li><li class="tag">图</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">位掩码</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">骨牌必占一白一黑：坏棋盘按 (r+c) 奇偶染成二分图，最多骨牌数 = 白格到黑格的最大匹配（匈牙利）。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>任何骨牌都盖住一个 <code>(r+c)</code> 偶格和一个奇格 → 只在「白格—相邻黑格」间连边，答案就是最大匹配数。</li><li>匈牙利算法：白格依次找相邻黑格；黑格空着直接配，被占就递归请占它的白格挪窝，挪不动再试下一个邻居。</li><li>每轮增广前清空 <code>asked</code>，保证一个黑格一轮只被问一次，递归不绕圈。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(V·E)，棋盘 ≤ 8×8，空间复杂度 O(n·m)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.<span class="t">ArrayList</span>;</span><span class="ln"><span class="no">2</span><span class="k">import</span> java.util.<span class="t">Arrays</span>;</span><span class="ln"><span class="no">3</span><span class="k">import</span> java.util.<span class="t">List</span>;</span><span class="ln"><span class="no">4</span> </span><span class="ln"><span class="no">5</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">int</span> m;</span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; adj = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(); <span class="c">// 白格 → 相邻黑格</span></span><span class="ln"><span class="no">8</span>    <span class="k">private</span> <span class="k">int</span>[] matchOf;   <span class="c">// 黑格 → 配对的白格，-1 未配</span></span><span class="ln"><span class="no">9</span>    <span class="k">private</span> <span class="k">boolean</span>[] asked; <span class="c">// 本轮增广中黑格是否被问过</span></span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">public</span> <span class="k">int</span> domino(<span class="k">int</span> n, <span class="k">int</span> m, <span class="k">int</span>[][] broken) {</span><span class="ln"><span class="no">12</span>        <span class="k">this</span>.m = m;</span><span class="ln"><span class="no">13</span>        <span class="k">boolean</span>[] bad = <span class="k">new</span> <span class="k">boolean</span>[n * m];</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span>[] p : broken) bad[p[<span class="n">0</span>] * m + p[<span class="n">1</span>]] = <span class="k">true</span>;</span><span class="ln"><span class="no">15</span>        adj.clear();</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n * m; i++) adj.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;());</span><span class="ln"><span class="no">17</span>        <span class="k">int</span>[] dr = {<span class="n">0</span>, <span class="n">0</span>, -<span class="n">1</span>, <span class="n">1</span>}, dc = {-<span class="n">1</span>, <span class="n">1</span>, <span class="n">0</span>, <span class="n">0</span>};   <span class="c">// 邻居顺序：左、右、上、下</span></span><span class="ln"><span class="no">18</span>        <span class="c">// 骨牌必占一白一黑（(r+c) 奇偶）：只从白格向相邻黑格连边</span></span><span class="ln"><span class="no">19</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; n; r++) {</span><span class="ln"><span class="no">20</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; m; c++) {</span><span class="ln"><span class="no">21</span>                <span class="k">int</span> id = r * m + c;</span><span class="ln"><span class="no">22</span>                <span class="k">if</span> (bad[id] || (r + c) % <span class="n">2</span> != <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">23</span>                <span class="k">for</span> (<span class="k">int</span> d = <span class="n">0</span>; d &lt; <span class="n">4</span>; d++) {</span><span class="ln"><span class="no">24</span>                    <span class="k">int</span> nr = r + dr[d], nc = c + dc[d];</span><span class="ln"><span class="no">25</span>                    <span class="k">if</span> (nr &lt; <span class="n">0</span> || nr &gt;= n || nc &lt; <span class="n">0</span> || nc &gt;= m) <span class="k">continue</span>;</span><span class="ln"><span class="no">26</span>                    <span class="k">if</span> (!bad[nr * m + nc]) adj.get(id).add(nr * m + nc);</span><span class="ln"><span class="no">27</span>                }</span><span class="ln"><span class="no">28</span>            }</span><span class="ln"><span class="no">29</span>        }</span><span class="ln"><span class="no">30</span>        matchOf = <span class="k">new</span> <span class="k">int</span>[n * m];</span><span class="ln"><span class="no">31</span>        <span class="t">Arrays</span>.fill(matchOf, -<span class="n">1</span>);</span><span class="ln"><span class="no">32</span>        asked = <span class="k">new</span> <span class="k">boolean</span>[n * m];</span><span class="ln"><span class="no">33</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">34</span>        <span class="c">// 白格依次找对象；看中的黑格被占，就请占它的白格挪窝</span></span><span class="ln"><span class="no">35</span>        <span class="k">for</span> (<span class="k">int</span> id = <span class="n">0</span>; id &lt; n * m; id++) {</span><span class="ln"><span class="no">36</span>            <span class="k">if</span> (bad[id] || (id / m + id % m) % <span class="n">2</span> != <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">37</span>            <span class="t">Arrays</span>.fill(asked, <span class="k">false</span>);</span><span class="ln"><span class="no">38</span>            <span class="k">if</span> (augment(id)) ans++;</span><span class="ln"><span class="no">39</span>        }</span><span class="ln"><span class="no">40</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">41</span>    }</span><span class="ln"><span class="no">42</span> </span><span class="ln"><span class="no">43</span>    <span class="k">private</span> <span class="k">boolean</span> augment(<span class="k">int</span> u) {</span><span class="ln"><span class="no">44</span>        <span class="k">for</span> (<span class="k">int</span> v : adj.get(u)) {</span><span class="ln"><span class="no">45</span>            <span class="k">if</span> (asked[v]) <span class="k">continue</span>;</span><span class="ln"><span class="no">46</span>            asked[v] = <span class="k">true</span>;</span><span class="ln"><span class="no">47</span>            <span class="k">if</span> (matchOf[v] == -<span class="n">1</span> || augment(matchOf[v])) {</span><span class="ln"><span class="no">48</span>                matchOf[v] = u;</span><span class="ln"><span class="no">49</span>                <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">50</span>            }</span><span class="ln"><span class="no">51</span>        }</span><span class="ln"><span class="no">52</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">53</span>    }</span><span class="ln"><span class="no">54</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>你有一块棋盘，棋盘上有一些格子已经坏掉了。你还有无穷块大小为<code>1 * 2</code>的多米诺骨牌，你想把这些骨牌<strong>不重叠</strong>地覆盖在<strong>完好</strong>的格子上，请找出你最多能在棋盘上放多少块骨牌？这些骨牌可以横着或者竖着放。</p>
+
+
+
+<p>输入：<code>n, m</code>代表棋盘的大小；<code>broken</code>是一个<code>b * 2</code>的二维数组，其中每个元素代表棋盘上每一个坏掉的格子的位置。</p>
+
+<p>输出：一个整数，代表最多能在棋盘上放的骨牌数。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>n = 2, m = 3, broken = [[1, 0], [1, 1]]
+<strong>输出：</strong>2
+<strong>解释：</strong>我们最多可以放两块骨牌：[[0, 0], [0, 1]]以及[[0, 2], [1, 2]]。（见下图）</pre>
+
+<p><img alt="" src="../assets/img/273cb9b23436.jpg" style="height: 204px; width: 304px;"></p>
+
+
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>n = 3, m = 3, broken = []
+<strong>输出：</strong>4
+<strong>解释：</strong>下图是其中一种可行的摆放方式
+</pre>
+
+<p><img alt="" src="../assets/img/d6b7736f81b1.jpg" style="height: 304px; width: 304px;"></p>
+
+
+
+<p><strong>限制：</strong></p>
+
+<ol>
+	<li><code>1 &lt;= n &lt;= 8</code></li>
+	<li><code>1 &lt;= m &lt;= 8</code></li>
+	<li><code>0 &lt;= b &lt;= n * m</code></li>
+</ol>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.ArrayList;", "import java.util.Arrays;", "import java.util.List;", "", "class Solution {", "    private int m;", "    private List<List<Integer>> adj = new ArrayList<>(); // 白格 → 相邻黑格", "    private int[] matchOf;   // 黑格 → 配对的白格，-1 未配", "    private boolean[] asked; // 本轮增广中黑格是否被问过", "", "    public int domino(int n, int m, int[][] broken) {", "        this.m = m;", "        boolean[] bad = new boolean[n * m];", "        for (int[] p : broken) bad[p[0] * m + p[1]] = true;", "        adj.clear();", "        for (int i = 0; i < n * m; i++) adj.add(new ArrayList<>());", "        int[] dr = {0, 0, -1, 1}, dc = {-1, 1, 0, 0};   // 邻居顺序：左、右、上、下", "        // 骨牌必占一白一黑（(r+c) 奇偶）：只从白格向相邻黑格连边", "        for (int r = 0; r < n; r++) {", "            for (int c = 0; c < m; c++) {", "                int id = r * m + c;", "                if (bad[id] || (r + c) % 2 != 0) continue;", "                for (int d = 0; d < 4; d++) {", "                    int nr = r + dr[d], nc = c + dc[d];", "                    if (nr < 0 || nr >= n || nc < 0 || nc >= m) continue;", "                    if (!bad[nr * m + nc]) adj.get(id).add(nr * m + nc);", "                }", "            }", "        }", "        matchOf = new int[n * m];", "        Arrays.fill(matchOf, -1);", "        asked = new boolean[n * m];", "        int ans = 0;", "        // 白格依次找对象；看中的黑格被占，就请占它的白格挪窝", "        for (int id = 0; id < n * m; id++) {", "            if (bad[id] || (id / m + id % m) % 2 != 0) continue;", "            Arrays.fill(asked, false);", "            if (augment(id)) ans++;", "        }", "        return ans;", "    }", "", "    private boolean augment(int u) {", "        for (int v : adj.get(u)) {", "            if (asked[v]) continue;", "            asked[v] = true;", "            if (matchOf[v] == -1 || augment(matchOf[v])) {", "                matchOf[v] = u;", "                return true;", "            }", "        }", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// LCP 04. 覆盖 —— 图解：复刻 Solution.java 的「黑白染色 + 匈牙利匹配」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 2, m: 3, broken: [[1, 0], [1, 1]] };
+
+function trace(input) {
+  var n = input.n, m = input.m;
+  var bad = {};
+  input.broken.forEach(function (p) { bad[p[0] + ',' + p[1]] = true; });
+  var colorOf = function (r, c) { return (r + c) % 2 === 0 ? '白' : '黑'; };
+  var frames = [];
+  var sawConflict = false, snappedConflict = false, snappedFirst = false;
+
+  var A_COLOR = 'if (bad[id] || (r + c) % 2 != 0) continue;';
+  var A_RECUR = 'if (matchOf[v] == -1 || augment(matchOf[v])) {';
+  var A_PAIR = 'matchOf[v] = u;';
+  var A_RET = 'return ans;';
+
+  // 邻接表：白格 → 相邻黑格（上、下、左、右，与 Java 同序）
+  var adj = {};
+  var DR = [0, 0, -1, 1], DC = [-1, 1, 0, 0];   // 邻居顺序：左、右、上、下，与 Java 同序
+  for (var r = 0; r < n; r++) {
+    for (var c = 0; c < m; c++) {
+      if (bad[r + ',' + c] || colorOf(r, c) !== '白') continue;
+      var list = [];
+      for (var d = 0; d < 4; d++) {
+        var nr = r + DR[d], nc = c + DC[d];
+        if (nr < 0 || nr >= n || nc < 0 || nc >= m) continue;
+        if (!bad[nr + ',' + nc]) list.push(nr + ',' + nc);
+      }
+      adj[r + ',' + c] = list;
+    }
+  }
+  var matchOf = {};   // 黑格 → 配对的白格
+
+  function boardPanel(marks) {
+    var rows = [];
+    for (var rr = 0; rr < n; rr++) {
+      var row = [];
+      for (var cc = 0; cc < m; cc++) row.push(bad[rr + ',' + cc] ? '坏' : colorOf(rr, cc));
+      rows.push(row);
+    }
+    return Viz.grid(rows, { title: '棋盘', marks: marks || {} });
+  }
+  function pairItems() {
+    return Object.keys(adj).map(function (w) {
+      var b = matchOf[w];
+      return { name: '白 ' + w, v: b ? '↔ 黑 ' + b : '未配', cls: b ? 'done' : '' };
+    }).concat([{ name: '骨牌数', v: String(pairsCount()) }]);
+  }
+  function pairsCount() {
+    return Object.keys(matchOf).length;
+  }
+  function snap(at, key, marks) {
+    frames.push(Viz.frame(at, key, [boardPanel(marks), Viz.vars(pairItems())]));
+  }
+
+  snap(A_COLOR, '骨牌必占一白一黑：好格按 (r+c) 奇偶分成两侧', null);
+
+  // 白格按行优先依次找对象
+  var whites = Object.keys(adj);
+  whites.forEach(function (w) {
+    var asked = {};
+    var conflictBlack = null;
+    function augment(u) {
+      var list = adj[u];
+      for (var t = 0; t < list.length; t++) {
+        var v = list[t];
+        if (asked[v]) continue;
+        asked[v] = true;
+        if (matchOf[v] === undefined || augment(matchOf[v])) {
+          matchOf[v] = u;
+          return true;
+        } else if (conflictBlack === null) {
+          conflictBlack = v;   // 这个黑格被占且让不动
+        }
+      }
+      return false;
+    }
+    var ok = augment(w);
+    if (ok && conflictBlack !== null) sawConflict = true;
+    if (ok && !snappedFirst) {
+      snappedFirst = true;
+      var b = null;
+      Object.keys(matchOf).forEach(function (bk) { if (matchOf[bk] === w) b = bk; });
+      var m2 = {};
+      m2[w] = 'new';
+      m2[b] = 'new';
+      snap(A_PAIR, '白格 ' + w + ' 先到先得，配上黑格 ' + b, m2);
+    }
+    if (ok && sawConflict && !snappedConflict) {
+      snappedConflict = true;
+      var b2 = null;
+      Object.keys(matchOf).forEach(function (bk) { if (matchOf[bk] === w) b2 = bk; });
+      var m3 = {};
+      m3[w] = 'cur';
+      m3[b2] = 'new';
+      if (conflictBlack) m3[conflictBlack] = 'hit';
+      snap(A_RECUR, '黑格 ' + conflictBlack + ' 被占：让位失败，' + w + ' 改配 ' + b2, m3);
+    }
+  });
+
+  var all = {};
+  Object.keys(matchOf).forEach(function (b) { all[b] = 'done'; all[matchOf[b]] = 'done'; });
+  Object.keys(bad).forEach(function (k) { all[k] = 'bad'; });
+  snap(A_RET, '白格全部处理完：配对数 = 骨牌数', all);
+
+  return { frames: frames, result: pairsCount() };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

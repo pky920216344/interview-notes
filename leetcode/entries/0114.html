@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二叉树展开为链表 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 131 / 1159</span>
+  <nav class="pn"><a href="0347.html">上一篇</a><a href="0026.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">114. </span>二叉树展开为链表</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 47</li><li class="algo">深度优先搜索/递归</li><li class="aux">链表</li><li class="tag">栈</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">链表</li><li class="tag">二叉树</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">前序原地展开：每个结点把左子树最右结点接上自己的右子树，再把左子树整体搬到右边，沿右链前进。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>前序 = 根 → 左子树全部 → 右子树全部：左子树的<strong>最右结点</strong>恰好排在右子树所有结点之前。</li><li>对每个 <code>curr</code>：找到左子树最右结点 <code>last</code>，<code>last.right = curr.right</code> 接上原右子树，再 <code>curr.right = curr.left</code>、<code>curr.left = null</code>。</li><li><code>curr</code> 沿右链前进即可——右边永远挂着还没处理的部分，不用栈，O(1) 空间。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">void</span> flatten(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 沿右链走：把每个结点的左子树搬到右子树前面</span></span><span class="ln"><span class="no">4</span>        <span class="t">TreeNode</span> curr = root;</span><span class="ln"><span class="no">5</span>        <span class="k">while</span> (curr != <span class="k">null</span>) {</span><span class="ln"><span class="no">6</span>            <span class="k">if</span> (curr.left != <span class="k">null</span>) {</span><span class="ln"><span class="no">7</span>                <span class="c">// 左子树的最右结点：前序里它排在本层右子树全部结点之前</span></span><span class="ln"><span class="no">8</span>                <span class="t">TreeNode</span> last = curr.left;</span><span class="ln"><span class="no">9</span>                <span class="k">while</span> (last.right != <span class="k">null</span>) last = last.right;</span><span class="ln"><span class="no">10</span>                <span class="c">// 原右子树接到它后面，左子树整体搬到右边</span></span><span class="ln"><span class="no">11</span>                last.right = curr.right;</span><span class="ln"><span class="no">12</span>                curr.right = curr.left;</span><span class="ln"><span class="no">13</span>                curr.left = <span class="k">null</span>;</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>            <span class="c">// 左边已空，往右走一步就是前序的下一个</span></span><span class="ln"><span class="no">16</span>            curr = curr.right;</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你二叉树的根结点 <code>root</code> ，请你将它展开为一个单链表：</p>
+
+<ul>
+	<li>展开后的单链表应该同样使用 <code>TreeNode</code> ，其中 <code>right</code> 子指针指向链表中下一个结点，而左子指针始终为 <code>null</code> 。</li>
+	<li>展开后的单链表应该与二叉树 <a href="https://baike.baidu.com/item/%E5%85%88%E5%BA%8F%E9%81%8D%E5%8E%86/6442839?fr=aladdin" target="_blank"><strong>先序遍历</strong></a> 顺序相同。</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/2c7c08fef180.jpg" style="width: 500px; height: 226px;" />
+<pre>
+<strong>输入：</strong>root = [1,2,5,3,4,null,6]
+<strong>输出：</strong>[1,null,2,null,3,null,4,null,5,null,6]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = []
+<strong>输出：</strong>[]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [0]
+<strong>输出：</strong>[0]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中结点数在范围 <code>[0, 2000]</code> 内</li>
+	<li><code>-100 <= Node.val <= 100</code></li>
+</ul>
+
+
+
+<p><strong>进阶：</strong>你可以使用原地算法（<code>O(1)</code> 额外空间）展开这棵树吗？</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public void flatten(TreeNode root) {", "        // 沿右链走：把每个结点的左子树搬到右子树前面", "        TreeNode curr = root;", "        while (curr != null) {", "            if (curr.left != null) {", "                // 左子树的最右结点：前序里它排在本层右子树全部结点之前", "                TreeNode last = curr.left;", "                while (last.right != null) last = last.right;", "                // 原右子树接到它后面，左子树整体搬到右边", "                last.right = curr.right;", "                curr.right = curr.left;", "                curr.left = null;", "            }", "            // 左边已空，往右走一步就是前序的下一个", "            curr = curr.right;", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 114. 二叉树展开为链表 —— 图解：复刻 Solution.java 的原地前序展开，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, 2, 5, 3, 4, null, 6] };
+
+function trace(input) {
+  var arr = input.root;
+  var frames = [];
+
+  function build(a) {
+    if (!a.length || a[0] === null || a[0] === undefined) return null;
+    var root = { val: a[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < a.length) {
+      var nd = q.shift();
+      if (i < a.length) { if (a[i] !== null && a[i] !== undefined) { nd.left = { val: a[i], left: null, right: null }; q.push(nd.left); } i++; }
+      if (i < a.length) { if (a[i] !== null && a[i] !== undefined) { nd.right = { val: a[i], left: null, right: null }; q.push(nd.right); } i++; }
+    }
+    return root;
+  }
+
+  var root = build(arr);
+
+  // 当前指针结构 -> 力扣层序数组（末尾 null 去掉），并记下每个结点此刻的下标
+  function snapshot() {
+    var out = [], pairs = [], q = root === null ? [] : [root];
+    while (q.length) {
+      var nd = q.shift();
+      if (nd === null) { out.push(null); continue; }
+      out.push(nd.val);
+      pairs.push([nd, out.length - 1]);
+      q.push(nd.left);
+      q.push(nd.right);
+    }
+    while (out.length && out[out.length - 1] === null) out.pop();
+    return { arr: out, pairs: pairs };
+  }
+
+  function idxOf(pairs, nd) {
+    for (var i = 0; i < pairs.length; i++) if (pairs[i][0] === nd) return pairs[i][1];
+    return -1;
+  }
+
+  function treePanel(title, o) {
+    var s = snapshot();
+    var marks = {}, labels = [], i, k;
+    if (o.cur && idxOf(s.pairs, o.cur) >= 0) { k = idxOf(s.pairs, o.cur); marks[k] = 'cur'; labels.push({ at: k, label: 'curr', cls: 'p-cur' }); }
+    if (o.last && idxOf(s.pairs, o.last) >= 0) { k = idxOf(s.pairs, o.last); marks[k] = 'win'; labels.push({ at: k, label: '最右', cls: 'p-prev' }); }
+    if (o.adopt) for (i = 0; i < o.adopt.length; i++) { k = idxOf(s.pairs, o.adopt[i]); if (k >= 0) marks[k] = 'new'; }
+    if (o.done) for (i = 0; i < s.pairs.length; i++) marks[s.pairs[i][1]] = 'done';
+    return Viz.tree(s.arr, { title: title, marks: marks, labels: labels });
+  }
+
+  // 收集以 nd 为根的子树结点（含它自己），用于标「刚被接过去」
+  function collect(nd) {
+    var out = [], q = nd === null ? [] : [nd], guard = 0;
+    while (q.length && guard < 64) {
+      var x = q.shift();
+      guard++;
+      if (x) { out.push(x); q.push(x.left); q.push(x.right); }
+    }
+    return out;
+  }
+
+  var preVals = [];
+  (function pre(nd) { if (!nd) return; preVals.push(nd.val); pre(nd.left); pre(nd.right); })(root);
+  var preText = preVals.length <= 8 ? preVals.join(',') : preVals.slice(0, 8).join(',') + ',…';
+
+  var curr = root;
+  var threaded = 0, moved = 0;
+
+  if (root !== null) {
+    frames.push(Viz.frame('TreeNode curr = root;',
+      '目标：按前序顺序 ' + preText + ' 串成一条右链',
+      [treePanel('原二叉树（黄 = curr）', { cur: root })]));
+  }
+
+  while (curr !== null) {
+    if (curr.left !== null) {
+      var last = curr.left;
+      while (last.right !== null) last = last.right;
+      if (threaded < 1) {
+        threaded++;
+        frames.push(Viz.frame('while (last.right != null) last = last.right;',
+          'curr=' + curr.val + '：沿左子树右缘找到最右结点 ' + last.val,
+          [treePanel('找左子树的最右结点', { cur: curr, last: last })]));
+      }
+      last.right = curr.right;
+      curr.right = curr.left;
+      curr.left = null;
+      if (moved < 2) {
+        moved++;
+        frames.push(Viz.frame('curr.left = null;',
+          '最右 ' + last.val + ' 接上原右子树，左子树整体搬到右边；curr 前进',
+          [treePanel('左子树搬右、左边清空', { cur: curr.right, last: last, adopt: collect(last) })]));
+      }
+    }
+    curr = curr.right;
+  }
+
+  // 最终帧：右链就是展开结果
+  var spine = [], p = root;
+  while (p !== null) { spine.push(p.val); p = p.right; }
+  var doneMarks = {};
+  for (var i = 0; i < spine.length; i++) doneMarks[i] = 'done';
+  frames.push(Viz.frame('curr = curr.right;',
+    '扫完：每个结点左边都空，右链即前序序列',
+    [Viz.list(spine, { title: '展开后的链表（right 串起来）', marks: doneMarks })]));
+
+  return { frames: frames, result: spine };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

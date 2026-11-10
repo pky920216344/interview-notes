@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>N 叉树的层序遍历 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 353 / 1159</span>
+  <nav class="pn"><a href="0149.html">上一篇</a><a href="0030.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">429. </span>N 叉树的层序遍历</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 11</li><li class="algo">广度优先搜索</li><li class="tag">树</li><li class="tag">广度优先搜索</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">BFS 逐层：每轮先记下队列长度 size，这一轮只弹 size 个，弹完队列里剩下的正好是下一层。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>队列 <code>queue</code> 里放「还没展开的结点」；出队时把值记进本层，孩子从左到右排到队尾。</li><li>关键动作：<strong>进循环先取 <code>size = queue.size()</code></strong>——它就是当前层的结点数，弹完 <code>size</code> 个，队列里恰好全是下一层，层数天然分开。</li><li>空树直接返回空列表；<code>ArrayDeque</code> 只要不把 <code>null</code> 放进队列就不会出问题。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="c">/*</span></span><span class="ln"><span class="no">4</span><span class="c">// Definition for a Node.</span></span><span class="ln"><span class="no">5</span><span class="c">class Node {</span></span><span class="ln"><span class="no">6</span><span class="c">    public int val;</span></span><span class="ln"><span class="no">7</span><span class="c">    public List&lt;Node&gt; children;</span></span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span><span class="c">    public Node() {}</span></span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span><span class="c">    public Node(int _val) {</span></span><span class="ln"><span class="no">12</span><span class="c">        val = _val;</span></span><span class="ln"><span class="no">13</span><span class="c">    }</span></span><span class="ln"><span class="no">14</span> </span><span class="ln"><span class="no">15</span><span class="c">    public Node(int _val, List&lt;Node&gt; _children) {</span></span><span class="ln"><span class="no">16</span><span class="c">        val = _val;</span></span><span class="ln"><span class="no">17</span><span class="c">        children = _children;</span></span><span class="ln"><span class="no">18</span><span class="c">    }</span></span><span class="ln"><span class="no">19</span><span class="c">};</span></span><span class="ln"><span class="no">20</span><span class="c">*/</span></span><span class="ln"><span class="no">21</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">22</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; levelOrder(<span class="t">Node</span> root) {</span><span class="ln"><span class="no">23</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">24</span>        <span class="t">Queue</span>&lt;<span class="t">Node</span>&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">25</span>        <span class="k">if</span> (root != <span class="k">null</span>) queue.add(root);</span><span class="ln"><span class="no">26</span>        <span class="c">// 每轮开头记下队列长度：正好是这一层的结点数，弹完这一层队列里全是下一层</span></span><span class="ln"><span class="no">27</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">28</span>            <span class="k">int</span> size = queue.size();</span><span class="ln"><span class="no">29</span>            <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; level = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">30</span>            <span class="k">for</span> (<span class="k">int</span> k = <span class="n">0</span>; k &lt; size; k++) {</span><span class="ln"><span class="no">31</span>                <span class="t">Node</span> node = queue.poll();</span><span class="ln"><span class="no">32</span>                level.add(node.val);</span><span class="ln"><span class="no">33</span>                <span class="k">for</span> (<span class="t">Node</span> child : node.children) queue.add(child);</span><span class="ln"><span class="no">34</span>            }</span><span class="ln"><span class="no">35</span>            ans.add(level);</span><span class="ln"><span class="no">36</span>        }</span><span class="ln"><span class="no">37</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">38</span>    }</span><span class="ln"><span class="no">39</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个 N 叉树，返回其节点值的<em>层序遍历</em>。（即从左到右，逐层遍历）。</p>
+
+<p>树的序列化输入是用层序遍历，每组子节点都由 null 值分隔（参见示例）。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<p><img src="../assets/img/f2e526e80522.png" style="width: 100%; max-width: 300px;" /></p>
+
+<pre>
+<strong>输入：</strong>root = [1,null,3,2,4,null,5,6]
+<strong>输出：</strong>[[1],[3,2,4],[5,6]]
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/cf02f79ac5a2.png" style="width: 296px; height: 241px;" /></p>
+
+<pre>
+<strong>输入：</strong>root = [1,null,2,3,4,5,null,null,6,7,null,8,null,9,10,null,null,11,null,12,null,13,null,null,14]
+<strong>输出：</strong>[[1],[2,3,4,5],[6,7,8,9,10],[11,12,13],[14]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树的高度不会超过&nbsp;<code>1000</code></li>
+	<li>树的节点总数在 <code>[0,&nbsp;10<sup>4</sup>]</code> 之间</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "/*", "// Definition for a Node.", "class Node {", "    public int val;", "    public List<Node> children;", "", "    public Node() {}", "", "    public Node(int _val) {", "        val = _val;", "    }", "", "    public Node(int _val, List<Node> _children) {", "        val = _val;", "        children = _children;", "    }", "};", "*/", "class Solution {", "    public List<List<Integer>> levelOrder(Node root) {", "        List<List<Integer>> ans = new ArrayList<>();", "        Queue<Node> queue = new ArrayDeque<>();", "        if (root != null) queue.add(root);", "        // 每轮开头记下队列长度：正好是这一层的结点数，弹完这一层队列里全是下一层", "        while (!queue.isEmpty()) {", "            int size = queue.size();", "            List<Integer> level = new ArrayList<>();", "            for (int k = 0; k < size; k++) {", "                Node node = queue.poll();", "                level.add(node.val);", "                for (Node child : node.children) queue.add(child);", "            }", "            ans.add(level);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 429. N 叉树的层序遍历 —— 图解：复刻 Solution.java 的「按层弹队列」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, null, 3, 2, 4, null, 5, 6] };
+
+function trace(input) {
+  var arr = input.root;
+  var frames = [];
+  if (arr.length === 0 || arr[0] === null) return { frames: [], result: [] };
+
+  // 力扣层序数组（每组孩子由 null 分隔）建 N 叉树：每个出队结点，连续非 null 是它的孩子
+  function make(v) { return { val: v, children: [] }; }
+  var root = make(arr[0]);
+  var queue = [root];
+  var i = 1;
+  while (i < arr.length && arr[i] === null) i++;
+  while (queue.length && i < arr.length) {
+    var parent = queue.shift();
+    while (i < arr.length && arr[i] !== null) {
+      var child = make(arr[i]);
+      parent.children.push(child);
+      queue.push(child);
+      i++;
+    }
+    i++;
+  }
+
+  var ans = [];
+  var fired = { size: false, child: false, level: false };
+  queue = [root];   // 建树用的队列清空重来，BFS 从根开始
+
+  // 队列面板：队列从头到尾的结点值；第二块面板是已收集的层
+  function queuePanel() {
+    var pointers = [];
+    if (queue.length) {
+      pointers.push({ at: 0, label: '队头', cls: 'p-head' });
+      pointers.push({ at: queue.length - 1, label: '队尾', cls: 'p-tail' });
+    }
+    return Viz.cells(queue.map(function (n) { return n.val; }),
+      { title: '队列（队头在左）', pointers: pointers });
+  }
+  function ansPanel(chg) {
+    return Viz.table('已收集的层', ans.map(function (lvl, k) {
+      return { k: '第 ' + (k + 1) + ' 层', v: '[' + lvl.join(', ') + ']', cls: k === chg ? 'new' : '' };
+    }), { hint: '（空树返回空列表）' });
+  }
+
+  frames.push(Viz.frame('if (root != null) queue.add(root);',
+    '开局：根结点 ' + root.val + ' 进队列，队列里永远只放「还没展开的结点」',
+    [queuePanel(), ansPanel(-1)]));
+
+  while (queue.length) {
+    var size = queue.length;
+    var level = [];
+    if (!fired.size) {
+      fired.size = true;
+      frames.push(Viz.frame('int size = queue.size();',
+        '先记下队列长度 size = ' + size + '：这一轮只弹 size 个，剩下的正好是下一层',
+        [queuePanel(), ansPanel(-1)]));
+    }
+    for (var k = 0; k < size; k++) {
+      var node = queue.shift();
+      level.push(node.val);
+      for (var j = 0; j < node.children.length; j++) queue.push(node.children[j]);
+      if (!fired.child && node.children.length) {
+        fired.child = true;
+        frames.push(Viz.frame('for (Node child : node.children) queue.add(child);',
+          '弹出 ' + node.val + ' 记进本层，它的孩子 ' + node.children.map(function (c) { return c.val; }).join('、') + ' 已排队尾',
+          [queuePanel(), ansPanel(-1)]));
+      }
+    }
+    ans.push(level);
+    if (!fired.level) {
+      fired.level = true;
+      frames.push(Viz.frame('ans.add(level);',
+        '本层弹完：[' + level.join(', ') + '] 收进答案，队列里剩下的全是下一层',
+        [queuePanel(), ansPanel(ans.length - 1)]));
+    }
+  }
+
+  frames.push(Viz.frame('return ans;',
+    '队列空了：共 ' + ans.length + ' 层，从上到下依次是各层的结点值',
+    [queuePanel(), ansPanel(-1)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

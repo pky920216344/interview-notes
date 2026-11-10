@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>监控二叉树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 558 / 1159</span>
+  <nav class="pn"><a href="mianshi-16-16.html">上一篇</a><a href="0922.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">968. </span>监控二叉树</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 4</li><li class="algo">动态规划</li><li class="aux">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">动态规划</li><li class="tag">二叉树</li><li class="tag">dp-on-trees</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">后序树形 DP 三状态：0=没相机但被盖住、1=有相机、2=没人管；孩子漏着就在本点放相机，根没人管最后补一台。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>后序返回三种状态：<code>0</code> 本点被孩子方向的相机盖住、<code>1</code> 本点放了相机、<code>2</code> 本点谁也没管。</li><li>空结点返回 <code>0</code>（当它已被盖住），叶子才会返回 <code>2</code>，逼着父结点做决策。</li><li>孩子中有 <code>2</code> → 本点<strong>必须</strong>放相机（<code>ans++</code>，返回 <code>1</code>）；孩子中有 <code>1</code> → 本点被盖住（返回 <code>0</code>）；孩子全是 <code>0</code> → 本点没人管（返回 <code>2</code>）。</li><li>根没有父结点：若根返回 <code>2</code>，最后 <code>ans+1</code> 补一台。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">3</span> </span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> minCameraCover(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">5</span>        ans = <span class="n">0</span>;</span><span class="ln"><span class="no">6</span>        <span class="c">// 后序 dfs 返回：0=本点没相机但已被孩子方向盖住 1=本点放了相机 2=本点没人管</span></span><span class="ln"><span class="no">7</span>        <span class="k">if</span> (dfs(root) == <span class="n">2</span>) ans++;   <span class="c">// 根没人管：只能自己放一台</span></span><span class="ln"><span class="no">8</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">int</span> dfs(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="n">0</span>;   <span class="c">// 空结点当「已盖住」，逼着叶子向父结点要相机</span></span><span class="ln"><span class="no">13</span>        <span class="k">int</span> l = dfs(node.left), r = dfs(node.right);</span><span class="ln"><span class="no">14</span>        <span class="k">if</span> (l == <span class="n">2</span> || r == <span class="n">2</span>) { ans++; <span class="k">return</span> <span class="n">1</span>; }   <span class="c">// 有孩子漏着：这里必须放相机</span></span><span class="ln"><span class="no">15</span>        <span class="k">if</span> (l == <span class="n">1</span> || r == <span class="n">1</span>) <span class="k">return</span> <span class="n">0</span>;              <span class="c">// 孩子方向有相机照着：本点被盖住</span></span><span class="ln"><span class="no">16</span>        <span class="k">return</span> <span class="n">2</span>;                                    <span class="c">// 孩子都自足：本点暂时没人管</span></span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个二叉树，我们在树的节点上安装摄像头。</p>
+
+<p>节点上的每个摄影头都可以监视<strong>其父对象、自身及其直接子对象。</strong></p>
+
+<p>计算监控树的所有节点所需的最小摄像头数量。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/27c842f08287.png" style="height: 163px; width: 138px;"></p>
+
+<pre><strong>输入：</strong>[0,0,null,0,0]
+<strong>输出：</strong>1
+<strong>解释：</strong>如图所示，一台摄像头足以监控所有节点。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/6de8250f3349.png" style="height: 312px; width: 139px;"></p>
+
+<pre><strong>输入：</strong>[0,0,null,0,null,0,null,null,0]
+<strong>输出：</strong>2
+<strong>解释：</strong>需要至少两个摄像头来监视树的所有节点。 上图显示了摄像头放置的有效位置之一。
+</pre>
+
+<p><br>
+<strong>提示：</strong></p>
+
+<ol>
+	<li>给定树的节点数的范围是&nbsp;<code>[1, 1000]</code>。</li>
+	<li>每个节点的值都是 0。</li>
+</ol>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    int ans = 0;", "", "    public int minCameraCover(TreeNode root) {", "        ans = 0;", "        // 后序 dfs 返回：0=本点没相机但已被孩子方向盖住 1=本点放了相机 2=本点没人管", "        if (dfs(root) == 2) ans++;   // 根没人管：只能自己放一台", "        return ans;", "    }", "", "    private int dfs(TreeNode node) {", "        if (node == null) return 0;   // 空结点当「已盖住」，逼着叶子向父结点要相机", "        int l = dfs(node.left), r = dfs(node.right);", "        if (l == 2 || r == 2) { ans++; return 1; }   // 有孩子漏着：这里必须放相机", "        if (l == 1 || r == 1) return 0;              // 孩子方向有相机照着：本点被盖住", "        return 2;                                    // 孩子都自足：本点暂时没人管", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 968. 监控二叉树 —— 图解：复刻 Solution.java 的「后序树形 DP 三状态」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [0, 0, null, 0, 0] };
+
+function trace(input) {
+  var arr = input.root || [];
+  // 层序数组 → 结点表：nodes[i] 是层序下标 i 的结点（null 位置是 null），带 l / r
+  var nodes = arr.map(function (v, i) { return v === null ? null : { v: v, idx: i, l: null, r: null }; });
+  var root = arr.length && nodes[0] ? nodes[0] : null;
+  if (root) {
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var cur = q.shift();
+      if (nodes[i]) { cur.l = nodes[i]; q.push(nodes[i]); }
+      i++;
+      if (i < arr.length && nodes[i]) { cur.r = nodes[i]; q.push(nodes[i]); }
+      i++;
+    }
+  }
+
+  var frames = [];
+  var ans = 0;
+  var states = {};      // 层序下标 → 该结点后序返回的状态 0/1/2
+  var leafSeen = false, camSeen = false, coveredSeen = false, rootCamSeen = false;
+  var NUL = 'if (node == null) return 0;';
+  var CAM = 'if (l == 2 || r == 2) { ans++; return 1; }';
+  var COV = 'if (l == 1 || r == 1) return 0;';
+  var ROOT = 'if (dfs(root) == 2) ans++;';
+  var RET = 'return ans;';
+
+  var NAME = { 0: '已盖住', 1: '有相机', 2: '没人管' };
+  var CLS = { 0: 'win', 1: 'new', 2: 'bad' };
+
+  function snap(at, key, hot) {
+    var marks = {}, labels = [];
+    nodes.forEach(function (nd) {
+      if (!nd) return;
+      var st = states[nd.idx];
+      if (st != null) {
+        marks[nd.idx] = CLS[st];
+        labels.push({ at: nd.idx, label: NAME[st], cls: CLS[st] });
+      }
+    });
+    if (hot != null) marks[hot] = 'cur';
+    frames.push(Viz.frame(at, key, [
+      Viz.tree(arr, { title: '二叉树（标签 = 后序返回的状态）', marks: marks, labels: labels }),
+      Viz.vars([{ name: 'ans 已放相机', v: ans, cls: ans > 0 ? 'done' : '' }])
+    ]));
+  }
+
+  if (!root) { snap(RET, '空树：不需要相机', null); return { frames: frames, result: 0 }; }
+
+  function dfs(node) {
+    if (!node) return 0;
+    var l = dfs(node.l), r = dfs(node.r);
+    var st;
+    if (l === 2 || r === 2) {
+      ans++;
+      st = 1;
+      states[node.idx] = st;
+      if (!camSeen) {
+        camSeen = true;
+        snap(CAM, '孩子（或孩子的方向）没人管：必须在这里放相机，ans + 1', node.idx);
+      }
+    } else if (l === 1 || r === 1) {
+      st = 0;
+      states[node.idx] = st;
+      if (!coveredSeen) {
+        coveredSeen = true;
+        snap(COV, '孩子那边有相机照着：本点被盖住，不放相机，状态记 0', node.idx);
+      }
+    } else {
+      st = 2;
+      states[node.idx] = st;
+      if (!leafSeen) {
+        leafSeen = true;
+        snap(NUL, '叶子自己没相机也没孩子：谁也盖不住它 → 状态 2，等父结点管', node.idx);
+      }
+    }
+    return st;
+  }
+
+  var rootState = dfs(root);
+  if (rootState === 2 && !rootCamSeen) {
+    rootCamSeen = true;
+    ans++;
+    snap(ROOT, '根是整棵树最顶上，没人替它管：最后补一台相机', root.idx);
+  }
+
+  snap(RET, '全部结点被盖住：最少 ' + ans + ' 台相机', null);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

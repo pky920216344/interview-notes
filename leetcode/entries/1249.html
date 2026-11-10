@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>移除无效的括号 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 460 / 1159</span>
+  <nav class="pn"><a href="0263.html">上一篇</a><a href="1254.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1249. </span>移除无效的括号</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 5</li><li class="algo">栈</li><li class="tag">栈</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">一遍扫描：栈存没配上对的「(」的下标；配不上的「)」当场标记必删，扫完栈里剩的「(」也删，其余原样保留。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>栈里只放「还没配上对的 <code>(</code>」的下标；读到 <code>)</code> 时栈非空就弹一个配对，空则<strong>当场标记这个 <code>)</code> 必删</strong>。</li><li>扫完后栈里剩下的 <code>(</code> 全都没等到右括号，一并标记删除。</li><li>没被标记的字符原样拼起来：字母一个不动，留下的括号都配对。</li><li>删的个数正好 = 配不上对的括号数，所以是最少删除。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> minRemoveToMakeValid(<span class="t">String</span> s) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 栈里存「还没配上对的 (」的下标</span></span><span class="ln"><span class="no">6</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">boolean</span>[] del = <span class="k">new</span> <span class="k">boolean</span>[s.length()];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) {</span><span class="ln"><span class="no">9</span>            <span class="k">char</span> c = s.charAt(i);</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (c == <span class="s">'('</span>) {</span><span class="ln"><span class="no">11</span>                stack.push(i);</span><span class="ln"><span class="no">12</span>            } <span class="k">else</span> <span class="k">if</span> (c == <span class="s">')'</span>) {</span><span class="ln"><span class="no">13</span>                <span class="c">// 有左括号可配就消掉一个，否则这个 ) 必删</span></span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (!stack.isEmpty()) stack.pop();</span><span class="ln"><span class="no">15</span>                <span class="k">else</span> del[i] = <span class="k">true</span>;</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="c">// 扫完还留在栈里的 ( 都没等到右括号，一并删</span></span><span class="ln"><span class="no">19</span>        <span class="k">while</span> (!stack.isEmpty()) del[stack.pop()] = <span class="k">true</span>;</span><span class="ln"><span class="no">20</span>        <span class="c">// 没被标记的原样保留：字母一个不动，留下的括号都配对</span></span><span class="ln"><span class="no">21</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">22</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) {</span><span class="ln"><span class="no">23</span>            <span class="k">if</span> (!del[i]) sb.append(s.charAt(i));</span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> sb.toString();</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个由 <code>'('</code>、<code>')'</code> 和小写字母组成的字符串 <code>s</code>。</p>
+
+<p>你需要从字符串中删除最少数目的 <code>'('</code> 或者 <code>')'</code>&nbsp;（可以删除任意位置的括号)，使得剩下的「括号字符串」有效。</p>
+
+<p>请返回任意一个合法字符串。</p>
+
+<p>有效「括号字符串」应当符合以下&nbsp;<strong>任意一条&nbsp;</strong>要求：</p>
+
+<ul>
+	<li>空字符串或只包含小写字母的字符串</li>
+	<li>可以被写作&nbsp;<code>AB</code>（<code>A</code>&nbsp;连接&nbsp;<code>B</code>）的字符串，其中&nbsp;<code>A</code>&nbsp;和&nbsp;<code>B</code>&nbsp;都是有效「括号字符串」</li>
+	<li>可以被写作&nbsp;<code>(A)</code>&nbsp;的字符串，其中&nbsp;<code>A</code>&nbsp;是一个有效的「括号字符串」</li>
+</ul>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "lee(t(c)o)de)"
+<strong>输出：</strong>"lee(t(c)o)de"
+<strong>解释：</strong>"lee(t(co)de)" , "lee(t(c)ode)" 也是一个可行答案。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "a)b(c)d"
+<strong>输出：</strong>"ab(c)d"
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "))(("
+<strong>输出：</strong>""
+<strong>解释：</strong>空字符串也是有效的
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>s[i]</code>&nbsp;可能是&nbsp;<code>'('</code>、<code>')'</code>&nbsp;或英文小写字母</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String minRemoveToMakeValid(String s) {", "        // 栈里存「还没配上对的 (」的下标", "        Deque<Integer> stack = new ArrayDeque<>();", "        boolean[] del = new boolean[s.length()];", "        for (int i = 0; i < s.length(); i++) {", "            char c = s.charAt(i);", "            if (c == '(') {", "                stack.push(i);", "            } else if (c == ')') {", "                // 有左括号可配就消掉一个，否则这个 ) 必删", "                if (!stack.isEmpty()) stack.pop();", "                else del[i] = true;", "            }", "        }", "        // 扫完还留在栈里的 ( 都没等到右括号，一并删", "        while (!stack.isEmpty()) del[stack.pop()] = true;", "        // 没被标记的原样保留：字母一个不动，留下的括号都配对", "        StringBuilder sb = new StringBuilder();", "        for (int i = 0; i < s.length(); i++) {", "            if (!del[i]) sb.append(s.charAt(i));", "        }", "        return sb.toString();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1249. 移除无效的括号 —— 图解：复刻 Solution.java 的「栈标记必删下标」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: '(a)b)c(' };
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+
+  var PUSH = 'stack.push(i);';
+  var POP = 'if (!stack.isEmpty()) stack.pop();';
+  var DEL = 'else del[i] = true;';
+  var LEFT = 'while (!stack.isEmpty()) del[stack.pop()] = true;';
+  var RET = 'return sb.toString();';
+
+  var del = [];                    // 下标 -> 是否必删
+  for (var i = 0; i < n; i++) del[i] = false;
+  var stack = [];                  // 还没配上对的 ( 的下标，栈顶在右
+
+  function sPanel(marks) {
+    return Viz.cells(s.split(''), { title: 's', marks: marks || {} });
+  }
+  function stackPanel() {
+    var items = stack.map(function (idx) { return 's[' + idx + ']'; });
+    var pointers = stack.length ? [{ at: stack.length - 1, label: '栈顶', cls: 'p-tail' }] : [];
+    return Viz.cells(items, { title: '栈：还没配上对的 (', pointers: pointers });
+  }
+  function snap(at, key, marks) { frames.push(Viz.frame(at, key, [sPanel(marks), stackPanel()])); }
+
+  var pushed = false, popped = false, delMarked = false;
+  for (var i2 = 0; i2 < n; i2++) {
+    var c = s[i2];
+    if (c === '(') {
+      stack.push(i2);
+      if (!pushed) {
+        pushed = true;
+        var m1 = {};
+        m1[i2] = 'cur';
+        snap(PUSH, '读到 ( 就把下标压栈，等右括号来配对', m1);
+      }
+    } else if (c === ')') {
+      if (stack.length) {
+        stack.pop();
+        if (!popped) {
+          popped = true;
+          var m2 = {};
+          m2[i2] = 'cur';
+          snap(POP, '读到 ) 且栈里有货：配对成功，栈顶的 ( 出栈', m2);
+        }
+      } else {
+        del[i2] = true;
+        if (!delMarked) {
+          delMarked = true;
+          var m3 = {};
+          m3[i2] = 'bad';
+          snap(DEL, '读到 ) 时栈是空的：它等不到左括号，标记必删', m3);
+        }
+      }
+    }
+  }
+
+  while (stack.length) del[stack.pop()] = true;    // 和 Java 一致：剩下的 ( 一并标记删除
+  var m4 = {};
+  for (var k = 0; k < n; k++) if (del[k]) m4[k] = 'bad';
+  snap(LEFT, '扫完还留在栈里的 ( 都没等到右括号，一并标记删除', m4);
+
+  var out = '';
+  var m5 = {};
+  for (var j = 0; j < n; j++) {
+    if (!del[j]) { out += s[j]; m5[j] = 'win'; }
+    else m5[j] = 'dim';
+  }
+  var m6 = {};
+  for (var k2 = 0; k2 < out.length; k2++) m6[k2] = 'done';
+  snap(RET, '删掉 ' + (n - out.length) + ' 个括号，得到合法的「' + out + '」',
+    [Viz.cells(out.split(''), { title: '拼出来的答案', marks: m6 }),
+      Viz.cells(s.split(''), { title: '原串（dim = 已删）', marks: m5 })]);
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

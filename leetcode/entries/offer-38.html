@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>套餐内商品的排列顺序 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 337 / 1159</span>
+  <nav class="pn"><a href="supp-21.html">上一篇</a><a href="offer-46.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">剑指 Offer 38. </span>套餐内商品的排列顺序</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 12</li><li class="algo">回溯</li><li class="tag">字符串</li><li class="tag">回溯</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">排序 + 回溯：逐层选一个没用过的字符拼下去，同层里相同的字符只允许从左往右依次选，天然去重。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先 <code>Arrays.sort</code>：相同字符相邻，去重条件才有统一写法；结果也顺带按字典序产出。</li><li>回溯模板：<code>used[i]</code> 标记字符是否在路径里，进递归前置 true、回来置 false，<code>path</code> 拼满就收一个排列。</li><li>去重关键：<code>cs[i] == cs[i-1] &amp;&amp; !used[i-1]</code> 就跳过——前一个相同字符刚被回溯（不在路径里），说明这一层已经用同样字符开过头，再选必出重复排列。</li><li><code>!used[i-1]</code> 是「同层」的判据：若前一个相同字符在路径里（<code>used[i-1]</code> 为 true），那是纵向的重复使用，必须放行。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n × n!)，空间复杂度 O(n)（不计输出）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span>[] goodsOrder(<span class="t">String</span> goods) {</span><span class="ln"><span class="no">5</span>        <span class="k">char</span>[] cs = goods.toCharArray();</span><span class="ln"><span class="no">6</span>        <span class="t">Arrays</span>.sort(cs);   <span class="c">// 排序让相同字符相邻，同层去重才有依据</span></span><span class="ln"><span class="no">7</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        dfs(cs, <span class="k">new</span> <span class="k">boolean</span>[cs.length], <span class="k">new</span> <span class="t">StringBuilder</span>(), ans);</span><span class="ln"><span class="no">9</span>        <span class="k">return</span> ans.toArray(<span class="k">new</span> <span class="t">String</span>[<span class="n">0</span>]);</span><span class="ln"><span class="no">10</span>    }</span><span class="ln"><span class="no">11</span> </span><span class="ln"><span class="no">12</span>    <span class="c">// used[i]：cs[i] 是否已在当前路径里</span></span><span class="ln"><span class="no">13</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">char</span>[] cs, <span class="k">boolean</span>[] used, <span class="t">StringBuilder</span> path, <span class="t">List</span>&lt;<span class="t">String</span>&gt; ans) {</span><span class="ln"><span class="no">14</span>        <span class="k">if</span> (path.length() == cs.length) {</span><span class="ln"><span class="no">15</span>            ans.add(path.toString());</span><span class="ln"><span class="no">16</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; cs.length; i++) {</span><span class="ln"><span class="no">19</span>            <span class="c">// 同层去重：cs[i] 与前一个相同且前一个还没被选，说明这一层刚试过它，跳过</span></span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (used[i] || (i &gt; <span class="n">0</span> &amp;&amp; cs[i] == cs[i - <span class="n">1</span>] &amp;&amp; !used[i - <span class="n">1</span>])) <span class="k">continue</span>;</span><span class="ln"><span class="no">21</span>            used[i] = <span class="k">true</span>;</span><span class="ln"><span class="no">22</span>            path.append(cs[i]);</span><span class="ln"><span class="no">23</span>            dfs(cs, used, path, ans);</span><span class="ln"><span class="no">24</span>            path.deleteCharAt(path.length() - <span class="n">1</span>);</span><span class="ln"><span class="no">25</span>            used[i] = <span class="k">false</span>;</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>某店铺将用于组成套餐的商品记作字符串 <code>goods</code>，其中 <code>goods[i]</code> 表示对应商品。请返回该套餐内所含商品的 <strong>全部排列方式</strong> 。</p>
+
+<p>返回结果 <strong>无顺序要求</strong>，但不能含有重复的元素。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>goods = "agew"
+<strong>输出：</strong>["aegw","aewg","agew","agwe","aweg","awge","eagw","eawg","egaw","egwa","ewag","ewga","gaew","gawe","geaw","gewa","gwae","gwea","waeg","wage","weag","wega","wgae","wgea"]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= goods.length &lt;= 8</code></li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String[] goodsOrder(String goods) {", "        char[] cs = goods.toCharArray();", "        Arrays.sort(cs);   // 排序让相同字符相邻，同层去重才有依据", "        List<String> ans = new ArrayList<>();", "        dfs(cs, new boolean[cs.length], new StringBuilder(), ans);", "        return ans.toArray(new String[0]);", "    }", "", "    // used[i]：cs[i] 是否已在当前路径里", "    private void dfs(char[] cs, boolean[] used, StringBuilder path, List<String> ans) {", "        if (path.length() == cs.length) {", "            ans.add(path.toString());", "            return;", "        }", "        for (int i = 0; i < cs.length; i++) {", "            // 同层去重：cs[i] 与前一个相同且前一个还没被选，说明这一层刚试过它，跳过", "            if (used[i] || (i > 0 && cs[i] == cs[i - 1] && !used[i - 1])) continue;", "            used[i] = true;", "            path.append(cs[i]);", "            dfs(cs, used, path, ans);", "            path.deleteCharAt(path.length() - 1);", "            used[i] = false;", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 剑指 Offer 38. 字符串的排列 —— 图解：复刻 Solution.java 的「排序 + 回溯去重」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { goods: 'aba' };
+
+function trace(input) {
+  var cs = input.goods.split('').slice().sort();
+  var n = cs.length;
+  var frames = [];
+  var SORT = 'Arrays.sort(cs);';
+  var DEDUP = 'if (used[i] || (i > 0 && cs[i] == cs[i - 1] && !used[i - 1])) continue;';
+  var FULL = 'if (path.length() == cs.length) {';
+  var RET = 'return ans.toArray(new String[0]);';
+
+  var used = [], path = [], ans = [];
+  var shownDedup = false, shownFull = false;
+
+  function charsPanel() {
+    var marks = {}, i;
+    for (i = 0; i < n; i++) marks[i] = used[i] ? 'win' : '';
+    return Viz.cells(cs, { title: '排序后的字符 cs（win = 已在当前路径）', marks: marks });
+  }
+
+  function pathPanel(done) {
+    var marks = {}, i;
+    for (i = 0; i < path.length; i++) marks[i] = done ? 'done' : 'win';
+    return Viz.cells(path.length ? path.slice() : ['（空）'], { title: 'path 当前拼出的前缀', marks: marks });
+  }
+
+  function ansPanel() {
+    var marks = {}, i;
+    for (i = 0; i < ans.length; i++) marks[i] = i === ans.length - 1 ? 'new' : 'done';
+    return Viz.cells(ans.length ? ans.slice() : ['（还没找到）'], { title: '答案列表', marks: marks });
+  }
+
+  frames.push(Viz.frame(SORT, '先排序：相同字符相邻，后面的同层去重才有依据', [charsPanel(false), pathPanel(false)]));
+
+  function dfs() {
+    if (path.length === n) {
+      ans.push(path.join(''));
+      if (!shownFull) {
+        shownFull = true;
+        frames.push(Viz.frame(FULL, '拼满一个排列 ' + ans[ans.length - 1] + '：加入答案，然后回溯换字符',
+          [charsPanel(false), pathPanel(true), ansPanel()]));
+      }
+      return;
+    }
+    for (var i = 0; i < n; i++) {
+      if (used[i] || (i > 0 && cs[i] === cs[i - 1] && !used[i - 1])) {
+        if (!shownDedup && i > 0 && cs[i] === cs[i - 1] && !used[i - 1] && !used[i]) {
+          shownDedup = true;
+          var m = {};
+          m[i - 1] = 'dim';   // 这一层刚试过的那个相同字符
+          m[i] = 'bad';       // 现在要跳过的
+          frames.push(Viz.frame(DEDUP, 'cs[' + i + ']=' + cs[i] + ' 和刚试过的 cs[' + (i - 1) + '] 相同且它已回溯：'
+            + '这层再选必重复，跳过', [Viz.cells(cs, { title: '排序后的字符 cs', marks: m }), pathPanel(false)]));
+        }
+        continue;
+      }
+      used[i] = true;
+      path.push(cs[i]);
+      dfs();
+      path.pop();
+      used[i] = false;
+    }
+  }
+  dfs();
+
+  var sortedAns = ans.slice().sort();
+  var ansMarks = {}, ai;
+  for (ai = 0; ai < sortedAns.length; ai++) ansMarks[ai] = 'done';
+  frames.push(Viz.frame(RET, '回溯完：' + input.goods + ' 共 ' + sortedAns.length + ' 个不重复排列',
+    [Viz.cells(sortedAns.length ? sortedAns : ['（无）'], { title: '全部排列（升序）', marks: ansMarks })]));
+
+  return { frames: frames, result: sortedAns };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>供暖器 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 634 / 1159</span>
+  <nav class="pn"><a href="1160.html">上一篇</a><a href="1654.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">475. </span>供暖器</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 3</li><li class="algo">二分查找</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">二分查找</li><li class="tag">排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">排序 + 二分：每个房子在供暖器里二分找「第一个 ≥ 它」的位置，取左右两个供暖器里较近的距离，答案 = 所有房子距离的最大值。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>两组坐标都排序；排序后每个房子只需看<strong>左右各一个</strong>供暖器，不必扫全部。</li><li>二分找第一个 <code>≥ h</code> 的供暖器下标 <code>lo</code>：<code>heaters[lo]</code> 是右侧最近，<code>heaters[lo-1]</code> 是左侧最近，取距离较小者。</li><li>一侧不存在（<code>lo</code> 在两端）时用 <code>Integer.MAX_VALUE</code> 兜底，最后答案取所有房子需求的最大半径。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n + m log m)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> findRadius(<span class="k">int</span>[] houses, <span class="k">int</span>[] heaters) {</span><span class="ln"><span class="no">5</span>        <span class="t">Arrays</span>.sort(houses);</span><span class="ln"><span class="no">6</span>        <span class="t">Arrays</span>.sort(heaters);</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> h : houses) {</span><span class="ln"><span class="no">9</span>            <span class="c">// 二分找第一个位置 ≥ h 的供暖器，下标记为 lo</span></span><span class="ln"><span class="no">10</span>            <span class="k">int</span> lo = <span class="n">0</span>, hi = heaters.length;   <span class="c">// 循环不变量：答案在 [lo, hi) 里</span></span><span class="ln"><span class="no">11</span>            <span class="k">while</span> (lo &lt; hi) {</span><span class="ln"><span class="no">12</span>                <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">13</span>                <span class="k">if</span> (heaters[mid] &lt; h) lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">14</span>                <span class="k">else</span> hi = mid;</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>            <span class="c">// 只需看左右各一个供暖器：lo 是右侧最近，lo-1 是左侧最近</span></span><span class="ln"><span class="no">17</span>            <span class="k">int</span> dr = lo &lt; heaters.length ? heaters[lo] - h : <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">18</span>            <span class="k">int</span> dl = lo &gt; <span class="n">0</span> ? h - heaters[lo - <span class="n">1</span>] : <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">19</span>            <span class="c">// 这个房子需要的半径取左右较近者；整体半径取所有房子里的最大值</span></span><span class="ln"><span class="no">20</span>            ans = <span class="t">Math</span>.max(ans, <span class="t">Math</span>.min(dl, dr));</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>冬季已经来临。&nbsp;你的任务是设计一个有固定加热半径的供暖器向所有房屋供暖。</p>
+
+<p>在加热器的加热半径范围内的每个房屋都可以获得供暖。</p>
+
+<p>现在，给出位于一条水平线上的房屋&nbsp;<code>houses</code> 和供暖器&nbsp;<code>heaters</code> 的位置，请你找出并返回可以覆盖所有房屋的最小加热半径。</p>
+
+<p><b>注意</b>：所有供暖器 <code>heaters</code> 都遵循你的半径标准，加热的半径也一样。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> houses = [1,2,3], heaters = [2]
+<strong>输出:</strong> 1
+<strong>解释:</strong> 仅在位置 2 上有一个供暖器。如果我们将加热半径设为 1，那么所有房屋就都能得到供暖。
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> houses = [1,2,3,4], heaters = [1,4]
+<strong>输出:</strong> 1
+<strong>解释:</strong> 在位置 1, 4 上有两个供暖器。我们需要将加热半径设为 1，这样所有房屋就都能得到供暖。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>houses = [1,5], heaters = [2]
+<strong>输出：</strong>3
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= houses.length, heaters.length &lt;= 3 * 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= houses[i], heaters[i] &lt;= 10<sup>9</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int findRadius(int[] houses, int[] heaters) {", "        Arrays.sort(houses);", "        Arrays.sort(heaters);", "        int ans = 0;", "        for (int h : houses) {", "            // 二分找第一个位置 ≥ h 的供暖器，下标记为 lo", "            int lo = 0, hi = heaters.length;   // 循环不变量：答案在 [lo, hi) 里", "            while (lo < hi) {", "                int mid = (lo + hi) >>> 1;", "                if (heaters[mid] < h) lo = mid + 1;", "                else hi = mid;", "            }", "            // 只需看左右各一个供暖器：lo 是右侧最近，lo-1 是左侧最近", "            int dr = lo < heaters.length ? heaters[lo] - h : Integer.MAX_VALUE;", "            int dl = lo > 0 ? h - heaters[lo - 1] : Integer.MAX_VALUE;", "            // 这个房子需要的半径取左右较近者；整体半径取所有房子里的最大值", "            ans = Math.max(ans, Math.min(dl, dr));", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 475 供暖器 —— 图解：复刻 Solution.java 的「排序 + 二分找最近供暖器」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { houses: [3, 5, 9], heaters: [2, 10] };
+
+function trace(input) {
+  var houses = input.houses.slice().sort(function (a, b) { return a - b; });
+  var heaters = input.heaters.slice().sort(function (a, b) { return a - b; });
+  var frames = [];
+  var ans = 0;
+
+  var SORT = 'Arrays.sort(heaters);';
+  var BIN = 'if (heaters[mid] < h) lo = mid + 1;';
+  var MAX = 'ans = Math.max(ans, Math.min(dl, dr));';
+  var RET = 'return ans;';
+
+  function housesPanel(idx, marks) {
+    var m = marks || {};
+    if (idx != null) m[idx] = 'cur';
+    return Viz.cells(houses, { title: '房屋 houses（已排序）', marks: m });
+  }
+
+  function heatersPanel(loIdx) {
+    var pointers = loIdx != null && loIdx < heaters.length
+      ? [{ at: loIdx, label: 'lo', cls: 'p-mid' }] : [];
+    return Viz.cells(heaters, { title: '供暖器 heaters（已排序）', marks: {}, pointers: pointers });
+  }
+
+  // 每个房子的最近距离表
+  frames.push(Viz.frame(SORT, '先把房屋和供暖器各自排序，才能谈「左右邻居」',
+    [housesPanel(0), heatersPanel(null)]));
+
+  var dists = [];
+  for (var i = 0; i < houses.length; i++) {
+    var h = houses[i];
+    var lo = 0, hi = heaters.length;
+    while (lo < hi) {
+      var mid = (lo + hi) >> 1;
+      if (heaters[mid] < h) lo = mid + 1;
+      else hi = mid;
+    }
+    if (i === 1) {
+      frames.push(Viz.frame(BIN, '房 ' + h + '：二分找第一个 ≥' + h + ' 的供暖器 → 下标 ' + lo,
+        [housesPanel(i), heatersPanel(lo)]));
+    }
+    var dr = lo < heaters.length ? heaters[lo] - h : Infinity;
+    var dl = lo > 0 ? h - heaters[lo - 1] : Infinity;
+    var need = Math.min(dl, dr);
+    ans = Math.max(ans, need);
+    dists.push({ k: '房 ' + h, v: String(need), cls: '' });
+    if (i === 1) {
+      frames.push(Viz.frame(MAX, '房 ' + h + '：左邻 ' + (lo > 0 ? heaters[lo - 1] : '无') + ' 距 ' + dl
+        + '，右邻 ' + (lo < heaters.length ? heaters[lo] : '无') + ' 距 ' + dr + '，取较近的 ' + need,
+        [housesPanel(i), heatersPanel(lo)]));
+    }
+  }
+
+  var finRows = dists.map(function (r) {
+    return { k: r.k, v: r.v, cls: Number(r.v) === ans ? 'done' : '' };
+  });
+  frames.push(Viz.frame(RET, '所有房子都覆盖住的最大距离 ' + ans + '，就是最小加热半径',
+    [housesPanel(null), Viz.table('每个房子需要的半径', finRows, {})]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

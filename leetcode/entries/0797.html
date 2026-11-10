@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>所有可能的路径 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 639 / 1159</span>
+  <nav class="pn"><a href="0733.html">上一篇</a><a href="0446.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">797. </span>所有可能的路径</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">回溯</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">图</li><li class="tag">回溯</li><li class="tag">directed-acyclic-graph</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">DFS + 回溯：从 0 出发沿邻接表走，到 n−1 就把当前路径复制进答案，然后撤销最后一步换分支；DAG 保证无环不会绕圈。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>path</code> 记当前路径：进结点先 <code>add</code>，出结点必 <code>remove</code>（回溯）。</li><li>走到终点 <code>n-1</code> 时把 <code>path</code> <strong>复制一份</strong>收进答案——不复制的话回溯会把它清空。</li><li>图是 DAG，无需 visited 数组；无后继又没到终点就自然返回。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n + 边数 + 答案总长)，空间复杂度 O(n)（递归栈，不计答案）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; allPathsSourceTarget(<span class="k">int</span>[][] graph) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        dfs(graph, <span class="n">0</span>, <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(), ans);</span><span class="ln"><span class="no">7</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span>[][] g, <span class="k">int</span> u, <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; path, <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans) {</span><span class="ln"><span class="no">11</span>        path.add(u);</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (u == g.length - <span class="n">1</span>) {</span><span class="ln"><span class="no">13</span>            ans.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(path));   <span class="c">// 到终点：把当前路径复制一份收进答案</span></span><span class="ln"><span class="no">14</span>        } <span class="k">else</span> {</span><span class="ln"><span class="no">15</span>            <span class="k">for</span> (<span class="k">int</span> v : g[u]) dfs(g, v, path, ans);   <span class="c">// DAG 无环：放心递归每个后继</span></span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        path.remove(path.size() - <span class="n">1</span>);   <span class="c">// 回溯：撤销本结点，让父层换下一个分支</span></span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个有&nbsp;<code>n</code>&nbsp;个节点的 <strong>有向无环图（DAG）</strong>，请你找出从节点 <code>0</code>&nbsp;到节点 <code>n-1</code>&nbsp;的所有路径并输出（<strong>不要求按特定顺序</strong>）</p>
+
+<p><meta charset="UTF-8" />&nbsp;<code>graph[i]</code>&nbsp;是一个从节点 <code>i</code> 可以访问的所有节点的列表（即从节点 <code>i</code> 到节点&nbsp;<code>graph[i][j]</code>存在一条有向边）。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/273a74a83982.jpg" /></p>
+
+<pre>
+<strong>输入：</strong>graph = [[1,2],[3],[3],[]]
+<strong>输出：</strong>[[0,1,3],[0,2,3]]
+<strong>解释：</strong>有两条路径 0 -&gt; 1 -&gt; 3 和 0 -&gt; 2 -&gt; 3
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/fd957407e657.jpg" /></p>
+
+<pre>
+<strong>输入：</strong>graph = [[4,3,1],[3,2,4],[3],[4],[]]
+<strong>输出：</strong>[[0,4],[0,3,4],[0,1,3,4],[0,1,2,3,4],[0,1,4]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == graph.length</code></li>
+	<li><code>2 &lt;= n &lt;= 15</code></li>
+	<li><code>0 &lt;= graph[i][j] &lt; n</code></li>
+	<li><code>graph[i][j] != i</code>（即不存在自环）</li>
+	<li><code>graph[i]</code> 中的所有元素 <strong>互不相同</strong></li>
+	<li>保证输入为 <strong>有向无环图（DAG）</strong></li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<Integer>> allPathsSourceTarget(int[][] graph) {", "        List<List<Integer>> ans = new ArrayList<>();", "        dfs(graph, 0, new ArrayList<>(), ans);", "        return ans;", "    }", "", "    private void dfs(int[][] g, int u, List<Integer> path, List<List<Integer>> ans) {", "        path.add(u);", "        if (u == g.length - 1) {", "            ans.add(new ArrayList<>(path));   // 到终点：把当前路径复制一份收进答案", "        } else {", "            for (int v : g[u]) dfs(g, v, path, ans);   // DAG 无环：放心递归每个后继", "        }", "        path.remove(path.size() - 1);   // 回溯：撤销本结点，让父层换下一个分支", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 797 所有可能的路径 —— 图解：复刻 Solution.java 的「DFS + 回溯」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { graph: [[1, 2], [3], [3], []] };
+
+function trace(input) {
+  var g = input.graph;
+  var n = g.length;
+  var path = [], ans = [], frames = [];
+  var collectCount = 0, backtracked = false;
+
+  var ADD = 'path.add(u);';
+  var COLLECT = 'ans.add(new ArrayList<>(path));';
+  var REMOVE = 'path.remove(path.size() - 1);';
+  var RET = 'return ans;';
+
+  function cmp(a, b) {
+    var m = Math.min(a.length, b.length);
+    for (var i = 0; i < m; i++) if (a[i] !== b[i]) return a[i] - b[i];
+    return a.length - b.length;
+  }
+
+  // 邻接表：一格格出「结点→后继列表」；当前结点 cur，路径上的结点 win
+  function adjPanel() {
+    var items = [], marks = {};
+    for (var i = 0; i < n; i++) items.push(i + '→' + (g[i].length ? g[i].join(',') : '∅'));
+    for (var k = 0; k < path.length - 1; k++) marks[path[k]] = 'win';
+    if (path.length) marks[path[path.length - 1]] = 'cur';
+    return Viz.cells(items, { title: '邻接表 graph', marks: marks });
+  }
+
+  function pathPanel(marks) {
+    return Viz.cells(path.slice(), { title: '当前路径 path', marks: marks || {}, hideIndex: true });
+  }
+
+  function dfs(u) {
+    path.push(u);
+    if (u === n - 1) {
+      ans.push(path.slice());
+      collectCount++;
+      var done = {};
+      for (var i = 0; i < path.length; i++) done[i] = 'done';
+      if (collectCount === 1) frames.push(Viz.frame(COLLECT, '走到终点 ' + u + '：复制 path 收进答案',
+        [adjPanel(), pathPanel(done)]));
+      if (collectCount === 2) frames.push(Viz.frame(COLLECT, '从 0 换个分支再走：[0,2,3] 也收进答案',
+        [adjPanel(), pathPanel(done)]));
+    } else {
+      for (var k = 0; k < g[u].length; k++) dfs(g[u][k]);
+    }
+    path.pop();
+    if (collectCount === 1 && !backtracked && path.length === 1) {
+      backtracked = true;
+      frames.push(Viz.frame(REMOVE, '回溯：撤销走完的分支，回到 0 换下一个后继',
+        [adjPanel(), pathPanel({})]));
+    }
+  }
+
+  dfs(0);
+
+  var ansItems = ans.slice().sort(cmp).map(function (p) { return p.join(','); });
+  var ansMarks = {};
+  for (var a = 0; a < ansItems.length; a++) ansMarks[a] = 'done';
+  frames.push(Viz.frame(RET, 'DFS 走完所有分支：从 0 到 ' + (n - 1) + ' 共 ' + ans.length + ' 条路径', [
+    Viz.cells(ansItems, { title: '全部路径（按字典序展示）', marks: ansMarks, hideIndex: true }),
+    Viz.vars([{ name: '路径数', v: String(ans.length), cls: 'done' }])
+  ]));
+
+  return { frames: frames, result: ans.slice().sort(cmp) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

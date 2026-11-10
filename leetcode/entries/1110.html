@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>删点成林 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 791 / 1159</span>
+  <nav class="pn"><a href="0413.html">上一篇</a><a href="0688.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1110. </span>删点成林</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">深度优先搜索/递归</li><li class="aux">哈希表</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">后序递归：删除集里的结点返回 null（从树上断开），它尚存的孩子和没被删的根都收进森林。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先把 <code>to_delete</code> 放进哈希集合，判断 O(1)。</li><li>后序递归：先处理完左右子树，再决定自己——在删除集里就返回 <code>null</code>，父亲接住 <code>null</code> 即断开连接。</li><li>被删结点的「尚存孩子」就是新树的根，收进答案；递归结束后根若没被删，整棵树也是一棵。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">TreeNode</span>&gt; delNodes(<span class="t">TreeNode</span> root, <span class="k">int</span>[] to_delete) {</span><span class="ln"><span class="no">5</span>        <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; del = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> v : to_delete) del.add(v);</span><span class="ln"><span class="no">7</span>        <span class="t">List</span>&lt;<span class="t">TreeNode</span>&gt; forest = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        root = dfs(root, del, forest);                  <span class="c">// 后序处理整棵树</span></span><span class="ln"><span class="no">9</span>        <span class="k">if</span> (root != <span class="k">null</span>) forest.add(root);             <span class="c">// 根没被删：它自己是一棵新树的根</span></span><span class="ln"><span class="no">10</span>        <span class="k">return</span> forest;</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="c">// 后序：返回这个位置上保留下来的结点（被删返回 null），被删结点尚存的孩子收进森林</span></span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="t">TreeNode</span> dfs(<span class="t">TreeNode</span> node, <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; del, <span class="t">List</span>&lt;<span class="t">TreeNode</span>&gt; forest) {</span><span class="ln"><span class="no">15</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">16</span>        node.left = dfs(node.left, del, forest);</span><span class="ln"><span class="no">17</span>        node.right = dfs(node.right, del, forest);</span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (del.contains(node.val)) {</span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (node.left != <span class="k">null</span>) forest.add(node.left);    <span class="c">// 连接断开，孩子自成新根</span></span><span class="ln"><span class="no">20</span>            <span class="k">if</span> (node.right != <span class="k">null</span>) forest.add(node.right);</span><span class="ln"><span class="no">21</span>            <span class="k">return</span> <span class="k">null</span>;</span><span class="ln"><span class="no">22</span>        }</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> node;</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给出二叉树的根节点&nbsp;<code>root</code>，树上每个节点都有一个不同的值。</p>
+
+<p>如果节点值在&nbsp;<code>to_delete</code>&nbsp;中出现，我们就把该节点从树上删去，最后得到一个森林（一些不相交的树构成的集合）。</p>
+
+<p>返回森林中的每棵树。你可以按任意顺序组织答案。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/910635aeb1d2.png" style="height: 150px; width: 237px;" /></strong></p>
+
+<pre>
+<strong>输入：</strong>root = [1,2,3,4,5,6,7], to_delete = [3,5]
+<strong>输出：</strong>[[1,2,null,4],[6],[7]]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>root = [1,2,4,null,3], to_delete = [3]
+<strong>输出：</strong>[[1,2,4]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中的节点数最大为&nbsp;<code>1000</code>。</li>
+	<li>每个节点都有一个介于&nbsp;<code>1</code> 到&nbsp;<code>1000</code>&nbsp;之间的值，且各不相同。</li>
+	<li><code>to_delete.length &lt;= 1000</code></li>
+	<li><code>to_delete</code> 包含一些从&nbsp;<code>1</code> 到&nbsp;<code>1000</code>、各不相同的值。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<TreeNode> delNodes(TreeNode root, int[] to_delete) {", "        Set<Integer> del = new HashSet<>();", "        for (int v : to_delete) del.add(v);", "        List<TreeNode> forest = new ArrayList<>();", "        root = dfs(root, del, forest);                  // 后序处理整棵树", "        if (root != null) forest.add(root);             // 根没被删：它自己是一棵新树的根", "        return forest;", "    }", "", "    // 后序：返回这个位置上保留下来的结点（被删返回 null），被删结点尚存的孩子收进森林", "    private TreeNode dfs(TreeNode node, Set<Integer> del, List<TreeNode> forest) {", "        if (node == null) return null;", "        node.left = dfs(node.left, del, forest);", "        node.right = dfs(node.right, del, forest);", "        if (del.contains(node.val)) {", "            if (node.left != null) forest.add(node.left);    // 连接断开，孩子自成新根", "            if (node.right != null) forest.add(node.right);", "            return null;", "        }", "        return node;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1110. 删点成林 —— 图解：复刻 Solution.java 的「后序断链收根」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, 2, 3, 4, 5, 6, 7], to_delete: [3, 5] };
+
+function trace(input) {
+  var del = {};
+  input.to_delete.forEach(function (v) { del[v] = true; });
+  var frames = [];
+  var fired = { init: false, cut: false, rootDone: false };
+  var forest = [];   // 收集到的新树根（结点对象）
+
+  // 力扣层序数组 -> 结点
+  function build(arr) {
+    if (!arr.length || arr[0] === null) return null;
+    var root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var nd = q.shift();
+      if (i < arr.length) { if (arr[i] !== null) { nd.left = { idx: i, val: arr[i], left: null, right: null }; q.push(nd.left); } i++; }
+      if (i < arr.length) { if (arr[i] !== null) { nd.right = { idx: i, val: arr[i], left: null, right: null }; q.push(nd.right); } i++; }
+    }
+    return root;
+  }
+  var root = build(input.root);
+
+  // 当前还连在 node 下的结构 -> 力扣层序数组 +（结点 -> 层序下标）
+  function snapshot(node) {
+    var arr = [], at = [], q = [node];
+    while (q.length) {
+      var m = q.shift();
+      if (m === null) { arr.push(null); at.push(null); continue; }
+      arr.push(m.val);
+      at.push(m);
+      q.push(m.left);
+      q.push(m.right);
+    }
+    while (arr.length && arr[arr.length - 1] === null) { arr.pop(); at.pop(); }
+    return { arr: arr, at: at };
+  }
+
+  function treePanel(badNode, kids) {
+    var s = snapshot(root);
+    var marks = {};
+    s.at.forEach(function (p, i) {
+      if (!p) return;
+      if (p === badNode) marks[i] = 'bad';
+      else if (kids && kids.indexOf(p) >= 0) marks[i] = 'new';
+    });
+    return Viz.tree(s.arr, { title: '还连在原根下的部分', marks: marks });
+  }
+  function delPanel() {
+    var rows = input.to_delete.map(function (v) { return { k: String(v), v: '待删', cls: '' }; });
+    return Viz.table('to_delete：待删值集合', rows);
+  }
+  function forestPanel(hl) {
+    var rows = forest.map(function (t) {
+      return { k: '根 ' + t.val, v: JSON.stringify(snapshot(t).arr), cls: t === hl ? 'new' : '' };
+    });
+    if (!rows.length) rows = [{ k: '—', v: '（空）' }];
+    return Viz.table('forest：已收进森林的新树根', rows);
+  }
+
+  if (!fired.init) {
+    fired.init = true;
+    frames.push(Viz.frame('node.left = dfs(node.left, del, forest);',
+      '后序递归：先清完左右子树，回来再决定自己去留', [treePanel(null, null), delPanel()]));
+  }
+
+  function dfs(node) {
+    if (node === null) return null;
+    node.left = dfs(node.left);
+    node.right = dfs(node.right);
+    if (del[node.val]) {
+      var kids = [];
+      if (node.left) kids.push(node.left);
+      if (node.right) kids.push(node.right);
+      kids.forEach(function (t) { forest.push(t); });
+      if (kids.length && !fired.cut) {
+        fired.cut = true;
+        frames.push(Viz.frame('if (node.left != null) forest.add(node.left);',
+          node.val + ' 在删除集：尚存的孩子断开，自成新根', [treePanel(node, kids), forestPanel(null), delPanel()]));
+      }
+      return null;
+    }
+    return node;
+  }
+  root = dfs(root);
+
+  if (root !== null) {
+    forest.push(root);
+    if (!fired.rootDone) {
+      fired.rootDone = true;
+      frames.push(Viz.frame('if (root != null) forest.add(root);',
+        '递归完毕：根 ' + root.val + ' 没被删，剩余的整棵树也入森林', [treePanel(null, null), forestPanel(root), delPanel()]));
+    }
+  }
+
+  // 和 Java 的 Check 一样规范化：每棵树按层序数组的 JSON 串排序后再比
+  var sorted = forest.map(function (t) { return snapshot(t).arr; })
+    .sort(function (a, b) {
+      var sa = JSON.stringify(a), sb = JSON.stringify(b);
+      return sa < sb ? -1 : sa > sb ? 1 : 0;
+    });
+  var rows = sorted.map(function (lvl, i) { return { k: '树 ' + (i + 1), v: JSON.stringify(lvl), cls: 'done' }; });
+  frames.push(Viz.frame('return forest;', '森林收齐：共 ' + sorted.length + ' 棵树（规范化排序后输出）',
+    [treePanel(null, null), Viz.table('forest：最终森林', rows)]));
+  return { frames: frames, result: sorted };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

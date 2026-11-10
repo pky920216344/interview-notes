@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>双栈排序 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 403 / 1159</span>
+  <nav class="pn"><a href="0173.html">上一篇</a><a href="offer-59-i.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">补充题24. </span>双栈排序</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 8</li><li class="algo">图算法</li><li class="aux">广度优先搜索</li><li class="aux">栈</li><li class="st-warn" title="codetop 自行补充的条目，力扣上没有对应页面，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">冲突图二染色：i&lt;j、a[i]&lt;a[j] 且 j 后面还有比 a[i] 小的数，这两个数被迫同栈却后大先出，必须分居两栈；染得出色就能排好。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>同一个栈里先进的在下面、后出的：想升序出栈，被迫同时在场的两个数必须「后小前大」。</li><li><code>i&lt;j</code> 且 <code>a[i]&lt;a[j]</code> 时，若 <code>j</code> 之后还有比 <code>a[i]</code> 小的数，<code>a[i]</code> 在 <code>a[j]</code> 进栈前弹不掉（更小的还没出），被迫同场却后大先出 → 冲突，分居两栈（用 <code>suffMin</code> 后缀最小值 O(n²) 建边）。</li><li>冲突图 BFS 二染色：染出奇环即无解；染成功后按颜色进栈、能弹就弹，栈内自然「上小下大」，必能排成 1..n。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="c">/**</span></span><span class="ln"><span class="no">4</span><span class="c"> * codetop 补充题：双栈排序（力扣上无对应页面，本地验证）。</span></span><span class="ln"><span class="no">5</span><span class="c"> * nums 是 1..n 的一个排列：元素按给定顺序依次进栈（进 a、b 任一个），</span></span><span class="ln"><span class="no">6</span><span class="c"> * 任意时刻可以弹出任一栈的栈顶；问能否让出栈序列恰好是 1,2,…,n。</span></span><span class="ln"><span class="no">7</span><span class="c"> * 可行 ⟺ 冲突图可二染色（染色成功后按颜色模拟，栈内自然保持上小下大）。</span></span><span class="ln"><span class="no">8</span><span class="c"> */</span></span><span class="ln"><span class="no">9</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">10</span>    <span class="k">public</span> <span class="k">boolean</span> canSort(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">12</span>        <span class="c">// suffMin[j] = min(nums[j..n-1])：j 及之后还会来的最小值</span></span><span class="ln"><span class="no">13</span>        <span class="k">int</span>[] suffMin = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">14</span>        suffMin[n] = <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">15</span>        <span class="k">for</span> (<span class="k">int</span> j = n - <span class="n">1</span>; j &gt;= <span class="n">0</span>; j--) suffMin[j] = <span class="t">Math</span>.min(nums[j], suffMin[j + <span class="n">1</span>]);</span><span class="ln"><span class="no">16</span>        <span class="c">// 冲突：i&lt;j 且 nums[i]&lt;nums[j] 且 j 之后还有比 nums[i] 小的数——</span></span><span class="ln"><span class="no">17</span>        <span class="c">// nums[i] 在 nums[j] 进栈前弹不掉（还有更小的没出），被迫同栈却后大先出，只能分居两栈</span></span><span class="ln"><span class="no">18</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; adj = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">19</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) adj.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;());</span><span class="ln"><span class="no">20</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">21</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; j; i++) {</span><span class="ln"><span class="no">22</span>                <span class="k">if</span> (nums[i] &lt; nums[j] &amp;&amp; suffMin[j + <span class="n">1</span>] &lt; nums[i]) {</span><span class="ln"><span class="no">23</span>                    adj.get(i).add(j);</span><span class="ln"><span class="no">24</span>                    adj.get(j).add(i);</span><span class="ln"><span class="no">25</span>                }</span><span class="ln"><span class="no">26</span>            }</span><span class="ln"><span class="no">27</span>        }</span><span class="ln"><span class="no">28</span>        <span class="c">// BFS 二染色：0/1 两色对应两个栈，染出奇环就无解</span></span><span class="ln"><span class="no">29</span>        <span class="k">int</span>[] color = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">30</span>        <span class="t">Arrays</span>.fill(color, -<span class="n">1</span>);</span><span class="ln"><span class="no">31</span>        <span class="k">for</span> (<span class="k">int</span> s = <span class="n">0</span>; s &lt; n; s++) {</span><span class="ln"><span class="no">32</span>            <span class="k">if</span> (color[s] &gt;= <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">33</span>            color[s] = <span class="n">0</span>;</span><span class="ln"><span class="no">34</span>            <span class="t">Queue</span>&lt;<span class="t">Integer</span>&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">35</span>            q.add(s);</span><span class="ln"><span class="no">36</span>            <span class="k">while</span> (!q.isEmpty()) {</span><span class="ln"><span class="no">37</span>                <span class="k">int</span> u = q.poll();</span><span class="ln"><span class="no">38</span>                <span class="k">for</span> (<span class="k">int</span> v : adj.get(u)) {</span><span class="ln"><span class="no">39</span>                    <span class="k">if</span> (color[v] &lt; <span class="n">0</span>) { color[v] = color[u] ^ <span class="n">1</span>; q.add(v); }</span><span class="ln"><span class="no">40</span>                    <span class="k">else</span> <span class="k">if</span> (color[v] == color[u]) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">41</span>                }</span><span class="ln"><span class="no">42</span>            }</span><span class="ln"><span class="no">43</span>        }</span><span class="ln"><span class="no">44</span>        <span class="c">// 按染色模拟：能弹就弹，再把 x 压进自己颜色的栈（染色合法时栈顶必比它大）</span></span><span class="ln"><span class="no">45</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; a = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;(), b = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">46</span>        <span class="k">int</span> need = <span class="n">1</span>;</span><span class="ln"><span class="no">47</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">48</span>            need = drain(a, b, need);</span><span class="ln"><span class="no">49</span>            (color[i] == <span class="n">0</span> ? a : b).push(nums[i]);</span><span class="ln"><span class="no">50</span>        }</span><span class="ln"><span class="no">51</span>        need = drain(a, b, need);</span><span class="ln"><span class="no">52</span>        <span class="k">return</span> need &gt; n;</span><span class="ln"><span class="no">53</span>    }</span><span class="ln"><span class="no">54</span> </span><span class="ln"><span class="no">55</span>    <span class="c">// 两个栈顶轮着看，等于 need 就弹，直到弹不动为止；返回新的 need</span></span><span class="ln"><span class="no">56</span>    <span class="k">private</span> <span class="k">int</span> drain(<span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; a, <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; b, <span class="k">int</span> need) {</span><span class="ln"><span class="no">57</span>        <span class="k">for</span> (<span class="k">boolean</span> moved = <span class="k">true</span>; moved; ) {</span><span class="ln"><span class="no">58</span>            moved = <span class="k">false</span>;</span><span class="ln"><span class="no">59</span>            <span class="k">while</span> (!a.isEmpty() &amp;&amp; a.peek() == need) { a.pop(); need++; moved = <span class="k">true</span>; }</span><span class="ln"><span class="no">60</span>            <span class="k">while</span> (!b.isEmpty() &amp;&amp; b.peek() == need) { b.pop(); need++; moved = <span class="k">true</span>; }</span><span class="ln"><span class="no">61</span>        }</span><span class="ln"><span class="no">62</span>        <span class="k">return</span> need;</span><span class="ln"><span class="no">63</span>    }</span><span class="ln"><span class="no">64</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>这个条目没有现成的题面。</p></div></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "/**", " * codetop 补充题：双栈排序（力扣上无对应页面，本地验证）。", " * nums 是 1..n 的一个排列：元素按给定顺序依次进栈（进 a、b 任一个），", " * 任意时刻可以弹出任一栈的栈顶；问能否让出栈序列恰好是 1,2,…,n。", " * 可行 ⟺ 冲突图可二染色（染色成功后按颜色模拟，栈内自然保持上小下大）。", " */", "class Solution {", "    public boolean canSort(int[] nums) {", "        int n = nums.length;", "        // suffMin[j] = min(nums[j..n-1])：j 及之后还会来的最小值", "        int[] suffMin = new int[n + 1];", "        suffMin[n] = Integer.MAX_VALUE;", "        for (int j = n - 1; j >= 0; j--) suffMin[j] = Math.min(nums[j], suffMin[j + 1]);", "        // 冲突：i<j 且 nums[i]<nums[j] 且 j 之后还有比 nums[i] 小的数——", "        // nums[i] 在 nums[j] 进栈前弹不掉（还有更小的没出），被迫同栈却后大先出，只能分居两栈", "        List<List<Integer>> adj = new ArrayList<>();", "        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());", "        for (int j = 1; j < n; j++) {", "            for (int i = 0; i < j; i++) {", "                if (nums[i] < nums[j] && suffMin[j + 1] < nums[i]) {", "                    adj.get(i).add(j);", "                    adj.get(j).add(i);", "                }", "            }", "        }", "        // BFS 二染色：0/1 两色对应两个栈，染出奇环就无解", "        int[] color = new int[n];", "        Arrays.fill(color, -1);", "        for (int s = 0; s < n; s++) {", "            if (color[s] >= 0) continue;", "            color[s] = 0;", "            Queue<Integer> q = new ArrayDeque<>();", "            q.add(s);", "            while (!q.isEmpty()) {", "                int u = q.poll();", "                for (int v : adj.get(u)) {", "                    if (color[v] < 0) { color[v] = color[u] ^ 1; q.add(v); }", "                    else if (color[v] == color[u]) return false;", "                }", "            }", "        }", "        // 按染色模拟：能弹就弹，再把 x 压进自己颜色的栈（染色合法时栈顶必比它大）", "        Deque<Integer> a = new ArrayDeque<>(), b = new ArrayDeque<>();", "        int need = 1;", "        for (int i = 0; i < n; i++) {", "            need = drain(a, b, need);", "            (color[i] == 0 ? a : b).push(nums[i]);", "        }", "        need = drain(a, b, need);", "        return need > n;", "    }", "", "    // 两个栈顶轮着看，等于 need 就弹，直到弹不动为止；返回新的 need", "    private int drain(Deque<Integer> a, Deque<Integer> b, int need) {", "        for (boolean moved = true; moved; ) {", "            moved = false;", "            while (!a.isEmpty() && a.peek() == need) { a.pop(); need++; moved = true; }", "            while (!b.isEmpty() && b.peek() == need) { b.pop(); need++; moved = true; }", "        }", "        return need;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// supp-24. 双栈排序 —— 图解：复刻 Solution.java 的「冲突图二染色 + 按色进栈 + 能弹就弹」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [2, 3, 1, 5, 4] };
+
+function trace(input) {
+  var nums = input.nums;
+  var n = nums.length;
+  var frames = [];
+
+  // suffMin[j] = min(nums[j..n-1])
+  var suffMin = [];
+  suffMin[n] = Infinity;
+  for (var j = n - 1; j >= 0; j--) suffMin[j] = Math.min(nums[j], suffMin[j + 1]);
+
+  // 冲突边：i<j 且 nums[i]<nums[j] 且 j 之后还有比 nums[i] 小的数
+  var adj = [];
+  for (j = 0; j < n; j++) adj.push([]);
+  var firstEdge = null;
+  for (j = 1; j < n; j++) {
+    for (var i = 0; i < j; i++) {
+      if (nums[i] < nums[j] && suffMin[j + 1] < nums[i]) {
+        adj[i].push(j);
+        adj[j].push(i);
+        if (firstEdge === null) firstEdge = [i, j];
+      }
+    }
+  }
+
+  // BFS 二染色
+  var color = [];
+  for (i = 0; i < n; i++) color.push(-1);
+  var ok = true;
+  for (i = 0; i < n && ok; i++) {
+    if (color[i] >= 0) continue;
+    color[i] = 0;
+    var q = [i];
+    while (q.length && ok) {
+      var u = q.shift();
+      for (var k = 0; k < adj[u].length; k++) {
+        var v = adj[u][k];
+        if (color[v] < 0) { color[v] = color[u] ^ 1; q.push(v); }
+        else if (color[v] === color[u]) ok = false;
+      }
+    }
+  }
+
+  // 入栈序列面板：win = 栈 a 的颜色，cur = 栈 b 的颜色，bad = 冲突对，dim = 已处理
+  function numsPanel(i, marks) {
+    var m = {}, x;
+    for (x = 0; x < n; x++) m[x] = color[x] === 0 ? 'win' : 'cur';
+    for (x = 0; x < i; x++) m[x] = 'dim';
+    if (marks) for (x in marks) m[x] = marks[x];
+    else if (i < n) m[i] = 'chg';
+    return Viz.cells(nums, { title: '入栈序列（青=栈 a，黄=栈 b）', marks: m,
+      pointers: i >= 0 && i < n ? [{ at: i, label: 'x=' + nums[i], cls: 'p-cur' }] : [] });
+  }
+  function stackPanel(s, title) {
+    var pointers = s.length ? [{ at: s.length - 1, label: '栈顶', cls: 'p-cur' }] : [];
+    return Viz.cells(s, { title: title, hideIndex: true, pointers: pointers });
+  }
+  function bothStacks(a, b) { return [stackPanel(a, '栈 a'), stackPanel(b, '栈 b')]; }
+  function needPanel() { return Viz.vars([{ name: 'need：下一个该出栈的值', v: need, cls: 'chg' }]); }
+
+  // 帧 1：第一条冲突边——为什么这两个数不能同栈
+  if (firstEdge) {
+    frames.push(Viz.frame('if (nums[i] < nums[j] && suffMin[j + 1] < nums[i]) {',
+      'nums[' + firstEdge[0] + ']=' + nums[firstEdge[0]] + ' < nums[' + firstEdge[1] + ']=' + nums[firstEdge[1]] +
+      ' 且后面还有更小的：两数被迫同栈却后大先出，必须分居两栈',
+      [numsPanel(-1, (function () { var m = {}; m[firstEdge[0]] = 'cur'; m[firstEdge[1]] = 'bad'; return m; })())]));
+  }
+
+  // 模拟：能弹就弹，按颜色进栈
+  var a = [], b = [];
+  var need = 1;
+  var shown = {};
+  function snap(tag, at, key, panels) {
+    if (shown[tag]) return;
+    shown[tag] = true;
+    frames.push(Viz.frame(at, key, panels));
+  }
+  function drainAll() {
+    var moved = true;
+    while (moved) {
+      moved = false;
+      while (a.length && a[a.length - 1] === need) { a.pop(); need++; moved = true; }
+      while (b.length && b[b.length - 1] === need) { b.pop(); need++; moved = true; }
+    }
+  }
+  for (i = 0; i < n && ok; i++) {
+    var x = nums[i], before = need;
+    drainAll();
+    if (need > before) {
+      snap('drain', 'while (!a.isEmpty() && a.peek() == need) { a.pop(); need++; moved = true; }',
+        '栈顶正好是下一个该出的数就弹，两栈轮着弹到弹不动：need 从 ' + before + ' 走到 ' + need,
+        [numsPanel(i - 1)].concat(bothStacks(a, b), [needPanel()]));
+    }
+    if (color[i] === 0) a.push(x);
+    else b.push(x);
+    snap('push', '(color[i] == 0 ? a : b).push(nums[i]);',
+      'x=' + x + ' 按自己的颜色进栈（染色保证栈顶比它大）',
+      [numsPanel(i)].concat(bothStacks(a, b)));
+  }
+  if (ok) drainAll();
+
+  snap('end', 'return need > n;',
+    ok ? '全部按 1..n 弹空：可行，返回 true' : '冲突图染不出两种颜色：无解',
+    [numsPanel(n - 1)].concat(bothStacks(a, b), [needPanel()]));
+
+  return { frames: frames, result: ok };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

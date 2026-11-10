@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>寻找重复的子树 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 445 / 1159</span>
+  <nav class="pn"><a href="0870.html">上一篇</a><a href="0376.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">652. </span>寻找重复的子树</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 6</li><li class="algo">哈希表</li><li class="aux">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">哈希表</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">后序把每棵子树序列化成字符串「值(左)(右)」，哈希表数出现次数；某串第二次出现，就把这棵子树的根记入答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>后序遍历：先拿到左、右子树的序列串，再拼出 <code>值(左)(右)</code>；空孩子是空括号，串和子树一一对应。</li><li><code>cnt.merge(key, 1, Integer::sum)</code> 返回出现次数，<strong>恰好等于 2</strong> 时才 <code>res.add(node)</code>——第三次及以后不再加，保证同类只返回一个根。</li><li>序列化顺序天然是「先孩子后父亲」，同一棵子树的所有结点共用一个根，直接记根即可。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)（串长可到 O(n)，最坏 5000 结点可接受），空间复杂度 O(n²) 哈希表</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">String</span>, <span class="t">Integer</span>&gt; cnt = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">List</span>&lt;<span class="t">TreeNode</span>&gt; res = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">TreeNode</span>&gt; findDuplicateSubtrees(<span class="t">TreeNode</span> root) {</span><span class="ln"><span class="no">8</span>        ser(root);</span><span class="ln"><span class="no">9</span>        <span class="k">return</span> res;</span><span class="ln"><span class="no">10</span>    }</span><span class="ln"><span class="no">11</span> </span><span class="ln"><span class="no">12</span>    <span class="c">// 后序序列化：值(左子树)(右子树)，空孩子是空括号；同一串出现两次即重复子树</span></span><span class="ln"><span class="no">13</span>    <span class="k">private</span> <span class="t">String</span> ser(<span class="t">TreeNode</span> node) {</span><span class="ln"><span class="no">14</span>        <span class="k">if</span> (node == <span class="k">null</span>) <span class="k">return</span> <span class="s">""</span>;</span><span class="ln"><span class="no">15</span>        <span class="t">String</span> key = node.val + <span class="s">"("</span> + ser(node.left) + <span class="s">")"</span> + <span class="s">"("</span> + ser(node.right) + <span class="s">")"</span>;</span><span class="ln"><span class="no">16</span>        <span class="c">// 恰好在第二次出现时记录，保证同类重复子树只返回一个根</span></span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (cnt.merge(key, <span class="n">1</span>, <span class="t">Integer</span>::sum) == <span class="n">2</span>) res.add(node);</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> key;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一棵二叉树的根节点 <code>root</code> ，返回所有 <strong>重复的子树 </strong>。</p>
+
+<p>对于同一类的重复子树，你只需要返回其中任意 <strong>一棵 </strong>的根结点即可。</p>
+
+<p>如果两棵树具有<strong> 相同的结构</strong> 和 <strong>相同的结点值 </strong>，则认为二者是 <strong>重复 </strong>的。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/8e55788bf080.jpg" style="height: 236px; width: 300px;" /></p>
+
+<pre>
+<strong>输入：</strong>root = [1,2,3,4,null,2,4,null,null,4]
+<strong>输出：</strong>[[2,4],[4]]</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/64628ea3631d.jpg" style="height: 125px; width: 200px;" /></p>
+
+<pre>
+<strong>输入：</strong>root = [2,1,1]
+<strong>输出：</strong>[[1]]</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/84a93ab73aa1.jpg" style="height: 202px; width: 300px;" /></strong></p>
+
+<pre>
+<strong>输入：</strong>root = [2,2,2,3,null,3,null]
+<strong>输出：</strong>[[2,3],[3]]</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中的结点数在 <code>[1, 5000]</code> 范围内。</li>
+	<li><code>-200 &lt;= Node.val &lt;= 200</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private final Map<String, Integer> cnt = new HashMap<>();", "    private final List<TreeNode> res = new ArrayList<>();", "", "    public List<TreeNode> findDuplicateSubtrees(TreeNode root) {", "        ser(root);", "        return res;", "    }", "", "    // 后序序列化：值(左子树)(右子树)，空孩子是空括号；同一串出现两次即重复子树", "    private String ser(TreeNode node) {", "        if (node == null) return \"\";", "        String key = node.val + \"(\" + ser(node.left) + \")\" + \"(\" + ser(node.right) + \")\";", "        // 恰好在第二次出现时记录，保证同类重复子树只返回一个根", "        if (cnt.merge(key, 1, Integer::sum) == 2) res.add(node);", "        return key;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 652. 寻找重复的子树 —— 图解：复刻 Solution.java 的「后序序列化 + 计数」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { root: [1, 2, 3, 4, null, 2, 4, null, null, 4] };
+
+function trace(input) {
+  // 建树：结点带层序下标 idx，marks 靠它定位
+  function build(arr) {
+    if (!arr.length || arr[0] === null) return null;
+    var root = { idx: 0, val: arr[0], left: null, right: null };
+    var q = [root], i = 1;
+    while (q.length && i < arr.length) {
+      var n = q.shift();
+      if (i < arr.length) { if (arr[i] !== null) { n.left = { idx: i, val: arr[i], left: null, right: null }; q.push(n.left); } i++; }
+      if (i < arr.length) { if (arr[i] !== null) { n.right = { idx: i, val: arr[i], left: null, right: null }; q.push(n.right); } i++; }
+    }
+    return root;
+  }
+  var root = build(input.root);
+
+  var cnt = {};     // 序列串 -> 出现次数，对应 Java 的 cnt
+  var order = [];   // 出现过的串，按首次出现顺序，表格才稳定
+  var res = [];     // 已记下的重复子树根
+  var frames = [];
+  var fired = { first4: false, first2: false, dup4: false, dup2: false };
+
+  // 当前子树的层序下标集合（根 + 全部后代）
+  function subIdx(node) {
+    var idx = {}, q = [node];
+    while (q.length) {
+      var n = q.shift();
+      idx[n.idx] = true;
+      if (n.left) q.push(n.left);
+      if (n.right) q.push(n.right);
+    }
+    return idx;
+  }
+
+  function treePanel(node, doneNow) {
+    var marks = {};
+    if (node) {
+      var si = subIdx(node);
+      for (var k in si) marks[k] = 'win';
+      marks[node.idx] = doneNow ? 'done' : 'cur';
+    }
+    for (var i = 0; i < res.length; i++) marks[res[i].idx] = 'done';
+    return Viz.tree(input.root, { title: '二叉树（橙 = 正在序列化的子树，绿 = 已记下的重复根）', marks: marks });
+  }
+
+  function tablePanel(hitKey) {
+    var rows = order.map(function (s) {
+      return { k: s.length > 20 ? s.slice(0, 17) + '…' : s, v: cnt[s], cls: s === hitKey ? 'hit' : '' };
+    });
+    return Viz.table('子树序列 → 出现次数', rows);
+  }
+
+  function snap(at, key, node, hitKey, doneNow) {
+    if (frames.length >= 6) return;
+    frames.push(Viz.frame(at, key, [treePanel(node, doneNow), tablePanel(hitKey)]));
+  }
+
+  // 与 Java 相同的后序序列化：值(左)(右)
+  function dfs(node) {
+    if (node === null) return '';
+    var key = node.val + '(' + dfs(node.left) + ')' + '(' + dfs(node.right) + ')';
+    if (!(key in cnt)) { cnt[key] = 0; order.push(key); }
+    cnt[key]++;
+    if (key === '4()()' && !fired.first4) {
+      fired.first4 = true;
+      snap('String key = node.val + "(" + ser(node.left) + ")" + "(" + ser(node.right) + ")";',
+        '后序：叶 4 序列化为 4()()，第一次出现只计数', node, key, false);
+    }
+    if (key === '2(4()())()' && !fired.first2) {
+      fired.first2 = true;
+      snap('String key = node.val + "(" + ser(node.left) + ")" + "(" + ser(node.right) + ")";',
+        '整棵 [2,4] 子树序列化成 2(4()())()，也只计数', node, key, false);
+    }
+    if (cnt[key] === 2) {
+      res.push(node);
+      if (key === '4()()' && !fired.dup4) {
+        fired.dup4 = true;
+        snap('if (cnt.merge(key, 1, Integer::sum) == 2) res.add(node);',
+          '4()() 第二次出现：这个叶 4 就是重复子树的根', node, key, true);
+      }
+      if (key === '2(4()())()' && !fired.dup2) {
+        fired.dup2 = true;
+        snap('if (cnt.merge(key, 1, Integer::sum) == 2) res.add(node);',
+          '2(4()())() 第二次出现：[2,4] 也是重复子树，只记第二次的根', node, key, true);
+      }
+    }
+    return key;
+  }
+
+  dfs(root);
+
+  // 结果：每个记下的重复根，输出它子树的力扣层序数组
+  function levelOf(node) {
+    var arr = [], q = [node];
+    while (q.length) {
+      var n = q.shift();
+      if (n === null) { arr.push(null); continue; }
+      arr.push(n.val);
+      q.push(n.left);
+      q.push(n.right);
+    }
+    while (arr.length && arr[arr.length - 1] === null) arr.pop();
+    return arr;
+  }
+  var out = res.map(levelOf);
+
+  snap('return res;', '收工：两类重复子树各记一个根，输出 [[4], [2,4]]', null, null, false);
+  return { frames: frames, result: out };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

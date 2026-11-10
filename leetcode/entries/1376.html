@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>通知所有员工所需的时间 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1033 / 1159</span>
+  <nav class="pn"><a href="0917.html">上一篇</a><a href="0441.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1376. </span>通知所有员工所需的时间</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">manager 反建成父→下属的树，从根 DFS：每人到达时刻 = 父到达时刻 + informTime[父]，取最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>manager</code> 是「父指针」，先反建成 <code>children</code> 邻接表，消息从 <code>headID</code> 沿树往下传。</li><li>员工 <code>v</code> 的到达时刻 = 父的到达时刻 + <code>informTime[父]</code>；用显式栈 DFS（<code>n</code> 可达 10⁵，递归会爆栈）。</li><li>答案 = 所有员工到达时刻的最大值：最后知道消息的那个人决定总时长。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> numOfMinutes(<span class="k">int</span> n, <span class="k">int</span> headID, <span class="k">int</span>[] manager, <span class="k">int</span>[] informTime) {</span><span class="ln"><span class="no">5</span>        <span class="c">// children[u]：u 的直属下属（manager 是父指针，先反过来建邻接表）</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; children = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) children.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;());</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) <span class="k">if</span> (manager[i] &gt;= <span class="n">0</span>) children.get(manager[i]).add(i);</span><span class="ln"><span class="no">9</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">10</span>        <span class="c">// 显式栈代替递归：元素 = [员工, 消息传到他手里的时刻]</span></span><span class="ln"><span class="no">11</span>        <span class="t">Deque</span>&lt;<span class="k">int</span>[]&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">12</span>        stack.push(<span class="k">new</span> <span class="k">int</span>[]{headID, <span class="n">0</span>});</span><span class="ln"><span class="no">13</span>        <span class="k">while</span> (!stack.isEmpty()) {</span><span class="ln"><span class="no">14</span>            <span class="k">int</span>[] cur = stack.pop();</span><span class="ln"><span class="no">15</span>            <span class="k">int</span> u = cur[<span class="n">0</span>], t = cur[<span class="n">1</span>];   <span class="c">// t：消息到达 u 的时刻</span></span><span class="ln"><span class="no">16</span>            ans = <span class="t">Math</span>.max(ans, t);       <span class="c">// 最后一个知道消息的人决定总时长</span></span><span class="ln"><span class="no">17</span>            <span class="k">for</span> (<span class="k">int</span> v : children.get(u)) stack.push(<span class="k">new</span> <span class="k">int</span>[]{v, t + informTime[u]});</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>公司里有 <code>n</code> 名员工，每个员工的 ID 都是独一无二的，编号从 <code>0</code> 到 <code>n - 1</code>。公司的总负责人通过 <code>headID</code> 进行标识。</p>
+
+<p>在 <code>manager</code> 数组中，每个员工都有一个直属负责人，其中 <code>manager[i]</code> 是第 <code>i</code> 名员工的直属负责人。对于总负责人，<code>manager[headID] = -1</code>。题目保证从属关系可以用树结构显示。</p>
+
+<p>公司总负责人想要向公司所有员工通告一条紧急消息。他将会首先通知他的直属下属们，然后由这些下属通知他们的下属，直到所有的员工都得知这条紧急消息。</p>
+
+<p>第 <code>i</code> 名员工需要 <code>informTime[i]</code> 分钟来通知它的所有直属下属（也就是说在 <code>informTime[i]</code> 分钟后，他的所有直属下属都可以开始传播这一消息）。</p>
+
+<p>返回通知所有员工这一紧急消息所需要的 <strong>分钟数</strong> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>n = 1, headID = 0, manager = [-1], informTime = [0]
+<strong>输出：</strong>0
+<strong>解释：</strong>公司总负责人是该公司的唯一一名员工。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img alt="" src="../assets/img/2652b6f1756a.png" style="height: 174px; width: 404px;" /></p>
+
+<pre>
+<strong>输入：</strong>n = 6, headID = 2, manager = [2,2,-1,2,2,2], informTime = [0,0,1,0,0,0]
+<strong>输出：</strong>1
+<strong>解释：</strong>id = 2 的员工是公司的总负责人，也是其他所有员工的直属负责人，他需要 1 分钟来通知所有员工。
+上图显示了公司员工的树结构。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 10^5</code></li>
+	<li><code>0 &lt;= headID &lt; n</code></li>
+	<li><code>manager.length == n</code></li>
+	<li><code>0 &lt;= manager[i] &lt; n</code></li>
+	<li><code>manager[headID] == -1</code></li>
+	<li><code>informTime.length&nbsp;== n</code></li>
+	<li><code>0 &lt;= informTime[i] &lt;= 1000</code></li>
+	<li>如果员工 <code>i</code> 没有下属，<code>informTime[i] == 0</code> 。</li>
+	<li>题目 <strong>保证</strong> 所有员工都可以收到通知。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int numOfMinutes(int n, int headID, int[] manager, int[] informTime) {", "        // children[u]：u 的直属下属（manager 是父指针，先反过来建邻接表）", "        List<List<Integer>> children = new ArrayList<>();", "        for (int i = 0; i < n; i++) children.add(new ArrayList<>());", "        for (int i = 0; i < n; i++) if (manager[i] >= 0) children.get(manager[i]).add(i);", "        int ans = 0;", "        // 显式栈代替递归：元素 = [员工, 消息传到他手里的时刻]", "        Deque<int[]> stack = new ArrayDeque<>();", "        stack.push(new int[]{headID, 0});", "        while (!stack.isEmpty()) {", "            int[] cur = stack.pop();", "            int u = cur[0], t = cur[1];   // t：消息到达 u 的时刻", "            ans = Math.max(ans, t);       // 最后一个知道消息的人决定总时长", "            for (int v : children.get(u)) stack.push(new int[]{v, t + informTime[u]});", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1376. 通知所有员工所需的时间 —— 图解：复刻 Solution.java 的「建树 + 显式栈 DFS」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 6, headID: 0, manager: [-1, 0, 0, 1, 1, 2], informTime: [3, 2, 1, 0, 0, 0] };
+
+function trace(input) {
+  var n = input.n, headID = input.headID;
+  var manager = input.manager, informTime = input.informTime;
+  var frames = [];
+
+  // 建邻接表（和 Java 一致：按下标升序）
+  var children = [];
+  for (var i = 0; i < n; i++) children.push([]);
+  for (i = 0; i < n; i++) if (manager[i] >= 0) children[manager[i]].push(i);
+
+  // 组织架构树 → 层序数组 + 员工 id 到层序下标的映射（只用于画图）
+  var level = [], idToIdx = {};
+  var bq = [headID], seen = {};
+  seen[headID] = true;
+  while (bq.length) {
+    var bu = bq.shift();
+    idToIdx[bu] = level.length;
+    level.push(bu);
+    children[bu].forEach(function (v) { if (!seen[v]) { seen[v] = true; bq.push(v); } });
+  }
+
+  var PUSH = 'stack.push(new int[]{headID, 0});';
+  var ANS = 'ans = Math.max(ans, t);';
+  var SEND = 'for (int v : children.get(u)) stack.push(new int[]{v, t + informTime[u]});';
+  var DONE = 'return ans;';
+
+  var arrival = {};      // 员工 -> 消息到达时刻（已出栈 = 已知道）
+  var stackView = [];    // 栈里待处理的 [员工, 时刻]
+  var ans = 0;
+  var fired = { root: false, first: false, leaf: false, last: false, send: false };
+
+  function treePanel(curId) {
+    var marks = {}, labels = [];
+    for (var u = 0; u < n; u++) {
+      var idx = idToIdx[u];
+      if (u in arrival) { marks[idx] = 'win'; labels.push({ at: idx, label: '第' + arrival[u] + '分', cls: 'p-cur' }); }
+      else marks[idx] = 'dim';
+    }
+    if (curId != null) marks[idToIdx[curId]] = 'cur';
+    return Viz.tree(level, { title: '组织架构树（数字 = 员工 id，下方 = 到达时刻）', marks: marks, labels: labels });
+  }
+
+  function varsPanel(headline) {
+    return Viz.vars([
+      { name: 'ans', v: ans, cls: 'chg' },
+      { name: '栈 [员工,时刻]', v: stackView.length ? stackView.map(function (p) { return p[0] + '@' + p[1]; }).join(' ') : '空' },
+      { name: '这一步', v: headline }
+    ]);
+  }
+
+  function snap(at, key, headline, curId) {
+    frames.push(Viz.frame(at, key, [treePanel(curId), varsPanel(headline)]));
+  }
+
+  var stk = [[headID, 0]];
+  stackView = stk.map(function (p) { return p.slice(); });
+  snap(PUSH, '消息从根 ' + headID + ' 出发：根先知道，再花 informTime[根] 通知下属', '根入栈', headID);
+
+  while (stk.length) {
+    var cur = stk.pop();
+    var u = cur[0], t = cur[1];
+    arrival[u] = t;
+    if (t > ans) ans = t;
+    if (u === 2 && !fired.first) {
+      fired.first = true;
+      snap(ANS, '根花 3 分钟通知：1、2 都在第 3 分钟拿到消息', 'ans 更新为 3', u);
+    }
+    if (u === 5 && !fired.leaf) {
+      fired.leaf = true;
+      snap(ANS, '2 再花 1 分钟通知 5：它在第 4 分钟知道，ans 跟到 4', 'ans 更新为 4', u);
+    }
+    if (u === 4 && !fired.last) {
+      fired.last = true;
+      snap(ANS, '1 花了 2 分钟：下属 3、4 第 5 分钟才知道——最后知道的人决定总时长', 'ans 更新为 5', u);
+    }
+    var pushed = [];
+    children[u].forEach(function (v) { pushed.push([v, t + informTime[u]]); });
+    pushed.forEach(function (p) { stk.push(p); });   // 与 Java 相同：升序压栈，后压的先弹
+    stackView = stk.map(function (p) { return p.slice(); });
+    if (u === 2 && !fired.send) {
+      fired.send = true;
+      snap(SEND, '下属的到达时刻 = 父的到达时刻 + informTime[父]，沿路累加', '2 把 5 压栈', u);
+    }
+  }
+
+  snap(DONE, '所有人都收到消息：总时长 = 最晚的到达时刻 = ' + ans + ' 分钟', '完成', null);
+  return { frames: frames, result: ans };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

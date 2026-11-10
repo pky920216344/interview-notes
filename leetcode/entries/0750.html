@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>角矩形的数量 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 681 / 1159</span>
+  <nav class="pn"><a href="0087.html">上一篇</a><a href="1498.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">750. </span>角矩形的数量</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">哈希表</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">逐行扫：行内每对 1 记一个「列对」，同一列对第 m 次出现就新增 m−1 个矩形（C(m,2) 拆成增量累加）。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>角矩形由「两行 + 两列」的四个 1 确定：固定列对 <code>(c1, c2)</code>，若有 m 行在这两列都是 1，就贡献 <code>C(m,2)</code> 个矩形。</li><li>逐行处理：取出该行所有 1 的列，两两配对；列对之前见过 <code>k</code> 行就先 <code>ans += k</code> 再把计数 +1，增量累加恰好凑出 <code>C(m,2)</code>。</li><li>列对编码成整数 <code>c1*1000 + c2</code> 存哈希表，查询 O(1)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(行数 × 行内 1 的对数) ≤ O(rows × cols²)，空间复杂度 O(cols²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> countCornerRectangles(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">5</span>        <span class="c">// seen[p]：列对 p 已经在多少行里同时为 1</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; seen = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> ans = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span>[] row : grid) {</span><span class="ln"><span class="no">9</span>            <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; ones = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; row.length; c++) <span class="k">if</span> (row[c] == <span class="n">1</span>) ones.add(c);</span><span class="ln"><span class="no">11</span>            <span class="c">// 同一列对第 m 次出现就贡献 m-1：C(m,2) 拆成增量逐行累加</span></span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; ones.size(); i++)</span><span class="ln"><span class="no">13</span>                <span class="k">for</span> (<span class="k">int</span> j = i + <span class="n">1</span>; j &lt; ones.size(); j++) {</span><span class="ln"><span class="no">14</span>                    <span class="k">int</span> key = ones.get(i) * <span class="n">1000</span> + ones.get(j);</span><span class="ln"><span class="no">15</span>                    ans += seen.getOrDefault(key, <span class="n">0</span>);</span><span class="ln"><span class="no">16</span>                    seen.merge(key, <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">17</span>                }</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int countCornerRectangles(int[][] grid) {", "        // seen[p]：列对 p 已经在多少行里同时为 1", "        Map<Integer, Integer> seen = new HashMap<>();", "        int ans = 0;", "        for (int[] row : grid) {", "            List<Integer> ones = new ArrayList<>();", "            for (int c = 0; c < row.length; c++) if (row[c] == 1) ones.add(c);", "            // 同一列对第 m 次出现就贡献 m-1：C(m,2) 拆成增量逐行累加", "            for (int i = 0; i < ones.size(); i++)", "                for (int j = i + 1; j < ones.size(); j++) {", "                    int key = ones.get(i) * 1000 + ones.get(j);", "                    ans += seen.getOrDefault(key, 0);", "                    seen.merge(key, 1, Integer::sum);", "                }", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 0750. 角矩形的数量 —— 图解：复刻 Solution.java 的「逐行列对计数」，5 张关键帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  grid: [[1, 0, 0, 1, 1],
+         [1, 0, 0, 1, 1],
+         [0, 0, 0, 0, 0],
+         [1, 0, 0, 0, 1]]
+};
+
+function trace(input) {
+  var g = input.grid;
+  var rows = g.length, cols = rows ? g[0].length : 0;
+  var frames = [];
+  var seen = {};   // "c1,c2" -> 已见行数，对应 Java 的 seen map
+  var ans = 0;
+
+  function rowPanel(row, pair) {
+    var marks = {}, i;
+    for (i = 0; i < cols; i++) if (g[row][i] === 1) marks[i] = 'win';
+    if (pair) { marks[pair[0]] = 'cur'; marks[pair[1]] = 'cur'; }
+    return Viz.cells(g[row], { title: '当前行', marks: marks,
+      pointers: [{ at: pair ? pair[0] : 0, label: '第 ' + row + ' 行', cls: 'p-left' }] });
+  }
+  function tablePanel(hitKey) {
+    var keys = Object.keys(seen).sort(function (a, b) {
+      var pa = a.split(','), pb = b.split(',');
+      return (+pa[0] - +pb[0]) || (+pa[1] - +pb[1]);
+    });
+    return Viz.table('seen：列对 → 已同时为 1 的行数', keys.map(function (key) {
+      return { k: key, v: String(seen[key]), cls: key === hitKey ? 'hit' : '' };
+    }));
+  }
+  function varsPanel(cls) { return Viz.vars([{ name: 'ans（矩形总数）', v: ans, cls: cls || '' }]); }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  var story = (rows === 4 && cols === 5);
+  var hit1Shown = false, hit2Shown = false;
+
+  for (var r = 0; r < rows; r++) {
+    var ones = [];
+    for (var c = 0; c < cols; c++) if (g[r][c] === 1) ones.push(c);
+    for (var i = 0; i < ones.length; i++)
+      for (var j = i + 1; j < ones.length; j++) {
+        var key = ones[i] * 1000 + ones[j];
+        var prev = seen[key] || 0;
+        var label = ones[i] + ',' + ones[j];
+        ans += prev;
+        seen[key] = prev + 1;
+        if (story && !hit1Shown && prev > 0) {
+          hit1Shown = true;
+          snap('ans += seen.getOrDefault(key, 0);',
+            '第 ' + r + ' 行又见列对 (' + label + ')：之前 1 行 → 加 1 个矩形',
+            [rowPanel(r, [ones[i], ones[j]]), tablePanel(label), varsPanel('chg')]);
+        }
+        if (story && !hit2Shown && prev > 1) {
+          hit2Shown = true;
+          snap('ans += seen.getOrDefault(key, 0);',
+            '第 ' + r + ' 行的列对 (' + label + ') 已见过 2 行：一次加 2',
+            [rowPanel(r, [ones[i], ones[j]]), tablePanel(label), varsPanel('chg')]);
+        }
+      }
+    if (story && r === 0) snap('for (int[] row : grid) {',
+      '第 0 行处理完：1 在列 0/3/4，行内每对列各记 1 次',
+      [rowPanel(r, null), tablePanel(null), varsPanel('')]);
+    if (story && r === 1) snap('for (int[] row : grid) {',
+      '第 1 行处理完：三对列都各加 1 → ans=3，计数都升到 2',
+      [rowPanel(r, null), tablePanel(null), varsPanel('chg')]);
+  }
+
+  snap('return ans;', '扫完所有行：每对列贡献 C(m,2)，加总 = ' + ans, [varsPanel('done')]);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

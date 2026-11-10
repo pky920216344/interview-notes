@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>从链表中删去总和值为零的连续节点 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 385 / 1159</span>
+  <nav class="pn"><a href="0889.html">上一篇</a><a href="0159.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1171. </span>从链表中删去总和值为零的连续节点</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 9</li><li class="algo">前缀和/差分</li><li class="aux">哈希表</li><li class="aux">链表</li><li class="tag">哈希表</li><li class="tag">链表</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">前缀和做哈希键：当前缀和重复出现，说明中间一整段和为 0，直接把前一个结点接到当前结点后面。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>哨兵 <code>dummy</code> 也算进前缀和（<code>seen[0] = dummy</code>）：两个结点前缀和相同 ⟺ 它们之间那段和为 0。</li><li><code>seen</code> 记「每个前缀和<strong>现在</strong>挂在哪个结点上」；扫到重复的和，就把老结点 <code>e</code> 直连 <code>cur.next</code>，整段删除。</li><li>删除的结点要同步从 <code>seen</code> 里清掉（沿链走一遍、按各自前缀和移除），否则残留记录会指到已删除的结点。</li><li>删完继续用同一个 <code>sum</code> 往后扫：删掉的段和为 0，不影响后面的前缀和。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">ListNode</span> removeZeroSumSublists(<span class="t">ListNode</span> head) {</span><span class="ln"><span class="no">5</span>        <span class="t">ListNode</span> dummy = <span class="k">new</span> <span class="t">ListNode</span>(<span class="n">0</span>);</span><span class="ln"><span class="no">6</span>        dummy.next = head;</span><span class="ln"><span class="no">7</span>        <span class="c">// seen：前缀和 -&gt; 现在带着这个前缀和的结点；存活结点的前缀和互不相同</span></span><span class="ln"><span class="no">8</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">ListNode</span>&gt; seen = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        seen.put(<span class="n">0</span>, dummy);</span><span class="ln"><span class="no">10</span>        <span class="k">int</span> sum = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">for</span> (<span class="t">ListNode</span> cur = head; cur != <span class="k">null</span>; cur = cur.next) {</span><span class="ln"><span class="no">12</span>            sum += cur.val;</span><span class="ln"><span class="no">13</span>            <span class="t">ListNode</span> e = seen.get(sum);</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (e == <span class="k">null</span>) {                 <span class="c">// 第一次见这个前缀和：cur 保留</span></span><span class="ln"><span class="no">15</span>                seen.put(sum, cur);</span><span class="ln"><span class="no">16</span>            } <span class="k">else</span> {                         <span class="c">// e 之后到 cur 这段和为 0：整段删除</span></span><span class="ln"><span class="no">17</span>                <span class="k">int</span> s = sum;                 <span class="c">// e 的前缀和也是 sum</span></span><span class="ln"><span class="no">18</span>                <span class="k">for</span> (<span class="t">ListNode</span> n = e.next; n != cur; n = n.next) {</span><span class="ln"><span class="no">19</span>                    s += n.val;              <span class="c">// s 走到 n 的前缀和</span></span><span class="ln"><span class="no">20</span>                    seen.remove(s);          <span class="c">// 被删结点的记录一并清掉</span></span><span class="ln"><span class="no">21</span>                }</span><span class="ln"><span class="no">22</span>                e.next = cur.next;           <span class="c">// e 直接连到 cur 后面，中间全跳过</span></span><span class="ln"><span class="no">23</span>            }</span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> dummy.next;</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个链表的头节点&nbsp;<code>head</code>，请你编写代码，反复删去链表中由 <strong>总和</strong>&nbsp;值为 <code>0</code> 的连续节点组成的序列，直到不存在这样的序列为止。</p>
+
+<p>删除完毕后，请你返回最终结果链表的头节点。</p>
+
+
+
+<p>你可以返回任何满足题目要求的答案。</p>
+
+<p>（注意，下面示例中的所有序列，都是对&nbsp;<code>ListNode</code>&nbsp;对象序列化的表示。）</p>
+
+<p><strong>示例 1：</strong></p>
+
+<pre><strong>输入：</strong>head = [1,2,-3,3,1]
+<strong>输出：</strong>[3,1]
+<strong>提示：</strong>答案 [1,2,1] 也是正确的。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre><strong>输入：</strong>head = [1,2,3,-3,4]
+<strong>输出：</strong>[1,2,4]
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>head = [1,2,3,-3,-2]
+<strong>输出：</strong>[1]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>给你的链表中可能有 <code>1</code> 到&nbsp;<code>1000</code>&nbsp;个节点。</li>
+	<li>对于链表中的每个节点，节点的值：<code>-1000 &lt;= node.val &lt;= 1000</code>.</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public ListNode removeZeroSumSublists(ListNode head) {", "        ListNode dummy = new ListNode(0);", "        dummy.next = head;", "        // seen：前缀和 -> 现在带着这个前缀和的结点；存活结点的前缀和互不相同", "        Map<Integer, ListNode> seen = new HashMap<>();", "        seen.put(0, dummy);", "        int sum = 0;", "        for (ListNode cur = head; cur != null; cur = cur.next) {", "            sum += cur.val;", "            ListNode e = seen.get(sum);", "            if (e == null) {                 // 第一次见这个前缀和：cur 保留", "                seen.put(sum, cur);", "            } else {                         // e 之后到 cur 这段和为 0：整段删除", "                int s = sum;                 // e 的前缀和也是 sum", "                for (ListNode n = e.next; n != cur; n = n.next) {", "                    s += n.val;              // s 走到 n 的前缀和", "                    seen.remove(s);          // 被删结点的记录一并清掉", "                }", "                e.next = cur.next;           // e 直接连到 cur 后面，中间全跳过", "            }", "        }", "        return dummy.next;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1171. 删去总和为零的连续节点 —— 图解：复刻 Solution.java 的「前缀和重复即删段」，5 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { vals: [1, 2, -3, 3, 1] };
+
+function trace(input) {
+  var vals = input.vals;
+  var n = vals.length;
+  var nodes = vals.map(function (v, i) { return { val: v, idx: i + 1, next: null, dead: false }; });
+  for (var i = 0; i + 1 < n; i++) nodes[i].next = nodes[i + 1];
+  var dummy = { val: 0, idx: 0, next: n ? nodes[0] : null, dead: false };
+
+  var seen = {};                       // 前缀和 -> 结点（含虚头）
+  seen[0] = dummy;
+  var sum = 0, frames = [];
+  var seenTags = {}, kept = 0, deadMark = {};
+
+  var INIT = 'seen.put(0, dummy);';
+  var KEEP = 'seen.put(sum, cur);';
+  var CUT = 'e.next = cur.next;';
+  var END = 'return dummy.next;';
+
+  function chainIdx() {                // 当前存活链的结点下标序列（含虚头 0）
+    var out = [];
+    for (var p = dummy; p; p = p.next) out.push(p.idx);
+    return out;
+  }
+
+  function listPanel(o) {
+    var items = ['虚'].concat(vals.map(String));
+    var marks = {}, idxs = chainIdx(), aliveSet = {};
+    idxs.forEach(function (x) { aliveSet[x] = true; });
+    for (var i = 0; i <= n; i++) {
+      if (!aliveSet[i]) marks[i] = deadMark[i] ? 'dim' : 'bad';
+    }
+    if (o && o.cur != null) marks[o.cur] = 'cur';
+    if (o && o.seg) o.seg.forEach(function (x) { marks[x] = 'bad'; });
+    if (o && o.done) idxs.forEach(function (x) { if (x > 0) marks[x] = 'done'; });
+    var edges = [];
+    for (var t = 0; t + 1 < idxs.length; t++) edges.push([idxs[t], idxs[t + 1], o && o.newCut && idxs[t + 1] - idxs[t] > 1 ? 'new' : '']);
+    var nulls = idxs.length ? [idxs[idxs.length - 1]] : [];
+    return Viz.list(items, { title: '链表（虚头 + 原结点；蓝弧=删除后新接的边）', marks: marks, edges: edges, nulls: nulls });
+  }
+
+  function tablePanel(hitSum) {
+    var rows = [];
+    Object.keys(seen).map(Number).sort(function (a, b) { return a - b; }).forEach(function (s) {
+      var node = seen[s];
+      rows.push({ k: String(s), v: node.idx === 0 ? '虚头' : '值' + node.val, cls: s === hitSum ? 'hit' : '' });
+    });
+    return Viz.table('seen：前缀和 → 结点', rows, { hint: '（重复的前缀和 = 中间一段和为 0）' });
+  }
+
+  function snap(at, key, o, tag) {
+    if (tag) { if (seenTags[tag]) return; seenTags[tag] = true; }
+    var panels = [listPanel(o), tablePanel(o && o.hit)];
+    panels.push(Viz.vars([{ name: 'sum', v: sum, cls: o && o.chg ? 'chg' : '' }]));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  snap(INIT, '开局：虚头带前缀和 0 先进表，sum 从 0 起累计', null);
+
+  for (var cur = dummy.next; cur; cur = cur.next) {
+    sum += cur.val;
+    var e = seen[sum];
+    if (e === undefined) {
+      seen[sum] = cur;
+      kept++;
+      if (kept === 2) snap(KEEP, '前缀和没重复：结点保留，和记入 seen 表', { cur: cur.idx }, 'keep');
+    } else {
+      // 删 (e, cur]：先拍删除前的样子
+      var seg = [];
+      for (var p = e.next; p !== cur; p = p.next) seg.push(p.idx);
+      snap(CUT, '前缀和 ' + sum + ' 重复：与老结点之间整段和为 0，删！', { cur: cur.idx, seg: seg, hit: sum }, 'cut1');
+      for (var p2 = e.next; p2 !== cur; p2 = p2.next) deadMark[p2.idx] = true;
+      deadMark[cur.idx] = true;
+      var s = sum;
+      for (var q = e.next; q !== cur; q = q.next) { s += q.val; delete seen[s]; }
+      e.next = cur.next;
+      snap(CUT, '老结点直连 cur 后面：整段跳过，被删结点的记录也清掉', { cur: e.idx, newCut: true, chg: true }, 'cut2');
+    }
+  }
+
+  var out = [];
+  for (var p2 = dummy.next; p2; p2 = p2.next) out.push(p2.val);
+  snap(END, out.length ? '扫完：剩下 ' + out.join(', ') : '扫完：全删光了，剩空链表', { done: true });
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

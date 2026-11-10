@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>员工空闲时间 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 645 / 1159</span>
+  <nav class="pn"><a href="0654.html">上一篇</a><a href="0066.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">759. </span>员工空闲时间</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">扫描线/排序</li><li class="tag">数组</li><li class="tag">排序</li><li class="tag">扫描线</li><li class="tag">堆（优先队列）</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">公共空闲 = 忙碌并集的补：把所有员工的忙段摊平排序，扫描合并出并集，相邻并集块之间的空隙就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>谁在何时忙不影响结果，只把<strong>所有员工的忙段</strong>摊平到一起按开始时间排序。</li><li>扫描维护 <code>coverEnd</code>（已扫过忙段的并集右端）：新段 <code>it[0] &gt; coverEnd</code> 说明中间有空隙。</li><li>空隙记为 <code>[coverEnd, it[0]]</code>：忙段两端都算忙，连续时间轴上 <code>(3,4)</code> 这样的开区间按惯例写成 <code>[3,4]</code>；有重叠就 <code>coverEnd = max(coverEnd, it[1])</code>。</li><li>区间表示：本题无力扣模板，这里用 <code>int[][][]</code>（员工 → 忙段列表）和 <code>int[][]</code>（空闲段列表）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 员工的忙碌区间用 [start, end]（两端都算忙）表示；schedule[e] 是员工 e 的区间列表。</span></span><span class="ln"><span class="no">5</span>    <span class="c">// 返回所有人的公共空闲时段：区间是连续时间轴上的开区间 (coverEnd, itStart)，按题面惯例写成 [coverEnd, itStart]。</span></span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="k">int</span>[][] employeeFreeTime(<span class="k">int</span>[][][] schedule) {</span><span class="ln"><span class="no">7</span>        <span class="c">// 公共空闲只取决于「忙的并集」：把所有员工的区间摊平到一起</span></span><span class="ln"><span class="no">8</span>        <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; all = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span>[][] emp : schedule) {</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span>[] it : emp) all.add(it);</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        all.sort((a, b) -&gt; a[<span class="n">0</span>] - b[<span class="n">0</span>]);</span><span class="ln"><span class="no">13</span>        <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; free = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">14</span>        <span class="k">int</span> coverEnd = all.isEmpty() ? <span class="n">0</span> : all.get(<span class="n">0</span>)[<span class="n">1</span>];</span><span class="ln"><span class="no">15</span>        <span class="c">// coverEnd：已扫过的忙碌时段并集的右端点</span></span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; all.size(); i++) {</span><span class="ln"><span class="no">17</span>            <span class="k">int</span>[] it = all.get(i);</span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (it[<span class="n">0</span>] &gt; coverEnd) {</span><span class="ln"><span class="no">19</span>                <span class="c">// 新忙段接不上：中间 (coverEnd, it[0]) 人人都闲</span></span><span class="ln"><span class="no">20</span>                free.add(<span class="k">new</span> <span class="k">int</span>[]{coverEnd, it[<span class="n">0</span>]});</span><span class="ln"><span class="no">21</span>                coverEnd = it[<span class="n">1</span>];</span><span class="ln"><span class="no">22</span>            } <span class="k">else</span> <span class="k">if</span> (it[<span class="n">1</span>] &gt; coverEnd) {</span><span class="ln"><span class="no">23</span>                coverEnd = it[<span class="n">1</span>];   <span class="c">// 有重叠：并集右端外扩</span></span><span class="ln"><span class="no">24</span>            }</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>        <span class="k">return</span> free.toArray(<span class="k">new</span> <span class="k">int</span>[<span class="n">0</span>][]);</span><span class="ln"><span class="no">27</span>    }</span><span class="ln"><span class="no">28</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    // 员工的忙碌区间用 [start, end]（两端都算忙）表示；schedule[e] 是员工 e 的区间列表。", "    // 返回所有人的公共空闲时段：区间是连续时间轴上的开区间 (coverEnd, itStart)，按题面惯例写成 [coverEnd, itStart]。", "    public int[][] employeeFreeTime(int[][][] schedule) {", "        // 公共空闲只取决于「忙的并集」：把所有员工的区间摊平到一起", "        List<int[]> all = new ArrayList<>();", "        for (int[][] emp : schedule) {", "            for (int[] it : emp) all.add(it);", "        }", "        all.sort((a, b) -> a[0] - b[0]);", "        List<int[]> free = new ArrayList<>();", "        int coverEnd = all.isEmpty() ? 0 : all.get(0)[1];", "        // coverEnd：已扫过的忙碌时段并集的右端点", "        for (int i = 1; i < all.size(); i++) {", "            int[] it = all.get(i);", "            if (it[0] > coverEnd) {", "                // 新忙段接不上：中间 (coverEnd, it[0]) 人人都闲", "                free.add(new int[]{coverEnd, it[0]});", "                coverEnd = it[1];", "            } else if (it[1] > coverEnd) {", "                coverEnd = it[1];   // 有重叠：并集右端外扩", "            }", "        }", "        return free.toArray(new int[0][]);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 759. 员工空闲时间 —— 图解：复刻 Solution.java 的「摊平排序 + 扫描并集找空隙」，5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { schedule: [[[1, 2], [5, 6]], [[1, 3]], [[4, 10]]] };
+
+function trace(input) {
+  var schedule = input.schedule;
+  var frames = [];
+
+  var SORT = 'all.sort((a, b) -> a[0] - b[0]);';
+  var INIT = 'int coverEnd = all.isEmpty() ? 0 : all.get(0)[1];';
+  var MERGE = 'else if (it[1] > coverEnd) {';
+  var GAP = 'free.add(new int[]{coverEnd, it[0]});';
+  var RET = 'return free.toArray(new int[0][]);';
+
+  // 摊平所有员工的忙段
+  var all = [];
+  schedule.forEach(function (emp) {
+    emp.forEach(function (it) { all.push([it[0], it[1]]); });
+  });
+  all.sort(function (a, b) { return a[0] - b[0]; });
+
+  // 并集视图：依次是忙碌块（bad）和空隙（done）
+  var blocks = [];
+  function pushBlock(s, e) { blocks.push({ s: s, e: e, busy: true }); }
+  function extendLast(e) { blocks[blocks.length - 1].e = e; }
+  function unionPanel() {
+    var items = blocks.map(function (b) { return (b.busy ? '忙 ' : '闲 ') + b.s + '~' + b.e; });
+    var marks = {};
+    blocks.forEach(function (b, j) { marks[j] = b.busy ? 'bad' : 'done'; });
+    return Viz.cells(items, { title: '忙碌并集与空隙（连续时间轴，区间两端都算忙）', marks: marks, hideIndex: true });
+  }
+  function sortedPanel(i) {
+    var marks = {}, pointers = [];
+    for (var j = 0; j < all.length; j++) marks[j] = j < i ? 'dim' : '';
+    if (i < all.length) pointers.push({ at: i, label: '当前忙段', cls: 'p-cur' });
+    return Viz.cells(all.map(function (it) { return it[0] + '~' + it[1]; }),
+      { title: '摊平后按开始时间排序的忙段', marks: marks, pointers: pointers, hideIndex: true });
+  }
+  function varsPanel(coverEnd) {
+    return Viz.vars([{ name: 'coverEnd（并集右端）', v: coverEnd == null ? '—' : String(coverEnd) }]);
+  }
+  function snap(at, key, i, coverEnd) {
+    frames.push(Viz.frame(at, key, [sortedPanel(i), unionPanel(), varsPanel(coverEnd)]));
+  }
+
+  var free = [];
+  var fired = { merge: false, gap: false };
+  snap(SORT, '公共空闲只看「忙的并集」：摊平所有人，按开始时间排序', 0, null);
+
+  var coverEnd = all.length ? all[0][1] : 0;
+  if (all.length) {
+    pushBlock(all[0][0], all[0][1]);
+    snap(INIT, '从第一段起：并集右端 coverEnd = ' + coverEnd, 1, coverEnd);
+  }
+
+  for (var i = 1; i < all.length; i++) {
+    var it = all[i];
+    if (it[0] > coverEnd) {
+      free.push([coverEnd, it[0]]);
+      blocks.push({ s: coverEnd, e: it[0], busy: false });
+      pushBlock(it[0], it[1]);
+      if (!fired.gap) {
+        fired.gap = true;
+        snap(GAP, '[' + it[0] + '~' + it[1] + '] 接不上：空隙 ' + coverEnd + '~' + it[0] + ' 人人都闲，记入答案', i + 1, coverEnd);
+      }
+      coverEnd = it[1];
+    } else {
+      if (it[1] > coverEnd) {
+        extendLast(it[1]);
+        if (!fired.merge) {
+          fired.merge = true;
+          snap(MERGE, '[' + it[0] + '~' + it[1] + '] 与并集重叠：右端从 ' + coverEnd + ' 推到 ' + it[1], i + 1, it[1]);
+        }
+        coverEnd = it[1];
+      }
+    }
+  }
+
+  snap(RET, '扫完：忙块之间的空隙就是全部公共空闲', all.length, coverEnd);
+
+  return { frames: frames, result: free };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

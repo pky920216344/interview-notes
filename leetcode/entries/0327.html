@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>区间和的个数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 697 / 1159</span>
+  <nav class="pn"><a href="1073.html">上一篇</a><a href="mianshi-16-01.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">327. </span>区间和的个数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">分治</li><li class="aux">前缀和/差分</li><li class="tag">树状数组</li><li class="tag">线段树</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">分治</li><li class="tag">有序集合</li><li class="tag">treap</li><li class="tag">归并排序</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">前缀和转成「数 pre[j]−pre[i] 落在 [lower,upper] 的对数」，归并排序合并前用两指针窗口对每个左半值数右半。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>区间和 <code>S(i,j) = pre[j+1] − pre[i]</code>；问题变成：前缀和数组里数下标对 <code>(i&lt;j)</code> 使差落在 <code>[lower, upper]</code>。</li><li>归并排序：递归数完两半内部，合并前两半各自有序——左半值增大时，右半的合法窗口 <code>[pre[i]+lower, pre[i]+upper]</code> 只会右移，双指针 O(n) 数完跨半区的对。</li><li>前缀和必须用 <code>long</code>：<code>nums[i]</code> 可达 ±2³¹，相加会溢出 <code>int</code>；答案由题面保证在 <code>int</code> 内。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">private</span> <span class="k">long</span>[] tmp;</span><span class="ln"><span class="no">3</span>    <span class="k">private</span> <span class="k">long</span> lower, upper;</span><span class="ln"><span class="no">4</span> </span><span class="ln"><span class="no">5</span>    <span class="k">public</span> <span class="k">int</span> countRangeSum(<span class="k">int</span>[] nums, <span class="k">int</span> lower, <span class="k">int</span> upper) {</span><span class="ln"><span class="no">6</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">7</span>        <span class="c">// 区间和 S(i,j) = pre[j+1] − pre[i]：问题变成数「前缀和数组里 pre[j]−pre[i] 落在区间内」的对数</span></span><span class="ln"><span class="no">8</span>        <span class="k">long</span>[] pre = <span class="k">new</span> <span class="k">long</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) pre[i + <span class="n">1</span>] = pre[i] + nums[i];</span><span class="ln"><span class="no">10</span>        <span class="k">this</span>.lower = lower;</span><span class="ln"><span class="no">11</span>        <span class="k">this</span>.upper = upper;</span><span class="ln"><span class="no">12</span>        tmp = <span class="k">new</span> <span class="k">long</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> (<span class="k">int</span>) sort(pre, <span class="n">0</span>, n);</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="c">// 对 pre[lo..hi] 归并排序，返回其中下标对 (i&lt;j) 满足 pre[j]−pre[i] ∈ [lower, upper] 的个数</span></span><span class="ln"><span class="no">17</span>    <span class="k">private</span> <span class="k">long</span> sort(<span class="k">long</span>[] a, <span class="k">int</span> lo, <span class="k">int</span> hi) {</span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (lo &gt;= hi) <span class="k">return</span> <span class="n">0</span>;</span><span class="ln"><span class="no">19</span>        <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">20</span>        <span class="k">long</span> cnt = sort(a, lo, mid) + sort(a, mid + <span class="n">1</span>, hi);</span><span class="ln"><span class="no">21</span>        <span class="c">// 两半各自有序：左半值增大时，右半的合法窗口 [p, q) 只会整体右移</span></span><span class="ln"><span class="no">22</span>        <span class="k">int</span> p = mid + <span class="n">1</span>, q = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">23</span>        <span class="k">for</span> (<span class="k">int</span> i = lo; i &lt;= mid; i++) {</span><span class="ln"><span class="no">24</span>            <span class="k">while</span> (p &lt;= hi &amp;&amp; a[p] - a[i] &lt; lower) p++;</span><span class="ln"><span class="no">25</span>            <span class="k">while</span> (q &lt;= hi &amp;&amp; a[q] - a[i] &lt;= upper) q++;</span><span class="ln"><span class="no">26</span>            cnt += q - p;</span><span class="ln"><span class="no">27</span>        }</span><span class="ln"><span class="no">28</span>        <span class="c">// 标准归并：借助 tmp 合并两半</span></span><span class="ln"><span class="no">29</span>        <span class="k">int</span> i = lo, j = mid + <span class="n">1</span>, w = lo;</span><span class="ln"><span class="no">30</span>        <span class="t">System</span>.arraycopy(a, lo, tmp, lo, hi - lo + <span class="n">1</span>);</span><span class="ln"><span class="no">31</span>        <span class="k">while</span> (i &lt;= mid &amp;&amp; j &lt;= hi) a[w++] = tmp[i] &lt;= tmp[j] ? tmp[i++] : tmp[j++];</span><span class="ln"><span class="no">32</span>        <span class="k">while</span> (i &lt;= mid) a[w++] = tmp[i++];</span><span class="ln"><span class="no">33</span>        <span class="k">while</span> (j &lt;= hi) a[w++] = tmp[j++];</span><span class="ln"><span class="no">34</span>        <span class="k">return</span> cnt;</span><span class="ln"><span class="no">35</span>    }</span><span class="ln"><span class="no">36</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> 以及两个整数 <code>lower</code> 和 <code>upper</code> 。求数组中，值位于范围 <code>[lower, upper]</code> （包含 <code>lower</code> 和 <code>upper</code>）之内的 <strong>区间和的个数</strong> 。</p>
+
+<p><strong>区间和</strong> <code>S(i, j)</code> 表示在 <code>nums</code> 中，位置从 <code>i</code> 到 <code>j</code> 的元素之和，包含 <code>i</code> 和 <code>j</code> (<code>i</code> ≤ <code>j</code>)。</p>
+
+
+<strong>示例 1：</strong>
+
+<pre>
+<strong>输入：</strong>nums = [-2,5,-1], lower = -2, upper = 2
+<strong>输出：</strong>3
+<strong>解释：</strong>存在三个区间：[0,0]、[2,2] 和 [0,2] ，对应的区间和分别是：-2 、-1 、2 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [0], lower = 0, upper = 0
+<strong>输出：</strong>1
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= nums.length <= 10<sup>5</sup></code></li>
+	<li><code>-2<sup>31</sup> <= nums[i] <= 2<sup>31</sup> - 1</code></li>
+	<li><code>-10<sup>5</sup> <= lower <= upper <= 10<sup>5</sup></code></li>
+	<li>题目数据保证答案是一个 <strong>32 位</strong> 的整数</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    private long[] tmp;", "    private long lower, upper;", "", "    public int countRangeSum(int[] nums, int lower, int upper) {", "        int n = nums.length;", "        // 区间和 S(i,j) = pre[j+1] − pre[i]：问题变成数「前缀和数组里 pre[j]−pre[i] 落在区间内」的对数", "        long[] pre = new long[n + 1];", "        for (int i = 0; i < n; i++) pre[i + 1] = pre[i] + nums[i];", "        this.lower = lower;", "        this.upper = upper;", "        tmp = new long[n + 1];", "        return (int) sort(pre, 0, n);", "    }", "", "    // 对 pre[lo..hi] 归并排序，返回其中下标对 (i<j) 满足 pre[j]−pre[i] ∈ [lower, upper] 的个数", "    private long sort(long[] a, int lo, int hi) {", "        if (lo >= hi) return 0;", "        int mid = (lo + hi) >>> 1;", "        long cnt = sort(a, lo, mid) + sort(a, mid + 1, hi);", "        // 两半各自有序：左半值增大时，右半的合法窗口 [p, q) 只会整体右移", "        int p = mid + 1, q = mid + 1;", "        for (int i = lo; i <= mid; i++) {", "            while (p <= hi && a[p] - a[i] < lower) p++;", "            while (q <= hi && a[q] - a[i] <= upper) q++;", "            cnt += q - p;", "        }", "        // 标准归并：借助 tmp 合并两半", "        int i = lo, j = mid + 1, w = lo;", "        System.arraycopy(a, lo, tmp, lo, hi - lo + 1);", "        while (i <= mid && j <= hi) a[w++] = tmp[i] <= tmp[j] ? tmp[i++] : tmp[j++];", "        while (i <= mid) a[w++] = tmp[i++];", "        while (j <= hi) a[w++] = tmp[j++];", "        return cnt;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 327. 区间和的个数 —— 图解：复刻 Solution.java 的「前缀和 + 归并排序计数」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [-2, 5, -1], lower: -2, upper: 2 };
+
+function trace(input) {
+  var nums = input.nums, lower = input.lower, upper = input.upper;
+  var pre = [0];
+  for (var i = 0; i < nums.length; i++) pre.push(pre[i] + nums[i]);
+  var frames = [];
+  var total = 0;
+
+  function cellsPanel(lo, hi, cur, win) {
+    var marks = {}, k;
+    for (k = 0; k < pre.length; k++) if (k < lo || k > hi) marks[k] = 'dim';
+    for (k = lo; k <= hi; k++) marks[k] = 'win';
+    if (cur != null) marks[cur] = 'cur';
+    var opts = { title: '前缀和数组 pre（排序中会不断变化）', marks: marks };
+    if (win && win.to >= win.from) opts.range = { from: win.from, to: win.to, label: '合法窗口' };
+    return Viz.cells(pre.map(String), opts);
+  }
+  function varsPanel(chg) {
+    return Viz.vars([
+      { name: '[lower, upper]', v: '[' + lower + ', ' + upper + ']', cls: '' },
+      { name: '已计入的对数', v: String(total), cls: chg === 'total' ? 'chg' : '' }
+    ]);
+  }
+
+  function sort(lo, hi) {
+    if (lo >= hi) return 0;
+    var mid = (lo + hi) >> 1;
+    var cnt = sort(lo, mid) + sort(mid + 1, hi);
+    var p = mid + 1, q = mid + 1;
+    for (var i = lo; i <= mid; i++) {
+      while (p <= hi && pre[p] - pre[i] < lower) p++;
+      while (q <= hi && pre[q] - pre[i] <= upper) q++;
+      cnt += q - p;
+      total += q - p;
+      // 帧 2：最底层第一次计数；帧 3：最外层第二次计数（左值 0 命中右值 2）
+      var base = (lo === 0 && hi === 1 && i === lo);
+      var top = (lo === 0 && hi === pre.length - 1 && pre.length === 4 && i === lo + 1);
+      if (base || top) {
+        frames.push(Viz.frame('cnt += q - p;',
+          '左值 ' + pre[i] + '：右半有 ' + (q - p) + ' 个落在 [' + (pre[i] + lower) + ', ' + (pre[i] + upper) + ']',
+          [cellsPanel(lo, hi, i, q > p ? { from: p, to: q - 1 } : null), varsPanel('total')]));
+      }
+    }
+    var tmp = pre.slice(lo, hi + 1);
+    var a = lo, b = mid + 1, w = lo;
+    while (a <= mid && b <= hi) pre[w++] = tmp[a - lo] <= tmp[b - lo] ? tmp[(a++) - lo] : tmp[(b++) - lo];
+    while (a <= mid) pre[w++] = tmp[(a++) - lo];
+    while (b <= hi) pre[w++] = tmp[(b++) - lo];
+    return cnt;
+  }
+
+  var joined = '前缀和 P = [' + pre.join(',') + ']；区间和 S(i,j) = P[j+1] − P[i]';
+  frames.push(Viz.frame('for (int i = 0; i < n; i++) pre[i + 1] = pre[i] + nums[i];',
+    joined.length <= 60 ? joined : '前缀和 P 共 ' + pre.length + ' 项；区间和 S(i,j) = P[j+1] − P[i]',
+    [cellsPanel(0, pre.length - 1, null, null), varsPanel('')]));
+  var count = sort(0, pre.length - 1);
+  frames.push(Viz.frame('return (int) sort(pre, 0, n);',
+    '归并完：共 ' + count + ' 个区间和落在 [' + lower + ', ' + upper + ']',
+    [cellsPanel(0, pre.length - 1, null, null), varsPanel('total')]));
+  return { frames: frames, result: count };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

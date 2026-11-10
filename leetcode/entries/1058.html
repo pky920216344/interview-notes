@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最小化舍入误差以满足目标 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1043 / 1159</span>
+  <nav class="pn"><a href="0360.html">上一篇</a><a href="0281.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1058. </span>最小化舍入误差以满足目标</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">贪心</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">字符串</li><li class="tag">排序</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">全部先向下取整；缺多少（need）就挑小数部分最大的那么多个向上取整——向上的浪费 1−f 最小。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>每个价格拆成整数部分 + 三位小数 <code>f</code>（千分之几）；先全向下取整，<code>need = target − floor和</code>。</li><li>可行性：<code>need &lt; 0</code>（全向下都超了）或 <code>need &gt;</code> 小数非零的个数 → <code>-1</code>。</li><li>误差只来自小数：向下付 <code>f</code>，向上付 <code>1−f</code>；必须恰好向上 <code>need</code> 个 → 按 <code>f</code> <strong>从大到小</strong>挑，总误差用整数「毫」算，避免浮点误差。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> minimizeError(<span class="t">List</span>&lt;<span class="t">String</span>&gt; prices, <span class="k">int</span> target) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = prices.size();</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] frac = <span class="k">new</span> <span class="k">int</span>[n];   <span class="c">// 每个价格的小数部分（千分之几）</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span> need = target, slots = <span class="n">0</span>, base = <span class="n">0</span>;</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">9</span>            <span class="t">String</span> s = prices.get(i);</span><span class="ln"><span class="no">10</span>            <span class="k">int</span> dot = s.indexOf(<span class="s">'.'</span>);</span><span class="ln"><span class="no">11</span>            <span class="k">int</span> f = <span class="t">Integer</span>.parseInt(s.substring(dot + <span class="n">1</span>));   <span class="c">// 题面保证恰好 3 位小数</span></span><span class="ln"><span class="no">12</span>            need -= <span class="t">Integer</span>.parseInt(s.substring(<span class="n">0</span>, dot));    <span class="c">// 先全部向下取整</span></span><span class="ln"><span class="no">13</span>            frac[i] = f;</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (f &gt; <span class="n">0</span>) slots++;</span><span class="ln"><span class="no">15</span>            base += f;</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="c">// 全向下仍超出 target，或最多能补的高度不够 → 无解</span></span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (need &lt; <span class="n">0</span> || need &gt; slots) <span class="k">return</span> <span class="s">"-1"</span>;</span><span class="ln"><span class="no">19</span>        <span class="c">// 必须恰好把 need 个向上取整：挑小数最大的（向上浪费 1−f 最小）</span></span><span class="ln"><span class="no">20</span>        <span class="t">Arrays</span>.sort(frac);</span><span class="ln"><span class="no">21</span>        <span class="k">long</span> milli = base;</span><span class="ln"><span class="no">22</span>        <span class="k">for</span> (<span class="k">int</span> i = n - need; i &lt; n; i++) milli += <span class="n">1000</span> - <span class="n">2</span> * frac[i];</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> <span class="t">String</span>.format(<span class="s">"%d.%03d"</span>, milli / <span class="n">1000</span>, milli % <span class="n">1000</span>);</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String minimizeError(List<String> prices, int target) {", "        int n = prices.size();", "        int[] frac = new int[n];   // 每个价格的小数部分（千分之几）", "        int need = target, slots = 0, base = 0;", "        for (int i = 0; i < n; i++) {", "            String s = prices.get(i);", "            int dot = s.indexOf('.');", "            int f = Integer.parseInt(s.substring(dot + 1));   // 题面保证恰好 3 位小数", "            need -= Integer.parseInt(s.substring(0, dot));    // 先全部向下取整", "            frac[i] = f;", "            if (f > 0) slots++;", "            base += f;", "        }", "        // 全向下仍超出 target，或最多能补的高度不够 → 无解", "        if (need < 0 || need > slots) return \"-1\";", "        // 必须恰好把 need 个向上取整：挑小数最大的（向上浪费 1−f 最小）", "        Arrays.sort(frac);", "        long milli = base;", "        for (int i = n - need; i < n; i++) milli += 1000 - 2 * frac[i];", "        return String.format(\"%d.%03d\", milli / 1000, milli % 1000);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1058. 最小化舍入误差以满足目标 —— 图解：复刻 Solution.java 的贪心，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { prices: ['0.700', '2.800', '4.900'], target: 8 };
+
+function trace(input) {
+  var prices = input.prices, target = input.target;
+  var n = prices.length;
+  var items = [];   // { p, f }：价格、小数部分（千分之几）
+  var need = target, slots = 0, base = 0;
+  prices.forEach(function (p) {
+    var dot = p.indexOf('.');
+    var f = parseInt(p.substring(dot + 1), 10);
+    need -= parseInt(p.substring(0, dot), 10);
+    items.push({ p: p, f: f });
+    if (f > 0) slots++;
+    base += f;
+  });
+  var frames = [];
+
+  var CHECK = 'if (need < 0 || need > slots) return "-1";';
+  var SORT = 'Arrays.sort(frac);';
+  var LOOP = 'for (int i = n - need; i < n; i++) milli += 1000 - 2 * frac[i];';
+  var RET = 'return String.format("%d.%03d", milli / 1000, milli % 1000);';
+
+  function tablePanel(order, upSet) {
+    var rows = order.map(function (it) {
+      var cls = upSet && upSet.has(it.p) ? 'new' : (it.f === 0 ? 'dim' : '');
+      return { k: it.p, v: 'f=' + (it.f / 1000).toFixed(3), cls: cls };
+    });
+    return Viz.table('价格（f = 小数部分）', rows, { hint: '向下付 f，向上付 1−f' });
+  }
+  function varsPanel(extra) {
+    var items = [
+      { name: 'need（还差多少）', v: need, cls: 'chg' },
+      { name: '可向上取整个数', v: slots, cls: '' }
+    ];
+    (extra || []).forEach(function (x) { items.push(x); });
+    return Viz.vars(items);
+  }
+  function snap(at, key, order, upSet, extraVars) {
+    frames.push(Viz.frame(at, key, [tablePanel(order, upSet), varsPanel(extraVars)]));
+  }
+
+  snap(CHECK, '先全部向下取整：和 6，离目标 8 还差 2', items, null, null);
+  if (need < 0 || need > slots) return { frames: frames, result: '-1' };
+
+  var sorted = items.slice().sort(function (a, b) { return a.f - b.f; });   // f 升序
+  var upSet = new Set();
+  for (var i = n - need; i < n; i++) upSet.add(sorted[i].p);
+  snap(SORT, '必须补 2 个：挑小数最大的向上取整，浪费最小', sorted, upSet, null);
+
+  var milli = base;
+  upSet.forEach(function (p) {
+    var it = items.filter(function (x) { return x.p === p; })[0];
+    milli += 1000 - 2 * it.f;
+  });
+  snap(LOOP, '0.7 向下付 0.7；2.8、4.9 向上付 0.2、0.1', sorted, upSet, [{ name: '误差（毫）', v: milli, cls: 'chg' }]);
+
+  var out = Math.floor(milli / 1000) + '.' + String(milli % 1000).padStart(3, '0');
+  snap(RET, '总误差 1.000：按三位小数格式输出', sorted, upSet, [{ name: '结果', v: out, cls: 'chg' }]);
+  return { frames: frames, result: out };
+}
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

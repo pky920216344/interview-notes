@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>搜索二维矩阵 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 124 / 1159</span>
+  <nav class="pn"><a href="offer-09.html">上一篇</a><a href="0329.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">74. </span>搜索二维矩阵</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 48</li><li class="algo">二分查找</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">矩阵</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">行首大于上行尾，矩阵按行拼平就是一条一维有序数组：对下标 [0, m*n) 做一次标准二分。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>别按行列两次二分：整体当一维有序数组，<code>lo=0</code>、<code>hi=m*n-1</code>，一次二分就够。</li><li>一维下标 <code>mid</code> 折算回格子：<code>row = mid / n</code>，<code>col = mid % n</code>，取值比较。</li><li><code>v == target</code> 命中；<code>v &lt; target</code> 说明左半不要，<code>lo = mid + 1</code>；否则 <code>hi = mid - 1</code>。</li><li><code>lo &gt; hi</code> 还没命中就不存在；<code>(lo + hi) &gt;&gt;&gt; 1</code> 防溢出。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(log mn)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> searchMatrix(<span class="k">int</span>[][] matrix, <span class="k">int</span> target) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = matrix.length, n = matrix[<span class="n">0</span>].length;</span><span class="ln"><span class="no">4</span>        <span class="c">// 行首大于上行尾：拼平就是一维有序数组，对 [0, m*n) 一次二分</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span> lo = <span class="n">0</span>, hi = m * n - <span class="n">1</span>;</span><span class="ln"><span class="no">6</span>        <span class="k">while</span> (lo &lt;= hi) {</span><span class="ln"><span class="no">7</span>            <span class="k">int</span> mid = (lo + hi) &gt;&gt;&gt; <span class="n">1</span>;</span><span class="ln"><span class="no">8</span>            <span class="k">int</span> v = matrix[mid / n][mid % n];   <span class="c">// 一维下标折算回 (行, 列)</span></span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (v == target) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (v &lt; target) lo = mid + <span class="n">1</span>;</span><span class="ln"><span class="no">11</span>            <span class="k">else</span> hi = mid - <span class="n">1</span>;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个满足下述两条属性的 <code>m x n</code> 整数矩阵：</p>
+
+<ul>
+	<li>每行中的整数从左到右按非严格递增顺序排列。</li>
+	<li>每行的第一个整数大于前一行的最后一个整数。</li>
+</ul>
+
+<p>给你一个整数 <code>target</code> ，如果 <code>target</code> 在矩阵中，返回 <code>true</code> ；否则，返回 <code>false</code> 。</p>
+
+<p>你必须编写一个时间复杂度为 <code>O(log(m * n))</code> 的解决方案。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/df4894b0a1a3.jpg" style="width: 322px; height: 242px;" />
+<pre>
+<strong>输入：</strong>matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3
+<strong>输出：</strong>true
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/58c596fa7e8e.jpg" style="width: 322px; height: 242px;" />
+<pre>
+<strong>输入：</strong>matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 13
+<strong>输出：</strong>false
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == matrix.length</code></li>
+	<li><code>n == matrix[i].length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 100</code></li>
+	<li><code>-10<sup>4</sup> &lt;= matrix[i][j], target &lt;= 10<sup>4</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean searchMatrix(int[][] matrix, int target) {", "        int m = matrix.length, n = matrix[0].length;", "        // 行首大于上行尾：拼平就是一维有序数组，对 [0, m*n) 一次二分", "        int lo = 0, hi = m * n - 1;", "        while (lo <= hi) {", "            int mid = (lo + hi) >>> 1;", "            int v = matrix[mid / n][mid % n];   // 一维下标折算回 (行, 列)", "            if (v == target) return true;", "            if (v < target) lo = mid + 1;", "            else hi = mid - 1;", "        }", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 74. 搜索二维矩阵 —— 图解：复刻 Solution.java 的「拼平成一维有序数组再二分」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { matrix: [[1, 3, 5, 7], [10, 11, 16, 20], [23, 30, 34, 60]], target: 16 };
+
+function trace(input) {
+  var mat = input.matrix;
+  var m = mat.length, n = mat[0].length;
+  var target = input.target;
+  var flat = [];
+  for (var r = 0; r < m; r++) for (var c = 0; c < n; c++) flat.push(mat[r][c]);
+  var frames = [];
+  var rowLbl = [], colLbl = [];
+  for (var i = 0; i < m; i++) rowLbl.push(String(i));
+  for (var j = 0; j < n; j++) colLbl.push(String(j));
+  var snapped = {};
+
+  function flatPanel(o) {
+    o = o || {};
+    return Viz.cells(flat, { title: '按行拼平的一维有序数组（共 ' + (m * n) + ' 个）',
+      marks: o.marks || {}, pointers: o.pointers || [], range: o.range || null });
+  }
+  function gridPanel(rc) {
+    var marks = {};
+    if (rc) marks[rc[0] + ',' + rc[1]] = 'cur';
+    return Viz.grid(mat, { title: '原矩阵 matrix', marks: marks, rowLabels: rowLbl, colLabels: colLbl, corner: 'r＼c' });
+  }
+  function varsPanel(lo, hi, mid) {
+    return Viz.vars([{ name: 'lo', v: lo }, { name: 'mid', v: mid, cls: 'cur' }, { name: 'hi', v: hi }]);
+  }
+
+  var lo = 0, hi = m * n - 1;
+  frames.push(Viz.frame('int lo = 0, hi = m * n - 1;',
+    '行首大于上行尾：拼平就是有序数组，对 [0..' + hi + '] 二分',
+    [flatPanel({ range: { from: 0, to: hi, label: '待查 [0..' + hi + ']' } }), gridPanel(null)]));
+
+  while (lo <= hi) {
+    var mid = (lo + hi) >> 1;
+    var r = Math.floor(mid / n), c = mid % n;
+    var v = mat[r][c];
+    var range = { from: lo, to: hi, label: '待查 [' + lo + '..' + hi + ']' };
+    var midPtr = [{ at: mid, label: 'mid', cls: 'p-mid' }];
+    if (v === target) {
+      var hit = {};
+      hit[mid] = 'done';
+      frames.push(Viz.frame('if (v == target) return true;',
+        'mid=' + mid + ' → (' + r + ',' + c + ') = ' + v + '，命中返回 true',
+        [flatPanel({ marks: hit, pointers: midPtr, range: range }), gridPanel([r, c]), varsPanel(lo, hi, mid)]));
+      return { frames: frames, result: true };
+    }
+    if (v < target) {
+      if (!snapped.lo) {
+        snapped.lo = true;
+        frames.push(Viz.frame('if (v < target) lo = mid + 1;',
+          'mid=' + mid + ' → ' + v + ' < ' + target + '，左半扔掉，lo 跳到 ' + (mid + 1),
+          [flatPanel({ pointers: midPtr, range: range }), gridPanel([r, c]), varsPanel(lo, hi, mid)]));
+      }
+      lo = mid + 1;
+    } else {
+      if (!snapped.hi) {
+        snapped.hi = true;
+        frames.push(Viz.frame('else hi = mid - 1;',
+          'mid=' + mid + ' → ' + v + ' > ' + target + '，右半扔掉，hi 缩到 ' + (mid - 1),
+          [flatPanel({ pointers: midPtr, range: range }), gridPanel([r, c]), varsPanel(lo, hi, mid)]));
+      }
+      hi = mid - 1;
+    }
+  }
+
+  frames.push(Viz.frame('return false;', 'lo 越过 hi：拼平序列里没有 ' + target + '，返回 false',
+    [flatPanel({}), gridPanel(null)]));
+  return { frames: frames, result: false };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

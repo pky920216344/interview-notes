@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title> 字母与数字 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 800 / 1159</span>
+  <nav class="pn"><a href="0383.html">上一篇</a><a href="offer-32-i.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 17.05. </span> 字母与数字</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">前缀和/差分</li><li class="aux">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">前缀和</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">字母 +1、数字 −1 求前缀和；哈希记每个前缀和的最早下标，同和两下标之间就是平衡段，取最长。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>把每个元素分类：纯数字串记 <code>-1</code>，否则记 <code>+1</code>，「字母数 == 数字数」等价于区间和为 0，即两端前缀和相等。</li><li>哈希表 <code>first</code> 记每个前缀和<strong>最早</strong>出现的下标（<code>0</code> 在开头置 <code>-1</code>）；再次遇到同和时 <code>[j+1, i]</code> 就是一个平衡段。</li><li>用「最早下标」配对，得到的区间一定最长也最左；只有严格更长才更新，天然满足并列取最左的要求。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span>[] findLongestSubarray(<span class="t">String</span>[] array) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 字母记 +1、数字记 -1：两个相等的前缀和之间，字母数 == 数字数</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; first = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();   <span class="c">// 前缀和 -&gt; 最早出现下标</span></span><span class="ln"><span class="no">7</span>        first.put(<span class="n">0</span>, -<span class="n">1</span>);</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> sum = <span class="n">0</span>, bestLen = <span class="n">0</span>, bestL = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; array.length; i++) {</span><span class="ln"><span class="no">10</span>            sum += isNum(array[i]) ? -<span class="n">1</span> : <span class="n">1</span>;</span><span class="ln"><span class="no">11</span>            <span class="t">Integer</span> j = first.get(sum);                  <span class="c">// 最早的同前缀和下标</span></span><span class="ln"><span class="no">12</span>            <span class="k">if</span> (j == <span class="k">null</span>) first.put(sum, i);</span><span class="ln"><span class="no">13</span>            <span class="k">else</span> <span class="k">if</span> (i - j &gt; bestLen) { bestLen = i - j; bestL = j + <span class="n">1</span>; }</span><span class="ln"><span class="no">14</span>        }</span><span class="ln"><span class="no">15</span>        <span class="k">return</span> <span class="t">Arrays</span>.copyOfRange(array, bestL, bestL + bestLen);</span><span class="ln"><span class="no">16</span>    }</span><span class="ln"><span class="no">17</span> </span><span class="ln"><span class="no">18</span>    <span class="c">// 元素是非空的纯数字串就当数字，其余都当字母</span></span><span class="ln"><span class="no">19</span>    <span class="k">private</span> <span class="k">boolean</span> isNum(<span class="t">String</span> s) {</span><span class="ln"><span class="no">20</span>        <span class="k">if</span> (s.isEmpty()) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">21</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; s.length(); i++) <span class="k">if</span> (!<span class="t">Character</span>.isDigit(s.charAt(i))) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个放有字母和数字的数组，找到最长的子数组，且包含的字母和数字的个数相同。</p>
+
+<p>返回该子数组，若存在多个最长子数组，返回左端点下标值最小的子数组。若不存在这样的数组，返回一个空数组。</p>
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>["A","1","B","C","D","2","3","4","E","5","F","G","6","7","H","I","J","K","L","M"]
+
+<strong>输出：</strong>["A","1","B","C","D","2","3","4","E","5","F","G","6","7"]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>["A","A"]
+
+<strong>输出：</strong>[]
+</pre>
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>array.length &lt;= 100000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String[] findLongestSubarray(String[] array) {", "        // 字母记 +1、数字记 -1：两个相等的前缀和之间，字母数 == 数字数", "        Map<Integer, Integer> first = new HashMap<>();   // 前缀和 -> 最早出现下标", "        first.put(0, -1);", "        int sum = 0, bestLen = 0, bestL = 0;", "        for (int i = 0; i < array.length; i++) {", "            sum += isNum(array[i]) ? -1 : 1;", "            Integer j = first.get(sum);                  // 最早的同前缀和下标", "            if (j == null) first.put(sum, i);", "            else if (i - j > bestLen) { bestLen = i - j; bestL = j + 1; }", "        }", "        return Arrays.copyOfRange(array, bestL, bestL + bestLen);", "    }", "", "    // 元素是非空的纯数字串就当数字，其余都当字母", "    private boolean isNum(String s) {", "        if (s.isEmpty()) return false;", "        for (int i = 0; i < s.length(); i++) if (!Character.isDigit(s.charAt(i))) return false;", "        return true;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 17.05 字母与数字 —— 图解：复刻 Solution.java 的「前缀和 + 哈希最早下标」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { array: ['A', '1', 'B', 'C', 'D', '2'] };
+
+function trace(input) {
+  var arr = input.array;
+  var n = arr.length;
+  var frames = [];
+  var fired = { first: false, hit: false, beat: false };
+  var first = { 0: -1 };     // 前缀和 -> 最早出现下标（对象当哈希表用）
+  var order = [0];           // 前缀和出现顺序，表格才稳定
+  var sum = 0, bestLen = 0, bestL = 0, bestR = -1;
+
+  function isNum(s) {
+    if (!s.length) return false;
+    for (var i = 0; i < s.length; i++) if (s[i] < '0' || s[i] > '9') return false;
+    return true;
+  }
+  function panel(o) {
+    var marks = {};
+    for (var i = 0; i < n; i++) {
+      var c = '';
+      if (bestLen > 0 && i >= bestL && i <= bestR) c = o.done ? 'done' : 'win';
+      if (o.cur === i) c = 'cur';
+      if (c) marks[i] = c;
+    }
+    var pointers = o.cur != null ? [{ at: o.cur, label: 'i', cls: 'p-cur' }] : [];
+    return Viz.cells(arr, { title: 'array（字母 +1，数字 −1）', marks: marks, pointers: pointers });
+  }
+  function mapPanel(hitSum) {
+    var rows = order.map(function (s) {
+      return { k: String(s), v: String(first[s]), cls: s === hitSum ? 'hit' : '' };
+    });
+    return Viz.table('first：前缀和 → 最早出现下标', rows, { hint: '同和两端之间字母数字一样多' });
+  }
+  function snap(at, key, o, hitSum) { frames.push(Viz.frame(at, key, [panel(o), mapPanel(hitSum)])); }
+
+  for (var i = 0; i < n; i++) {
+    sum += isNum(arr[i]) ? -1 : 1;
+    if (!fired.first) {
+      fired.first = true;
+      snap('sum += isNum(array[i]) ? -1 : 1;', '扫到 i=' + i + '：前缀和变成 ' + sum, { cur: i });
+    }
+    var j = first[sum];
+    if (j === undefined) {
+      first[sum] = i;
+      order.push(sum);
+    } else {
+      if (!fired.hit) {
+        fired.hit = true;
+        snap('Integer j = first.get(sum);', '前缀和 ' + sum + ' 在下标 ' + j + ' 出现过：[' + (j + 1) + ',' + i + '] 平衡', { cur: i }, sum);
+      }
+      if (i - j > bestLen) {
+        bestLen = i - j; bestL = j + 1; bestR = i;
+        if (!fired.beat) {
+          fired.beat = true;
+          snap('else if (i - j > bestLen) { bestLen = i - j; bestL = j + 1; }', '更长就更新答案区间，天然保住最左', { cur: i }, sum);
+        }
+      }
+    }
+  }
+
+  snap('return Arrays.copyOfRange(array, bestL, bestL + bestLen);',
+    bestLen === 0 ? '没有平衡子数组：返回空数组' : '最长且最左的平衡区间：[' + bestL + ',' + bestR + ']',
+    { done: true });
+  return { frames: frames, result: arr.slice(bestL, bestL + bestLen) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

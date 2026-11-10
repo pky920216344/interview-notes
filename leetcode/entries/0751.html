@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IP 到 CIDR · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 743 / 1159</span>
+  <nav class="pn"><a href="1041.html">上一篇</a><a href="0461.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">751. </span>IP 到 CIDR</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 2</li><li class="algo">贪心</li><li class="aux">位运算</li><li class="tag">位运算</li><li class="tag">字符串</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">贪心切最大块：每步块大小取「start 末尾 0 允许的对齐上限」和「不超过 n 的最大 2 的幂」中较小者。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>CIDR <code>/x</code> 块覆盖 <code>2^(32-x)</code> 个地址，且起点必须按块大小对齐：start 末尾有 t 个 0 就最多切 <code>2^t</code>。</li><li>块大小还受剩余量约束：不能超过 n，即取不大于 n 的最大 2 的幂；两者取小，切完 <code>start += 块大小</code>。</li><li>每块都是「起点能对齐出的最大块」，块数最少；<code>n</code> 与 <code>start</code> 都用 <code>long</code> 存避免符号位干扰。</li><li>口诀：块 <code>2^len</code> 个地址对应前缀 <code>/(32-len)</code>；<code>255.0.0.7</code> 起步只能 <code>/32</code>，走到对齐的 <code>.8</code> 就能 <code>/29</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(输出块数)，最多 64 块，空间复杂度 O(1)（不计输出）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; ipToCIDR(<span class="t">String</span> ip, <span class="k">int</span> n) {</span><span class="ln"><span class="no">5</span>        <span class="c">// IP 转成 32 位无符号整数（用 long 存，避免符号位干扰）</span></span><span class="ln"><span class="no">6</span>        <span class="k">long</span> start = <span class="n">0</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="t">String</span> part : ip.split(<span class="s">"\\."</span>)) start = (start &lt;&lt; <span class="n">8</span>) | <span class="t">Long</span>.parseLong(part);</span><span class="ln"><span class="no">8</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">9</span>        <span class="k">while</span> (n &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">10</span>            <span class="c">// 块大小取两个上限的较小者：start 末尾 0 允许的对齐上限、不超过 n 的最大 2 的幂</span></span><span class="ln"><span class="no">11</span>            <span class="k">int</span> align = start == <span class="n">0</span> ? <span class="n">32</span> : <span class="t">Long</span>.numberOfTrailingZeros(start);</span><span class="ln"><span class="no">12</span>            <span class="k">int</span> cap = <span class="n">31</span> - <span class="t">Integer</span>.numberOfLeadingZeros(n);   <span class="c">// floor(log2(n))，块最大 2^cap</span></span><span class="ln"><span class="no">13</span>            <span class="k">int</span> len = <span class="t">Math</span>.min(align, cap);                   <span class="c">// 块覆盖 2^len 个地址</span></span><span class="ln"><span class="no">14</span>            ans.add(toIp(start) + <span class="s">"/"</span> + (<span class="n">32</span> - len));</span><span class="ln"><span class="no">15</span>            n -= <span class="n">1</span> &lt;&lt; len;</span><span class="ln"><span class="no">16</span>            start += <span class="n">1L</span> &lt;&lt; len;</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>    <span class="c">// 32 位整数还原成点分十进制（掩码保证不越界）</span></span><span class="ln"><span class="no">22</span>    <span class="k">private</span> <span class="t">String</span> toIp(<span class="k">long</span> v) {</span><span class="ln"><span class="no">23</span>        v &amp;= 0xFFFFFFFFL;</span><span class="ln"><span class="no">24</span>        <span class="k">return</span> (v &gt;&gt;&gt; <span class="n">24</span>) + <span class="s">"."</span> + ((v &gt;&gt;&gt; <span class="n">16</span>) &amp; <span class="n">255</span>) + <span class="s">"."</span> + ((v &gt;&gt;&gt; <span class="n">8</span>) &amp; <span class="n">255</span>) + <span class="s">"."</span> + (v &amp; <span class="n">255</span>);</span><span class="ln"><span class="no">25</span>    }</span><span class="ln"><span class="no">26</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<String> ipToCIDR(String ip, int n) {", "        // IP 转成 32 位无符号整数（用 long 存，避免符号位干扰）", "        long start = 0;", "        for (String part : ip.split(\"\\\\.\")) start = (start << 8) | Long.parseLong(part);", "        List<String> ans = new ArrayList<>();", "        while (n > 0) {", "            // 块大小取两个上限的较小者：start 末尾 0 允许的对齐上限、不超过 n 的最大 2 的幂", "            int align = start == 0 ? 32 : Long.numberOfTrailingZeros(start);", "            int cap = 31 - Integer.numberOfLeadingZeros(n);   // floor(log2(n))，块最大 2^cap", "            int len = Math.min(align, cap);                   // 块覆盖 2^len 个地址", "            ans.add(toIp(start) + \"/\" + (32 - len));", "            n -= 1 << len;", "            start += 1L << len;", "        }", "        return ans;", "    }", "", "    // 32 位整数还原成点分十进制（掩码保证不越界）", "    private String toIp(long v) {", "        v &= 0xFFFFFFFFL;", "        return (v >>> 24) + \".\" + ((v >>> 16) & 255) + \".\" + ((v >>> 8) & 255) + \".\" + (v & 255);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 751. IP 到 CIDR（会员题）—— 图解：复刻 Solution.java 的「贪心切最大对齐块」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { ip: '255.0.0.7', n: 10 };
+
+var PARSE = 'for (String part : ip.split("\\\\.")) start = (start << 8) | Long.parseLong(part);';
+var LEN = 'int len = Math.min(align, cap);';
+var RET = 'return ans;';
+
+function trace(input) {
+  var start = 0;
+  input.ip.split('.').forEach(function (p) { start = start * 256 + Number(p); });
+  var n = input.n;
+  var blocks = [];         // 已产出的 CIDR 块
+  var frames = [];
+  var W = 8;               // 只画低 8 位
+
+  function hex(v) { return '0x' + v.toString(16).toUpperCase().padStart(8, '0'); }
+  function toIp(v) { return (v >>> 24) + '.' + ((v >>> 16) & 255) + '.' + ((v >>> 8) & 255) + '.' + (v & 255); }
+  function tz(v) {
+    if (v === 0) return 32;
+    var t = 0;
+    while (((v >>> t) & 1) === 0) t++;
+    return t;
+  }
+  function bits(v) {
+    var s = [];
+    for (var b = 7; b >= 0; b--) s.push(String((v >>> b) & 1));
+    return s;
+  }
+  function bitsPanel(marks) {
+    return Viz.cells(bits(start), { title: 'start 低 8 位 = ' + toIp(start & 255), marks: marks || {} });
+  }
+  function varsPanel(len) {
+    return Viz.vars([
+      { name: 'start 起点', v: toIp(start) },
+      { name: 'n 剩余地址', v: n, cls: 'chg' },
+      { name: '对齐上限 2^align', v: '2^' + tz(start), cls: len != null ? 'chg' : '' },
+      { name: '块大小 2^len', v: len != null ? '2^' + len : '—', cls: len != null ? 'chg' : '' }
+    ]);
+  }
+  function blocksPanel() {
+    return Viz.table('已产出的 CIDR 块', blocks.map(function (b) {
+      return { k: b.ip, v: '/' + b.prefix };
+    }));
+  }
+
+  frames.push(Viz.frame(PARSE, input.ip + ' → ' + hex(start) + '；要从它开始覆盖 ' + n + ' 个地址', [bitsPanel(), varsPanel(null)]));
+
+  while (n > 0) {
+    var align = start === 0 ? 32 : tz(start);
+    var cap = 0;
+    while (Math.pow(2, cap + 1) <= n) cap++;
+    var len = Math.min(align, cap);
+    var size = 1 << len;
+    var marks = {};
+    var shownTz = Math.min(align, W);                 // 末尾 0 的高亮范围（画布只有 8 位）
+    for (var k = 0; k < shownTz; k++) marks[W - 1 - k] = 'win';
+    if (shownTz < W) marks[W - 1 - shownTz] = 'cur';  // 最低位的 1
+    if (len >= W) for (var j = 0; j < W; j++) marks[j] = 'win';
+    var why = align === 0 ? '起点是奇数，对齐上限 2^0：只能切 1 个地址 /32'
+            : align <= cap ? '末尾 ' + align + ' 个 0：对齐上限 2^' + align + '，切 2^' + align + '=' + size + ' 个地址 /' + (32 - len)
+            : '对齐够大但只剩 ' + n + ' 个：切 2^' + len + '=' + size + ' 个地址 /' + (32 - len);
+    blocks.push({ ip: toIp(start), prefix: 32 - len });
+    if (blocks.length <= 3) frames.push(Viz.frame(LEN, why, [bitsPanel(marks), varsPanel(len)]));
+    n -= size;
+    start += size;
+  }
+
+  frames.push(Viz.frame(RET, '切完：' + blocks.length + ' 块正好覆盖 ' + input.n + ' 个地址，无重叠无遗漏', [bitsPanel(), blocksPanel(), varsPanel(null)]));
+
+  return { frames: frames, result: blocks.map(function (b) { return b.ip + '/' + b.prefix; }) };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

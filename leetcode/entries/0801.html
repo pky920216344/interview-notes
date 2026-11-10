@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>使序列递增的最小交换次数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1017 / 1159</span>
+  <nav class="pn"><a href="0385.html">上一篇</a><a href="1368.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">801. </span>使序列递增的最小交换次数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">双状态 DP：keep[i] / swap[i] 是第 i 位不换/换时的最小交换数；相邻两位只要「同状态自然有序」或「交叉有序」就能转移。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>keep</code> / <code>swap</code> 滚动两个变量：第 i 位不换、换的最小代价；初始 <code>keep=0, swap=1</code>。</li><li><strong>同状态转移</strong>：<code>nums1[i-1]&lt;nums1[i]</code> 且 <code>nums2[i-1]&lt;nums2[i]</code> 时，i-1、i 都不换（或都换）天然有序 → <code>keep 接 keep</code>、<code>swap 接 swap+1</code>。</li><li><strong>交叉转移</strong>：<code>nums1[i-1]&lt;nums2[i]</code> 且 <code>nums2[i-1]&lt;nums1[i]</code> 时，一换一不换有序 → <code>keep 接 swap</code>、<code>swap 接 keep+1</code>。</li><li>答案 <code>min(keep, swap)</code>；两条转移都查一遍取最小，题目保证有解。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> minSwap(<span class="k">int</span>[] nums1, <span class="k">int</span>[] nums2) {</span><span class="ln"><span class="no">5</span>        <span class="c">// keep：i 不换的最小交换数；swap：i 换的最小交换数（滚动变量，O(1) 空间）</span></span><span class="ln"><span class="no">6</span>        <span class="k">int</span> keep = <span class="n">0</span>, swap = <span class="n">1</span>;</span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; nums1.length; i++) {</span><span class="ln"><span class="no">8</span>            <span class="k">int</span> nk = <span class="t">Integer</span>.MAX_VALUE, ns = <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (nums1[i - <span class="n">1</span>] &lt; nums1[i] &amp;&amp; nums2[i - <span class="n">1</span>] &lt; nums2[i]) {</span><span class="ln"><span class="no">10</span>                <span class="c">// i-1、i 状态相同（都不换或都换）时天然有序</span></span><span class="ln"><span class="no">11</span>                nk = <span class="t">Math</span>.min(nk, keep);</span><span class="ln"><span class="no">12</span>                ns = <span class="t">Math</span>.min(ns, swap + <span class="n">1</span>);</span><span class="ln"><span class="no">13</span>            }</span><span class="ln"><span class="no">14</span>            <span class="k">if</span> (nums1[i - <span class="n">1</span>] &lt; nums2[i] &amp;&amp; nums2[i - <span class="n">1</span>] &lt; nums1[i]) {</span><span class="ln"><span class="no">15</span>                <span class="c">// i-1、i 状态相反时交叉有序</span></span><span class="ln"><span class="no">16</span>                nk = <span class="t">Math</span>.min(nk, swap);</span><span class="ln"><span class="no">17</span>                ns = <span class="t">Math</span>.min(ns, keep + <span class="n">1</span>);</span><span class="ln"><span class="no">18</span>            }</span><span class="ln"><span class="no">19</span>            keep = nk;</span><span class="ln"><span class="no">20</span>            swap = ns;</span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> <span class="t">Math</span>.min(keep, swap);</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>我们有两个长度相等且不为空的整型数组&nbsp;<code>nums1</code>&nbsp;和&nbsp;<code>nums2</code>&nbsp;。在一次操作中，我们可以交换&nbsp;<code>nums1[i]</code>&nbsp;和&nbsp;<code>nums2[i]</code>的元素。</p>
+
+<ul>
+	<li>例如，如果 <code>nums1 = [1,2,3,<u>8</u>]</code> ， <code>nums2 =[5,6,7,<u>4</u>]</code> ，你可以交换 <code>i = 3</code> 处的元素，得到 <code>nums1 =[1,2,3,4]</code> 和 <code>nums2 =[5,6,7,8]</code> 。</li>
+</ul>
+
+<p>返回 <em>使 <code>nums1</code> 和 <code>nums2</code> <strong>严格递增&nbsp;</strong>所需操作的最小次数</em> 。</p>
+
+<p>数组&nbsp;<code>arr</code>&nbsp;<strong>严格递增</strong> 且&nbsp;&nbsp;<code>arr[0] &lt; arr[1] &lt; arr[2] &lt; ... &lt; arr[arr.length - 1]</code>&nbsp;。</p>
+
+<p><b>注意：</b></p>
+
+<ul>
+	<li>用例保证可以实现操作。</li>
+</ul>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> nums1 = [1,3,5,4], nums2 = [1,2,3,7]
+<strong>输出:</strong> 1
+<strong>解释: </strong>
+交换 A[3] 和 B[3] 后，两个数组如下:
+A = [1, 3, 5, 7] ， B = [1, 2, 3, 4]
+两个数组均为严格递增的。</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> nums1 = [0,3,5,8,9], nums2 = [2,1,4,6,9]
+<strong>输出:</strong> 1
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>2 &lt;= nums1.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>nums2.length == nums1.length</code></li>
+	<li><code>0 &lt;= nums1[i], nums2[i] &lt;= 2 * 10<sup>5</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int minSwap(int[] nums1, int[] nums2) {", "        // keep：i 不换的最小交换数；swap：i 换的最小交换数（滚动变量，O(1) 空间）", "        int keep = 0, swap = 1;", "        for (int i = 1; i < nums1.length; i++) {", "            int nk = Integer.MAX_VALUE, ns = Integer.MAX_VALUE;", "            if (nums1[i - 1] < nums1[i] && nums2[i - 1] < nums2[i]) {", "                // i-1、i 状态相同（都不换或都换）时天然有序", "                nk = Math.min(nk, keep);", "                ns = Math.min(ns, swap + 1);", "            }", "            if (nums1[i - 1] < nums2[i] && nums2[i - 1] < nums1[i]) {", "                // i-1、i 状态相反时交叉有序", "                nk = Math.min(nk, swap);", "                ns = Math.min(ns, keep + 1);", "            }", "            keep = nk;", "            swap = ns;", "        }", "        return Math.min(keep, swap);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 801. 使序列递增的最小交换次数 —— 图解：复刻 Solution.java 的双状态 DP（keep / swap 滚动推进）。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums1: [0, 3, 5, 8, 9], nums2: [2, 1, 4, 6, 9] };
+
+function trace(input) {
+  var a = input.nums1, b = input.nums2;
+  var n = a.length;
+  var frames = [];
+  var keep = 0, swap = 1;
+  var i = 1;
+
+  function arrPanel(title, arr, marks) {
+    var items = arr.map(String);
+    var pointers = [];
+    if (i - 1 >= 0) pointers.push({ at: i - 1, label: 'i-1', cls: 'p-prev' });
+    if (i < n) pointers.push({ at: i, label: 'i', cls: 'p-cur' });
+    return Viz.cells(items, { title: title, marks: marks || {}, pointers: pointers });
+  }
+  function varsPanel(extra) {
+    var items = [{ name: 'keep（i 不换）', v: String(keep) }, { name: 'swap（i 换）', v: String(swap) }];
+    return Viz.vars(extra ? items.concat(extra) : items);
+  }
+  function marksAt() {
+    var m = {};
+    if (i - 1 >= 0) m[i - 1] = 'win';
+    if (i < n) m[i] = 'cur';
+    return m;
+  }
+
+  frames.push(Viz.frame('int keep = 0, swap = 1;',
+    '起点：第 0 位不换代价 0，换则代价 1',
+    [arrPanel('nums1', a, {}), arrPanel('nums2', b, {}), varsPanel()]));
+
+  var didNatural = false, didCross = false;
+  for (; i < n; i++) {
+    var natural = a[i - 1] < a[i] && b[i - 1] < b[i];
+    var cross = a[i - 1] < b[i] && b[i - 1] < a[i];
+    if (natural && !didNatural) {
+      didNatural = true;
+      frames.push(Viz.frame('if (nums1[i - 1] < nums1[i] && nums2[i - 1] < nums2[i]) {',
+        'i=' + i + '：i-1、i 状态一致就天然递增 → keep 沿用 ' + keep + '；swap 也能在 ' + swap + ' 上 +1',
+        [arrPanel('nums1', a, marksAt()), arrPanel('nums2', b, marksAt()), varsPanel()]));
+    }
+    if (cross && !didCross) {
+      didCross = true;
+      frames.push(Viz.frame('if (nums1[i - 1] < nums2[i] && nums2[i - 1] < nums1[i]) {',
+        'i=' + i + '：交叉序也成立 → i-1 与 i 一换一不换就行：keep 可接 swap，swap 可接 keep+1',
+        [arrPanel('nums1', a, marksAt()), arrPanel('nums2', b, marksAt()),
+          varsPanel([{ name: 'natural', v: String(natural) }, { name: 'cross', v: String(cross) }])]));
+    }
+    var nk = Infinity, ns = Infinity;
+    if (natural) { nk = Math.min(nk, keep); ns = Math.min(ns, swap + 1); }
+    if (cross) { nk = Math.min(nk, swap); ns = Math.min(ns, keep + 1); }
+    keep = nk;
+    swap = ns;
+  }
+
+  var ans = Math.min(keep, swap);
+  var doneMarks = {};
+  for (var k = 0; k < n; k++) doneMarks[k] = 'done';
+  frames.push(Viz.frame('return Math.min(keep, swap);',
+    '扫完：min(keep=' + keep + ', swap=' + swap + ') = ' + ans + '，交换 ' + ans + ' 次即可',
+    [arrPanel('nums1', a, doneMarks), arrPanel('nums2', b, {}), varsPanel([{ name: '答案', v: String(ans), cls: 'done' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>累加数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 273 / 1159</span>
+  <nav class="pn"><a href="0437.html">上一篇</a><a href="0354.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">306. </span>累加数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 15</li><li class="algo">模拟</li><li class="tag">字符串</li><li class="tag">回溯</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">回溯枚举前两个数：第一刀 i、第二刀 j 定下 a、b，后面每段用字符串加法逐一验证，对不上就换切法。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>累加序列由<strong>前两个数完全决定</strong>：枚举 <code>a = num[0,i)</code>、<code>b = num[i,j)</code>（<code>i &lt; n-1</code> 保证还有第 3 个数），之后只能逐段验证。</li><li>验证：<code>sum = a+b</code> 必须与下一段<strong>逐字符相等</strong>；对上就 <code>a←b、b←sum</code> 滚动前进，直到串尾。</li><li>前导 0 规则：只有 <code>"0"</code> 本身可以以 0 开头，长度 &gt; 1 的段首字符不能是 <code>'0'</code>。</li><li>数字可达 19 位以上，<code>long</code> 会溢出，用<strong>字符串加法</strong>（从个位往高位加）最稳。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n³)（n ≤ 35，很小），空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">boolean</span> isAdditiveNumber(<span class="t">String</span> num) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = num.length();</span><span class="ln"><span class="no">4</span>        <span class="c">// 枚举第一个数的结尾 i 和第二个数的结尾 j，后面只能被验证</span></span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; n - <span class="n">1</span>; i++) {</span><span class="ln"><span class="no">6</span>            <span class="k">for</span> (<span class="k">int</span> j = i + <span class="n">1</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">7</span>                <span class="k">if</span> (check(num, i, j)) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">8</span>            }</span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="k">return</span> <span class="k">false</span>;   <span class="c">// 试遍所有切法都不是</span></span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="c">// 前两个数是 num[0,i) 和 num[i,j)，验证后面是否一路累加到结尾</span></span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="k">boolean</span> check(<span class="t">String</span> num, <span class="k">int</span> i, <span class="k">int</span> j) {</span><span class="ln"><span class="no">15</span>        <span class="t">String</span> a = num.substring(<span class="n">0</span>, i), b = num.substring(i, j);</span><span class="ln"><span class="no">16</span>        <span class="c">// 除 0 以外不能以 0 开头</span></span><span class="ln"><span class="no">17</span>        <span class="k">if</span> ((a.length() &gt; <span class="n">1</span> &amp;&amp; a.charAt(<span class="n">0</span>) == <span class="s">'0'</span>) || (b.length() &gt; <span class="n">1</span> &amp;&amp; b.charAt(<span class="n">0</span>) == <span class="s">'0'</span>)) <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">18</span>        <span class="k">while</span> (j &lt; num.length()) {</span><span class="ln"><span class="no">19</span>            <span class="t">String</span> sum = add(a, b);</span><span class="ln"><span class="no">20</span>            <span class="c">// 下一段必须严格等于 sum（长度都对不上就直接失败）</span></span><span class="ln"><span class="no">21</span>            <span class="k">if</span> (j + sum.length() &gt; num.length() || !num.startsWith(sum, j)) {</span><span class="ln"><span class="no">22</span>                <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">23</span>            }</span><span class="ln"><span class="no">24</span>            j += sum.length();</span><span class="ln"><span class="no">25</span>            a = b;</span><span class="ln"><span class="no">26</span>            b = sum;</span><span class="ln"><span class="no">27</span>        }</span><span class="ln"><span class="no">28</span>        <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span> </span><span class="ln"><span class="no">31</span>    <span class="c">// 字符串加法：从个位往高位加，数字再大也不怕</span></span><span class="ln"><span class="no">32</span>    <span class="k">private</span> <span class="t">String</span> add(<span class="t">String</span> a, <span class="t">String</span> b) {</span><span class="ln"><span class="no">33</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">34</span>        <span class="k">int</span> i = a.length() - <span class="n">1</span>, j = b.length() - <span class="n">1</span>, carry = <span class="n">0</span>;</span><span class="ln"><span class="no">35</span>        <span class="k">while</span> (i &gt;= <span class="n">0</span> || j &gt;= <span class="n">0</span> || carry &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">36</span>            <span class="k">int</span> s = carry + (i &gt;= <span class="n">0</span> ? a.charAt(i--) - <span class="s">'0'</span> : <span class="n">0</span>) + (j &gt;= <span class="n">0</span> ? b.charAt(j--) - <span class="s">'0'</span> : <span class="n">0</span>);</span><span class="ln"><span class="no">37</span>            sb.append((<span class="k">char</span>) (<span class="s">'0'</span> + s % <span class="n">10</span>));</span><span class="ln"><span class="no">38</span>            carry = s / <span class="n">10</span>;</span><span class="ln"><span class="no">39</span>        }</span><span class="ln"><span class="no">40</span>        <span class="k">return</span> sb.reverse().toString();</span><span class="ln"><span class="no">41</span>    }</span><span class="ln"><span class="no">42</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p><strong>累加数</strong> 是一个字符串，组成它的数字可以形成累加序列。</p>
+
+<p>一个有效的 <strong>累加序列</strong> 必须<strong> 至少 </strong>包含 3 个数。除了最开始的两个数以外，序列中的每个后续数字必须是它之前两个数字之和。</p>
+
+<p>给你一个只包含数字&nbsp;<code>'0'-'9'</code>&nbsp;的字符串，编写一个算法来判断给定输入是否是 <strong>累加数</strong> 。如果是，返回 <code>true</code> ；否则，返回 <code>false</code> 。</p>
+
+<p><strong>说明：</strong>累加序列里的数，除数字 0 之外，<strong>不会</strong> 以 0 开头，所以不会出现&nbsp;<code>1, 2, 03</code> 或者&nbsp;<code>1, 02, 3</code>&nbsp;的情况。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong><code>"112358"</code>
+<strong>输出：</strong>true 
+<strong>解释：</strong>累加序列为: <code>1, 1, 2, 3, 5, 8 </code>。1 + 1 = 2, 1 + 2 = 3, 2 + 3 = 5, 3 + 5 = 8
+</pre>
+
+<p><strong>示例&nbsp;2：</strong></p>
+
+<pre>
+<strong>输入<code>：</code></strong><code>"199100199"</code>
+<strong>输出：</strong>true 
+<strong>解释：</strong>累加序列为: <code>1, 99, 100, 199。</code>1 + 99 = 100, 99 + 100 = 199</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= num.length &lt;= 35</code></li>
+	<li><code>num</code> 仅由数字（<code>0</code> - <code>9</code>）组成</li>
+</ul>
+
+
+
+<p><strong>进阶：</strong>你计划如何处理由过大的整数输入导致的溢出?</p>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public boolean isAdditiveNumber(String num) {", "        int n = num.length();", "        // 枚举第一个数的结尾 i 和第二个数的结尾 j，后面只能被验证", "        for (int i = 1; i < n - 1; i++) {", "            for (int j = i + 1; j < n; j++) {", "                if (check(num, i, j)) return true;", "            }", "        }", "        return false;   // 试遍所有切法都不是", "    }", "", "    // 前两个数是 num[0,i) 和 num[i,j)，验证后面是否一路累加到结尾", "    private boolean check(String num, int i, int j) {", "        String a = num.substring(0, i), b = num.substring(i, j);", "        // 除 0 以外不能以 0 开头", "        if ((a.length() > 1 && a.charAt(0) == '0') || (b.length() > 1 && b.charAt(0) == '0')) return false;", "        while (j < num.length()) {", "            String sum = add(a, b);", "            // 下一段必须严格等于 sum（长度都对不上就直接失败）", "            if (j + sum.length() > num.length() || !num.startsWith(sum, j)) {", "                return false;", "            }", "            j += sum.length();", "            a = b;", "            b = sum;", "        }", "        return true;", "    }", "", "    // 字符串加法：从个位往高位加，数字再大也不怕", "    private String add(String a, String b) {", "        StringBuilder sb = new StringBuilder();", "        int i = a.length() - 1, j = b.length() - 1, carry = 0;", "        while (i >= 0 || j >= 0 || carry > 0) {", "            int s = carry + (i >= 0 ? a.charAt(i--) - '0' : 0) + (j >= 0 ? b.charAt(j--) - '0' : 0);", "            sb.append((char) ('0' + s % 10));", "            carry = s / 10;", "        }", "        return sb.reverse().toString();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 306. 累加数 —— 图解：复刻 Solution.java 的「枚举前两个数 + 逐段验证」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { num: '199100199' };
+
+function trace(input) {
+  var num = input.num || '';
+  var n = num.length;
+  var frames = [];
+  var seen = { attempt: false, fail: false, roll: 0 };
+
+  var ENUM = 'for (int i = 1; i < n - 1; i++) {';
+  var VERIFY = 'if (j + sum.length() > num.length() || !num.startsWith(sum, j)) {';
+  var ROLL = 'j += sum.length();';
+
+  // 数字串面板：a 尾 / b 尾 / 验证位 k 三个指针；bad = 对不上的格子，new = 已对上的前缀
+  function numPanel(o) {
+    var marks = {};
+    var i;
+    for (i = 0; i < (o.matchedTo || 0); i++) marks[i] = 'new';
+    if (o.missAt != null) marks[o.missAt] = 'bad';
+    var pointers = [];
+    if (o.aTail != null) pointers.push({ at: o.aTail, label: 'a 尾', cls: 'p-left' });
+    if (o.bTail != null) pointers.push({ at: o.bTail, label: 'b 尾', cls: 'p-mid' });
+    if (o.k != null && o.k < n) pointers.push({ at: o.k, label: '验证位', cls: 'p-cur' });
+    return Viz.cells(num.split(''), { title: '数字串 num', marks: marks, pointers: pointers });
+  }
+
+  function varsPanel(a, b, sum) {
+    return Viz.vars([
+      { name: 'a', v: a == null ? '—' : a },
+      { name: 'b', v: b == null ? '—' : b },
+      { name: 'a+b', v: sum == null ? '—' : sum, cls: sum != null ? 'chg' : '' }
+    ]);
+  }
+
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  // 字符串加法（复刻 Java 的 add）
+  function add(a, b) {
+    var i = a.length - 1, j = b.length - 1, carry = 0, out = '';
+    while (i >= 0 || j >= 0 || carry > 0) {
+      var s = carry + (i >= 0 ? +a[i--] : 0) + (j >= 0 ? +b[j--] : 0);
+      out = (s % 10) + out;
+      carry = Math.floor(s / 10);
+    }
+    return out;
+  }
+
+  var result = false;
+  outer:
+  for (var i = 1; i < n - 1; i++) {
+    for (var j = i + 1; j < n; j++) {
+      var a = num.slice(0, i), b = num.slice(i, j);
+      if ((a.length > 1 && a[0] === '0') || (b.length > 1 && b[0] === '0')) continue;
+      var aTail = i - 1, bTail = j - 1, k = j, matchedTo = 0, sum = null, failed = false;
+      while (k < n) {
+        sum = add(a, b);
+        if (!seen.attempt) {
+          seen.attempt = true;
+          snap(ENUM, '枚举前两个数：a=' + a + '、b=' + b + '，后面每段都必须等于前两段之和',
+            [numPanel({ aTail: aTail, bTail: bTail, k: k }), varsPanel(a, b, sum)]);
+        }
+        if (k + sum.length > n || num.slice(k, k + sum.length) !== sum) { failed = true; break; }
+        var sumTail = k + sum.length - 1;
+        k += sum.length;
+        matchedTo = k;
+        if (seen.roll < 2) {
+          seen.roll++;
+          snap(ROLL, 'a+b=' + sum + ' 严格对上下一段；a、b 滚动成 (b, a+b)，验证位右移',
+            [numPanel({ aTail: bTail, bTail: sumTail, k: k, matchedTo: matchedTo }), varsPanel(a, b, sum)]);
+        }
+        aTail = bTail;
+        bTail = sumTail;
+        a = b;
+        b = sum;
+      }
+      if (failed && !seen.fail) {
+        seen.fail = true;
+        snap(VERIFY, '第 3 段要以 ' + sum + ' 开头，实际对不上——这组切分失败，换下一组',
+          [numPanel({ aTail: aTail, bTail: bTail, k: k, missAt: k, matchedTo: matchedTo }), varsPanel(a, b, sum)]);
+      }
+      if (!failed) { result = true; break outer; }
+    }
+  }
+
+  if (result) {
+    snap('if (check(num, i, j)) return true;', '这组切分一路加到串尾都对上：是累加数',
+      [numPanel({ matchedTo: n }), varsPanel(null, null, null)]);
+  } else {
+    snap('// 试遍所有切法都不是', '所有切法都验证失败：不是累加数，返回 false',
+      [numPanel({}), varsPanel(null, null, null)]);
+  }
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最大人工岛 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 568 / 1159</span>
+  <nav class="pn"><a href="offer-18.html">上一篇</a><a href="1360.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">827. </span>最大人工岛</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">深度优先搜索/递归</li><li class="aux">哈希表</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">先把每座岛染成独立编号并记下面积；再逐个 0 试填——1 + 四邻不同岛的面积之和，取最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>两遍：<strong>DFS 染色</strong>把每座岛整体改成自己的编号（2 起），<code>area[id]</code> 记面积；之后格子的数值就是岛编号。</li><li>对每个 <code>0</code>：看四邻出现过哪些<strong>不同</strong>编号（<code>Set</code> 去重，防止同一个岛被加两次），候选 = <code>1 + Σ面积</code>。</li><li>「不填」也是合法操作：现有最大岛先打底（全 1 网格就靠它返回 <code>n²</code>）。</li><li><code>n ≤ 500</code>，用显式栈的迭代 DFS，避免递归 25 万层爆栈。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> largestIsland(<span class="k">int</span>[][] grid) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = grid.length;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[][] dirs = {{<span class="n">1</span>, <span class="n">0</span>}, {-<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">0</span>, <span class="n">1</span>}, {<span class="n">0</span>, -<span class="n">1</span>}};</span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[] area = <span class="k">new</span> <span class="k">int</span>[n * n + <span class="n">2</span>];              <span class="c">// 岛编号(从 2 起) → 面积</span></span><span class="ln"><span class="no">8</span>        <span class="k">int</span> id = <span class="n">2</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; n; r++) {</span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; n; c++) {</span><span class="ln"><span class="no">11</span>                <span class="k">if</span> (grid[r][c] != <span class="n">1</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">12</span>                <span class="c">// 迭代 DFS：整座岛染成编号 id，顺手数出面积</span></span><span class="ln"><span class="no">13</span>                <span class="t">Deque</span>&lt;<span class="k">int</span>[]&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">14</span>                stack.push(<span class="k">new</span> <span class="k">int</span>[]{r, c});</span><span class="ln"><span class="no">15</span>                grid[r][c] = id;</span><span class="ln"><span class="no">16</span>                <span class="k">int</span> cnt = <span class="n">0</span>;</span><span class="ln"><span class="no">17</span>                <span class="k">while</span> (!stack.isEmpty()) {</span><span class="ln"><span class="no">18</span>                    <span class="k">int</span>[] cur = stack.pop();</span><span class="ln"><span class="no">19</span>                    cnt++;</span><span class="ln"><span class="no">20</span>                    <span class="k">for</span> (<span class="k">int</span>[] d : dirs) {</span><span class="ln"><span class="no">21</span>                        <span class="k">int</span> x = cur[<span class="n">0</span>] + d[<span class="n">0</span>], y = cur[<span class="n">1</span>] + d[<span class="n">1</span>];</span><span class="ln"><span class="no">22</span>                        <span class="k">if</span> (x &gt;= <span class="n">0</span> &amp;&amp; x &lt; n &amp;&amp; y &gt;= <span class="n">0</span> &amp;&amp; y &lt; n &amp;&amp; grid[x][y] == <span class="n">1</span>) {</span><span class="ln"><span class="no">23</span>                            grid[x][y] = id;</span><span class="ln"><span class="no">24</span>                            stack.push(<span class="k">new</span> <span class="k">int</span>[]{x, y});</span><span class="ln"><span class="no">25</span>                        }</span><span class="ln"><span class="no">26</span>                    }</span><span class="ln"><span class="no">27</span>                }</span><span class="ln"><span class="no">28</span>                area[id++] = cnt;</span><span class="ln"><span class="no">29</span>            }</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>        <span class="k">int</span> best = <span class="n">0</span>;</span><span class="ln"><span class="no">32</span>        <span class="k">for</span> (<span class="k">int</span> a : area) best = <span class="t">Math</span>.max(best, a);   <span class="c">// 「不填」也是合法操作：现有最大岛先打底</span></span><span class="ln"><span class="no">33</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; n; r++) {</span><span class="ln"><span class="no">34</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; n; c++) {</span><span class="ln"><span class="no">35</span>                <span class="k">if</span> (grid[r][c] != <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">36</span>                <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; around = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;(); <span class="c">// 四邻里不同的岛各记一次（防同一岛重复加）</span></span><span class="ln"><span class="no">37</span>                <span class="k">for</span> (<span class="k">int</span>[] d : dirs) {</span><span class="ln"><span class="no">38</span>                    <span class="k">int</span> x = r + d[<span class="n">0</span>], y = c + d[<span class="n">1</span>];</span><span class="ln"><span class="no">39</span>                    <span class="k">if</span> (x &gt;= <span class="n">0</span> &amp;&amp; x &lt; n &amp;&amp; y &gt;= <span class="n">0</span> &amp;&amp; y &lt; n &amp;&amp; grid[x][y] &gt;= <span class="n">2</span>) around.add(grid[x][y]);</span><span class="ln"><span class="no">40</span>                }</span><span class="ln"><span class="no">41</span>                <span class="k">int</span> sum = <span class="n">1</span>;                            <span class="c">// 填上的这一格自己算 1</span></span><span class="ln"><span class="no">42</span>                <span class="k">for</span> (<span class="k">int</span> t : around) sum += area[t];</span><span class="ln"><span class="no">43</span>                best = <span class="t">Math</span>.max(best, sum);</span><span class="ln"><span class="no">44</span>            }</span><span class="ln"><span class="no">45</span>        }</span><span class="ln"><span class="no">46</span>        <span class="k">return</span> best;</span><span class="ln"><span class="no">47</span>    }</span><span class="ln"><span class="no">48</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个大小为 <code>n x n</code> 二进制矩阵 <code>grid</code> 。<strong>最多</strong> 只能将一格&nbsp;<code>0</code> 变成&nbsp;<code>1</code> 。</p>
+
+<p>返回执行此操作后，<code>grid</code> 中最大的岛屿面积是多少？</p>
+
+<p><strong>岛屿</strong> 由一组上、下、左、右四个方向相连的&nbsp;<code>1</code> 形成。</p>
+
+
+
+<p><strong class="example">示例 1:</strong></p>
+
+<pre>
+<strong>输入: </strong>grid = [[1, 0], [0, 1]]
+<strong>输出:</strong> 3
+<strong>解释:</strong> 将一格0变成1，最终连通两个小岛得到面积为 3 的岛屿。
+</pre>
+
+<p><strong class="example">示例 2:</strong></p>
+
+<pre>
+<strong>输入: </strong>grid =[[1, 1], [1, 0]]
+<strong>输出:</strong> 4
+<strong>解释:</strong> 将一格0变成1，岛屿的面积扩大为 4。</pre>
+
+<p><strong class="example">示例 3:</strong></p>
+
+<pre>
+<strong>输入: </strong>grid = [[1, 1], [1, 1]]
+<strong>输出:</strong> 4
+<strong>解释:</strong> 没有0可以让我们变成1，面积依然为 4。</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == grid.length</code></li>
+	<li><code>n == grid[i].length</code></li>
+	<li><code>1 &lt;= n &lt;= 500</code></li>
+	<li><code>grid[i][j]</code> 为 <code>0</code> 或 <code>1</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int largestIsland(int[][] grid) {", "        int n = grid.length;", "        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};", "        int[] area = new int[n * n + 2];              // 岛编号(从 2 起) → 面积", "        int id = 2;", "        for (int r = 0; r < n; r++) {", "            for (int c = 0; c < n; c++) {", "                if (grid[r][c] != 1) continue;", "                // 迭代 DFS：整座岛染成编号 id，顺手数出面积", "                Deque<int[]> stack = new ArrayDeque<>();", "                stack.push(new int[]{r, c});", "                grid[r][c] = id;", "                int cnt = 0;", "                while (!stack.isEmpty()) {", "                    int[] cur = stack.pop();", "                    cnt++;", "                    for (int[] d : dirs) {", "                        int x = cur[0] + d[0], y = cur[1] + d[1];", "                        if (x >= 0 && x < n && y >= 0 && y < n && grid[x][y] == 1) {", "                            grid[x][y] = id;", "                            stack.push(new int[]{x, y});", "                        }", "                    }", "                }", "                area[id++] = cnt;", "            }", "        }", "        int best = 0;", "        for (int a : area) best = Math.max(best, a);   // 「不填」也是合法操作：现有最大岛先打底", "        for (int r = 0; r < n; r++) {", "            for (int c = 0; c < n; c++) {", "                if (grid[r][c] != 0) continue;", "                Set<Integer> around = new HashSet<>(); // 四邻里不同的岛各记一次（防同一岛重复加）", "                for (int[] d : dirs) {", "                    int x = r + d[0], y = c + d[1];", "                    if (x >= 0 && x < n && y >= 0 && y < n && grid[x][y] >= 2) around.add(grid[x][y]);", "                }", "                int sum = 1;                            // 填上的这一格自己算 1", "                for (int t : around) sum += area[t];", "                best = Math.max(best, sum);", "            }", "        }", "        return best;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 827. 最大人工岛 —— 图解：复刻 Solution.java 的「染编号记面积 + 逐个 0 试填合并」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[1, 1, 0, 0], [1, 0, 0, 1], [0, 0, 1, 1], [0, 1, 1, 0]] };
+
+function trace(input) {
+  var g0 = input.grid, n = g0.length;
+  var frames = [];
+  var dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+  var SRC = 'if (grid[r][c] != 0) continue;';
+  var SUM = 'int sum = 1;';
+
+  // 复制一份来染色（Java 的解法也会原地改 grid）
+  var grid = g0.map(function (row) { return row.slice(); });
+  var area = {};                 // 岛编号(从 2 起) -> 面积
+  var id0 = 2;                   // 当前要染的岛编号
+
+  // 显示用：0 显示 '·'，陆地显示岛编号；marks 由调用者给
+  function panel(marks, title) {
+    var rows = [];
+    for (var r = 0; r < n; r++) {
+      var row = [];
+      for (var c = 0; c < n; c++) row.push(grid[r][c] === 0 ? '·' : String(grid[r][c]));
+      rows.push(row);
+    }
+    return Viz.grid(rows, { title: title || 'grid（岛已染成编号 2/3/…）', marks: marks || {} });
+  }
+
+  function areaPanel(hitId) {
+    var rows = Object.keys(area).map(function (k) {
+      return { k: '岛 ' + k, v: '面积 ' + area[k], cls: String(hitId) === k ? 'hit' : '' };
+    });
+    return Viz.table('每个岛的面积（编号在 grid 里）', rows);
+  }
+
+  // 1) 洪水填充染色（与 Java 相同的迭代 DFS）
+  var firstFlood = true;
+  for (var r = 0; r < n; r++) {
+    for (var c = 0; c < n; c++) {
+      if (grid[r][c] !== 1) continue;
+      var stack = [[r, c]];
+      grid[r][c] = id0;
+      var cnt = 0;
+      while (stack.length) {
+        var cur = stack.pop();
+        cnt++;
+        for (var d = 0; d < 4; d++) {
+          var x = cur[0] + dirs[d][0], y = cur[1] + dirs[d][1];
+          if (x >= 0 && x < n && y >= 0 && y < n && grid[x][y] === 1) {
+            grid[x][y] = id0;
+            stack.push([x, y]);
+          }
+        }
+      }
+      area[id0] = cnt;
+      if (firstFlood) {
+        firstFlood = false;
+        var m1 = {};
+        m1[r + ',' + c] = 'cur';
+        frames.push(Viz.frame('grid[r][c] = id;', '扫到没染过的陆地 (' + r + ',' + c + ')：DFS 把整座岛染成编号 ' + id0 + ' 并数面积',
+          [panel(m1, 'grid（正在染岛 ' + id0 + '）')]));
+      }
+      id0++;
+    }
+  }
+
+  frames.push(Viz.frame('for (int a : area) best = Math.max(best, a);',
+    '染色完成：每座岛有自己的编号和面积；「不填」也合法，现有最大岛先当答案打底',
+    [panel(), areaPanel(-1)]));
+
+  // 2) 逐个 0 试填：四邻不同岛合并求和；「不填」的最大岛先打底
+  var best = 0;
+  for (var k in area) best = Math.max(best, area[k]);
+  var bestAt = null, bestParts = [];
+  for (r = 0; r < n; r++) {
+    for (c = 0; c < n; c++) {
+      if (grid[r][c] !== 0) continue;
+      var around = {}, sum = 1;
+      for (d = 0; d < 4; d++) {
+        x = r + dirs[d][0]; y = c + dirs[d][1];
+        if (x >= 0 && x < n && y >= 0 && y < n && grid[x][y] >= 2) around[grid[x][y]] = true;
+      }
+      for (var t in around) sum += area[t];
+      if (sum > best) { best = sum; bestAt = [r, c]; bestParts = Object.keys(around).map(Number); }
+    }
+  }
+
+  if (bestAt) {
+    var marks = {};
+    marks[bestAt[0] + ',' + bestAt[1]] = 'cur';
+    bestParts.forEach(function (t) {
+      for (var rr = 0; rr < n; rr++) for (var cc = 0; cc < n; cc++) if (grid[rr][cc] === t) marks[rr + ',' + cc] = 'hit';
+    });
+    var partsTxt = bestParts.length ? '能接上四邻的岛 ' + bestParts.join(' 和 ') : '四邻没有岛，只能造 1 格';
+    frames.push(Viz.frame(SRC, '最好的填法在 (' + bestAt[0] + ',' + bestAt[1] + ')：' + partsTxt + '，合计 1+面积 = ' + best,
+      [panel(marks), areaPanel(bestParts[0])]));
+
+    marks[bestAt[0] + ',' + bestAt[1]] = 'done';
+    frames.push(Viz.frame(SUM, '这一格从 0 变 1，把碰到的岛都连起来：最大人工岛 = ' + best,
+      [panel(marks), Viz.vars([{ name: '答案', v: best, cls: 'done' }])]));
+  } else {
+    frames.push(Viz.frame(SUM, '没有 0 可填：答案就是现有最大岛 ' + best,
+      [panel(), Viz.vars([{ name: '答案', v: best, cls: 'done' }])]));
+  }
+
+  return { frames: frames, result: best };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

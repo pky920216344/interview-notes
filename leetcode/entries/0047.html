@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>全排列 II · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 109 / 1159</span>
+  <nav class="pn"><a href="0011.html">上一篇</a><a href="0460.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">47. </span>全排列 II</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 58</li><li class="algo">回溯</li><li class="aux">深度优先搜索/递归</li><li class="tag">数组</li><li class="tag">回溯</li><li class="tag">排序</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">先排序，再回溯枚举每一位；同层里「与前一个相同且前一个没在用」的数直接跳过，保证不重不漏。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>先 <code>Arrays.sort</code>：相同数字相邻，是同层去重的前提。</li><li><code>used[i]</code> 标记下标是否已进 path；每层从 0 扫到 n-1，选没用过的下标。</li><li><strong>同层去重</strong>：<code>nums[i] == nums[i-1] &amp;&amp; !used[i-1]</code> 就跳过——前面的相同数刚被放弃，再选后面的必然生成重复排列；它强制相同数字按从左到右的顺序被选中。</li><li>排满 n 位记录 <code>path</code> 的拷贝；回溯时依次撤销 <code>path</code> 和 <code>used</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·n!)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; permuteUnique(<span class="k">int</span>[] nums) {</span><span class="ln"><span class="no">5</span>        <span class="t">Arrays</span>.sort(nums);   <span class="c">// 排序让相同数字相邻，同层去重才成立</span></span><span class="ln"><span class="no">6</span>        <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        dfs(nums, <span class="k">new</span> <span class="k">boolean</span>[nums.length], <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(), ans);</span><span class="ln"><span class="no">8</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">9</span>    }</span><span class="ln"><span class="no">10</span> </span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">int</span>[] nums, <span class="k">boolean</span>[] used, <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; path, <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; ans) {</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (path.size() == nums.length) {</span><span class="ln"><span class="no">13</span>            ans.add(<span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(path));   <span class="c">// 排满 n 位，记录一份拷贝</span></span><span class="ln"><span class="no">14</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; nums.length; i++) {</span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (used[i]) <span class="k">continue</span>;</span><span class="ln"><span class="no">18</span>            <span class="c">// 同层去重：前面的相同数字刚被放弃（没用过），再选这个必然生成重复排列</span></span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (i &gt; <span class="n">0</span> &amp;&amp; nums[i] == nums[i - <span class="n">1</span>] &amp;&amp; !used[i - <span class="n">1</span>]) <span class="k">continue</span>;</span><span class="ln"><span class="no">20</span>            used[i] = <span class="k">true</span>;</span><span class="ln"><span class="no">21</span>            path.add(nums[i]);</span><span class="ln"><span class="no">22</span>            dfs(nums, used, path, ans);</span><span class="ln"><span class="no">23</span>            path.remove(path.size() - <span class="n">1</span>);</span><span class="ln"><span class="no">24</span>            used[i] = <span class="k">false</span>;</span><span class="ln"><span class="no">25</span>        }</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个可包含重复数字的序列 <code>nums</code> ，<em><strong>按任意顺序</strong></em> 返回所有不重复的全排列。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,1,2]
+<strong>输出：</strong>
+[[1,1,2],
+ [1,2,1],
+ [2,1,1]]
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,3]
+<strong>输出：</strong>[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 8</code></li>
+	<li><code>-10 &lt;= nums[i] &lt;= 10</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<List<Integer>> permuteUnique(int[] nums) {", "        Arrays.sort(nums);   // 排序让相同数字相邻，同层去重才成立", "        List<List<Integer>> ans = new ArrayList<>();", "        dfs(nums, new boolean[nums.length], new ArrayList<>(), ans);", "        return ans;", "    }", "", "    private void dfs(int[] nums, boolean[] used, List<Integer> path, List<List<Integer>> ans) {", "        if (path.size() == nums.length) {", "            ans.add(new ArrayList<>(path));   // 排满 n 位，记录一份拷贝", "            return;", "        }", "        for (int i = 0; i < nums.length; i++) {", "            if (used[i]) continue;", "            // 同层去重：前面的相同数字刚被放弃（没用过），再选这个必然生成重复排列", "            if (i > 0 && nums[i] == nums[i - 1] && !used[i - 1]) continue;", "            used[i] = true;", "            path.add(nums[i]);", "            dfs(nums, used, path, ans);", "            path.remove(path.size() - 1);", "            used[i] = false;", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 47. 全排列 II —— 图解：复刻 Solution.java 的「排序 + 回溯 + 同层去重」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 1, 2] };
+
+function trace(input) {
+  var nums = input.nums.slice().sort(function (a, b) { return a - b; });
+  var n = nums.length;
+  var used = new Array(n).fill(false);
+  var path = [];
+  var results = [];
+  var frames = [];
+  var shown = { skip: false, full: false };
+
+  var SORT = 'Arrays.sort(nums);';
+  var SKIP = 'if (i > 0 && nums[i] == nums[i - 1] && !used[i - 1]) continue;';
+  var FULL = 'ans.add(new ArrayList<>(path));';
+  var RET = 'return ans;';
+
+  // nums 面板：path 用到的下标标 win，当前考察的 i 标 cur，被去重跳过的标 bad
+  function numsPanel(cur, skipped) {
+    var marks = {};
+    for (var i = 0; i < n; i++) if (used[i]) marks[i] = 'win';
+    if (cur != null) marks[cur] = 'cur';
+    if (skipped != null) marks[skipped] = 'bad';
+    return Viz.cells(nums.slice(), { title: '排序后的 nums（黄 = 已选进 path）', marks: marks });
+  }
+  function pathPanel() {
+    var marks = {};
+    if (path.length) marks[path.length - 1] = 'cur';
+    return Viz.cells(path.slice(), { title: '当前排列 path', marks: marks });
+  }
+  function resultsPanel() {
+    return Viz.table('已收集的不重复排列', results.map(function (p, i) {
+      return { k: '#' + (i + 1), v: p.join(' ') };
+    }), { hint: '（去重后）' });
+  }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  snap(SORT, '先排序：相同数字挨在一起，回溯时才认得出「同层的重复」', [numsPanel(null, null)]);
+
+  function dfs() {
+    if (path.length === n) {
+      results.push(path.slice());
+      if (!shown.full) {
+        shown.full = true;
+        snap(FULL, '排满 ' + n + ' 位：收集一个完整排列 [' + path.join(' ') + ']',
+          [numsPanel(null, null), pathPanel(), resultsPanel()]);
+      }
+      return;
+    }
+    for (var i = 0; i < n; i++) {
+      if (used[i]) continue;
+      if (i > 0 && nums[i] === nums[i - 1] && !used[i - 1]) {
+        if (!shown.skip) {
+          shown.skip = true;
+          snap(SKIP, '同层去重：前面的 ' + nums[i] + ' 刚被放弃（没在用），再选这个只会重复，跳过',
+            [numsPanel(i, i), pathPanel()]);
+        }
+        continue;
+      }
+      used[i] = true;
+      path.push(nums[i]);
+      dfs();
+      path.pop();
+      used[i] = false;
+    }
+  }
+  dfs();
+
+  // 输出与 Java 一致：按字典序规范化后再比较
+  function cmp(a, b) {
+    for (var i = 0; i < Math.min(a.length, b.length); i++) if (a[i] !== b[i]) return a[i] - b[i];
+    return a.length - b.length;
+  }
+  var out = results.slice().sort(cmp);
+  snap(RET, '回溯完：共 ' + out.length + ' 个不重复排列',
+    [numsPanel(null, null), resultsPanel()]);
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

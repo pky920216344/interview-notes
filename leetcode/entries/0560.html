@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>和为 K 的子数组 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 81 / 1159</span>
+  <nav class="pn"><a href="0240.html">上一篇</a><a href="0662.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">560. </span>和为 K 的子数组</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 84</li><li class="algo">前缀和/差分</li><li class="aux">哈希表</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">前缀和</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">前缀和 + 哈希计数：查有多少旧前缀等于 prefix - k，就有多少段和为 k。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>子数组和 = 两个前缀和之差：<code>nums[j..i] 之和 = prefix(i) - prefix(j-1)</code>，要等于 <code>k</code> 就是问 <code>prefix(i) - k</code> 这个前缀出现过几次。</li><li>表 <code>cnt</code> 存每个前缀和的出现次数，<strong>先放 <code>0:1</code></strong>（从头开始的子数组）。</li><li>扫到每个位置：<code>ans += cnt[prefix - k]</code>，再把当前 <code>prefix</code> 计数 +1；<strong>先查后存</strong>，<code>k = 0</code> 时才不会把自己也算进去。</li><li>有负数也不怕：前缀和不再单调，但哈希查数照样 O(1)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> subarraySum(<span class="k">int</span>[] nums, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="c">// cnt：前缀和 → 出现次数；空前缀 0 先记 1 次</span></span><span class="ln"><span class="no">6</span>        <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; cnt = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        cnt.put(<span class="n">0</span>, <span class="n">1</span>);</span><span class="ln"><span class="no">8</span>        <span class="k">int</span> prefix = <span class="n">0</span>, ans = <span class="n">0</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> cur : nums) {</span><span class="ln"><span class="no">10</span>            prefix += cur;</span><span class="ln"><span class="no">11</span>            <span class="c">// 有多少个旧前缀等于 prefix-k，就有多少段和为 k</span></span><span class="ln"><span class="no">12</span>            ans += cnt.getOrDefault(prefix - k, <span class="n">0</span>);</span><span class="ln"><span class="no">13</span>            <span class="c">// 当前前缀存进去，给后面的位置查</span></span><span class="ln"><span class="no">14</span>            cnt.merge(prefix, <span class="n">1</span>, <span class="t">Integer</span>::sum);</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code> 和一个整数&nbsp;<code>k</code> ，请你统计并返回 <em>该数组中和为&nbsp;<code>k</code>的子数组的个数&nbsp;</em>。</p>
+
+<p>子数组是数组中元素的连续非空序列。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,1,1], k = 2
+<strong>输出：</strong>2
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums = [1,2,3], k = 3
+<strong>输出：</strong>2
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 2 * 10<sup>4</sup></code></li>
+	<li><code>-1000 &lt;= nums[i] &lt;= 1000</code></li>
+	<li><code>-10<sup>7</sup> &lt;= k &lt;= 10<sup>7</sup></code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int subarraySum(int[] nums, int k) {", "        // cnt：前缀和 → 出现次数；空前缀 0 先记 1 次", "        Map<Integer, Integer> cnt = new HashMap<>();", "        cnt.put(0, 1);", "        int prefix = 0, ans = 0;", "        for (int cur : nums) {", "            prefix += cur;", "            // 有多少个旧前缀等于 prefix-k，就有多少段和为 k", "            ans += cnt.getOrDefault(prefix - k, 0);", "            // 当前前缀存进去，给后面的位置查", "            cnt.merge(prefix, 1, Integer::sum);", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 560. 和为 K 的子数组 —— 图解：复刻前缀和 + 哈希计数，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 2, 3], k: 3 };
+
+function trace(input) {
+  var nums = input.nums, k = input.k;
+  var n = nums.length;
+  var frames = [];
+
+  // 前缀和数组：首格 0 是空前缀
+  var prefixAll = [0];
+  var run = 0;
+  for (var t = 0; t < n; t++) { run += nums[t]; prefixAll.push(run); }
+
+  var cnt = {};          // 前缀和 → 出现次数
+  cnt[0] = 1;
+  var order = [0];       // 表里行的插入顺序
+  var prefix = 0, ans = 0;
+  var missSnap = false, hitSnap = 0, storeSnap = false;
+
+  function prefixPanel(cur, hitVal) {
+    var marks = {};
+    for (var t = 0; t < prefixAll.length; t++) {
+      if (t === cur) marks[t] = 'cur';
+      else if (hitVal !== undefined && t < cur && prefixAll[t] === hitVal) marks[t] = 'hit';
+    }
+    return Viz.cells(prefixAll, { title: '前缀和（首格 0 = 空前缀）', marks: marks });
+  }
+  function cntPanel(hitKey, newKey) {
+    return Viz.table('cnt：前缀和 → 出现次数', order.map(function (p) {
+      return { k: String(p), v: String(cnt[p]), cls: p === hitKey ? 'hit' : (p === newKey ? 'new' : '') };
+    }));
+  }
+
+  frames.push(Viz.frame('cnt.put(0, 1);',
+    '开局：空前缀 0 先记 1 次，从头开始的段靠它',
+    [prefixPanel(-1, undefined), cntPanel(undefined, 0)]));
+
+  for (var i = 0; i < n; i++) {
+    prefix += nums[i];
+    var q = prefix - k;
+    var got = cnt[q] || 0;
+    ans += got;
+    if (got === 0) {
+      if (!missSnap) {
+        missSnap = true;
+        frames.push(Viz.frame('ans += cnt.getOrDefault(prefix - k, 0);',
+          'prefix=' + prefix + '：查 ' + prefix + '-' + k + '=' + q + ' 不在表里，ans 还是 ' + ans,
+          [prefixPanel(i + 1, q), cntPanel(undefined, undefined)]));
+      }
+    } else {
+      hitSnap++;
+      if (hitSnap <= 2) {
+        frames.push(Viz.frame('ans += cnt.getOrDefault(prefix - k, 0);',
+          'prefix=' + prefix + '：查 ' + prefix + '-' + k + '=' + q + '，命中 ' + got + ' 次，ans=' + ans,
+          [prefixPanel(i + 1, q), cntPanel(q, undefined)]));
+      }
+    }
+    if (cnt[prefix] === undefined) { cnt[prefix] = 0; order.push(prefix); }
+    cnt[prefix]++;
+    if (!storeSnap) {
+      storeSnap = true;
+      frames.push(Viz.frame('cnt.merge(prefix, 1, Integer::sum);',
+        '查完就存：当前前缀 ' + prefix + ' 计入表，给后面查',
+        [prefixPanel(i + 1, undefined), cntPanel(undefined, prefix)]));
+    }
+  }
+
+  frames.push(Viz.frame('return ans;',
+    '扫完：共 ' + ans + ' 段和为 ' + k + '，返回 ' + ans,
+    [prefixPanel(n, undefined), cntPanel(undefined, undefined)]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

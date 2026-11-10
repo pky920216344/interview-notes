@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最长公共子序列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 30 / 1159</span>
+  <nav class="pn"><a href="0072.html">上一篇</a><a href="0160.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1143. </span>最长公共子序列</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 203</li><li class="algo">动态规划</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="tag">longest-common-subsequence</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">DP：dp[i][j] 是两个前缀的 LCS 长度；末尾字符相等取左上 + 1，不等取上、左较大值；滚动成一行。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i][j]</code>：<code>text1</code> 前 <code>i</code> 个字符与 <code>text2</code> 前 <code>j</code> 个字符的最长公共子序列长度；有一个是空串就是 <code>0</code>。</li><li>末尾字符相等：<code>dp[i][j] = dp[i-1][j-1] + 1</code>（左上 + 1）；不相等：<code>dp[i][j] = max(dp[i-1][j], dp[i][j-1])</code>（上、左取较大）。</li><li>图解画的是完整二维表，代码把它压成一行：<code>dp[j]</code> 就是当前行，<code>diag</code> 暂存左上角，<code>up</code> 暂存上方；<code>dp[j-1]</code> 是刚算好的左边。</li><li>LCS 对两个串对称，短串放第二个（递归交换一次），<code>dp</code> 数组只要 <code>min(m, n) + 1</code> 格；答案是 <code>dp[n]</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(min(m, n))</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> longestCommonSubsequence(<span class="t">String</span> text1, <span class="t">String</span> text2) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 短串放第二个，dp 数组就只有 min(m, n) + 1 格</span></span><span class="ln"><span class="no">4</span>        <span class="k">if</span> (text1.length() &lt; text2.length()) {</span><span class="ln"><span class="no">5</span>            <span class="k">return</span> longestCommonSubsequence(text2, text1);</span><span class="ln"><span class="no">6</span>        }</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> n = text2.length();</span><span class="ln"><span class="no">8</span>        <span class="c">// dp[j]：text1 前 i 个字符和 text2 前 j 个字符的 LCS 长度，i 是当前行</span></span><span class="ln"><span class="no">9</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= text1.length(); i++) {</span><span class="ln"><span class="no">11</span>            <span class="k">int</span> diag = <span class="n">0</span>;         <span class="c">// 左上角 dp[i-1][j-1]</span></span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt;= n; j++) {</span><span class="ln"><span class="no">13</span>                <span class="k">int</span> up = dp[j];   <span class="c">// 上方 dp[i-1][j]，被覆盖前先存下</span></span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (text1.charAt(i - <span class="n">1</span>) == text2.charAt(j - <span class="n">1</span>)) dp[j] = diag + <span class="n">1</span>;</span><span class="ln"><span class="no">15</span>                <span class="k">else</span> dp[j] = <span class="t">Math</span>.max(up, dp[j - <span class="n">1</span>]);</span><span class="ln"><span class="no">16</span>                diag = up;</span><span class="ln"><span class="no">17</span>            }</span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> dp[n];</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定两个字符串 <code>text1</code> 和 <code>text2</code>，返回这两个字符串的最长 <strong>公共子序列</strong> 的长度。如果不存在 <strong>公共子序列</strong> ，返回 <code>0</code> 。</p>
+
+<p>一个字符串的 <strong>子序列</strong><em> </em>是指这样一个新的字符串：它是由原字符串在不改变字符的相对顺序的情况下删除某些字符（也可以不删除任何字符）后组成的新字符串。</p>
+
+<ul>
+	<li>例如，<code>"ace"</code> 是 <code>"abcde"</code> 的子序列，但 <code>"aec"</code> 不是 <code>"abcde"</code> 的子序列。</li>
+</ul>
+
+<p>两个字符串的 <strong>公共子序列</strong> 是这两个字符串所共同拥有的子序列。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>text1 = "abcde", text2 = "ace" 
+<strong>输出：</strong>3  
+<strong>解释：</strong>最长公共子序列是 "ace" ，它的长度为 3 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>text1 = "abc", text2 = "abc"
+<strong>输出：</strong>3
+<strong>解释：</strong>最长公共子序列是 "abc" ，它的长度为 3 。
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>text1 = "abc", text2 = "def"
+<strong>输出：</strong>0
+<strong>解释：</strong>两个字符串没有公共子序列，返回 0 。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 <= text1.length, text2.length <= 1000</code></li>
+	<li><code>text1</code> 和 <code>text2</code> 仅由小写英文字符组成。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int longestCommonSubsequence(String text1, String text2) {", "        // 短串放第二个，dp 数组就只有 min(m, n) + 1 格", "        if (text1.length() < text2.length()) {", "            return longestCommonSubsequence(text2, text1);", "        }", "        int n = text2.length();", "        // dp[j]：text1 前 i 个字符和 text2 前 j 个字符的 LCS 长度，i 是当前行", "        int[] dp = new int[n + 1];", "        for (int i = 1; i <= text1.length(); i++) {", "            int diag = 0;         // 左上角 dp[i-1][j-1]", "            for (int j = 1; j <= n; j++) {", "                int up = dp[j];   // 上方 dp[i-1][j]，被覆盖前先存下", "                if (text1.charAt(i - 1) == text2.charAt(j - 1)) dp[j] = diag + 1;", "                else dp[j] = Math.max(up, dp[j - 1]);", "                diag = up;", "            }", "        }", "        return dp[n];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1143. 最长公共子序列 —— 图解：复刻 Solution.java 的一维滚动 DP，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+// 图画的是完整的二维 dp 表（好看清「左、上、左上」三个来源）；代码里只留一行 dp，按行覆盖。
+
+var STORY_INPUT = { text1: 'abcde', text2: 'ace' };
+
+function trace(input) {
+  var a = input.text1, b = input.text2;
+  if (a.length < b.length) { var swap = a; a = b; b = swap; }   // 对应 Java：短串放第二个
+  var m = a.length, n = b.length;
+  var frames = [];
+  var INIT = 'int[] dp = new int[n + 1];';
+  var MATCH = 'dp[j] = diag + 1;';
+  var MISS = 'else dp[j] = Math.max(up, dp[j - 1]);';
+
+  var dp = [];                                  // 和 Java 一样只有一行
+  for (var j0 = 0; j0 <= n; j0++) dp.push(0);
+  var table = [];                               // 完整的二维表，只用来画图；null 表示还没算到
+  for (var i0 = 0; i0 <= m; i0++) {
+    table.push([]);
+    for (var j1 = 0; j1 <= n; j1++) table[i0].push(i0 === 0 || j1 === 0 ? 0 : null);
+  }
+  var rowLabels = ['空'].concat(a.split(''));
+  var colLabels = ['空'].concat(b.split(''));
+
+  function gridPanel(marks) {
+    var rows = table.map(function (row) { return row.map(function (v) { return v === null ? '' : v; }); });
+    return Viz.grid(rows, {
+      title: 'dp 表：行 = text1 的前 i 个字符，列 = text2 的前 j 个字符',
+      rowLabels: rowLabels, colLabels: colLabels, marks: marks
+    });
+  }
+
+  // 第 0 行、第 0 列：有一个串是空的，LCS 长度是 0
+  var base = {};
+  for (var k = 0; k <= m; k++) base[k + ',0'] = 'win';
+  for (var q = 0; q <= n; q++) base[0 + ',' + q] = 'win';
+  frames.push(Viz.frame(INIT, '第 0 行、第 0 列都是 0：有一个串是空的，没有公共子序列', [gridPanel(base)]));
+
+  var matchFrame = null, missFrame = null;
+  for (var i = 1; i <= m; i++) {
+    var diag = 0;
+    for (var j = 1; j <= n; j++) {
+      var up = dp[j];
+      var left = dp[j - 1];
+      var same = a[i - 1] === b[j - 1];
+      if (same) dp[j] = diag + 1;
+      else dp[j] = Math.max(up, dp[j - 1]);
+      table[i][j] = dp[j];
+
+      var target = {};
+      target[i + ',' + j] = 'cur';
+      if (same && !matchFrame && diag >= 1) {
+        // 字符相等：左上角 + 1
+        target[(i - 1) + ',' + (j - 1)] = 'win';
+        matchFrame = Viz.frame(MATCH, a[i - 1] + ' = ' + b[j - 1] + '：字符相等，取左上角 ' + diag + ' 再 +1 = ' + dp[j],
+          [gridPanel(target), Viz.vars([{ name: 'diag', v: diag }, { name: 'dp[j]', v: dp[j], cls: 'chg' }])]);
+        frames.push(matchFrame);
+      } else if (!same && matchFrame && !missFrame) {
+        // 字符不等：上、左里取较大的
+        target[(i - 1) + ',' + j] = 'win';
+        target[i + ',' + (j - 1)] = 'win';
+        missFrame = Viz.frame(MISS, a[i - 1] + ' ≠ ' + b[j - 1] + '：取上边 ' + up + '、左边 ' + left + ' 里较大的，得 ' + dp[j],
+          [gridPanel(target), Viz.vars([{ name: 'up', v: up }, { name: 'dp[j-1]', v: left }, { name: 'dp[j]', v: dp[j], cls: 'chg' }])]);
+        frames.push(missFrame);
+      }
+      diag = up;
+    }
+  }
+
+  var last = {};
+  last[m + ',' + n] = 'done';
+  frames.push(Viz.frame('return dp[n];', '填完表：右下角 dp[' + m + '][' + n + '] = ' + dp[n] + '，就是答案',
+    [gridPanel(last), Viz.vars([{ name: 'dp[n]', v: dp[n], cls: 'chg' }])]));
+
+  return { frames: frames, result: dp[n] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

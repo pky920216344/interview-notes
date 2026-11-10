@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑动窗口最大值 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 41 / 1159</span>
+  <nav class="pn"><a href="0199.html">上一篇</a><a href="0704.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">239. </span>滑动窗口最大值</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 159</li><li class="algo">滑动窗口</li><li class="aux">单调栈</li><li class="tag">队列</li><li class="tag">数组</li><li class="tag">滑动窗口</li><li class="tag">单调队列</li><li class="tag">堆（优先队列）</li><li class="tag">range-minimum-maximum-query</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">单调递减双端队列存下标：新数先弹掉不比它大的队尾，滑出窗口的队头也弹掉，队头就是窗口最大值。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>队列里存下标，对应的值从队头到队尾递减，所以队头永远是当前窗口的最大值。</li><li>新数 <code>nums[i]</code> 进队前，把队尾所有不比它大的下标弹掉：它们又旧又小，不可能再当最大值。</li><li>弹完把 <code>i</code> 放到队尾；若队头下标 <code>&lt;= i - k</code>，说明已滑出窗口，弹掉（每步最多滑出一个，用 <code>if</code> 就够）。</li><li><code>i &gt;= k - 1</code> 时窗口满了，<code>nums[队头]</code> 就是 <code>ans[i - k + 1]</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(k)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[] maxSlidingWindow(<span class="k">int</span>[] nums, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> n = nums.length;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[] ans = <span class="k">new</span> <span class="k">int</span>[n - k + <span class="n">1</span>];</span><span class="ln"><span class="no">7</span>        <span class="c">// 存下标，值从队头到队尾递减，</span></span><span class="ln"><span class="no">8</span>        <span class="c">// 所以队头就是窗口最大值</span></span><span class="ln"><span class="no">9</span>        <span class="t">Deque</span>&lt;<span class="t">Integer</span>&gt; dq = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) {</span><span class="ln"><span class="no">11</span>            <span class="c">// 队尾不比新数大，以后不可能再是最大值</span></span><span class="ln"><span class="no">12</span>            <span class="k">while</span> (!dq.isEmpty() &amp;&amp; nums[dq.peekLast()] &lt;= nums[i]) {</span><span class="ln"><span class="no">13</span>                dq.pollLast();</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>            dq.offerLast(i);</span><span class="ln"><span class="no">16</span>            <span class="c">// 队头滑出了窗口 [i - k + 1, i]</span></span><span class="ln"><span class="no">17</span>            <span class="k">if</span> (dq.peekFirst() &lt;= i - k) dq.pollFirst();</span><span class="ln"><span class="no">18</span>            <span class="c">// 窗口满了才有答案</span></span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (i &gt;= k - <span class="n">1</span>) ans[i - k + <span class="n">1</span>] = nums[dq.peekFirst()];</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个整数数组 <code>nums</code>，有一个大小为&nbsp;<code>k</code><em>&nbsp;</em>的滑动窗口从数组的最左侧移动到数组的最右侧。你只可以看到在滑动窗口内的 <code>k</code>&nbsp;个数字。滑动窗口每次只向右移动一位。</p>
+
+<p>返回 <em>滑动窗口中的最大值 </em>。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<b>输入：</b>nums = [1,3,-1,-3,5,3,6,7], k = 3
+<b>输出：</b>[3,3,5,5,6,7]
+<b>解释：</b>
+滑动窗口的位置                最大值
+---------------               -----
+[1  3  -1] -3  5  3  6  7       <strong>3</strong>
+ 1 [3  -1  -3] 5  3  6  7       <strong>3</strong>
+ 1  3 [-1  -3  5] 3  6  7      <strong> 5</strong>
+ 1  3  -1 [-3  5  3] 6  7       <strong>5</strong>
+ 1  3  -1  -3 [5  3  6] 7       <strong>6</strong>
+ 1  3  -1  -3  5 [3  6  7]      <strong>7</strong>
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<b>输入：</b>nums = [1], k = 1
+<b>输出：</b>[1]
+</pre>
+
+
+
+<p><b>提示：</b></p>
+
+<ul>
+	<li><code>1 &lt;= nums.length &lt;= 10<sup>5</sup></code></li>
+	<li><code>-10<sup>4</sup>&nbsp;&lt;= nums[i] &lt;= 10<sup>4</sup></code></li>
+	<li><code>1 &lt;= k &lt;= nums.length</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[] maxSlidingWindow(int[] nums, int k) {", "        int n = nums.length;", "        int[] ans = new int[n - k + 1];", "        // 存下标，值从队头到队尾递减，", "        // 所以队头就是窗口最大值", "        Deque<Integer> dq = new ArrayDeque<>();", "        for (int i = 0; i < n; i++) {", "            // 队尾不比新数大，以后不可能再是最大值", "            while (!dq.isEmpty() && nums[dq.peekLast()] <= nums[i]) {", "                dq.pollLast();", "            }", "            dq.offerLast(i);", "            // 队头滑出了窗口 [i - k + 1, i]", "            if (dq.peekFirst() <= i - k) dq.pollFirst();", "            // 窗口满了才有答案", "            if (i >= k - 1) ans[i - k + 1] = nums[dq.peekFirst()];", "        }", "        return ans;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 239. 滑动窗口最大值 —— 图解：复刻 Solution.java 的「单调递减双端队列（存下标）」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums: [1, 3, 1, 2, 0, 5], k: 3 };
+
+function trace(input) {
+  var nums = input.nums, k = input.k;
+  var n = nums.length;
+  var dq = [];       // 下标：dq[0] 是队头，最后一个是队尾，对应 Java 里的 ArrayDeque
+  var ans = [];
+  var frames = [];
+  var shown = {};    // 每种关键时刻只拍第一次
+
+  // 数组面板：窗口 [i-k+1, i]，已经滑出窗口的变灰
+  function numsPanel(i) {
+    var from = Math.max(0, i - k + 1), marks = {}, x;
+    for (x = 0; x < from; x++) marks[x] = 'dim';
+    marks[i] = 'cur';
+    return Viz.cells(nums, { title: 'nums，k = ' + k, marks: marks,
+      pointers: [{ at: i, label: 'i', cls: 'p-cur' }],
+      range: { from: from, to: i, label: '窗口' } });
+  }
+  // 队列：下标 → 值，hit 里的下标是这一步要处理的
+  function dqPanel(hit) {
+    return Viz.table('队列 dq：下标 → 值（左边是队头，值从左到右递减）',
+      dq.map(function (idx) { return { k: String(idx), v: String(nums[idx]), cls: hit.indexOf(idx) >= 0 ? 'hit' : '' }; }));
+  }
+  function ansPanel() { return Viz.cells(ans, { title: 'ans：每个窗口的最大值' }); }
+  function snap(at, key, panels) { frames.push(Viz.frame(at, key, panels)); }
+
+  for (var i = 0; i < n; i++) {
+    // 先看哪些队尾会被弹掉
+    var popped = [], t = dq.length - 1;
+    while (t >= 0 && nums[dq[t]] <= nums[i]) { popped.push(dq[t]); t--; }
+    if (popped.length && !shown.pop) {
+      shown.pop = true;
+      snap('nums[dq.peekLast()] <= nums[i]', '新数 ' + nums[i] + ' 不比队尾小：队尾弹掉，它再也当不了最大值',
+        [numsPanel(i), dqPanel(popped)]);
+    }
+    while (dq.length && nums[dq[dq.length - 1]] <= nums[i]) dq.pop();
+    dq.push(i);
+
+    var expired = dq[0] <= i - k;
+    if (expired) {
+      if (!shown.expire) {
+        shown.expire = true;
+        shown.expireAt = i;
+        snap('dq.peekFirst() <= i - k', '队头下标 ' + dq[0] + ' 已滑出窗口 [' + (i - k + 1) + ', ' + i + ']：弹掉队头',
+          [numsPanel(i), dqPanel([dq[0]])]);
+      }
+      dq.shift();
+    }
+
+    if (i >= k - 1) {
+      ans[i - k + 1] = nums[dq[0]];
+      if (!shown.first) {
+        shown.first = true;
+        snap('ans[i - k + 1] = nums[dq.peekFirst()];', '窗口满了：队头下标 ' + dq[0] + '，值 ' + nums[dq[0]] + ' 就是最大值',
+          [numsPanel(i), dqPanel([dq[0]]), ansPanel()]);
+      } else if (expired && shown.expireAt === i) {
+        snap('ans[i - k + 1] = nums[dq.peekFirst()];', '弹掉后队头变成下标 ' + dq[0] + '：窗口最大值是 ' + nums[dq[0]],
+          [numsPanel(i), dqPanel([dq[0]]), ansPanel()]);
+      }
+    }
+  }
+
+  var allDone = {};
+  ans.forEach(function (v, x) { allDone[x] = 'done'; });
+  snap('return ans;', '窗口滑完：ans 就是每个窗口的最大值',
+    [Viz.cells(ans, { title: 'ans：每个窗口的最大值', marks: allDone })]);
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

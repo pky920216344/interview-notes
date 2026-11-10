@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最短公共超序列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 627 / 1159</span>
+  <nav class="pn"><a href="1114.html">上一篇</a><a href="0594.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1092. </span>最短公共超序列</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 3</li><li class="algo">动态规划</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="tag">longest-common-subsequence</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">先求 LCS 的 DP 表，再从 (m,n) 回溯：字符相等取一个；否则沿 dp 值大的方向放字符，最后翻转。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>最短公共超序列长度 = <code>m + n − LCS</code>：把公共子序列合并成一段，其余字符照抄。</li><li>回溯规则：字符相等 → 取一个、<code>i</code>、<code>j</code> 一起退；不等 → 看 <code>dp[i−1][j]</code> 与 <code>dp[i][j−1]</code> 哪个大，走大的那边、放那边的字符。</li><li>回溯收集到的是逆序，结尾 <code>reverse</code>；任何一串走完，把另一串剩余整段补上。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">String</span> shortestCommonSupersequence(<span class="t">String</span> str1, <span class="t">String</span> str2) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = str1.length(), n = str2.length();</span><span class="ln"><span class="no">4</span>        <span class="c">// 先填 LCS 表：dp[i][j] = str1 前 i 个与 str2 前 j 个的最长公共子序列</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[][] dp = <span class="k">new</span> <span class="k">int</span>[m + <span class="n">1</span>][n + <span class="n">1</span>];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= m; i++) {</span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt;= n; j++) {</span><span class="ln"><span class="no">8</span>                <span class="k">if</span> (str1.charAt(i - <span class="n">1</span>) == str2.charAt(j - <span class="n">1</span>)) dp[i][j] = dp[i - <span class="n">1</span>][j - <span class="n">1</span>] + <span class="n">1</span>;</span><span class="ln"><span class="no">9</span>                <span class="k">else</span> dp[i][j] = <span class="t">Math</span>.max(dp[i - <span class="n">1</span>][j], dp[i][j - <span class="n">1</span>]);</span><span class="ln"><span class="no">10</span>            }</span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="c">// 从 (m,n) 回溯到 (0,0)，边走边放字符（收集到的是逆序）</span></span><span class="ln"><span class="no">13</span>        <span class="t">StringBuilder</span> sb = <span class="k">new</span> <span class="t">StringBuilder</span>();</span><span class="ln"><span class="no">14</span>        <span class="k">int</span> i = m, j = n;</span><span class="ln"><span class="no">15</span>        <span class="k">while</span> (i &gt; <span class="n">0</span> || j &gt; <span class="n">0</span>) {</span><span class="ln"><span class="no">16</span>            <span class="k">if</span> (i &gt; <span class="n">0</span> &amp;&amp; j &gt; <span class="n">0</span> &amp;&amp; str1.charAt(i - <span class="n">1</span>) == str2.charAt(j - <span class="n">1</span>)) {</span><span class="ln"><span class="no">17</span>                sb.append(str1.charAt(i - <span class="n">1</span>));  <span class="c">// 相等：只放一个，两串一起退</span></span><span class="ln"><span class="no">18</span>                i--;</span><span class="ln"><span class="no">19</span>                j--;</span><span class="ln"><span class="no">20</span>            } <span class="k">else</span> <span class="k">if</span> (j == <span class="n">0</span> || (i &gt; <span class="n">0</span> &amp;&amp; dp[i - <span class="n">1</span>][j] &gt;= dp[i][j - <span class="n">1</span>])) {</span><span class="ln"><span class="no">21</span>                sb.append(str1.charAt(i - <span class="n">1</span>));  <span class="c">// 不相等：沿 dp 大的方向放 str1 的字符</span></span><span class="ln"><span class="no">22</span>                i--;</span><span class="ln"><span class="no">23</span>            } <span class="k">else</span> {</span><span class="ln"><span class="no">24</span>                sb.append(str2.charAt(j - <span class="n">1</span>));  <span class="c">// 否则放 str2 的字符</span></span><span class="ln"><span class="no">25</span>                j--;</span><span class="ln"><span class="no">26</span>            }</span><span class="ln"><span class="no">27</span>        }</span><span class="ln"><span class="no">28</span>        <span class="k">return</span> sb.reverse().toString();</span><span class="ln"><span class="no">29</span>    }</span><span class="ln"><span class="no">30</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你两个字符串&nbsp;<code>str1</code> 和&nbsp;<code>str2</code>，返回同时以&nbsp;<code>str1</code>&nbsp;和&nbsp;<code>str2</code>&nbsp;作为 <strong>子序列</strong> 的最短字符串。如果答案不止一个，则可以返回满足条件的 <strong>任意一个</strong> 答案。</p>
+
+<p>如果从字符串 <code>t</code> 中删除一些字符（也可能不删除），可以得到字符串 <code>s</code> ，那么 <code>s</code> 就是 t 的一个子序列。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>str1 = "abac", str2 = "cab"
+<strong>输出：</strong>"cabac"
+<strong>解释：</strong>
+str1 = "abac" 是 "cabac" 的一个子串，因为我们可以删去 "cabac" 的第一个 "c"得到 "abac"。 
+str2 = "cab" 是 "cabac" 的一个子串，因为我们可以删去 "cabac" 末尾的 "ac" 得到 "cab"。
+最终我们给出的答案是满足上述属性的最短字符串。
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>str1 = "aaaaaaaa", str2 = "aaaaaaaa"
+<strong>输出：</strong>"aaaaaaaa"
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= str1.length, str2.length &lt;= 1000</code></li>
+	<li><code>str1</code> 和&nbsp;<code>str2</code>&nbsp;都由小写英文字母组成。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public String shortestCommonSupersequence(String str1, String str2) {", "        int m = str1.length(), n = str2.length();", "        // 先填 LCS 表：dp[i][j] = str1 前 i 个与 str2 前 j 个的最长公共子序列", "        int[][] dp = new int[m + 1][n + 1];", "        for (int i = 1; i <= m; i++) {", "            for (int j = 1; j <= n; j++) {", "                if (str1.charAt(i - 1) == str2.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1] + 1;", "                else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);", "            }", "        }", "        // 从 (m,n) 回溯到 (0,0)，边走边放字符（收集到的是逆序）", "        StringBuilder sb = new StringBuilder();", "        int i = m, j = n;", "        while (i > 0 || j > 0) {", "            if (i > 0 && j > 0 && str1.charAt(i - 1) == str2.charAt(j - 1)) {", "                sb.append(str1.charAt(i - 1));  // 相等：只放一个，两串一起退", "                i--;", "                j--;", "            } else if (j == 0 || (i > 0 && dp[i - 1][j] >= dp[i][j - 1])) {", "                sb.append(str1.charAt(i - 1));  // 不相等：沿 dp 大的方向放 str1 的字符", "                i--;", "            } else {", "                sb.append(str2.charAt(j - 1));  // 否则放 str2 的字符", "                j--;", "            }", "        }", "        return sb.reverse().toString();", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1092. 最短公共超序列 —— 图解：复刻 Solution.java 的「LCS 表 + 回溯拼答案」，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { str1: 'abac', str2: 'cab' };
+
+function trace(input) {
+  var s1 = input.str1, s2 = input.str2;
+  var m = s1.length, n = s2.length;
+  var frames = [];
+
+  // 与 Java 完全一致的前缀 LCS 表
+  var dp = [];
+  for (var i = 0; i <= m; i++) dp.push(new Array(n + 1).fill(0));
+  for (var i = 1; i <= m; i++) {
+    for (var j = 1; j <= n; j++) {
+      if (s1.charAt(i - 1) === s2.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1] + 1;
+      else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+    }
+  }
+
+  var total = m + n - dp[m][n];
+  var slots = [];                       // 答案槽位：从右往左填（等价于 Java 先收集再 reverse）
+  for (var k = 0; k < total; k++) slots.push('·');
+
+  function gridPanel(curI, curJ, pathCells) {
+    var rows = dp.map(function (row) { return row.slice(); });
+    var marks = {};
+    (pathCells || []).forEach(function (c) { marks[c[0] + ',' + c[1]] = 'win'; });
+    if (curI >= 0) marks[curI + ',' + curJ] = 'cur';
+    return Viz.grid(rows, {
+      title: 'LCS 表 dp[i][j]',
+      rowLabels: ['∅'].concat(s1.split('')),
+      colLabels: ['∅'].concat(s2.split('')),
+      corner: 'i\\j', marks: marks
+    });
+  }
+  function slotsPanel(newIdx, done) {
+    var marks = {};
+    if (newIdx != null && newIdx >= 0) marks[newIdx] = done ? 'done' : 'new';
+    return Viz.cells(slots, { title: '答案（从右往左填，最后正着读）', marks: marks });
+  }
+
+  frames.push(Viz.frame('else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);',
+    '先填 LCS 表：dp[' + m + '][' + n + ']=' + dp[m][n] + '，答案长度 = ' + m + '+' + n + '−' + dp[m][n] + '=' + total,
+    [gridPanel(m, n, []), slotsPanel(-1, false)]));
+
+  var path = [];
+  var i = m, j = n, filled = 0;
+  var snap = { first: false, second: false, eq: false, tail: false };
+
+  while (i > 0 || j > 0) {
+    path.push([i, j]);
+    var idx = total - 1 - filled;   // 第 filled 次收集的字符，最终落在答案的倒数第 filled+1 格
+    if (i > 0 && j > 0 && s1.charAt(i - 1) === s2.charAt(j - 1)) {
+      slots[idx] = s1.charAt(i - 1);
+      filled++;
+      if (!snap.eq) {
+        snap.eq = true;
+        frames.push(Viz.frame('sb.append(str1.charAt(i - 1));  // 相等：只放一个，两串一起退',
+          s1.charAt(i - 1) + ' == ' + s2.charAt(j - 1) + '：相等只放一个，i、j 一起退',
+          [gridPanel(i, j, path), slotsPanel(idx, false)]));
+      }
+      i--;
+      j--;
+    } else if (j === 0 || (i > 0 && dp[i - 1][j] >= dp[i][j - 1])) {
+      slots[idx] = s1.charAt(i - 1);
+      filled++;
+      if (!snap.first) {
+        snap.first = true;
+        frames.push(Viz.frame('sb.append(str1.charAt(i - 1));  // 不相等：沿 dp 大的方向放 str1 的字符',
+          s1.charAt(i - 1) + ' ≠ ' + s2.charAt(j - 1) + '：走 dp 值大的方向，放 str1 的字符',
+          [gridPanel(i, j, path), slotsPanel(idx, false)]));
+      } else if (!snap.second) {
+        snap.second = true;
+        frames.push(Viz.frame('sb.append(str1.charAt(i - 1));  // 不相等：沿 dp 大的方向放 str1 的字符',
+          s1.charAt(i - 1) + ' ≠ ' + s2.charAt(j - 1) + '：还是 str1 一侧大，再放一个',
+          [gridPanel(i, j, path), slotsPanel(idx, false)]));
+      }
+      i--;
+    } else {
+      slots[idx] = s2.charAt(j - 1);
+      filled++;
+      if (!snap.tail) {
+        snap.tail = true;
+        frames.push(Viz.frame('sb.append(str2.charAt(j - 1));  // 否则放 str2 的字符',
+          'str1 用尽：把 str2 剩下的字符补到最前面',
+          [gridPanel(i, j, path), slotsPanel(idx, false)]));
+      }
+      j--;
+    }
+  }
+
+  frames.push(Viz.frame('return sb.reverse().toString();',
+    '收集完反转读正：str1、str2 都是它的子序列',
+    [gridPanel(0, 0, path), slotsPanel(-1, true)]));
+
+  return { frames: frames, result: slots.join('') };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

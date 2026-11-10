@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最长单词 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 541 / 1159</span>
+  <nav class="pn"><a href="0269.html">上一篇</a><a href="1227.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">面试题 17.15. </span>最长单词</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">动态规划</li><li class="aux">哈希表</li><li class="tag">字典树</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按长度降序、同长字典序排序后逐个试；对候选词做「真前缀 + 词集切词」DFS（带备忘录），第一个能拼出的就是答案。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>排序：长度降序、同长按字典序升序——<strong>找到的第一个合法词天然就是「最长且字典序最小」</strong>。</li><li>对候选词 <code>w</code>：首段必须是<strong>真前缀</strong>（整词匹配自己不算「由其他单词组成」），枚举每个切分点，前缀在词集里就递归切后缀。</li><li>后缀切词带 <code>fail</code> 备忘录：某起点拼不完就记下，避免重复搜索（<code>aaaa…a</code> 这类输入会指数爆炸）。</li><li>词集用 <code>HashSet</code>，切出的每段 O(1) 查询；词可以复用（<code>aa = a + a</code> 合法）。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·L³)（L 为单词最大长度），空间复杂度 O(n·L)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">String</span> longestWord(<span class="t">String</span>[] words) {</span><span class="ln"><span class="no">5</span>        <span class="c">// 长度降序、同长按字典序升序：扫到的第一个合格单词就是答案</span></span><span class="ln"><span class="no">6</span>        <span class="t">Arrays</span>.sort(words, (a, b) -&gt; a.length() != b.length() ? b.length() - a.length() : a.compareTo(b));</span><span class="ln"><span class="no">7</span>        <span class="t">Set</span>&lt;<span class="t">String</span>&gt; dict = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;(<span class="t">Arrays</span>.asList(words));</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="t">String</span> w : words)</span><span class="ln"><span class="no">9</span>            <span class="k">if</span> (composable(w, <span class="n">0</span>, dict, <span class="k">new</span> <span class="t">Boolean</span>[w.length() + <span class="n">1</span>])) <span class="k">return</span> w;</span><span class="ln"><span class="no">10</span>        <span class="k">return</span> <span class="s">""</span>;</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="c">// w 从 start 位起的后缀能否由「其他单词」拼出：后缀整体是词典词（真子串，必是别的词），</span></span><span class="ln"><span class="no">14</span>    <span class="c">// 或切掉一个非空前缀后，剩余部分还能继续拼</span></span><span class="ln"><span class="no">15</span>    <span class="k">private</span> <span class="k">boolean</span> composable(<span class="t">String</span> w, <span class="k">int</span> start, <span class="t">Set</span>&lt;<span class="t">String</span>&gt; dict, <span class="t">Boolean</span>[] memo) {</span><span class="ln"><span class="no">16</span>        <span class="k">if</span> (memo[start] != <span class="k">null</span>) <span class="k">return</span> memo[start];</span><span class="ln"><span class="no">17</span>        <span class="k">boolean</span> ok = start &gt; <span class="n">0</span> &amp;&amp; dict.contains(w.substring(start));</span><span class="ln"><span class="no">18</span>        <span class="k">for</span> (<span class="k">int</span> i = start + <span class="n">1</span>; !ok &amp;&amp; i &lt; w.length(); i++)</span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (dict.contains(w.substring(start, i)) &amp;&amp; composable(w, i, dict, memo)) ok = <span class="k">true</span>;</span><span class="ln"><span class="no">20</span>        memo[start] = ok;</span><span class="ln"><span class="no">21</span>        <span class="k">return</span> ok;</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一组单词<code>words</code>，编写一个程序，找出其中的最长单词，且该单词由这组单词中的其他单词组合而成。若有多个长度相同的结果，返回其中字典序最小的一项，若没有符合要求的单词则返回空字符串。</p>
+
+<p><strong>示例：</strong></p>
+
+<pre><strong>输入：</strong> [&quot;cat&quot;,&quot;banana&quot;,&quot;dog&quot;,&quot;nana&quot;,&quot;walk&quot;,&quot;walker&quot;,&quot;dogwalker&quot;]
+<strong>输出：</strong> &quot;dogwalker&quot;
+<strong>解释：</strong> &quot;dogwalker&quot;可由&quot;dog&quot;和&quot;walker&quot;组成。
+</pre>
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= len(words) &lt;= 200</code></li>
+	<li><code>1 &lt;= len(words[i]) &lt;= 100</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public String longestWord(String[] words) {", "        // 长度降序、同长按字典序升序：扫到的第一个合格单词就是答案", "        Arrays.sort(words, (a, b) -> a.length() != b.length() ? b.length() - a.length() : a.compareTo(b));", "        Set<String> dict = new HashSet<>(Arrays.asList(words));", "        for (String w : words)", "            if (composable(w, 0, dict, new Boolean[w.length() + 1])) return w;", "        return \"\";", "    }", "", "    // w 从 start 位起的后缀能否由「其他单词」拼出：后缀整体是词典词（真子串，必是别的词），", "    // 或切掉一个非空前缀后，剩余部分还能继续拼", "    private boolean composable(String w, int start, Set<String> dict, Boolean[] memo) {", "        if (memo[start] != null) return memo[start];", "        boolean ok = start > 0 && dict.contains(w.substring(start));", "        for (int i = start + 1; !ok && i < w.length(); i++)", "            if (dict.contains(w.substring(start, i)) && composable(w, i, dict, memo)) ok = true;", "        memo[start] = ok;", "        return ok;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 面试题 17.15 最长单词 —— 图解：复刻 Solution.java 的「排序 + 真前缀切词」，4 个关键时刻。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { words: ['cat', 'banana', 'dog', 'nana', 'walk', 'walker', 'dogwalker'] };
+
+function trace(input) {
+  var words = input.words;
+  var frames = [];
+  var fired = { sort: false, prefix: false, tail: false };
+
+  function wordPanel(marks) {
+    return Viz.cells(cur.split(''), { title: '正在检查的单词：' + cur, marks: marks || {} });
+  }
+  function setPanel(hit) {
+    var rows = set.map(function (w) {
+      return { k: w, v: w.length + ' 个字母', cls: w === hit ? 'hit' : '' };
+    });
+    return Viz.table('词集（已按长度降序排）', rows);
+  }
+  function snap(tag, at, key, panels) {
+    if (fired[tag]) return;
+    fired[tag] = true;
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  // 与 Solution.java 相同的排序：长度降序、同长字典序升序
+  var sorted = words.slice().sort(function (a, b) {
+    return a.length !== b.length ? b.length - a.length : (a < b ? -1 : a > b ? 1 : 0);
+  });
+  var set = sorted.slice();
+
+  var cur = sorted[0] || '';
+  snap('sort', 'Arrays.sort(words, (a, b) -> a.length() != b.length() ? b.length() - a.length() : a.compareTo(b));',
+    '按长度降序、同长按字典序排：最长的先试', [wordPanel(), setPanel(null)]);
+
+  // 与 Solution.java 相同的检查（fail 备忘录每次尝试新建，和 Java 一致）
+  function match(w, s, fail) {
+    if (s === w.length) return true;
+    if (fail[s]) return false;
+    for (var e = s + 1; e <= w.length; e++) {
+      var sub = w.slice(s, e);
+      if (set.indexOf(sub) >= 0 && match(w, e, fail)) {
+        if (!fired.tail) {
+          var m = {};
+          for (var k = s; k < w.length; k++) m[k] = 'win';
+          snap('tail', 'boolean ok = start > 0 && dict.contains(w.substring(start));',
+            '后缀「' + sub + '」整词在集合里，接上了', [wordPanel(m), setPanel(sub)]);
+        }
+        return true;
+      }
+    }
+    fail[s] = true;
+    return false;
+  }
+
+  var ans = '';
+  for (var i = 0; i < sorted.length; i++) {
+    cur = sorted[i];
+    var fail = {};
+    for (var end = 1; end < cur.length; end++) {
+      var head = cur.slice(0, end);
+      if (set.indexOf(head) >= 0) {
+        if (!fired.prefix) {
+          var m0 = {};
+          for (var k = 0; k < end; k++) m0[k] = 'win';
+          snap('prefix', 'if (dict.contains(w.substring(start, i)) && composable(w, i, dict, memo)) ok = true;',
+            '检查 ' + cur + '：真前缀「' + head + '」在词集里，看剩下的能否拼出',
+            [wordPanel(m0), setPanel(head)]);
+        }
+        if (match(cur, end, fail)) { ans = cur; break; }
+      }
+    }
+    if (ans) break;
+  }
+
+  snap('end', 'return w;',
+    ans ? ans + ' 由其他单词拼成，就是答案（更长的都试不出）'
+        : '没有单词能由其他单词拼出，返回空串',
+    [wordPanel(ans ? (function () { var m = {}; for (var k = 0; k < ans.length; k++) m[k] = 'done'; return m; })() : {}),
+     setPanel(ans || null)]);
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

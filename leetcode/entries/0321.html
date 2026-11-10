@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>拼接最大数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 376 / 1159</span>
+  <nav class="pn"><a href="0273.html">上一篇</a><a href="0381.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">321. </span>拼接最大数</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 9</li><li class="algo">单调栈</li><li class="aux">双指针</li><li class="aux">贪心</li><li class="tag">栈</li><li class="tag">贪心</li><li class="tag">数组</li><li class="tag">双指针</li><li class="tag">单调栈</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">枚举两边各拿几个（nums1 拿 i 个、nums2 拿 k−i 个），各自用单调栈选出最大子序列，再按「后缀字典序大者优先」归并，取全局最大。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>单调栈选「长度 t 的最大子序列」：来的数比栈顶大且还有丢弃配额就弹栈；栈满装不下就丢弃来数。</li><li>归并两个子序列时不能只比头：头部相等要往后看，<strong>后缀</strong>字典序大的一边先出（否则会埋没后面的大数）。</li><li>一方耗尽时另一方整体接上：耗尽的更「小」，所以后缀比较里 <code>j 到底</code> 就取 a。</li><li>枚举所有 i（<code>max(0,k−n) ≤ i ≤ min(m,k)</code>），整体字典序最大的候选即答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(k·(m+n+k))，空间复杂度 O(k)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span>[] maxNumber(<span class="k">int</span>[] nums1, <span class="k">int</span>[] nums2, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> m = nums1.length, n = nums2.length;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] best = <span class="k">new</span> <span class="k">int</span>[k];</span><span class="ln"><span class="no">5</span>        <span class="c">// 枚举 nums1 拿 i 个、nums2 拿 k-i 个的所有分法，取整体字典序最大的</span></span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="t">Math</span>.max(<span class="n">0</span>, k - n); i &lt;= <span class="t">Math</span>.min(m, k); i++) {</span><span class="ln"><span class="no">7</span>            <span class="k">int</span>[] cand = merge(pick(nums1, i), pick(nums2, k - i));</span><span class="ln"><span class="no">8</span>            <span class="k">if</span> (greater(cand, best)) best = cand;</span><span class="ln"><span class="no">9</span>        }</span><span class="ln"><span class="no">10</span>        <span class="k">return</span> best;</span><span class="ln"><span class="no">11</span>    }</span><span class="ln"><span class="no">12</span> </span><span class="ln"><span class="no">13</span>    <span class="c">// 单调栈：从 nums 里选出最大的长度 need 子序列</span></span><span class="ln"><span class="no">14</span>    <span class="k">private</span> <span class="k">int</span>[] pick(<span class="k">int</span>[] nums, <span class="k">int</span> need) {</span><span class="ln"><span class="no">15</span>        <span class="k">int</span>[] st = <span class="k">new</span> <span class="k">int</span>[need];</span><span class="ln"><span class="no">16</span>        <span class="k">int</span> top = -<span class="n">1</span>, drop = nums.length - need;   <span class="c">// 还能丢弃几个数</span></span><span class="ln"><span class="no">17</span>        <span class="k">for</span> (<span class="k">int</span> x : nums) {</span><span class="ln"><span class="no">18</span>            <span class="k">while</span> (top &gt;= <span class="n">0</span> &amp;&amp; drop &gt; <span class="n">0</span> &amp;&amp; st[top] &lt; x) { top--; drop--; }   <span class="c">// 来的数更大就弹栈顶</span></span><span class="ln"><span class="no">19</span>            <span class="k">if</span> (top + <span class="n">1</span> &lt; need) st[++top] = x;</span><span class="ln"><span class="no">20</span>            <span class="k">else</span> drop--;   <span class="c">// 栈满装不下：这个数直接丢</span></span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>        <span class="k">return</span> st;</span><span class="ln"><span class="no">23</span>    }</span><span class="ln"><span class="no">24</span> </span><span class="ln"><span class="no">25</span>    <span class="c">// 合并两个子序列：每一次都取「当前后缀」字典序更大的一边（相等时往后多看几位）</span></span><span class="ln"><span class="no">26</span>    <span class="k">private</span> <span class="k">int</span>[] merge(<span class="k">int</span>[] a, <span class="k">int</span>[] b) {</span><span class="ln"><span class="no">27</span>        <span class="k">int</span>[] out = <span class="k">new</span> <span class="k">int</span>[a.length + b.length];</span><span class="ln"><span class="no">28</span>        <span class="k">int</span> i = <span class="n">0</span>, j = <span class="n">0</span>, r = <span class="n">0</span>;</span><span class="ln"><span class="no">29</span>        <span class="k">while</span> (i &lt; a.length || j &lt; b.length) {</span><span class="ln"><span class="no">30</span>            <span class="k">if</span> (suffixGreater(a, i, b, j)) out[r++] = a[i++];</span><span class="ln"><span class="no">31</span>            <span class="k">else</span> out[r++] = b[j++];</span><span class="ln"><span class="no">32</span>        }</span><span class="ln"><span class="no">33</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span> </span><span class="ln"><span class="no">36</span>    <span class="c">// a[i..] 是否大于 b[j..]：先比到第一个不同处；一方耗尽则短的更小</span></span><span class="ln"><span class="no">37</span>    <span class="k">private</span> <span class="k">boolean</span> suffixGreater(<span class="k">int</span>[] a, <span class="k">int</span> i, <span class="k">int</span>[] b, <span class="k">int</span> j) {</span><span class="ln"><span class="no">38</span>        <span class="k">while</span> (i &lt; a.length &amp;&amp; j &lt; b.length &amp;&amp; a[i] == b[j]) { i++; j++; }</span><span class="ln"><span class="no">39</span>        <span class="k">return</span> j == b.length || (i &lt; a.length &amp;&amp; a[i] &gt; b[j]);</span><span class="ln"><span class="no">40</span>    }</span><span class="ln"><span class="no">41</span> </span><span class="ln"><span class="no">42</span>    <span class="k">private</span> <span class="k">boolean</span> greater(<span class="k">int</span>[] a, <span class="k">int</span>[] b) {</span><span class="ln"><span class="no">43</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; a.length; i++)</span><span class="ln"><span class="no">44</span>            <span class="k">if</span> (a[i] != b[i]) <span class="k">return</span> a[i] &gt; b[i];</span><span class="ln"><span class="no">45</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">46</span>    }</span><span class="ln"><span class="no">47</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你两个整数数组 <code>nums1</code> 和 <code>nums2</code>，它们的长度分别为 <code>m</code> 和 <code>n</code>。数组 <code>nums1</code> 和 <code>nums2</code> 分别代表两个数各位上的数字。同时你也会得到一个整数 <code>k</code>。</p>
+
+<p>请你利用这两个数组中的数字创建一个长度为 <code>k &lt;= m + n</code> 的最大数。同一数组中数字的相对顺序必须保持不变。</p>
+
+<p>返回代表答案的长度为 <code>k</code> 的数组。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums1 = [3,4,6,5], nums2 = [9,1,2,5,8,3], k = 5
+<strong>输出：</strong>[9,8,6,5,3]
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums1 = [6,7], nums2 = [6,0,4], k = 5
+<strong>输出：</strong>[6,7,6,0,4]
+</pre>
+
+<p><strong class="example">示例 3：</strong></p>
+
+<pre>
+<strong>输入：</strong>nums1 = [3,9], nums2 = [8,9], k = 3
+<strong>输出：</strong>[9,8,9]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == nums1.length</code></li>
+	<li><code>n == nums2.length</code></li>
+	<li><code>1 &lt;= m, n &lt;= 500</code></li>
+	<li><code>0 &lt;= nums1[i], nums2[i] &lt;= 9</code></li>
+	<li><code>1 &lt;= k &lt;= m + n</code></li>
+	<li><code>nums1</code>&nbsp;和&nbsp;<code>nums2</code> 没有前导 0。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int[] maxNumber(int[] nums1, int[] nums2, int k) {", "        int m = nums1.length, n = nums2.length;", "        int[] best = new int[k];", "        // 枚举 nums1 拿 i 个、nums2 拿 k-i 个的所有分法，取整体字典序最大的", "        for (int i = Math.max(0, k - n); i <= Math.min(m, k); i++) {", "            int[] cand = merge(pick(nums1, i), pick(nums2, k - i));", "            if (greater(cand, best)) best = cand;", "        }", "        return best;", "    }", "", "    // 单调栈：从 nums 里选出最大的长度 need 子序列", "    private int[] pick(int[] nums, int need) {", "        int[] st = new int[need];", "        int top = -1, drop = nums.length - need;   // 还能丢弃几个数", "        for (int x : nums) {", "            while (top >= 0 && drop > 0 && st[top] < x) { top--; drop--; }   // 来的数更大就弹栈顶", "            if (top + 1 < need) st[++top] = x;", "            else drop--;   // 栈满装不下：这个数直接丢", "        }", "        return st;", "    }", "", "    // 合并两个子序列：每一次都取「当前后缀」字典序更大的一边（相等时往后多看几位）", "    private int[] merge(int[] a, int[] b) {", "        int[] out = new int[a.length + b.length];", "        int i = 0, j = 0, r = 0;", "        while (i < a.length || j < b.length) {", "            if (suffixGreater(a, i, b, j)) out[r++] = a[i++];", "            else out[r++] = b[j++];", "        }", "        return out;", "    }", "", "    // a[i..] 是否大于 b[j..]：先比到第一个不同处；一方耗尽则短的更小", "    private boolean suffixGreater(int[] a, int i, int[] b, int j) {", "        while (i < a.length && j < b.length && a[i] == b[j]) { i++; j++; }", "        return j == b.length || (i < a.length && a[i] > b[j]);", "    }", "", "    private boolean greater(int[] a, int[] b) {", "        for (int i = 0; i < a.length; i++)", "            if (a[i] != b[i]) return a[i] > b[i];", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 321. 拼接最大数 —— 图解：复刻 Solution.java 的「单调栈选子序列 + 字典序归并」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nums1: [6, 5, 7], nums2: [6, 0, 4], k: 5 };
+
+function trace(input) {
+  var a = input.nums1, b = input.nums2, k = input.k;
+  var m = a.length, n = b.length;
+  var frames = [], captured = {};
+  var rec = m + n <= 10 && k <= 6;
+
+  var LOOP = 'int[] cand = merge(pick(nums1, i), pick(nums2, k - i));';
+  var POPLINE = 'st[top] < x';
+  var BEST = 'if (greater(cand, best)) best = cand;';
+  var SUFFIX = 'while (i < a.length && j < b.length && a[i] == b[j]) { i++; j++; }';
+  var FIN = 'return best;';
+
+  function push(tag, at, key, panels) {
+    if (!rec || captured[tag]) return;
+    captured[tag] = true;
+    frames.push(Viz.frame(at, key, panels));
+  }
+  function marksAll(nn, cls) {
+    var mk = {};
+    for (var t = 0; t < nn; t++) mk[t] = cls;
+    return mk;
+  }
+  function arrPanel(arr, marks, ptrs, title) {
+    return Viz.cells(arr.slice(), { title: title, marks: marks || {}, pointers: ptrs || [] });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+
+  // 单调栈选最大子序列；第一次弹栈时把现场完整记下来供拍帧
+  var popEvent = null;
+  function pick(arr, need, label) {
+    var st = [], idx = [];
+    var drop = arr.length - need;
+    for (var x = 0; x < arr.length; x++) {
+      var v = arr[x];
+      while (st.length && drop > 0 && st[st.length - 1] < v) {
+        if (!popEvent) popEvent = { arr: arr, label: label, need: need, v: v, cur: x,
+                                    stVals: st.slice(), stIdx: idx.slice(), bad: idx[st.length - 1], drop: drop };
+        st.pop();
+        idx.pop();
+        drop--;
+      }
+      if (st.length < need) { st.push(v); idx.push(x); }
+      else drop--;
+    }
+    return st;
+  }
+
+  // a[i..] 是否大于 b[j..]；deepSeen 记录是否发生了相等前缀的后看
+  var deepSeen = false;
+  function suffixGreater(aa, i, bb, j) {
+    var deep = false;
+    while (i < aa.length && j < bb.length && aa[i] == bb[j]) { i++; j++; deep = true; }
+    deepSeen = deep;
+    return j == bb.length || (i < aa.length && aa[i] > bb[j]);
+  }
+
+  function merge(sa, sb) {
+    var out = new Array(sa.length + sb.length);
+    var i = 0, j = 0, r = 0;
+    while (i < sa.length || j < sb.length) {
+      var g = suffixGreater(sa, i, sb, j);
+      if (deepSeen && !captured['mergeDeep']) {
+        push('mergeDeep', SUFFIX, '两边头都是 ' + sa[i] + '：往后多看一位，' +
+          (g ? 'nums1 后缀更大，先取它的' : 'nums2 后缀更大，先取它的'),
+          [arrPanel(sa, (function () { var mk = {}; mk[i] = 'cur'; return mk; })(),
+                    [{ at: i, label: 'i', cls: 'p-left' }], 'nums1 选出的子序列'),
+           arrPanel(sb, (function () { var mk = {}; mk[j] = 'cur'; return mk; })(),
+                    [{ at: j, label: 'j', cls: 'p-right' }], 'nums2 选出的子序列')]);
+      }
+      deepSeen = false;
+      if (g) out[r++] = sa[i++];
+      else out[r++] = sb[j++];
+    }
+    return out;
+  }
+
+  var best = new Array(k).fill(0);
+  var first = true;
+  for (var i = Math.max(0, k - n); i <= Math.min(m, k); i++) {
+    if (first) {
+      push('loop', LOOP, '枚举两边各拿几个：这一轮 nums1 拿 ' + i + ' 个、nums2 拿 ' + (k - i) + ' 个',
+        [arrPanel(a, null, null, 'nums1'), arrPanel(b, null, null, 'nums2'),
+         varsPanel([{ name: 'i（nums1 拿）', v: String(i) }, { name: 'k−i（nums2 拿）', v: String(k - i) }])]);
+      first = false;
+    }
+    var pa = pick(a, i, 'nums1');
+    var pb = pick(b, k - i, 'nums2');
+    if (popEvent) {
+      var e = popEvent;
+      var mk = {};
+      for (var t2 = 0; t2 < e.arr.length; t2++) mk[t2] = 'dim';
+      for (var s2 = 0; s2 < e.stIdx.length; s2++) mk[e.stIdx[s2]] = 'win';
+      mk[e.bad] = 'bad';
+      mk[e.cur] = 'cur';
+      push('pop', POPLINE, '单调栈选最大子序列：来的 ' + e.v + ' 比栈顶 ' + e.stVals[e.stVals.length - 1] + ' 大且还能丢 → 弹掉',
+        [arrPanel(e.arr, mk, [{ at: e.cur, label: 'x=' + e.v, cls: 'p-cur' }], e.label + ' 选 ' + e.need + ' 个'),
+         varsPanel([{ name: '还能丢几个', v: String(e.drop) }, { name: '栈（底→顶）', v: e.stVals.join('') }])]);
+      popEvent = null;
+    }
+    var cand = merge(pa, pb);
+    if (greater(cand, best)) {
+      best = cand;
+      push('bestUpd', BEST, '这个分法的候选整体更大，best 换成 [' + cand.join(',') + ']',
+        [arrPanel(cand, marksAll(cand.length, 'new'), null, '当前 best'),
+         varsPanel([{ name: 'i（nums1 拿）', v: String(i) }, { name: 'k−i（nums2 拿）', v: String(k - i) }])]);
+    }
+  }
+
+  function greater(p, q) {
+    for (var t = 0; t < p.length; t++) if (p[t] !== q[t]) return p[t] > q[t];
+    return false;
+  }
+  push('fin', FIN, '所有分法里字典序最大的就是答案：[' + best.join(',') + ']',
+    [arrPanel(best, marksAll(k, 'done'), null, '最终答案')]);
+
+  return { frames: frames, result: best };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>网格中的最短路径 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 383 / 1159</span>
+  <nav class="pn"><a href="supp-17.html">上一篇</a><a href="0889.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1293. </span>网格中的最短路径</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 9</li><li class="algo">广度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">BFS，状态带上「剩余可消除数」：走到一格时剩得比之前多才重新入队，等于用最大剩余去重。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>普通 BFS 只记「来没来过」，这里同一个格子在剩余次数不同时值得反复走，状态是 <code>(r, c, 剩余次数)</code>。</li><li>剪枝：<code>best[r][c]</code> 记录到过该格时的最大剩余；新状态剩余 <code>≤ best</code> 就直接跳过——剩余更少只会更差。</li><li>走一步到相邻格：踩到障碍 <code>grid[nr][nc]=1</code> 就把剩余减 1，减成负数则不可走。</li><li>队列按步数分层扩展，第一次出队到终点时的 <code>steps</code> 就是最短步数；队空没到就是 <code>-1</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn·k)，空间复杂度 O(mn·k)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> shortestPath(<span class="k">int</span>[][] grid, <span class="k">int</span> k) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> m = grid.length, n = grid[<span class="n">0</span>].length;</span><span class="ln"><span class="no">6</span>        <span class="c">// best[r][c]：到过 (r,c) 时剩余可消除数的最大值；剩得更少不值得再访</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[][] best = <span class="k">new</span> <span class="k">int</span>[m][n];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span>[] row : best) <span class="t">Arrays</span>.fill(row, -<span class="n">1</span>);</span><span class="ln"><span class="no">9</span>        <span class="k">int</span>[][] dirs = {{<span class="n">1</span>, <span class="n">0</span>}, {-<span class="n">1</span>, <span class="n">0</span>}, {<span class="n">0</span>, <span class="n">1</span>}, {<span class="n">0</span>, -<span class="n">1</span>}};</span><span class="ln"><span class="no">10</span>        <span class="c">// 状态 = {r, c, 剩余可消除数}；队列按步数分层，先出队的是最短路</span></span><span class="ln"><span class="no">11</span>        <span class="t">Deque</span>&lt;<span class="k">int</span>[]&gt; queue = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">12</span>        best[<span class="n">0</span>][<span class="n">0</span>] = k;</span><span class="ln"><span class="no">13</span>        queue.offer(<span class="k">new</span> <span class="k">int</span>[]{<span class="n">0</span>, <span class="n">0</span>, k});</span><span class="ln"><span class="no">14</span>        <span class="k">int</span> steps = <span class="n">0</span>;</span><span class="ln"><span class="no">15</span>        <span class="k">while</span> (!queue.isEmpty()) {</span><span class="ln"><span class="no">16</span>            <span class="k">for</span> (<span class="k">int</span> size = queue.size(); size &gt; <span class="n">0</span>; size--) {</span><span class="ln"><span class="no">17</span>                <span class="k">int</span>[] cur = queue.poll();</span><span class="ln"><span class="no">18</span>                <span class="k">int</span> r = cur[<span class="n">0</span>], c = cur[<span class="n">1</span>], rem = cur[<span class="n">2</span>];</span><span class="ln"><span class="no">19</span>                <span class="k">if</span> (r == m - <span class="n">1</span> &amp;&amp; c == n - <span class="n">1</span>) <span class="k">return</span> steps;</span><span class="ln"><span class="no">20</span>                <span class="k">for</span> (<span class="k">int</span>[] d : dirs) {</span><span class="ln"><span class="no">21</span>                    <span class="k">int</span> nr = r + d[<span class="n">0</span>], nc = c + d[<span class="n">1</span>];</span><span class="ln"><span class="no">22</span>                    <span class="k">if</span> (nr &lt; <span class="n">0</span> || nr &gt;= m || nc &lt; <span class="n">0</span> || nc &gt;= n) <span class="k">continue</span>;</span><span class="ln"><span class="no">23</span>                    <span class="k">int</span> nrem = rem - grid[nr][nc];   <span class="c">// 走一步：踩到障碍就花掉一次消除</span></span><span class="ln"><span class="no">24</span>                    <span class="k">if</span> (nrem &lt; <span class="n">0</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">25</span>                    <span class="k">if</span> (nrem &gt; best[nr][nc]) {       <span class="c">// 剩得比之前到过时多，才值得再走</span></span><span class="ln"><span class="no">26</span>                        best[nr][nc] = nrem;</span><span class="ln"><span class="no">27</span>                        queue.offer(<span class="k">new</span> <span class="k">int</span>[]{nr, nc, nrem});</span><span class="ln"><span class="no">28</span>                    }</span><span class="ln"><span class="no">29</span>                }</span><span class="ln"><span class="no">30</span>            }</span><span class="ln"><span class="no">31</span>            steps++;</span><span class="ln"><span class="no">32</span>        }</span><span class="ln"><span class="no">33</span>        <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个&nbsp;<code>m * n</code>&nbsp;的网格，其中每个单元格不是&nbsp;<code>0</code>（空）就是&nbsp;<code>1</code>（障碍物）。每一步，您都可以在空白单元格中上、下、左、右移动。</p>
+
+<p>如果您 <strong>最多</strong> 可以消除 <code>k</code> 个障碍物，请找出从左上角 <code>(0, 0)</code> 到右下角 <code>(m-1, n-1)</code> 的最短路径，并返回通过该路径所需的步数。如果找不到这样的路径，则返回 <code>-1</code>&nbsp;。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img src="../assets/img/da09abd0a77a.jpg" style="width: 243px; height: 404px;" /></p>
+
+<pre>
+<strong>输入：</strong> grid = [[0,0,0],[1,1,0],[0,0,0],[0,1,1],[0,0,0]], k = 1
+<strong>输出：</strong>6
+<strong>解释：
+</strong>不消除任何障碍的最短路径是 10。
+消除位置 (3,2) 处的障碍后，最短路径是 6 。该路径是 <code>(0,0) -&gt; (0,1) -&gt; (0,2) -&gt; (1,2) -&gt; (2,2) -&gt; <strong>(3,2)</strong> -&gt; (4,2)</code>.
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><img src="../assets/img/3341c864dbfc.jpg" style="width: 243px; height: 244px;" /></p>
+
+<pre>
+<strong>输入：</strong>grid = [[0,1,1],[1,1,1],[1,0,0]], k = 1
+<strong>输出：</strong>-1
+<strong>解释：</strong>我们至少需要消除两个障碍才能找到这样的路径。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>grid.length&nbsp;== m</code></li>
+	<li><code>grid[0].length&nbsp;== n</code></li>
+	<li><code>1 &lt;= m, n &lt;= 40</code></li>
+	<li><code>1 &lt;= k &lt;= m*n</code></li>
+	<li><code>grid[i][j]</code>&nbsp;是&nbsp;<code>0</code>&nbsp;或<code>1</code></li>
+	<li><code>grid[0][0] == grid[m-1][n-1] == 0</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int shortestPath(int[][] grid, int k) {", "        int m = grid.length, n = grid[0].length;", "        // best[r][c]：到过 (r,c) 时剩余可消除数的最大值；剩得更少不值得再访", "        int[][] best = new int[m][n];", "        for (int[] row : best) Arrays.fill(row, -1);", "        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};", "        // 状态 = {r, c, 剩余可消除数}；队列按步数分层，先出队的是最短路", "        Deque<int[]> queue = new ArrayDeque<>();", "        best[0][0] = k;", "        queue.offer(new int[]{0, 0, k});", "        int steps = 0;", "        while (!queue.isEmpty()) {", "            for (int size = queue.size(); size > 0; size--) {", "                int[] cur = queue.poll();", "                int r = cur[0], c = cur[1], rem = cur[2];", "                if (r == m - 1 && c == n - 1) return steps;", "                for (int[] d : dirs) {", "                    int nr = r + d[0], nc = c + d[1];", "                    if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;", "                    int nrem = rem - grid[nr][nc];   // 走一步：踩到障碍就花掉一次消除", "                    if (nrem < 0) continue;", "                    if (nrem > best[nr][nc]) {       // 剩得比之前到过时多，才值得再走", "                        best[nr][nc] = nrem;", "                        queue.offer(new int[]{nr, nc, nrem});", "                    }", "                }", "            }", "            steps++;", "        }", "        return -1;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1293. 网格中的最短路径 —— 图解：复刻 Solution.java 的「BFS + 最大剩余剪枝」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { grid: [[0, 1, 1], [0, 1, 0], [0, 0, 0]], k: 2 };
+
+function trace(input) {
+  var g = input.grid, k = input.k;
+  var m = g.length, n = g[0].length;
+  var DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  var best = [];                       // best[r][c]：到过该格时的最大剩余次数
+  var r, c;
+  for (r = 0; r < m; r++) { best.push([]); for (c = 0; c < n; c++) best[r].push(-1); }
+  var queue = [];                      // [{r, c, rem}]
+  var steps = 0, frames = [], seen = { step1: false, prune: false, goal: false, goalFrame: false };
+
+  var INIT = 'best[0][0] = k;';
+  var PRUNE = 'if (nrem > best[nr][nc]) {';
+  var HIT = 'if (r == m - 1 && c == n - 1) return steps;';
+  var MISS = 'return -1;';
+
+  function gridPanel(cur, pruneAt) {
+    var marks = {}, i, j;
+    for (i = 0; i < m; i++) for (j = 0; j < n; j++) if (best[i][j] >= 0) marks[i + ',' + j] = 'win';
+    if (pruneAt) marks[pruneAt[0] + ',' + pruneAt[1]] = 'bad';
+    if (cur) marks[cur[0] + ',' + cur[1]] = 'cur';
+    var rl = [], cl = [];
+    for (i = 0; i < m; i++) rl.push(String(i));
+    for (j = 0; j < n; j++) cl.push(String(j));
+    return Viz.grid(g, { title: 'grid（格子数字 0/1；蓝框=带状态到过，红框=被剪枝）', marks: marks, rowLabels: rl, colLabels: cl });
+  }
+
+  function queuePanel() {
+    var items = queue.map(function (s) { return s.r + ',' + s.c + ' 剩' + s.rem; });
+    return Viz.cells(items, {
+      title: queue.length ? '队列（下一步是第 ' + (steps + 1) + ' 步）' : '队列（空）',
+      marks: {}, hideIndex: true,
+      pointers: queue.length ? [{ at: 0, label: '队首', cls: 'p-head' }] : []
+    });
+  }
+
+  function snap(at, key, cur, pruneAt) {
+    var panels = [gridPanel(cur, pruneAt), queuePanel()];
+    panels.push(Viz.vars([{ name: 'steps', v: steps, cls: '' }, { name: 'k', v: k, cls: '' }]));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  best[0][0] = k;
+  queue.push({ r: 0, c: 0, rem: k });
+  snap(INIT, '开局：起点带着 k=' + k + ' 次消除入队，BFS 按步数分层');
+
+  var goalState = null, hitState = null;
+  while (queue.length) {
+    var size = queue.length, hit = false;
+    while (size-- > 0) {
+      var s = queue.shift();
+      if (s.r === m - 1 && s.c === n - 1) { hitState = s; hit = true; break; }
+      for (var d = 0; d < 4; d++) {
+        var nr = s.r + DIRS[d][0], nc = s.c + DIRS[d][1];
+        if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;
+        var nrem = s.rem - g[nr][nc];
+        if (nrem < 0) continue;
+        if (nrem > best[nr][nc]) {
+          best[nr][nc] = nrem;
+          var st = { r: nr, c: nc, rem: nrem };
+          queue.push(st);
+          if (nr === m - 1 && nc === n - 1 && !seen.goal) { seen.goal = true; goalState = st; }
+        } else if (!seen.prune) {
+          seen.prune = true;
+          snap(PRUNE, '(' + nr + ',' + nc + ') 之前以剩 ' + best[nr][nc] + ' 次到过，这次只剩 ' + nrem + '：跳过', [s.r, s.c], [nr, nc]);
+        }
+      }
+    }
+    if (hit) break;
+    steps++;
+    if (!seen.step1 && steps === 1) {
+      seen.step1 = true;
+      snap(PRUNE, '第 1 步扩完：能走到的格子都带着剩余次数入了队');
+    }
+    if (goalState && !seen.goalFrame) {
+      seen.goalFrame = true;
+      snap(HIT, '终点 (' + (m - 1) + ',' + (n - 1) + ') 已在队尾：下一层出队即最短路', [goalState.r, goalState.c]);
+    }
+  }
+
+  if (hitState) {
+    snap(HIT, '第 ' + steps + ' 步出队到终点：最短步数就是 ' + steps, [hitState.r, hitState.c]);
+  } else {
+    snap(MISS, '队列空了也没走到终点：返回 -1');
+  }
+  return { frames: frames, result: hitState ? steps : -1 };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

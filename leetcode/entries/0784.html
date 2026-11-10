@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字母大小写全排列 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 583 / 1159</span>
+  <nav class="pn"><a href="0721.html">上一篇</a><a href="mianshi-08-13.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">784. </span>字母大小写全排列</h1>
+  <ul class="meta"><li class="lv-1">简单</li><li>频度 3</li><li class="algo">回溯</li><li class="aux">位运算</li><li class="tag">位运算</li><li class="tag">字符串</li><li class="tag">回溯</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">逐位回溯：数字只有一种走法，字母分「保持原样 / 翻大小写」两支，走完恢复现场。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>从位置 0 往后走，<code>cs</code> 就地改：非字母位只有一条路，字母位先走原样、再走翻转。</li><li>大小写互换就是 <code>cs[i] ^= 32</code>：同一字母的大小写恰差二进制第 5 位。</li><li>翻转分支走完必须把字符<strong>改回来</strong>（再异或一次 32），否则上层分支看到的是被改过的字符。</li><li><code>i == cs.length</code> 时 <code>cs</code> 就是一个完整排列，直接收进答案。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n · 2^字母数)，空间复杂度 O(n)（递归深度，输出不计）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">String</span>&gt; letterCasePermutation(<span class="t">String</span> s) {</span><span class="ln"><span class="no">5</span>        <span class="t">List</span>&lt;<span class="t">String</span>&gt; ans = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>        dfs(s.toCharArray(), <span class="n">0</span>, ans);</span><span class="ln"><span class="no">7</span>        <span class="k">return</span> ans;</span><span class="ln"><span class="no">8</span>    }</span><span class="ln"><span class="no">9</span> </span><span class="ln"><span class="no">10</span>    <span class="c">// 逐位决定：数字只有一种走法，字母先走「保持原样」再走「翻大小写」</span></span><span class="ln"><span class="no">11</span>    <span class="k">private</span> <span class="k">void</span> dfs(<span class="k">char</span>[] cs, <span class="k">int</span> i, <span class="t">List</span>&lt;<span class="t">String</span>&gt; ans) {</span><span class="ln"><span class="no">12</span>        <span class="k">if</span> (i == cs.length) {</span><span class="ln"><span class="no">13</span>            ans.add(<span class="k">new</span> <span class="t">String</span>(cs));   <span class="c">// 每个字母的选择都定下来了</span></span><span class="ln"><span class="no">14</span>            <span class="k">return</span>;</span><span class="ln"><span class="no">15</span>        }</span><span class="ln"><span class="no">16</span>        dfs(cs, i + <span class="n">1</span>, ans);           <span class="c">// 分支一：这个字符保持原样</span></span><span class="ln"><span class="no">17</span>        <span class="k">if</span> (<span class="t">Character</span>.isLetter(cs[i])) {</span><span class="ln"><span class="no">18</span>            cs[i] ^= <span class="n">32</span>;               <span class="c">// 大小写字母恰差二进制第 5 位，异或 32 互换</span></span><span class="ln"><span class="no">19</span>            dfs(cs, i + <span class="n">1</span>, ans);       <span class="c">// 分支二：换成另一写法再往后走</span></span><span class="ln"><span class="no">20</span>            cs[i] ^= <span class="n">32</span>;               <span class="c">// 回溯：恢复现场，上一层还要用原字符</span></span><span class="ln"><span class="no">21</span>        }</span><span class="ln"><span class="no">22</span>    }</span><span class="ln"><span class="no">23</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个字符串&nbsp;<code>s</code>&nbsp;，通过将字符串&nbsp;<code>s</code>&nbsp;中的每个字母转变大小写，我们可以获得一个新的字符串。</p>
+
+<p>返回 <em>所有可能得到的字符串集合</em> 。以 <strong>任意顺序</strong> 返回输出。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s = "a1b2"
+<strong>输出：</strong>["a1b2", "a1B2", "A1b2", "A1B2"]
+</pre>
+
+<p><strong>示例 2:</strong></p>
+
+<pre>
+<strong>输入:</strong> s = "3z4"
+<strong>输出:</strong> ["3z4","3Z4"]
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s.length &lt;= 12</code></li>
+	<li><code>s</code>&nbsp;由小写英文字母、大写英文字母和数字组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public List<String> letterCasePermutation(String s) {", "        List<String> ans = new ArrayList<>();", "        dfs(s.toCharArray(), 0, ans);", "        return ans;", "    }", "", "    // 逐位决定：数字只有一种走法，字母先走「保持原样」再走「翻大小写」", "    private void dfs(char[] cs, int i, List<String> ans) {", "        if (i == cs.length) {", "            ans.add(new String(cs));   // 每个字母的选择都定下来了", "            return;", "        }", "        dfs(cs, i + 1, ans);           // 分支一：这个字符保持原样", "        if (Character.isLetter(cs[i])) {", "            cs[i] ^= 32;               // 大小写字母恰差二进制第 5 位，异或 32 互换", "            dfs(cs, i + 1, ans);       // 分支二：换成另一写法再往后走", "            cs[i] ^= 32;               // 回溯：恢复现场，上一层还要用原字符", "        }", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 784. 字母大小写全排列 —— 图解：逐位回溯，字母二选一、数字跳过，在 6 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: 'a1b2' };
+
+function trace(input) {
+  var s = input.s;
+  var cs = s.split('');
+  var n = cs.length;
+  var frames = [];
+  var collected = [];
+
+  function charsPanel(flipAt) {
+    var marks = {};
+    for (var i = 0; i < n; i++) {
+      if (visited[i]) marks[i] = i === curI ? 'cur' : 'done';
+    }
+    if (curI >= 0 && !visited[curI]) marks[curI] = 'cur';
+    if (flipAt != null) marks[flipAt] = 'new';
+    var items = cs.map(function (c) { return c === '' ? '·' : c; });
+    return Viz.cells(items, { title: '正在拼的字符串（done = 已定下的位）', marks: marks });
+  }
+  function varsPanel() {
+    return Viz.vars([
+      { name: '当前位 i', v: curI < 0 ? '—' : String(curI) },
+      { name: '已收集排列数', v: String(collected.length), cls: collected.length ? 'done' : '' },
+      { name: '最近收下的', v: collected.length ? collected[collected.length - 1] : '—' }
+    ]);
+  }
+  function snap(at, key, flipAt) {
+    frames.push(Viz.frame(at, key, [charsPanel(flipAt), varsPanel()]));
+  }
+
+  var curI = -1;
+  var visited = {};
+  var sawBranch = false, sawDigit = false, sawLeaf = false, sawFlip = false, sawRestore = false;
+
+  function dfs(i) {
+    if (i === n) {
+      if (!sawLeaf) {
+        sawLeaf = true;
+        var keep = cs.join('');
+        snap('ans.add(new String(cs));', 'i 走到头：收下第一个完整排列 ' + keep);
+      }
+      collected.push(cs.join(''));
+      return;
+    }
+    curI = i;
+    visited[i] = true;
+    if (!sawBranch && /[a-zA-Z]/.test(cs[i])) {
+      sawBranch = true;
+      snap('dfs(cs, i + 1, ans);           // 分支一', '位置 ' + i + ' 是字母 ' + cs[i] + '：先走「保持原样」这个分支');
+    }
+    if (!sawDigit && !/[a-zA-Z]/.test(cs[i])) {
+      sawDigit = true;
+      snap('if (Character.isLetter(cs[i])) {', '位置 ' + i + ' 是数字：只有一种走法，直接跳过去');
+    }
+    dfs(i + 1);
+    if (/[a-zA-Z]/.test(cs[i])) {
+      var orig = cs[i];
+      cs[i] = String.fromCharCode(cs[i].charCodeAt(0) ^ 32);
+      if (!sawFlip) {
+        sawFlip = true;
+        snap('cs[i] ^= 32;               // 大小写字母恰差二进制第 5 位，异或 32 互换',
+          '回到字母位翻大小写：' + orig + ' ↔ ' + cs[i] + '，走另一分支', i);
+      }
+      dfs(i + 1);
+      cs[i] = orig;
+      if (!sawRestore) {
+        sawRestore = true;
+        snap('cs[i] ^= 32;               // 回溯：恢复现场，上一层还要用原字符', '这分支走完就恢复 ' + orig + '，别污染上层的选择', null);
+      }
+    }
+    visited[i] = false;
+    curI = i - 1;
+  }
+
+  dfs(0);
+  curI = -1;
+  var sorted = collected.slice().sort();
+  snap('return ans;', '全部排列收齐：每个字母位翻/不翻共 ' + sorted.length + ' 种', null);
+
+  return { frames: frames, result: sorted };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

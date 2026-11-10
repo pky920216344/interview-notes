@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>出界的路径数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 959 / 1159</span>
+  <nav class="pn"><a href="1575.html">上一篇</a><a href="1289.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">576. </span>出界的路径数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">动态规划</li><li class="tag">动态规划</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">按步数分层 DP：dp[r][c] = 从 (r,c) 出发在剩余步数内出界的路径数；每步四个方向，出界 +1、界内抄上一层。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>定义 <code>dp[s][r][c]</code> = 从 <code>(r,c)</code> 走 <code>s</code> 步「第一次出界就终结」的路径数；答案就是 <code>dp[maxMove][start]</code>。</li><li>转移看四个方向：走出界贡献 1 条（路径在此结束），走界内则继承 <code>dp[s−1]</code> 邻格的值。</li><li>每层只依赖上一层 → 两张表滚动交换即可；4 个值累加可能超 <code>int</code>，用 <code>long</code> 再取模。</li><li><code>maxMove == 0</code> 时循环不执行，直接返回 0。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(maxMove·m·n)，空间复杂度 O(m·n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> findPaths(<span class="k">int</span> m, <span class="k">int</span> n, <span class="k">int</span> maxMove, <span class="k">int</span> startRow, <span class="k">int</span> startColumn) {</span><span class="ln"><span class="no">3</span>        <span class="k">final</span> <span class="k">int</span> MOD = <span class="n">1_000_000_007</span>;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[][] dp = <span class="k">new</span> <span class="k">int</span>[m][n];      <span class="c">// dp[r][c]：从 (r,c) 出发、恰走 s 步内出界的路径数（s 为当前轮）</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[][] next = <span class="k">new</span> <span class="k">int</span>[m][n];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> s = <span class="n">1</span>; s &lt;= maxMove; s++) {</span><span class="ln"><span class="no">7</span>            <span class="k">for</span> (<span class="k">int</span> r = <span class="n">0</span>; r &lt; m; r++) {</span><span class="ln"><span class="no">8</span>                <span class="k">for</span> (<span class="k">int</span> c = <span class="n">0</span>; c &lt; n; c++) {</span><span class="ln"><span class="no">9</span>                    <span class="c">// 四个方向：走出界贡献 1 条；走界内就继承「少走一步」时那格的路径数</span></span><span class="ln"><span class="no">10</span>                    <span class="k">long</span> ways = r == <span class="n">0</span> ? <span class="n">1</span> : dp[r - <span class="n">1</span>][c];</span><span class="ln"><span class="no">11</span>                    ways += r == m - <span class="n">1</span> ? <span class="n">1</span> : dp[r + <span class="n">1</span>][c];</span><span class="ln"><span class="no">12</span>                    ways += c == <span class="n">0</span> ? <span class="n">1</span> : dp[r][c - <span class="n">1</span>];</span><span class="ln"><span class="no">13</span>                    ways += c == n - <span class="n">1</span> ? <span class="n">1</span> : dp[r][c + <span class="n">1</span>];</span><span class="ln"><span class="no">14</span>                    next[r][c] = (<span class="k">int</span>) (ways % MOD);</span><span class="ln"><span class="no">15</span>                }</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>            <span class="k">int</span>[][] t = dp; dp = next; next = t;   <span class="c">// 滚动：算完一层就交换两层表</span></span><span class="ln"><span class="no">18</span>        }</span><span class="ln"><span class="no">19</span>        <span class="k">return</span> dp[startRow][startColumn];</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个大小为 <code>m x n</code> 的网格和一个球。球的起始坐标为 <code>[startRow, startColumn]</code> 。你可以将球移到在四个方向上相邻的单元格内（可以穿过网格边界到达网格之外）。你 <strong>最多</strong> 可以移动 <code>maxMove</code> 次球。</p>
+
+<p>给你五个整数 <code>m</code>、<code>n</code>、<code>maxMove</code>、<code>startRow</code> 以及 <code>startColumn</code> ，找出并返回可以将球移出边界的路径数量。因为答案可能非常大，返回对 <code>10<sup>9</sup> + 7</code> <strong>取余</strong> 后的结果。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+<img alt="" src="../assets/img/f768817fdf28.png" style="width: 500px; height: 296px;" />
+<pre>
+<strong>输入：</strong>m = 2, n = 2, maxMove = 2, startRow = 0, startColumn = 0
+<strong>输出：</strong>6
+</pre>
+
+<p><strong>示例 2：</strong></p>
+<img alt="" src="../assets/img/eb4d87c36e13.png" style="width: 500px; height: 293px;" />
+<pre>
+<strong>输入：</strong>m = 1, n = 3, maxMove = 3, startRow = 0, startColumn = 1
+<strong>输出：</strong>12
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= m, n &lt;= 50</code></li>
+	<li><code>0 &lt;= maxMove &lt;= 50</code></li>
+	<li><code>0 &lt;= startRow &lt; m</code></li>
+	<li><code>0 &lt;= startColumn &lt; n</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int findPaths(int m, int n, int maxMove, int startRow, int startColumn) {", "        final int MOD = 1_000_000_007;", "        int[][] dp = new int[m][n];      // dp[r][c]：从 (r,c) 出发、恰走 s 步内出界的路径数（s 为当前轮）", "        int[][] next = new int[m][n];", "        for (int s = 1; s <= maxMove; s++) {", "            for (int r = 0; r < m; r++) {", "                for (int c = 0; c < n; c++) {", "                    // 四个方向：走出界贡献 1 条；走界内就继承「少走一步」时那格的路径数", "                    long ways = r == 0 ? 1 : dp[r - 1][c];", "                    ways += r == m - 1 ? 1 : dp[r + 1][c];", "                    ways += c == 0 ? 1 : dp[r][c - 1];", "                    ways += c == n - 1 ? 1 : dp[r][c + 1];", "                    next[r][c] = (int) (ways % MOD);", "                }", "            }", "            int[][] t = dp; dp = next; next = t;   // 滚动：算完一层就交换两层表", "        }", "        return dp[startRow][startColumn];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 576. 出界的路径数 —— 图解：复刻 Solution.java 的「按步数分层 DP + 滚动两层表」，4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { m: 2, n: 3, maxMove: 2, startRow: 0, startColumn: 1 };
+
+function trace(input) {
+  var m = input.m, n = input.n, maxMove = input.maxMove;
+  var sr = input.startRow, sc = input.startColumn;
+  var dp = [], next = [];
+  var r, c;
+  for (r = 0; r < m; r++) { dp.push(new Array(n).fill(0)); next.push(new Array(n).fill('')); }
+  var frames = [];
+
+  // dpLayer：要显示的二维表；marks 的键是 "行,列"
+  function gridPanel(layer, title, marks) {
+    return Viz.grid(layer.map(function (row) {
+      return row.map(function (v) { return v === '' ? '' : String(v); });
+    }), { title: title, marks: marks || {} });
+  }
+  function varsPanel(items) { return Viz.vars(items); }
+  function snap(at, key, g1, t1, m1, g2, t2, m2, items) {
+    var panels = [gridPanel(g1, t1, m1)];
+    if (g2) panels.push(gridPanel(g2, t2, m2));
+    panels.push(varsPanel(items));
+    frames.push(Viz.frame(at, key, panels));
+  }
+
+  function dirsOf(r, c) {   // 起点四方向：出界的写 +1，界内的写「取上一层某格」
+    var out = [];
+    if (r - 1 < 0) out.push({ name: '上', v: '出界 +1' });
+    else out.push({ name: '上 dp[' + (r - 1) + '][' + c + ']', v: String(dp[r - 1][c]) });
+    if (r + 1 >= m) out.push({ name: '下', v: '出界 +1' });
+    else out.push({ name: '下 dp[' + (r + 1) + '][' + c + ']', v: String(dp[r + 1][c]) });
+    if (c - 1 < 0) out.push({ name: '左', v: '出界 +1' });
+    else out.push({ name: '左 dp[' + r + '][' + (c - 1) + ']', v: String(dp[r][c - 1]) });
+    if (c + 1 >= n) out.push({ name: '右', v: '出界 +1' });
+    else out.push({ name: '右 dp[' + r + '][' + (c + 1) + ']', v: String(dp[r][c + 1]) });
+    return out;
+  }
+
+  for (var s = 1; s <= maxMove; s++) {
+    if (s === 1) {
+      snap('for (int s = 1; s <= maxMove; s++) {',
+        '第 1 步开始：上一层是「0 步」的空表，全部为 0', dp, '上一层 dp（走 s−1 步）', {}, null, '', {},
+        [{ name: 's', v: String(s) }, { name: '起点', v: '(' + sr + ',' + sc + ')' }]);
+    }
+    for (r = 0; r < m; r++) {
+      for (c = 0; c < n; c++) {
+        var show = s === maxMove && r === sr && c === sc;
+        if (show) {
+          // 四方向里界内的格子在上层表里标出来
+          var dm = {};
+          if (r - 1 >= 0) dm[(r - 1) + ',' + c] = 'hit';
+          if (r + 1 < m) dm[(r + 1) + ',' + c] = 'hit';
+          if (c - 1 >= 0) dm[r + ',' + (c - 1)] = 'hit';
+          if (c + 1 < n) dm[r + ',' + (c + 1)] = 'hit';
+          var ways = (r === 0 ? 1 : dp[r - 1][c]) + (r === m - 1 ? 1 : dp[r + 1][c])
+                   + (c === 0 ? 1 : dp[r][c - 1]) + (c === n - 1 ? 1 : dp[r][c + 1]);
+          snap('long ways = r == 0 ? 1 : dp[r - 1][c];',
+            '算起点这一格：出界方向各 +1，界内方向搬上层的格子', dp, '上一层 dp（走 s−1 步）', dm,
+            next, '这一层 next（走 s 步）', (function () { var o = {}; o[r + ',' + c] = 'cur'; return o; })(),
+            dirsOf(r, c).concat([{ name: 'ways 合计', v: String(ways) }]));
+        }
+        var total = (r === 0 ? 1 : dp[r - 1][c]) + (r === m - 1 ? 1 : dp[r + 1][c])
+                  + (c === 0 ? 1 : dp[r][c - 1]) + (c === n - 1 ? 1 : dp[r][c + 1]);
+        next[r][c] = total % 1000000007;
+      }
+    }
+    if (s === 1) {
+      var m1 = {};
+      for (r = 0; r < m; r++) for (c = 0; c < n; c++) if (dp[r][c] !== 0 || next[r][c] !== 0) m1[r + ',' + c] = 'new';
+      snap('int[][] t = dp; dp = next; next = t;',
+        '第 1 步的表算完，滚动交换：next 变成新的 dp', dp, '新的 dp（走 1 步）', m1, null, '', {},
+        [{ name: 's', v: '1' }]);
+    }
+    var t = dp; dp = next; next = t;
+    for (r = 0; r < m; r++) for (c = 0; c < n; c++) next[r][c] = '';
+  }
+
+  var mf = {};
+  if (maxMove >= 1) mf[sr + ',' + sc] = 'done';
+  snap('return dp[startRow][startColumn];',
+    '走满 maxMove 步：起点格的值就是出界路径数', dp, 'dp（走 maxMove 步）', mf, null, '', {},
+    [{ name: '答案', v: String(dp[sr][sc]) }]);
+
+  return { frames: frames, result: dp[sr][sc] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

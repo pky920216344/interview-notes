@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>相似度为 K 的字符串 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1109 / 1159</span>
+  <nav class="pn"><a href="0646.html">上一篇</a><a href="1328.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">854. </span>相似度为 K 的字符串</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">广度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">BFS 逐层换一个位置；只在首个不匹配位与「目标所需的字符」交换，层数即最少交换数。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>一层 = 一次交换；第一次出现目标串的层数就是最少交换次数。</li><li>只在<strong>首个不匹配位</strong> <code>i</code> 动手：跟后面某个 <code>cur[j] == s2[i]</code> 的位置换，其余交换只会更差。</li><li>已对上的位置（<code>cur[j] == s2[j]</code>）不再参与交换，避免来回震荡；<code>seen</code> 去重防环。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n·n!)（强剪枝后远小于此），空间复杂度 O(n·n!)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span> kSimilarity(<span class="t">String</span> s1, <span class="t">String</span> s2) {</span><span class="ln"><span class="no">5</span>        <span class="c">// BFS 逐层：每层换一次，第一次等于 s2 的层数就是最少交换次数</span></span><span class="ln"><span class="no">6</span>        <span class="t">ArrayDeque</span>&lt;<span class="t">String</span>&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">7</span>        <span class="t">HashSet</span>&lt;<span class="t">String</span>&gt; seen = <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        q.add(s1);</span><span class="ln"><span class="no">9</span>        seen.add(s1);</span><span class="ln"><span class="no">10</span>        <span class="k">int</span> step = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>        <span class="k">while</span> (!q.isEmpty()) {</span><span class="ln"><span class="no">12</span>            <span class="k">for</span> (<span class="k">int</span> sz = q.size(); sz &gt; <span class="n">0</span>; sz--) {</span><span class="ln"><span class="no">13</span>                <span class="t">String</span> cur = q.poll();</span><span class="ln"><span class="no">14</span>                <span class="k">if</span> (cur.equals(s2)) <span class="k">return</span> step;</span><span class="ln"><span class="no">15</span>                <span class="c">// 只在第一个不匹配的位置动手，换别处不会更好</span></span><span class="ln"><span class="no">16</span>                <span class="k">int</span> i = <span class="n">0</span>;</span><span class="ln"><span class="no">17</span>                <span class="k">while</span> (cur.charAt(i) == s2.charAt(i)) i++;</span><span class="ln"><span class="no">18</span>                <span class="k">for</span> (<span class="k">int</span> j = i + <span class="n">1</span>; j &lt; s2.length(); j++) {</span><span class="ln"><span class="no">19</span>                    <span class="c">// 只换目标 i 处需要的字符，也别破坏已经对上的位置</span></span><span class="ln"><span class="no">20</span>                    <span class="k">if</span> (cur.charAt(j) != s2.charAt(i) || cur.charAt(j) == s2.charAt(j)) <span class="k">continue</span>;</span><span class="ln"><span class="no">21</span>                    <span class="t">String</span> next = swap(cur, i, j);</span><span class="ln"><span class="no">22</span>                    <span class="k">if</span> (seen.add(next)) q.add(next);</span><span class="ln"><span class="no">23</span>                }</span><span class="ln"><span class="no">24</span>            }</span><span class="ln"><span class="no">25</span>            step++;</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> -<span class="n">1</span>;</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span> </span><span class="ln"><span class="no">30</span>    <span class="k">private</span> <span class="t">String</span> swap(<span class="t">String</span> s, <span class="k">int</span> i, <span class="k">int</span> j) {</span><span class="ln"><span class="no">31</span>        <span class="k">char</span>[] cs = s.toCharArray();</span><span class="ln"><span class="no">32</span>        <span class="k">char</span> t = cs[i];</span><span class="ln"><span class="no">33</span>        cs[i] = cs[j];</span><span class="ln"><span class="no">34</span>        cs[j] = t;</span><span class="ln"><span class="no">35</span>        <span class="k">return</span> <span class="k">new</span> <span class="t">String</span>(cs);</span><span class="ln"><span class="no">36</span>    }</span><span class="ln"><span class="no">37</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>对于某些非负整数 <code>k</code> ，如果交换 <code>s1</code> 中两个字母的位置恰好 <code>k</code> 次，能够使结果字符串等于 <code>s2</code> ，则认为字符串 <code>s1</code> 和 <code>s2</code> 的<strong> 相似度为 </strong><code>k</code><strong>。</strong></p>
+
+<p>给你两个字母异位词 <code>s1</code> 和 <code>s2</code> ，返回 <code>s1</code> 和 <code>s2</code> 的相似度 <code>k</code>的最小值。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>s1 = "ab", s2 = "ba"
+<strong>输出：</strong>1
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>s1 = "abc", s2 = "bca"
+<strong>输出：</strong>2
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s1.length &lt;= 20</code></li>
+	<li><code>s2.length == s1.length</code></li>
+	<li><code>s1</code>&nbsp;和&nbsp;<code>s2</code>&nbsp;&nbsp;只包含集合&nbsp;<code>{'a', 'b', 'c', 'd', 'e', 'f'}</code>&nbsp;中的小写字母</li>
+	<li><code>s2</code> 是 <code>s1</code> 的一个字母异位词</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int kSimilarity(String s1, String s2) {", "        // BFS 逐层：每层换一次，第一次等于 s2 的层数就是最少交换次数", "        ArrayDeque<String> q = new ArrayDeque<>();", "        HashSet<String> seen = new HashSet<>();", "        q.add(s1);", "        seen.add(s1);", "        int step = 0;", "        while (!q.isEmpty()) {", "            for (int sz = q.size(); sz > 0; sz--) {", "                String cur = q.poll();", "                if (cur.equals(s2)) return step;", "                // 只在第一个不匹配的位置动手，换别处不会更好", "                int i = 0;", "                while (cur.charAt(i) == s2.charAt(i)) i++;", "                for (int j = i + 1; j < s2.length(); j++) {", "                    // 只换目标 i 处需要的字符，也别破坏已经对上的位置", "                    if (cur.charAt(j) != s2.charAt(i) || cur.charAt(j) == s2.charAt(j)) continue;", "                    String next = swap(cur, i, j);", "                    if (seen.add(next)) q.add(next);", "                }", "            }", "            step++;", "        }", "        return -1;", "    }", "", "    private String swap(String s, int i, int j) {", "        char[] cs = s.toCharArray();", "        char t = cs[i];", "        cs[i] = cs[j];", "        cs[j] = t;", "        return new String(cs);", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 相似度为 K 的字符串 —— 图解：复刻 Solution.java 的「首错位 + 定向交换 BFS」，4 个关键帧。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s1: 'abc', s2: 'bca' };
+
+function trace(input) {
+  var s2 = input.s2, n = s2.length;
+  var frames = [];
+
+  // 上下两行：cur 在上（done 已对上，bad 还不匹配，new 刚换来的），s2 在下做对照
+  function curPanel(cur, extra) {
+    var m = {};
+    for (var i = 0; i < n; i++) m[i] = cur[i] === s2[i] ? 'done' : 'bad';
+    if (extra) m[extra.at] = extra.cls;
+    return [
+      Viz.cells(cur.split(''), { title: '当前串 cur', marks: m }),
+      Viz.cells(s2.split(''), { title: '目标 s2', marks: {} })
+    ];
+  }
+
+  // 与 Solution.java 相同的 BFS：只展开「首个不匹配位 × 需要的字符」
+  var q = [input.s1], seen = {}; seen[input.s1] = true;
+  var step = 0, snapped = 0, done = null;
+
+  while (q.length && !done) {
+    var size = q.length;
+    for (var sz = 0; sz < size && !done; sz++) {
+      var cur = q.shift();
+      if (cur === s2) { done = step; break; }
+      var i = 0;
+      while (cur[i] === s2[i]) i++;
+      for (var j = i + 1; j < n; j++) {
+        if (cur[j] !== s2[i] || cur[j] === s2[j]) continue;
+        var cs = cur.split('');
+        cs[i] = cur[j]; cs[j] = cur[i];
+        var next = cs.join('');
+        if (i === 0 && snapped === 0) {
+          snapped = 1;
+          frames.push(Viz.frame('while (cur.charAt(i) == s2.charAt(i)) i++;',
+            '首个不匹配在 0：要凑一个「' + s2[i] + '」，只能跟后面的它换',
+            curPanel(cur, { at: i, cls: 'cur' })));
+        }
+        if (!seen[next]) {
+          seen[next] = true;
+          q.push(next);
+          if (snapped === 1 && i === 0) {
+            snapped = 2;
+            frames.push(Viz.frame('String next = swap(cur, i, j);',
+              '换 0、' + j + ' 位得「' + next + '」，进下一层', curPanel(next, { at: i, cls: 'new' })));
+          } else if (snapped === 2 && i > 0) {
+            snapped = 3;
+            frames.push(Viz.frame('if (seen.add(next)) q.add(next);',
+              '第二层换 ' + i + '、' + j + ' 位得「' + next + '」，等于目标了', curPanel(next, { at: i, cls: 'new' })));
+          }
+        }
+      }
+    }
+    if (!done) step++;
+  }
+
+  frames.push(Viz.frame('return step;', '第一次碰见目标是在第 ' + done + ' 层：最少交换 ' + done + ' 次',
+    curPanel(s2, { at: 0, cls: 'done' })));
+  return { frames: frames, result: done };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

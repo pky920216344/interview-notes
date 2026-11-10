@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>扁平化嵌套列表迭代器 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 515 / 1159</span>
+  <nav class="pn"><a href="0940.html">上一篇</a><a href="0881.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">341. </span>扁平化嵌套列表迭代器</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 4</li><li class="algo">栈</li><li class="aux">设计</li><li class="tag">栈</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">设计</li><li class="tag">队列</li><li class="tag">迭代器</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">栈里存每层列表的迭代器；hasNext 不断展开栈顶直到吐出一个整数，next 只负责交出暂存的整数。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>构造时把最外层的迭代器压栈；栈顶迭代器的 <code>next</code> 就是全局下一个待处理元素。</li><li><code>hasNext</code>：栈顶用完就弹出（本层读完退回上层）；是嵌套列表就压入它的迭代器（进层）；直到栈顶给出整数，暂存进 <code>cached</code> 并返回 <code>true</code>。</li><li><code>next</code>：直接返回 <code>cached</code> 并清空。这样每次 <code>next</code> 前 <code>hasNext</code> 已把工作做完，两个方法都接近 O(1)（均摊）。</li><li>空列表（如 <code>[[]]</code>）会被压栈后立刻弹出，不会产生输出；深度即栈高。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 均摊 O(1)，空间复杂度 O(深度)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">NestedIterator</span> <span class="k">implements</span> <span class="t">Iterator</span>&lt;<span class="t">Integer</span>&gt; {</span><span class="ln"><span class="no">4</span>    <span class="c">// 栈里存每一层列表的迭代器，栈顶是当前正在读的那层</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Deque</span>&lt;<span class="t">Iterator</span>&lt;<span class="t">NestedInteger</span>&gt;&gt; stack = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="t">Integer</span> cached;   <span class="c">// hasNext() 展开后暂存的下一个整数</span></span><span class="ln"><span class="no">7</span> </span><span class="ln"><span class="no">8</span>    <span class="k">public</span> <span class="t">NestedIterator</span>(<span class="t">List</span>&lt;<span class="t">NestedInteger</span>&gt; nestedList) {</span><span class="ln"><span class="no">9</span>        stack.push(nestedList.iterator());</span><span class="ln"><span class="no">10</span>    }</span><span class="ln"><span class="no">11</span> </span><span class="ln"><span class="no">12</span>    @<span class="t">Override</span></span><span class="ln"><span class="no">13</span>    <span class="k">public</span> <span class="t">Integer</span> next() {</span><span class="ln"><span class="no">14</span>        <span class="t">Integer</span> v = cached;   <span class="c">// hasNext() 已经把下一个整数准备好</span></span><span class="ln"><span class="no">15</span>        cached = <span class="k">null</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> v;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    @<span class="t">Override</span></span><span class="ln"><span class="no">20</span>    <span class="k">public</span> <span class="k">boolean</span> hasNext() {</span><span class="ln"><span class="no">21</span>        <span class="k">if</span> (cached != <span class="k">null</span>) <span class="k">return</span> <span class="k">true</span>;</span><span class="ln"><span class="no">22</span>        <span class="k">while</span> (!stack.isEmpty()) {</span><span class="ln"><span class="no">23</span>            <span class="t">Iterator</span>&lt;<span class="t">NestedInteger</span>&gt; it = stack.peek();</span><span class="ln"><span class="no">24</span>            <span class="k">if</span> (!it.hasNext()) { stack.pop(); <span class="k">continue</span>; }   <span class="c">// 本层读完，退回上层</span></span><span class="ln"><span class="no">25</span>            <span class="t">NestedInteger</span> ni = it.next();</span><span class="ln"><span class="no">26</span>            <span class="k">if</span> (ni.isInteger()) { cached = ni.getInteger(); <span class="k">return</span> <span class="k">true</span>; }</span><span class="ln"><span class="no">27</span>            stack.push(ni.getList().iterator());   <span class="c">// 是列表：进入更深层</span></span><span class="ln"><span class="no">28</span>        }</span><span class="ln"><span class="no">29</span>        <span class="k">return</span> <span class="k">false</span>;</span><span class="ln"><span class="no">30</span>    }</span><span class="ln"><span class="no">31</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个嵌套的整数列表 <code>nestedList</code> 。每个元素要么是一个整数，要么是一个列表；该列表的元素也可能是整数或者是其他列表。请你实现一个迭代器将其扁平化，使之能够遍历这个列表中的所有整数。</p>
+
+<p>实现扁平迭代器类 <code>NestedIterator</code> ：</p>
+
+<ul>
+	<li><code>NestedIterator(List&lt;NestedInteger&gt; nestedList)</code> 用嵌套列表 <code>nestedList</code> 初始化迭代器。</li>
+	<li><code>int next()</code> 返回嵌套列表的下一个整数。</li>
+	<li><code>boolean hasNext()</code> 如果仍然存在待迭代的整数，返回 <code>true</code> ；否则，返回 <code>false</code> 。</li>
+</ul>
+
+<p>你的代码将会用下述伪代码检测：</p>
+
+<pre>
+initialize iterator with nestedList
+res = []
+while iterator.hasNext()
+    append iterator.next() to the end of res
+return res</pre>
+
+<p>如果 <code>res</code> 与预期的扁平化列表匹配，那么你的代码将会被判为正确。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>nestedList = [[1,1],2,[1,1]]
+<strong>输出：</strong>[1,1,2,1,1]
+<strong>解释：</strong>通过重复调用&nbsp;<em>next </em>直到&nbsp;<em>hasNex</em>t 返回 false，<em>next&nbsp;</em>返回的元素的顺序应该是: <code>[1,1,2,1,1]</code>。</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>nestedList = [1,[4,[6]]]
+<strong>输出：</strong>[1,4,6]
+<strong>解释：</strong>通过重复调用&nbsp;<em>next&nbsp;</em>直到&nbsp;<em>hasNex</em>t 返回 false，<em>next&nbsp;</em>返回的元素的顺序应该是: <code>[1,4,6]</code>。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= nestedList.length &lt;= 500</code></li>
+	<li>嵌套列表中的整数值在范围 <code>[-10<sup>6</sup>, 10<sup>6</sup>]</code> 内</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class NestedIterator implements Iterator<Integer> {", "    // 栈里存每一层列表的迭代器，栈顶是当前正在读的那层", "    private final Deque<Iterator<NestedInteger>> stack = new ArrayDeque<>();", "    private Integer cached;   // hasNext() 展开后暂存的下一个整数", "", "    public NestedIterator(List<NestedInteger> nestedList) {", "        stack.push(nestedList.iterator());", "    }", "", "    @Override", "    public Integer next() {", "        Integer v = cached;   // hasNext() 已经把下一个整数准备好", "        cached = null;", "        return v;", "    }", "", "    @Override", "    public boolean hasNext() {", "        if (cached != null) return true;", "        while (!stack.isEmpty()) {", "            Iterator<NestedInteger> it = stack.peek();", "            if (!it.hasNext()) { stack.pop(); continue; }   // 本层读完，退回上层", "            NestedInteger ni = it.next();", "            if (ni.isInteger()) { cached = ni.getInteger(); return true; }", "            stack.push(ni.getList().iterator());   // 是列表：进入更深层", "        }", "        return false;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 341. 扁平化嵌套列表迭代器 —— 图解：迭代器栈逐层展开，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { nested: [[1, 1], 2, [1, 1]] };
+
+function trace(input) {
+  var nested = input.nested;
+  var frames = [];
+  var INIT = 'stack.push(nestedList.iterator());';
+  var DEEP = 'stack.push(ni.getList().iterator());';
+  var BACK = 'if (!it.hasNext()) { stack.pop(); continue; }';
+  var TAKE = 'if (ni.isInteger()) { cached = ni.getInteger(); return true; }';
+  var END = 'return false;';
+
+  function fmt(x) {
+    if (typeof x === 'number') return String(x);
+    return '[' + x.map(fmt).join(',') + ']';
+  }
+
+  // 栈里每层：{ list: 当前数组, pos: 下一个要读的下标 }，对应 Java 的迭代器栈
+  var stack = [{ list: nested, pos: 0 }];
+  var out = [];
+
+  function topPanel(top) {
+    var items = top.list.length ? top.list.map(fmt) : ['（空列表）'];
+    var marks = {}, pointers = [];
+    if (top.list.length && top.pos < top.list.length) {
+      marks[top.pos] = 'cur';
+      pointers.push({ at: top.pos, label: 'pos', cls: 'p-cur' });
+    }
+    return Viz.cells(items, { title: '栈顶那层列表', marks: marks, pointers: pointers, hideIndex: !top.list.length });
+  }
+  function stackPanel() {
+    var rows = [];
+    for (var i = stack.length - 1; i >= 0; i--) {
+      rows.push({ k: '第 ' + i + ' 层', v: fmt(stack[i].list) + '，读到第 ' + stack[i].pos + ' 个', cls: i === stack.length - 1 ? 'hit' : '' });
+    }
+    return Viz.table('迭代器栈（上→下 = 栈顶→栈底）', rows);
+  }
+  function outPanel() {
+    var marks = {};
+    out.forEach(function (_, i) { marks[i] = 'done'; });
+    return Viz.cells(out.length ? out.map(String) : ['（还没有输出）'], { title: '已输出的整数', marks: marks });
+  }
+
+  frames.push(Viz.frame(INIT, '栈里压入最外层列表的迭代器，pos 指向第 0 个元素',
+    [topPanel(stack[0]), stackPanel()]));
+
+  var firstDeep = false, firstTake = false, firstBack = false;
+  // 完整走一遍「hasNext 展开 + next 取数」直到排空
+  while (stack.length) {
+    var top = stack[stack.length - 1];
+    if (top.pos >= top.list.length) {           // 本层读完：弹出退回上层
+      stack.pop();
+      if (!firstBack && stack.length) {
+        firstBack = true;
+        frames.push(Viz.frame(BACK, '这层读完：弹出栈，退回上层继续读',
+          [topPanel(stack[stack.length - 1]), stackPanel()]));
+      }
+      continue;
+    }
+    var ni = top.list[top.pos];
+    if (typeof ni === 'number') {               // 栈顶是整数：取走输出
+      if (!firstTake) {
+        firstTake = true;
+        var m = {};
+        m[top.pos] = 'cur';
+        frames.push(Viz.frame(TAKE, '栈顶是整数 ' + ni + '：暂存进 cached，next() 就返回它',
+          [topPanel(top), outPanel()]));
+      }
+      out.push(ni);
+      top.pos++;
+    } else {                                    // 是列表：压入它的迭代器，进层
+      top.pos++;
+      stack.push({ list: ni, pos: 0 });
+      if (!firstDeep) {
+        firstDeep = true;
+        frames.push(Viz.frame(DEEP, '遇到嵌套列表 ' + fmt(ni) + '：压栈进层，先读里面的',
+          [topPanel(stack[stack.length - 1]), stackPanel()]));
+      }
+    }
+  }
+
+  frames.push(Viz.frame(END, '栈空：嵌套列表全部读完，共输出 ' + out.length + ' 个整数',
+    [outPanel(), stackPanel()]));
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

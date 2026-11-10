@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>部门工资最高的员工 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 736 / 1159</span>
+  <nav class="pn"><a href="1373.html">上一篇</a><a href="1400.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">184. </span>部门工资最高的员工</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">SQL</li><li class="tag">数据库</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">关联子查询取「本部门最高工资」，员工的工资等于它就是部门冠军；JOIN 补部门名。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>「每组最大」用<strong>关联子查询</strong>最直白：外层员工的 salary 等于其部门里的 <code>MAX(salary)</code> 就保留。</li><li><strong>并列最高也要全部输出</strong>，所以不能用 <code>ROW_NUMBER() = 1</code> 那类只留一行的窗口写法（那会丢并列者）。</li><li>子查询里 <code>WHERE departmentId = e.departmentId</code> 是关联条件——每个部门各自算最大，不是全表最大。</li><li>JOIN Department 只为拿部门名，过滤全靠子查询。</li></ul></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(E×D)（关联子查询按部门索引可近似 O(E)），空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 SQL 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span>-- 184（codetop 0184）部门工资最高的员工（MySQL）</span><span class="ln"><span class="no">2</span>-- 题意：Employee(id, name, salary, departmentId)、Department(id, name)。</span><span class="ln"><span class="no">3</span>-- 找出每个部门里薪资最高的员工（并列最高都要），输出 部门名、员工名、薪资。</span><span class="ln"><span class="no">4</span>SELECT d.name AS Department,</span><span class="ln"><span class="no">5</span>       e.name AS Employee,</span><span class="ln"><span class="no">6</span>       e.salary AS Salary</span><span class="ln"><span class="no">7</span>FROM Employee e</span><span class="ln"><span class="no">8</span>JOIN Department d ON e.departmentId = d.id</span><span class="ln"><span class="no">9</span>WHERE e.salary = (</span><span class="ln"><span class="no">10</span>    SELECT MAX(salary)</span><span class="ln"><span class="no">11</span>    FROM Employee</span><span class="ln"><span class="no">12</span>    WHERE departmentId = e.departmentId</span><span class="ln"><span class="no">13</span>);</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>表：&nbsp;<code>Employee</code></p>
+
+<pre>
++--------------+---------+
+| 列名          | 类型    |
++--------------+---------+
+| id           | int     |
+| name         | varchar |
+| salary       | int     |
+| departmentId | int     |
++--------------+---------+
+在 SQL 中，id是此表的主键。
+departmentId 是 Department 表中 id 的外键（在 Pandas 中称为 join key）。
+此表的每一行都表示员工的 id、姓名和工资。它还包含他们所在部门的 id。
+</pre>
+
+
+
+<p>表：&nbsp;<code>Department</code></p>
+
+<pre>
++-------------+---------+
+| 列名         | 类型    |
++-------------+---------+
+| id          | int     |
+| name        | varchar |
++-------------+---------+
+在 SQL 中，id 是此表的主键列。
+此表的每一行都表示一个部门的 id 及其名称。
+</pre>
+
+
+
+<p>查找出每个部门中薪资最高的员工。<br />
+按 <strong>任意顺序</strong> 返回结果表。<br />
+查询结果格式如下例所示。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<b>输入：</b>
+Employee 表:
++----+-------+--------+--------------+
+| id | name  | salary | departmentId |
++----+-------+--------+--------------+
+| 1  | Joe   | 70000  | 1            |
+| 2  | Jim   | 90000  | 1            |
+| 3  | Henry | 80000  | 2            |
+| 4  | Sam   | 60000  | 2            |
+| 5  | Max   | 90000  | 1            |
++----+-------+--------+--------------+
+Department 表:
++----+-------+
+| id | name  |
++----+-------+
+| 1  | IT    |
+| 2  | Sales |
++----+-------+
+<b>输出：</b>
++------------+----------+--------+
+| Department | Employee | Salary |
++------------+----------+--------+
+| IT         | Jim      | 90000  |
+| Sales      | Henry    | 80000  |
+| IT         | Max      | 90000  |
++------------+----------+--------+
+<strong>解释：</strong>Max 和 Jim 在 IT 部门的工资都是最高的，Henry 在销售部的工资最高。</pre>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["-- 184（codetop 0184）部门工资最高的员工（MySQL）", "-- 题意：Employee(id, name, salary, departmentId)、Department(id, name)。", "-- 找出每个部门里薪资最高的员工（并列最高都要），输出 部门名、员工名、薪资。", "SELECT d.name AS Department,", "       e.name AS Employee,", "       e.salary AS Salary", "FROM Employee e", "JOIN Department d ON e.departmentId = d.id", "WHERE e.salary = (", "    SELECT MAX(salary)", "    FROM Employee", "    WHERE departmentId = e.departmentId", ");"]}</script>
+
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

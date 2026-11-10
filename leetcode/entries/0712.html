@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>两个字符串的最小ASCII删除和 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 751 / 1159</span>
+  <nav class="pn"><a href="1219.html">上一篇</a><a href="0430.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">712. </span>两个字符串的最小ASCII删除和</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 2</li><li class="algo">动态规划</li><li class="tag">字符串</li><li class="tag">动态规划</li><li class="tag">longest-common-subsequence</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">LCS 变形 DP：两字符相等就都留下抄左上角，否则删掉其中一个、把它的 ASCII 加进代价，取较小。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li><code>dp[i][j]</code>：把 <code>s1</code> 前 i 个和 <code>s2</code> 前 j 个变相等要删的最小 ASCII 和。</li><li><code>s1[i-1] == s2[j-1]</code>：这对字符留下最优（ASCII 都是正数，删了只会更贵），<code>dp[i][j] = dp[i-1][j-1]</code>。</li><li>不等：删 <code>s1</code> 的字符（<code>dp[i-1][j] + s1[i-1]</code>）或删 <code>s2</code> 的（<code>dp[i][j-1] + s2[j-1]</code>），取小。</li><li>边界：一边为空就把另一边整段删掉；Java 压成滚动数组，<code>diag</code> 变量存左上角旧值。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(nm)，空间复杂度 O(m)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> minimumDeleteSum(<span class="t">String</span> s1, <span class="t">String</span> s2) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = s1.length(), m = s2.length();</span><span class="ln"><span class="no">4</span>        <span class="c">// 滚动数组：dp[j] = s1 前 i 个与 s2 前 j 个对齐的最小删除和</span></span><span class="ln"><span class="no">5</span>        <span class="k">int</span>[] dp = <span class="k">new</span> <span class="k">int</span>[m + <span class="n">1</span>];</span><span class="ln"><span class="no">6</span>        <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt;= m; j++) dp[j] = dp[j - <span class="n">1</span>] + s2.charAt(j - <span class="n">1</span>);   <span class="c">// 第 0 行：删光 s2 前缀</span></span><span class="ln"><span class="no">7</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= n; i++) {</span><span class="ln"><span class="no">8</span>            <span class="k">int</span> diag = dp[<span class="n">0</span>];                    <span class="c">// 左上角旧值 dp[i-1][j-1]</span></span><span class="ln"><span class="no">9</span>            dp[<span class="n">0</span>] = diag + s1.charAt(i - <span class="n">1</span>);     <span class="c">// 第 0 列：删光 s1 前缀</span></span><span class="ln"><span class="no">10</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">1</span>; j &lt;= m; j++) {</span><span class="ln"><span class="no">11</span>                <span class="k">char</span> a = s1.charAt(i - <span class="n">1</span>), b = s2.charAt(j - <span class="n">1</span>);</span><span class="ln"><span class="no">12</span>                <span class="k">int</span> up = dp[j];                  <span class="c">// dp[i-1][j]，滚给下一列当左上角</span></span><span class="ln"><span class="no">13</span>                <span class="k">if</span> (a == b) dp[j] = diag;        <span class="c">// 相等：都留下最优，斜抄</span></span><span class="ln"><span class="no">14</span>                <span class="k">else</span> dp[j] = <span class="t">Math</span>.min(up + a, dp[j - <span class="n">1</span>] + b);   <span class="c">// 删 a 或删 b，取小</span></span><span class="ln"><span class="no">15</span>                diag = up;</span><span class="ln"><span class="no">16</span>            }</span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> dp[m];</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定两个字符串<code>s1</code>&nbsp;和&nbsp;<code>s2</code>，返回 <em>使两个字符串相等所需删除字符的&nbsp;<strong>ASCII&nbsp;</strong>值的最小和&nbsp;</em>。</p>
+
+
+
+<p><strong>示例 1:</strong></p>
+
+<pre>
+<strong>输入:</strong> s1 = "sea", s2 = "eat"
+<strong>输出:</strong> 231
+<strong>解释:</strong> 在 "sea" 中删除 "s" 并将 "s" 的值(115)加入总和。
+在 "eat" 中删除 "t" 并将 116 加入总和。
+结束时，两个字符串相等，115 + 116 = 231 就是符合条件的最小和。
+</pre>
+
+<p><strong>示例&nbsp;2:</strong></p>
+
+<pre>
+<strong>输入:</strong> s1 = "delete", s2 = "leet"
+<strong>输出:</strong> 403
+<strong>解释:</strong> 在 "delete" 中删除 "dee" 字符串变成 "let"，
+将 100[d]+101[e]+101[e] 加入总和。在 "leet" 中删除 "e" 将 101[e] 加入总和。
+结束时，两个字符串都等于 "let"，结果即为 100+101+101+101 = 403 。
+如果改为将两个字符串转换为 "lee" 或 "eet"，我们会得到 433 或 417 的结果，比答案更大。
+</pre>
+
+
+
+<p><strong>提示:</strong></p>
+
+<ul>
+	<li><code>1 &lt;= s1.length, s2.length &lt;= 1000</code></li>
+	<li><code>s1</code>&nbsp;和&nbsp;<code>s2</code>&nbsp;由小写英文字母组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int minimumDeleteSum(String s1, String s2) {", "        int n = s1.length(), m = s2.length();", "        // 滚动数组：dp[j] = s1 前 i 个与 s2 前 j 个对齐的最小删除和", "        int[] dp = new int[m + 1];", "        for (int j = 1; j <= m; j++) dp[j] = dp[j - 1] + s2.charAt(j - 1);   // 第 0 行：删光 s2 前缀", "        for (int i = 1; i <= n; i++) {", "            int diag = dp[0];                    // 左上角旧值 dp[i-1][j-1]", "            dp[0] = diag + s1.charAt(i - 1);     // 第 0 列：删光 s1 前缀", "            for (int j = 1; j <= m; j++) {", "                char a = s1.charAt(i - 1), b = s2.charAt(j - 1);", "                int up = dp[j];                  // dp[i-1][j]，滚给下一列当左上角", "                if (a == b) dp[j] = diag;        // 相等：都留下最优，斜抄", "                else dp[j] = Math.min(up + a, dp[j - 1] + b);   // 删 a 或删 b，取小", "                diag = up;", "            }", "        }", "        return dp[m];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 712. 两个字符串的最小 ASCII 删除和 —— 图解：复刻 Solution.java 的滚动数组 DP，图上画成整张二维表。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s1: 'sea', s2: 'eat' };
+
+function trace(input) {
+  var s1 = input.s1, s2 = input.s2;
+  var n = s1.length, m = s2.length;
+  var frames = [];
+
+  // 完整二维表：dp[i][j] = s1 前 i 个与 s2 前 j 个对齐的最小删除和（Java 里滚动成一行，结果一致）
+  var dp = [];
+  for (var i = 0; i <= n; i++) dp.push(new Array(m + 1));
+  dp[0][0] = 0;
+  for (var j = 1; j <= m; j++) dp[0][j] = dp[0][j - 1] + s2.charCodeAt(j - 1);
+  for (i = 1; i <= n; i++) dp[i][0] = dp[i - 1][0] + s1.charCodeAt(i - 1);
+
+  function snap(at, key, ci, cj, hits) {
+    var rows = [];
+    var marks = {};
+    for (var r = 0; r <= n; r++) {
+      var row = [];
+      for (var c = 0; c <= m; c++) row.push(dp[r][c] === undefined ? '' : dp[r][c]);
+      rows.push(row);
+    }
+    if (ci != null) marks[ci + ',' + cj] = 'cur';
+    (hits || []).forEach(function (h) { marks[h[0] + ',' + h[1]] = 'hit'; });
+    var rowLabels = ['i=0'];
+    for (r = 1; r <= n; r++) rowLabels.push('i=' + r + ' ' + s1[r - 1]);
+    var colLabels = ['j=0'];
+    for (c = 1; c <= m; c++) colLabels.push('j=' + c + ' ' + s2[c - 1]);
+    frames.push(Viz.frame(at, key, [
+      Viz.grid(rows, { title: 'dp 表（空白处还没算）', rowLabels: rowLabels, colLabels: colLabels, corner: 'dp', marks: marks })
+    ]));
+  }
+
+  snap('for (int j = 1; j <= m; j++) dp[j] = dp[j - 1] + s2.charAt(j - 1);',
+    '第 0 行：s1 为空时，只能删光 s2 的前 j 个字符', null, null);
+
+  var MIN = 'else dp[j] = Math.min(up + a, dp[j - 1] + b);';
+  var MATCH = 'if (a == b) dp[j] = diag;';
+  for (i = 1; i <= n; i++) {
+    for (j = 1; j <= m; j++) {
+      var isMatch = s1[i - 1] === s2[j - 1];
+      if (isMatch) dp[i][j] = dp[i - 1][j - 1];
+      else dp[i][j] = Math.min(dp[i - 1][j] + s1.charCodeAt(i - 1), dp[i][j - 1] + s2.charCodeAt(j - 1));
+      if (i === 1 && j === 1) snap(isMatch ? MATCH : MIN,
+        isMatch ? '「' + s1[0] + '」=「' + s2[0] + '」：都留下，抄左上角'
+                : '「' + s1[0] + '」≠「' + s2[0] + '」：删上面或删左边的字符，取小',
+        i, j, isMatch ? [[i - 1, j - 1]] : [[i - 1, j], [i, j - 1]]);
+      if (i === 2 && j === 1) snap(isMatch ? MATCH : MIN,
+        isMatch ? '「' + s1[1] + '」=「' + s2[0] + '」：这对都留下，抄左上角'
+                : '「' + s1[1] + '」≠「' + s2[0] + '」：两种删法取小',
+        i, j, isMatch ? [[i - 1, j - 1]] : [[i - 1, j], [i, j - 1]]);
+    }
+  }
+
+  snap('return dp[m];', '填完整张表：右下角 ' + dp[n][m] + ' 就是最小删除和', null, null, [[n, m]]);
+  return { frames: frames, result: dp[n][m] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

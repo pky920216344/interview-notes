@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>连通网络的操作次数 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 943 / 1159</span>
+  <nav class="pn"><a href="1489.html">上一篇</a><a href="0778.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1319. </span>连通网络的操作次数</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">并查集</li><li class="tag">深度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">并查集</li><li class="tag">图</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">并查集数连通分量 parts：答案是 parts−1（每挪一根线缆最多把两个分量并为一个）；线缆不够 n−1 根直接返回 -1。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>并查集逐条合并 <code>connections</code>，最后数根结点个数得到连通分量 <code>parts</code>。</li><li>答案是 <code>parts - 1</code>：每根线缆挪个位置最多把两个分量连成一个，分量数最多减 1。</li><li>先判 <code>connections.length &lt; n - 1</code>：连成一棵树都要 n−1 根，不够就返回 <code>-1</code>。</li><li>合并时发现两端已同根，说明这根是环上的冗余线缆（可拆去救别的分量）；<code>find</code> 用路径减半防退化。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O((n+m)·α(n))，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span>[] pa;</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="k">int</span> makeConnected(<span class="k">int</span> n, <span class="k">int</span>[][] connections) {</span><span class="ln"><span class="no">7</span>        <span class="k">if</span> (connections.length &lt; n - <span class="n">1</span>) <span class="k">return</span> -<span class="n">1</span>;   <span class="c">// 连成一棵树都要 n-1 根，线缆不够必失败</span></span><span class="ln"><span class="no">8</span>        pa = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) pa[i] = i;</span><span class="ln"><span class="no">10</span>        <span class="k">for</span> (<span class="k">int</span>[] c : connections) union(c[<span class="n">0</span>], c[<span class="n">1</span>]);</span><span class="ln"><span class="no">11</span>        <span class="k">int</span> parts = <span class="n">0</span>;</span><span class="ln"><span class="no">12</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) <span class="k">if</span> (find(i) == i) parts++;   <span class="c">// 数连通分量</span></span><span class="ln"><span class="no">13</span>        <span class="k">return</span> parts - <span class="n">1</span>;   <span class="c">// 每挪一根线缆最多把两个分量并为一个</span></span><span class="ln"><span class="no">14</span>    }</span><span class="ln"><span class="no">15</span> </span><span class="ln"><span class="no">16</span>    <span class="k">private</span> <span class="k">void</span> union(<span class="k">int</span> a, <span class="k">int</span> b) {</span><span class="ln"><span class="no">17</span>        <span class="k">int</span> ra = find(a), rb = find(b);</span><span class="ln"><span class="no">18</span>        <span class="k">if</span> (ra == rb) <span class="k">return</span>;   <span class="c">// 已连通：这是环上的冗余线缆，可以拆去救别的分量</span></span><span class="ln"><span class="no">19</span>        pa[ra] = rb;</span><span class="ln"><span class="no">20</span>    }</span><span class="ln"><span class="no">21</span> </span><span class="ln"><span class="no">22</span>    <span class="k">private</span> <span class="k">int</span> find(<span class="k">int</span> x) {</span><span class="ln"><span class="no">23</span>        <span class="k">while</span> (pa[x] != x) {</span><span class="ln"><span class="no">24</span>            pa[x] = pa[pa[x]];   <span class="c">// 路径减半，防止树退化成链</span></span><span class="ln"><span class="no">25</span>            x = pa[x];</span><span class="ln"><span class="no">26</span>        }</span><span class="ln"><span class="no">27</span>        <span class="k">return</span> x;</span><span class="ln"><span class="no">28</span>    }</span><span class="ln"><span class="no">29</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>用以太网线缆将&nbsp;<code>n</code>&nbsp;台计算机连接成一个网络，计算机的编号从&nbsp;<code>0</code>&nbsp;到&nbsp;<code>n-1</code>。线缆用&nbsp;<code>connections</code>&nbsp;表示，其中&nbsp;<code>connections[i] = [a, b]</code>&nbsp;连接了计算机&nbsp;<code>a</code>&nbsp;和&nbsp;<code>b</code>。</p>
+
+<p>网络中的任何一台计算机都可以通过网络直接或者间接访问同一个网络中其他任意一台计算机。</p>
+
+<p>给你这个计算机网络的初始布线&nbsp;<code>connections</code>，你可以拔开任意两台直连计算机之间的线缆，并用它连接一对未直连的计算机。请你计算并返回使所有计算机都连通所需的最少操作次数。如果不可能，则返回&nbsp;-1 。&nbsp;</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/9656cd8aad30.png" style="height: 167px; width: 570px;"></strong></p>
+
+<pre><strong>输入：</strong>n = 4, connections = [[0,1],[0,2],[1,2]]
+<strong>输出：</strong>1
+<strong>解释：</strong>拔下计算机 1 和 2 之间的线缆，并将它插到计算机 1 和 3 上。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<p><strong><img alt="" src="../assets/img/22891d3267d5.png" style="height: 175px; width: 660px;"></strong></p>
+
+<pre><strong>输入：</strong>n = 6, connections = [[0,1],[0,2],[0,3],[1,2],[1,3]]
+<strong>输出：</strong>2
+</pre>
+
+<p><strong>示例 3：</strong></p>
+
+<pre><strong>输入：</strong>n = 6, connections = [[0,1],[0,2],[0,3],[1,2]]
+<strong>输出：</strong>-1
+<strong>解释：</strong>线缆数量不足。
+</pre>
+
+<p><strong>示例 4：</strong></p>
+
+<pre><strong>输入：</strong>n = 5, connections = [[0,1],[0,2],[3,4],[2,3]]
+<strong>输出：</strong>0
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>1 &lt;= n &lt;= 10^5</code></li>
+	<li><code>1 &lt;= connections.length &lt;= min(n*(n-1)/2, 10^5)</code></li>
+	<li><code>connections[i].length == 2</code></li>
+	<li><code>0 &lt;= connections[i][0], connections[i][1]&nbsp;&lt; n</code></li>
+	<li><code>connections[i][0] != connections[i][1]</code></li>
+	<li>没有重复的连接。</li>
+	<li>两台计算机不会通过多条线缆连接。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private int[] pa;", "", "    public int makeConnected(int n, int[][] connections) {", "        if (connections.length < n - 1) return -1;   // 连成一棵树都要 n-1 根，线缆不够必失败", "        pa = new int[n];", "        for (int i = 0; i < n; i++) pa[i] = i;", "        for (int[] c : connections) union(c[0], c[1]);", "        int parts = 0;", "        for (int i = 0; i < n; i++) if (find(i) == i) parts++;   // 数连通分量", "        return parts - 1;   // 每挪一根线缆最多把两个分量并为一个", "    }", "", "    private void union(int a, int b) {", "        int ra = find(a), rb = find(b);", "        if (ra == rb) return;   // 已连通：这是环上的冗余线缆，可以拆去救别的分量", "        pa[ra] = rb;", "    }", "", "    private int find(int x) {", "        while (pa[x] != x) {", "            pa[x] = pa[pa[x]];   // 路径减半，防止树退化成链", "            x = pa[x];", "        }", "        return x;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1319. 连通网络的操作次数 —— 图解：复刻 Solution.java 的并查集合并，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 6, connections: [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3]] };
+
+function trace(input) {
+  var n = input.n;
+  var pa = [];      // pa[i]：i 的父结点，和 Java 里的 pa 数组一致
+  for (var i = 0; i < n; i++) pa[i] = i;
+  var parts = n;    // 连通分量个数：每并成功一次减 1
+  var spare = 0;    // 冗余线缆数：两端已同根的次数
+  var frames = [];
+
+  // pa 数组面板：格子值是父结点；根结点标 win，正在合并的两端标 cur
+  function paPanel(marks, ptr) {
+    var items = pa.map(String);
+    return Viz.cells(items, { title: 'pa[i]：父结点（ pa[i]==i 的是根）', marks: marks || {}, pointers: ptr || [] });
+  }
+  function varsPanel(extra) {
+    var items = [
+      { name: '连通分量 parts', v: parts, cls: 'win' },
+      { name: '冗余线缆 spare', v: spare, cls: spare > 0 ? 'chg' : '' }
+    ];
+    if (extra) for (var k in extra) items.push(extra[k]);
+    return Viz.vars(items);
+  }
+  function find(x) { while (pa[x] !== x) { pa[x] = pa[pa[x]]; x = pa[x]; } return x; }
+
+  frames.push(Viz.frame('for (int i = 0; i < n; i++) pa[i] = i;',
+    '初始各自为营：' + n + ' 个分量；' + input.connections.length + ' 根线缆' + (input.connections.length < n - 1 ? '，不够 n-1 根，直接 -1' : '够用'),
+    [paPanel({}), varsPanel()]));
+
+  var redundantShown = false, mergedShown = false;
+  for (var i = 0; i < input.connections.length; i++) {
+    var a = input.connections[i][0], b = input.connections[i][1];
+    var ra = find(a), rb = find(b);
+    var m = {}; m[a] = 'cur'; m[b] = 'cur';
+    if (ra === rb) {
+      spare++;
+      if (!redundantShown) {
+        redundantShown = true;
+        frames.push(Viz.frame('if (ra == rb) return;',
+          a + ' 和 ' + b + ' 已连通：这根是环上的冗余线缆，留着挪去救别的分量',
+          [paPanel(m), varsPanel()]));
+      }
+    } else {
+      pa[ra] = rb;
+      parts--;
+      if (!mergedShown && i >= 1 && parts >= 2) {
+        mergedShown = true;
+        frames.push(Viz.frame('pa[ra] = rb;',
+          '并 ' + a + ' 和 ' + b + '：分量 ' + (parts + 1) + ' → ' + parts + '，已并 ' + (i + 1) + ' 根',
+          [paPanel(m), varsPanel()]));
+      }
+    }
+  }
+
+  var ans = input.connections.length < n - 1 ? -1 : parts - 1;
+  frames.push(Viz.frame('return parts - 1;',
+    input.connections.length < n - 1 ? '线缆不够，返回 -1' : '数出 ' + parts + ' 个分量：挪 ' + ans + ' 根线缆全连通',
+    [paPanel({}), varsPanel([{ name: '答案', v: ans, cls: 'done' }])]));
+
+  return { frames: frames, result: ans };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

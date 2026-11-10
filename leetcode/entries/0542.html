@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>01 矩阵 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 580 / 1159</span>
+  <nav class="pn"><a href="0081.html">上一篇</a><a href="1000.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">542. </span>01 矩阵</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 3</li><li class="algo">广度优先搜索</li><li class="tag">广度优先搜索</li><li class="tag">数组</li><li class="tag">动态规划</li><li class="tag">矩阵</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">多源 BFS：把所有 0 当起点一起入队向外扩层，某格第一次被到时就是它到最近 0 的距离。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>不是对每个 1 都去做一次 BFS，而是反过来：所有 0 同时入队当超水源。</li><li>队列里按层扩展：第 k 层出队的格子，其未访问邻居的距离就是 <code>k + 1</code>。</li><li>用 <code>dist = -1</code> 标记未访问，兼当「别重复入队」的判断。</li><li>一格只入队一次，总时间 O(mn)。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(mn)，空间复杂度 O(mn)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">public</span> <span class="k">int</span>[][] updateMatrix(<span class="k">int</span>[][] mat) {</span><span class="ln"><span class="no">5</span>        <span class="k">int</span> m = mat.length, n = mat[<span class="n">0</span>].length;</span><span class="ln"><span class="no">6</span>        <span class="k">int</span>[][] dist = <span class="k">new</span> <span class="k">int</span>[m][n];</span><span class="ln"><span class="no">7</span>        <span class="t">Deque</span>&lt;<span class="k">int</span>[]&gt; q = <span class="k">new</span> <span class="t">ArrayDeque</span>&lt;&gt;();</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> j = <span class="n">0</span>; j &lt; n; j++) {</span><span class="ln"><span class="no">10</span>                <span class="k">if</span> (mat[i][j] == <span class="n">0</span>) q.offer(<span class="k">new</span> <span class="k">int</span>[]{i, j});   <span class="c">// 所有 0 都是源头，距离 0</span></span><span class="ln"><span class="no">11</span>                <span class="k">else</span> dist[i][j] = -<span class="n">1</span>;   <span class="c">// -1 表示还没算出来</span></span><span class="ln"><span class="no">12</span>            }</span><span class="ln"><span class="no">13</span>        }</span><span class="ln"><span class="no">14</span>        <span class="c">// 多源 BFS：所有 0 一起向外扩层，先被到的格子离 0 最近</span></span><span class="ln"><span class="no">15</span>        <span class="k">int</span>[] dr = {<span class="n">1</span>, -<span class="n">1</span>, <span class="n">0</span>, <span class="n">0</span>}, dc = {<span class="n">0</span>, <span class="n">0</span>, <span class="n">1</span>, -<span class="n">1</span>};</span><span class="ln"><span class="no">16</span>        <span class="k">while</span> (!q.isEmpty()) {</span><span class="ln"><span class="no">17</span>            <span class="k">int</span>[] cur = q.poll();</span><span class="ln"><span class="no">18</span>            <span class="k">for</span> (<span class="k">int</span> d = <span class="n">0</span>; d &lt; <span class="n">4</span>; d++) {</span><span class="ln"><span class="no">19</span>                <span class="k">int</span> nr = cur[<span class="n">0</span>] + dr[d], nc = cur[<span class="n">1</span>] + dc[d];</span><span class="ln"><span class="no">20</span>                <span class="k">if</span> (nr &lt; <span class="n">0</span> || nr &gt;= m || nc &lt; <span class="n">0</span> || nc &gt;= n || dist[nr][nc] != -<span class="n">1</span>) <span class="k">continue</span>;</span><span class="ln"><span class="no">21</span>                dist[nr][nc] = dist[cur[<span class="n">0</span>]][cur[<span class="n">1</span>]] + <span class="n">1</span>;</span><span class="ln"><span class="no">22</span>                q.offer(<span class="k">new</span> <span class="k">int</span>[]{nr, nc});</span><span class="ln"><span class="no">23</span>            }</span><span class="ln"><span class="no">24</span>        }</span><span class="ln"><span class="no">25</span>        <span class="k">return</span> dist;</span><span class="ln"><span class="no">26</span>    }</span><span class="ln"><span class="no">27</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给定一个由 <code>0</code> 和 <code>1</code> 组成的矩阵 <code>mat</code> ，请输出一个大小相同的矩阵，其中每一个格子是 <code>mat</code> 中对应位置元素到最近的 <code>0</code> 的距离。</p>
+
+<p>两个相邻元素间的距离为 <code>1</code> 。</p>
+
+
+
+<p><b>示例 1：</b></p>
+
+<p><img alt="" src="../assets/img/4c949097c412.png" style="width: 150px; " /></p>
+
+<pre>
+<strong>输入：</strong>mat =[[0,0,0],[0,1,0],[0,0,0]]
+<strong>输出：</strong>[[0,0,0],[0,1,0],[0,0,0]]
+</pre>
+
+<p><b>示例 2：</b></p>
+
+<p><img alt="" src="../assets/img/f2c8c995f632.png" style="width: 150px; " /></p>
+
+<pre>
+<b>输入：</b>mat =<b> </b>[[0,0,0],[0,1,0],[1,1,1]]
+<strong>输出：</strong>[[0,0,0],[0,1,0],[1,2,1]]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>m == mat.length</code></li>
+	<li><code>n == mat[i].length</code></li>
+	<li><code>1 <= m, n <= 10<sup>4</sup></code></li>
+	<li><code>1 <= m * n <= 10<sup>4</sup></code></li>
+	<li><code>mat[i][j] is either 0 or 1.</code></li>
+	<li><code>mat</code> 中至少有一个 <code>0 </code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    public int[][] updateMatrix(int[][] mat) {", "        int m = mat.length, n = mat[0].length;", "        int[][] dist = new int[m][n];", "        Deque<int[]> q = new ArrayDeque<>();", "        for (int i = 0; i < m; i++) {", "            for (int j = 0; j < n; j++) {", "                if (mat[i][j] == 0) q.offer(new int[]{i, j});   // 所有 0 都是源头，距离 0", "                else dist[i][j] = -1;   // -1 表示还没算出来", "            }", "        }", "        // 多源 BFS：所有 0 一起向外扩层，先被到的格子离 0 最近", "        int[] dr = {1, -1, 0, 0}, dc = {0, 0, 1, -1};", "        while (!q.isEmpty()) {", "            int[] cur = q.poll();", "            for (int d = 0; d < 4; d++) {", "                int nr = cur[0] + dr[d], nc = cur[1] + dc[d];", "                if (nr < 0 || nr >= m || nc < 0 || nc >= n || dist[nr][nc] != -1) continue;", "                dist[nr][nc] = dist[cur[0]][cur[1]] + 1;", "                q.offer(new int[]{nr, nc});", "            }", "        }", "        return dist;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 542. 01 矩阵 —— 图解：复刻 Solution.java 的「多源 BFS 逐层扩散」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { mat: [[0, 0, 0], [0, 1, 0], [1, 1, 1]] };
+
+function trace(input) {
+  var mat = input.mat, m = mat.length, n = mat[0].length;
+  var frames = [];
+
+  // dist 网格：未算出的格子画 '·'；extra 里 "r,c" -> 类
+  function distPanel(extra) {
+    var rows = [], marks = {}, r, c;
+    for (r = 0; r < m; r++) {
+      var row = [];
+      for (c = 0; c < n; c++) row.push(dist[r][c] === -1 ? '·' : String(dist[r][c]));
+      rows.push(row);
+    }
+    Object.keys(extra || {}).forEach(function (k) { marks[k] = extra[k]; });
+    return Viz.grid(rows, { title: 'dist（· = 还没算出来）', marks: marks });
+  }
+  function varsPanel(layer, qSize) {
+    return Viz.vars([
+      { name: '层数', v: layer },
+      { name: '队列', v: qSize + ' 格', cls: 'cur' }
+    ]);
+  }
+  function snap(at, key, extra, layer, qSize) { if (frames.length < 6) frames.push(Viz.frame(at, key, [distPanel(extra), varsPanel(layer, qSize)])); }
+
+  // 和 Java 一致：所有 0 入队当源头，其余标记 -1
+  var dist = [], queue = [], zeros = [];
+  for (var i = 0; i < m; i++) {
+    var row = [];
+    for (var j = 0; j < n; j++) {
+      if (mat[i][j] === 0) { row.push(0); queue.push([i, j]); zeros.push(i + ',' + j); }
+      else row.push(-1);
+    }
+    dist.push(row);
+  }
+  snap('if (mat[i][j] == 0) q.offer(new int[]{i, j});',
+    '开局：所有 0 同时入队当源头（距离 0），1 还都是未知',
+    (function () { var mk = {}; zeros.forEach(function (z) { mk[z] = 'win'; }); return mk; })(), 0, queue.length);
+
+  var layer = 0;
+  var DR = [1, -1, 0, 0], DC = [0, 0, 1, -1];
+  while (queue.length) {
+    layer++;
+    var size = queue.length, newly = [], prevDone = {};
+    for (var k = 0; k < size; k++) {
+      var cur = queue.shift();
+      for (var d = 0; d < 4; d++) {
+        var nr = cur[0] + DR[d], nc = cur[1] + DC[d];
+        if (nr < 0 || nr >= m || nc < 0 || nc >= n || dist[nr][nc] !== -1) continue;
+        dist[nr][nc] = layer;
+        queue.push([nr, nc]);
+        newly.push(nr + ',' + nc);
+      }
+    }
+    // 标出这一层新写的一圈
+    var mk = {};
+    for (var rr = 0; rr < m; rr++) for (var cc = 0; cc < n; cc++) if (dist[rr][cc] !== -1 && newly.indexOf(rr + ',' + cc) < 0) prevDone[rr + ',' + cc] = 'win';
+    newly.forEach(function (p) { mk[p] = 'new'; });
+    if (newly.length) snap('dist[nr][nc] = dist[cur[0]][cur[1]] + 1;',
+      '第 ' + layer + ' 层扩散：离 0 更远一圈的格子被写到，距离 = ' + layer, mk, layer, queue.length);
+  }
+
+  snap('return dist;', '队列空了：每个格子的距离都算出来了', null, layer, 0);
+  // 最终帧重画成整表 done
+  (function () {
+    var mk = {}, r, c;
+    for (r = 0; r < m; r++) for (c = 0; c < n; c++) mk[r + ',' + c] = 'done';
+    frames[frames.length - 1] = Viz.frame('return dist;', '队列空了：每个格子的距离都算出来了', [distPanel(mk), varsPanel(layer, 0)]);
+  })();
+
+  return { frames: frames, result: dist };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

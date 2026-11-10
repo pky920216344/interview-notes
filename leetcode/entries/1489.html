@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>找到最小生成树里的关键边和伪关键边 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 942 / 1159</span>
+  <nav class="pn"><a href="1202.html">上一篇</a><a href="1319.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1489. </span>找到最小生成树里的关键边和伪关键边</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 1</li><li class="algo">图算法</li><li class="aux">并查集</li><li class="tag">并查集</li><li class="tag">图</li><li class="tag">kruskals-algorithm</li><li class="tag">最小生成树</li><li class="tag">prims-algorithm</li><li class="tag">排序</li><li class="tag">强连通分量</li><li class="tag">boruvkas-algorithm</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">先求 MST 总权 base；对每条边 e：强制排除 e 再跑 Kruskal 变贵（或断开）→ 关键边，否则强制选 e 仍能取到 base → 伪关键边。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>按权排序跑一遍 Kruskal 得到 <code>base</code>（真 MST 权值和），并查集判环。</li><li><strong>关键边</strong>：排除 e 再跑，总权 &gt; base（或根本连不通）——没有它 MST 变贵，说明每棵 MST 都含它。</li><li><strong>伪关键边</strong>：不关键（排除后仍能取到 base）且强制选 e 再跑总权 == base——存在含它的 MST，但不是唯一选择。</li><li>两次判定各用一次带「排除位/强制位」的 Kruskal，总共 O(E) 次，E ≤ 200 完全够快。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(E²·α(n))，空间复杂度 O(n)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">4</span>    <span class="k">private</span> <span class="k">int</span>[] pa;</span><span class="ln"><span class="no">5</span> </span><span class="ln"><span class="no">6</span>    <span class="k">public</span> <span class="t">List</span>&lt;<span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; findCriticalAndPseudoCriticalEdges(<span class="k">int</span> n, <span class="k">int</span>[][] edges) {</span><span class="ln"><span class="no">7</span>        <span class="k">int</span> m = edges.length;</span><span class="ln"><span class="no">8</span>        <span class="t">Integer</span>[] idx = <span class="k">new</span> <span class="t">Integer</span>[m];   <span class="c">// 按权值排序后的边下标</span></span><span class="ln"><span class="no">9</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) idx[i] = i;</span><span class="ln"><span class="no">10</span>        <span class="t">Arrays</span>.sort(idx, (a, b) -&gt; edges[a][<span class="n">2</span>] - edges[b][<span class="n">2</span>]);</span><span class="ln"><span class="no">11</span> </span><span class="ln"><span class="no">12</span>        <span class="k">int</span> base = run(n, edges, idx, -<span class="n">1</span>, -<span class="n">1</span>);   <span class="c">// 真 MST 的权值和</span></span><span class="ln"><span class="no">13</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; critical = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;(), pseudo = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">14</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; m; i++) {</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (run(n, edges, idx, i, -<span class="n">1</span>) &gt; base) critical.add(i);   <span class="c">// 不含 i 会变贵或断开 → 关键边</span></span><span class="ln"><span class="no">16</span>            <span class="k">else</span> <span class="k">if</span> (run(n, edges, idx, -<span class="n">1</span>, i) == base) pseudo.add(i);   <span class="c">// 强制含 i 仍最优 → 伪关键边</span></span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> <span class="t">Arrays</span>.asList(critical, pseudo);</span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span> </span><span class="ln"><span class="no">21</span>    <span class="c">/** 跑一遍 Kruskal：跳过 exclude，强制先选 include；选不满 n-1 条说明不连通，返回极大值。 */</span></span><span class="ln"><span class="no">22</span>    <span class="k">private</span> <span class="k">int</span> run(<span class="k">int</span> n, <span class="k">int</span>[][] edges, <span class="t">Integer</span>[] idx, <span class="k">int</span> exclude, <span class="k">int</span> include) {</span><span class="ln"><span class="no">23</span>        pa = <span class="k">new</span> <span class="k">int</span>[n];</span><span class="ln"><span class="no">24</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) pa[i] = i;</span><span class="ln"><span class="no">25</span>        <span class="k">int</span> total = <span class="n">0</span>, picked = <span class="n">0</span>;</span><span class="ln"><span class="no">26</span>        <span class="k">if</span> (include &gt;= <span class="n">0</span>) {</span><span class="ln"><span class="no">27</span>            total += edges[include][<span class="n">2</span>];</span><span class="ln"><span class="no">28</span>            picked++;</span><span class="ln"><span class="no">29</span>            union(edges[include][<span class="n">0</span>], edges[include][<span class="n">1</span>]);</span><span class="ln"><span class="no">30</span>        }</span><span class="ln"><span class="no">31</span>        <span class="k">for</span> (<span class="k">int</span> i : idx) {</span><span class="ln"><span class="no">32</span>            <span class="k">if</span> (i == exclude || i == include) <span class="k">continue</span>;</span><span class="ln"><span class="no">33</span>            <span class="k">if</span> (find(edges[i][<span class="n">0</span>]) != find(edges[i][<span class="n">1</span>])) {</span><span class="ln"><span class="no">34</span>                union(edges[i][<span class="n">0</span>], edges[i][<span class="n">1</span>]);</span><span class="ln"><span class="no">35</span>                total += edges[i][<span class="n">2</span>];</span><span class="ln"><span class="no">36</span>                <span class="k">if</span> (++picked == n - <span class="n">1</span>) <span class="k">break</span>;</span><span class="ln"><span class="no">37</span>            }</span><span class="ln"><span class="no">38</span>        }</span><span class="ln"><span class="no">39</span>        <span class="k">return</span> picked == n - <span class="n">1</span> ? total : <span class="t">Integer</span>.MAX_VALUE;</span><span class="ln"><span class="no">40</span>    }</span><span class="ln"><span class="no">41</span> </span><span class="ln"><span class="no">42</span>    <span class="k">private</span> <span class="k">void</span> union(<span class="k">int</span> a, <span class="k">int</span> b) {</span><span class="ln"><span class="no">43</span>        pa[find(a)] = find(b);</span><span class="ln"><span class="no">44</span>    }</span><span class="ln"><span class="no">45</span> </span><span class="ln"><span class="no">46</span>    <span class="k">private</span> <span class="k">int</span> find(<span class="k">int</span> x) {</span><span class="ln"><span class="no">47</span>        <span class="k">while</span> (pa[x] != x) {</span><span class="ln"><span class="no">48</span>            pa[x] = pa[pa[x]];   <span class="c">// 路径减半</span></span><span class="ln"><span class="no">49</span>            x = pa[x];</span><span class="ln"><span class="no">50</span>        }</span><span class="ln"><span class="no">51</span>        <span class="k">return</span> x;</span><span class="ln"><span class="no">52</span>    }</span><span class="ln"><span class="no">53</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个 <code>n</code>&nbsp;个点的带权无向连通图，节点编号为 <code>0</code>&nbsp;到 <code>n-1</code>&nbsp;，同时还有一个数组 <code>edges</code>&nbsp;，其中 <code>edges[i] = [from</code><code><sub>i</sub>, to<sub>i</sub>, weight<sub>i</sub>]</code>&nbsp;表示在&nbsp;<code>from<sub>i</sub></code>&nbsp;和&nbsp;<code>to<sub>i</sub></code>&nbsp;节点之间有一条带权无向边。最小生成树&nbsp;(MST) 是给定图中边的一个子集，它连接了所有节点且没有环，而且这些边的权值和最小。</p>
+
+<p>请你找到给定图中最小生成树的所有关键边和伪关键边。如果从图中删去某条边，会导致最小生成树的权值和增加，那么我们就说它是一条关键边。伪关键边则是可能会出现在某些最小生成树中但不会出现在所有最小生成树中的边。</p>
+
+<p>请注意，你可以分别以任意顺序返回关键边的下标和伪关键边的下标。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<p><img alt="" src="../assets/img/22460e7928ee.png" style="height: 262px; width: 259px;"></p>
+
+<pre><strong>输入：</strong>n = 5, edges = [[0,1,1],[1,2,1],[2,3,2],[0,3,2],[0,4,3],[3,4,3],[1,4,6]]
+<strong>输出：</strong>[[0,1],[2,3,4,5]]
+<strong>解释：</strong>上图描述了给定图。
+下图是所有的最小生成树。
+<img alt="" src="../assets/img/407442207e5c.png" style="height: 553px; width: 540px;">
+注意到第 0 条边和第 1 条边出现在了所有最小生成树中，所以它们是关键边，我们将这两个下标作为输出的第一个列表。
+边 2，3，4 和 5 是所有 MST 的剩余边，所以它们是伪关键边。我们将它们作为输出的第二个列表。
+</pre>
+
+<p><strong>示例 2 ：</strong></p>
+
+<p><img alt="" src="../assets/img/efd6de64095c.png" style="height: 253px; width: 247px;"></p>
+
+<pre><strong>输入：</strong>n = 4, edges = [[0,1,1],[1,2,1],[2,3,1],[0,3,1]]
+<strong>输出：</strong>[[],[0,1,2,3]]
+<strong>解释：</strong>可以观察到 4 条边都有相同的权值，任选它们中的 3 条可以形成一棵 MST 。所以 4 条边都是伪关键边。
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>2 &lt;= n &lt;= 100</code></li>
+	<li><code>1 &lt;= edges.length &lt;= min(200, n * (n - 1) / 2)</code></li>
+	<li><code>edges[i].length == 3</code></li>
+	<li><code>0 &lt;= from<sub>i</sub> &lt; to<sub>i</sub> &lt; n</code></li>
+	<li><code>1 &lt;= weight<sub>i</sub>&nbsp;&lt;= 1000</code></li>
+	<li>所有 <code>(from<sub>i</sub>, to<sub>i</sub>)</code>&nbsp;数对都是互不相同的。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Solution {", "    private int[] pa;", "", "    public List<List<Integer>> findCriticalAndPseudoCriticalEdges(int n, int[][] edges) {", "        int m = edges.length;", "        Integer[] idx = new Integer[m];   // 按权值排序后的边下标", "        for (int i = 0; i < m; i++) idx[i] = i;", "        Arrays.sort(idx, (a, b) -> edges[a][2] - edges[b][2]);", "", "        int base = run(n, edges, idx, -1, -1);   // 真 MST 的权值和", "        List<Integer> critical = new ArrayList<>(), pseudo = new ArrayList<>();", "        for (int i = 0; i < m; i++) {", "            if (run(n, edges, idx, i, -1) > base) critical.add(i);   // 不含 i 会变贵或断开 → 关键边", "            else if (run(n, edges, idx, -1, i) == base) pseudo.add(i);   // 强制含 i 仍最优 → 伪关键边", "        }", "        return Arrays.asList(critical, pseudo);", "    }", "", "    /** 跑一遍 Kruskal：跳过 exclude，强制先选 include；选不满 n-1 条说明不连通，返回极大值。 */", "    private int run(int n, int[][] edges, Integer[] idx, int exclude, int include) {", "        pa = new int[n];", "        for (int i = 0; i < n; i++) pa[i] = i;", "        int total = 0, picked = 0;", "        if (include >= 0) {", "            total += edges[include][2];", "            picked++;", "            union(edges[include][0], edges[include][1]);", "        }", "        for (int i : idx) {", "            if (i == exclude || i == include) continue;", "            if (find(edges[i][0]) != find(edges[i][1])) {", "                union(edges[i][0], edges[i][1]);", "                total += edges[i][2];", "                if (++picked == n - 1) break;", "            }", "        }", "        return picked == n - 1 ? total : Integer.MAX_VALUE;", "    }", "", "    private void union(int a, int b) {", "        pa[find(a)] = find(b);", "    }", "", "    private int find(int x) {", "        while (pa[x] != x) {", "            pa[x] = pa[pa[x]];   // 路径减半", "            x = pa[x];", "        }", "        return x;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1489. 找到最小生成树里的关键边和伪关键边 —— 图解：复刻 Solution.java 的 Kruskal 判定法，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { n: 4, edges: [[0, 1, 1], [1, 2, 1], [2, 3, 1], [0, 3, 1]] };
+
+function trace(input) {
+  var n = input.n, edges = input.edges, m = edges.length;
+  var idx = [];
+  for (var i = 0; i < m; i++) idx.push(i);
+  idx.sort(function (a, b) { return edges[a][2] - edges[b][2]; });   // 稳定排序，和 Java 一致
+  var frames = [];
+  var varBase = null, varTest = null, varW1 = null, varW2 = null, varVerdict = null;
+
+  function find(pa, x) { while (pa[x] !== x) { pa[x] = pa[pa[x]]; x = pa[x]; } return x; }
+
+  // 与 Java 的 run 完全一致：返回 { total, picked, order }，order 是按选中顺序的边下标
+  function run(exclude, include) {
+    var pa = [];
+    for (var i = 0; i < n; i++) pa[i] = i;
+    var total = 0, picked = 0, order = [];
+    function link(a, b) { pa[find(pa, a)] = find(pa, b); }
+    if (include >= 0) { total += edges[include][2]; picked++; order.push(include); link(edges[include][0], edges[include][1]); }
+    for (var k = 0; k < m; k++) {
+      var i = idx[k];
+      if (i === exclude || i === include) continue;
+      if (find(pa, edges[i][0]) !== find(pa, edges[i][1])) {
+        link(edges[i][0], edges[i][1]);
+        total += edges[i][2];
+        order.push(i);
+        if (++picked === n - 1) break;
+      }
+    }
+    return { total: picked === n - 1 ? total : Infinity, picked: picked, order: order };
+  }
+
+  // 边面板：按排序后的 idx 展示；marks 是 { 边下标: cls }
+  function edgesPanel(marks) {
+    var items = idx.map(function (i) {
+      return i + ': ' + edges[i][0] + '-' + edges[i][1] + ' (w=' + edges[i][2] + ')';
+    });
+    var mm = {};
+    idx.forEach(function (i, pos) { if (marks[i]) mm[pos] = marks[i]; });
+    return Viz.cells(items, { title: '按权排序的边（下标: 端点 (权)）', marks: mm });
+  }
+  function varsPanel() {
+    var items = [];
+    if (varBase !== null) items.push({ name: 'MST 总权 base', v: varBase, cls: 'win' });
+    if (varTest !== null) items.push({ name: '正在测的边', v: varTest, cls: 'cur' });
+    if (varW1 !== null) items.push({ name: '不含它时最小总权', v: varW1 });
+    if (varW2 !== null) items.push({ name: '强制含它时总权', v: varW2 });
+    if (varVerdict !== null) items.push({ name: '结论', v: varVerdict, cls: 'done' });
+    return Viz.vars(items);
+  }
+  function fmtW(w) { return w === Infinity ? '∞（断开）' : w; }
+
+  var base = run(-1, -1);
+  varBase = base.total;
+  var baseMarks = {};
+  base.order.forEach(function (i) { baseMarks[i] = 'win'; });
+  for (var i0 = 0; i0 < m; i0++) if (!(i0 in baseMarks)) baseMarks[i0] = 'dim';
+  frames.push(Viz.frame('int base = run(n, edges, idx, -1, -1);',
+    '先跑一遍 Kruskal：选满 n-1 条边，总权 base=' + base.total + '（灰的是没用上的）',
+    [edgesPanel(baseMarks), varsPanel()]));
+
+  var critical = [], pseudo = [];
+  for (var i = 0; i < m; i++) {
+    var w1 = run(i, -1);
+    if (i === 0) {   // 第一条边（也是故事里的演示边）：展示「排除测试」
+      varTest = i; varW1 = fmtW(w1.total);
+      var isCrit = w1.total > base.total;
+      varVerdict = isCrit ? '关键边' : '不是关键边';
+      frames.push(Viz.frame('if (run(n, edges, idx, i, -1) > base) critical.add(i);',
+        '边 0：强制排除再跑 Kruskal，总权 ' + fmtW(w1.total) + (isCrit ? ' > base=' + base.total + ' → 关键边' : ' 仍 = base → 不是关键边'),
+        [edgesPanel(singleMark(i, 'cur')), varsPanel()]));
+    }
+    if (w1.total > base.total) {
+      critical.push(i);
+    } else {
+      var w2 = run(-1, i);
+      if (w2.total === base.total) {
+        pseudo.push(i);
+        if (i === 0) {   // 展示「强制含入测试」
+          varW2 = fmtW(w2.total); varVerdict = '伪关键边';
+          frames.push(Viz.frame('else if (run(n, edges, idx, -1, i) == base) pseudo.add(i);',
+            '边 0：强制含它再跑，总权 ' + w2.total + ' == base → 某 MST 含它、并非必须有 → 伪关键边',
+            [edgesPanel(singleMark(i, 'cur')), varsPanel()]));
+        }
+      }
+    }
+    varW1 = null; varW2 = null; varVerdict = null; varTest = null;
+  }
+
+  critical.sort(function (a, b) { return a - b; });
+  pseudo.sort(function (a, b) { return a - b; });
+  frames.push(Viz.frame('return Arrays.asList(critical, pseudo);',
+    '关键边 [' + critical.join(',') + ']，伪关键边 [' + pseudo.join(',') + ']',
+    [edgesPanel({}), varsPanel()]));
+
+  return { frames: frames, result: [critical, pseudo] };
+}
+
+function singleMark(idx0, cls) { var m = {}; m[idx0] = cls; return m; }
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

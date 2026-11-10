@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字符串转换整数 (atoi) · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 54 / 1159</span>
+  <nav class="pn"><a href="0043.html">上一篇</a><a href="0002.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">8. </span>字符串转换整数 (atoi)</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 134</li><li class="algo">模拟</li><li class="tag">字符串</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">顺序扫描：跳过前导空格 → 读一个正负号 → 逐位读数字；用 long 累加，每步检查越界即停，最后夹回 int。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>四个阶段一路 <code>i++</code>：跳空格 → 最多一个正负号 → 连续数字 → 遇到非数字立即停，一个数字没读到就返回 0。</li><li><code>long res</code> 逐位 <code>res * 10 + d</code>；每步检查 <code>res &gt; Integer.MAX_VALUE</code> 就 <code>break</code>，后面的数字不用再看。</li><li>一旦停住，<code>res</code> 最多刚超一点，<code>long</code> 装得下，永远不会溢出。</li><li>最后带上符号用 <code>Math.max/min</code> 夹回 <code>[-2^31, 2^31-1]</code>：<code>-2147483648</code> 这种边界也能被正确夹住。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> myAtoi(<span class="t">String</span> s) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = s.length();</span><span class="ln"><span class="no">4</span>        <span class="k">int</span> i = <span class="n">0</span>;</span><span class="ln"><span class="no">5</span>        <span class="c">// 1. 跳过前导空格</span></span><span class="ln"><span class="no">6</span>        <span class="k">while</span> (i &lt; n &amp;&amp; s.charAt(i) == <span class="s">' '</span>) i++;</span><span class="ln"><span class="no">7</span>        <span class="c">// 2. 最多读一个正负号</span></span><span class="ln"><span class="no">8</span>        <span class="k">int</span> sign = <span class="n">1</span>;</span><span class="ln"><span class="no">9</span>        <span class="k">if</span> (i &lt; n &amp;&amp; (s.charAt(i) == <span class="s">'+'</span> || s.charAt(i) == <span class="s">'-'</span>)) {</span><span class="ln"><span class="no">10</span>            <span class="k">if</span> (s.charAt(i) == <span class="s">'-'</span>) sign = -<span class="n">1</span>;</span><span class="ln"><span class="no">11</span>            i++;</span><span class="ln"><span class="no">12</span>        }</span><span class="ln"><span class="no">13</span>        <span class="c">// 3. 逐位读数字，一遇到非数字就停</span></span><span class="ln"><span class="no">14</span>        <span class="k">long</span> res = <span class="n">0</span>;</span><span class="ln"><span class="no">15</span>        <span class="k">while</span> (i &lt; n &amp;&amp; s.charAt(i) &gt;= <span class="s">'0'</span> &amp;&amp; s.charAt(i) &lt;= <span class="s">'9'</span>) {</span><span class="ln"><span class="no">16</span>            res = res * <span class="n">10</span> + (s.charAt(i) - <span class="s">'0'</span>);</span><span class="ln"><span class="no">17</span>            <span class="c">// 一旦越过 int 上界就停：后面只会更大</span></span><span class="ln"><span class="no">18</span>            <span class="k">if</span> (res &gt; <span class="t">Integer</span>.MAX_VALUE) <span class="k">break</span>;</span><span class="ln"><span class="no">19</span>            i++;</span><span class="ln"><span class="no">20</span>        }</span><span class="ln"><span class="no">21</span>        <span class="c">// 4. 带上符号，夹回 int 范围（-2^31 恰好能被夹住）</span></span><span class="ln"><span class="no">22</span>        <span class="k">if</span> (sign &lt; <span class="n">0</span>) res = -res;</span><span class="ln"><span class="no">23</span>        <span class="k">return</span> (<span class="k">int</span>) <span class="t">Math</span>.max(<span class="t">Integer</span>.MIN_VALUE, <span class="t">Math</span>.min(<span class="t">Integer</span>.MAX_VALUE, res));</span><span class="ln"><span class="no">24</span>    }</span><span class="ln"><span class="no">25</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>请你来实现一个&nbsp;<code>myAtoi(string s)</code>&nbsp;函数，使其能将字符串转换成一个 32 位有符号整数。</p>
+
+<p>函数&nbsp;<code>myAtoi(string s)</code> 的算法如下：</p>
+
+<ol>
+	<li><strong>空格：</strong>读入字符串并丢弃无用的前导空格（<code>" "</code>）</li>
+	<li><strong>符号：</strong>检查下一个字符（假设还未到字符末尾）为&nbsp;<code>'-'</code> 还是 <code>'+'</code>。如果两者都不存在，则假定结果为正。</li>
+	<li><strong>转换：</strong>通过跳过前置零来读取该整数，直到遇到非数字字符或到达字符串的结尾。如果没有读取数字，则结果为0。</li>
+	<li><b>舍入：</b>如果整数数超过 32 位有符号整数范围 <code>[−2<sup>31</sup>,&nbsp; 2<sup>31&nbsp;</sup>− 1]</code> ，需要截断这个整数，使其保持在这个范围内。具体来说，小于 <code>−2<sup>31</sup></code> 的整数应该被舍入为 <code>−2<sup>31</sup></code> ，大于 <code>2<sup>31&nbsp;</sup>− 1</code> 的整数应该被舍入为 <code>2<sup>31&nbsp;</sup>− 1</code> 。</li>
+</ol>
+
+<p>返回整数作为最终结果。</p>
+
+
+
+<p><strong class="example">示例&nbsp;1：</strong></p>
+
+<div class="example-block">
+<p><strong>输入：</strong><span class="example-io">s = "42"</span></p>
+
+<p><strong>输出：</strong><span class="example-io">42</span></p>
+
+<p><strong>解释：</strong>加粗的字符串为已经读入的字符，插入符号是当前读取的字符。</p>
+
+<pre>
+带下划线线的字符是所读的内容，插入符号是当前读入位置。
+第 1 步："42"（当前没有读入字符，因为没有前导空格）
+         ^
+第 2 步："42"（当前没有读入字符，因为这里不存在 '-' 或者 '+'）
+         ^
+第 3 步："<u>42</u>"（读入 "42"）
+           ^
+</pre>
+</div>
+
+<p><strong class="example">示例&nbsp;2：</strong></p>
+
+<div class="example-block">
+<p><strong>输入：</strong><span class="example-io">s = " -042"</span></p>
+
+<p><strong>输出：</strong><span class="example-io">-42</span></p>
+
+<p><strong>解释：</strong></p>
+
+<pre>
+第 1 步："<u></u>-042"（读入前导空格，但忽视掉）
+            ^
+第 2 步："   <u>-</u>042"（读入 '-' 字符，所以结果应该是负数）
+             ^
+第 3 步："   <u>-042</u>"（读入 "042"，在结果中忽略前导零）
+               ^
+</pre>
+</div>
+
+<p><strong class="example">示例&nbsp;3：</strong></p>
+
+<div class="example-block">
+<p><strong>输入：</strong><span class="example-io">s = "</span>1337c0d3<span class="example-io">"</span></p>
+
+<p><strong>输出：</strong><span class="example-io">1337</span></p>
+
+<p><strong>解释：</strong></p>
+
+<pre>
+第 1 步："1337c0d3"（当前没有读入字符，因为没有前导空格）
+         ^
+第 2 步："1337c0d3"（当前没有读入字符，因为这里不存在 '-' 或者 '+'）
+         ^
+第 3 步："1337c0d3"（读入 "1337"；由于下一个字符不是一个数字，所以读入停止）
+             ^
+</pre>
+</div>
+
+<p><strong class="example">示例 4：</strong></p>
+
+<div class="example-block">
+<p><strong>输入：</strong><span class="example-io">s = "0-1"</span></p>
+
+<p><span class="example-io"><b>输出：</b>0</span></p>
+
+<p><strong>解释：</strong></p>
+
+<pre>
+第 1 步："0-1" (当前没有读入字符，因为没有前导空格)
+         ^
+第 2 步："0-1" (当前没有读入字符，因为这里不存在 '-' 或者 '+')
+         ^
+第 3 步："<u>0</u>-1" (读入 "0"；由于下一个字符不是一个数字，所以读入停止)
+          ^
+</pre>
+</div>
+
+<p><strong class="example">示例 5：</strong></p>
+
+<div class="example-block">
+<p><strong>输入：</strong><span class="example-io">s = "words and 987"</span></p>
+
+<p><strong>输出：</strong><span class="example-io">0</span></p>
+
+<p><strong>解释：</strong></p>
+
+<p>读取在第一个非数字字符“w”处停止。</p>
+</div>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>0 &lt;= s.length &lt;= 200</code></li>
+	<li><code>s</code> 由英文字母（大写和小写）、数字（<code>0-9</code>）、<code>' '</code>、<code>'+'</code>、<code>'-'</code> 和 <code>'.'</code> 组成</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int myAtoi(String s) {", "        int n = s.length();", "        int i = 0;", "        // 1. 跳过前导空格", "        while (i < n && s.charAt(i) == ' ') i++;", "        // 2. 最多读一个正负号", "        int sign = 1;", "        if (i < n && (s.charAt(i) == '+' || s.charAt(i) == '-')) {", "            if (s.charAt(i) == '-') sign = -1;", "            i++;", "        }", "        // 3. 逐位读数字，一遇到非数字就停", "        long res = 0;", "        while (i < n && s.charAt(i) >= '0' && s.charAt(i) <= '9') {", "            res = res * 10 + (s.charAt(i) - '0');", "            // 一旦越过 int 上界就停：后面只会更大", "            if (res > Integer.MAX_VALUE) break;", "            i++;", "        }", "        // 4. 带上符号，夹回 int 范围（-2^31 恰好能被夹住）", "        if (sign < 0) res = -res;", "        return (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, res));", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 8. 字符串转换整数 (atoi) —— 图解：复刻 Solution.java 的「顺序扫描 + long 累加 + 夹回 int」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { s: ' -2147483648' };   // 专挑 int 下界这格：最容易错
+
+function trace(input) {
+  var s = input.s;
+  var n = s.length;
+  var frames = [];
+  var i = 0, sign = 1, res = 0, broke = false;
+  var sh = function (c) { return c === ' ' ? '␣' : c; };
+
+  function strPanel(o) {
+    var marks = {};
+    var k;
+    for (k = 0; k < o.consumed; k++) marks[k] = 'win';
+    if (o.done) { for (k = 0; k < n; k++) marks[k] = 'done'; }
+    else if (o.cur != null && o.cur >= 0 && o.cur < n) marks[o.cur] = 'cur';
+    var pointers = !o.done && o.cur != null && o.cur >= 0 && o.cur < n ? [{ at: o.cur, label: 'i', cls: 'p-cur' }] : [];
+    return Viz.cells(s.split('').map(sh), { title: '字符串 s', marks: marks, pointers: pointers });
+  }
+  function varsPanel(extra) {
+    var items = [
+      { name: 'sign', v: sign, cls: sign < 0 ? 'chg' : '' },
+      { name: 'res', v: res, cls: 'hit' }
+    ];
+    return Viz.vars(extra ? items.concat(extra) : items);
+  }
+  function snap(at, key, o, extra) { frames.push(Viz.frame(at, key, [strPanel(o), varsPanel(extra)])); }
+
+  snap('int i = 0;', '开局：i 从 0 出发，先跳过前导空格', { consumed: 0, cur: 0 });
+
+  while (i < n && s[i] === ' ') i++;
+  snap("while (i < n && s.charAt(i) == ' ') i++;",
+    '前导空格全跳过，i 停在第一个非空格上',
+    { consumed: 0, cur: Math.min(i, n - 1) });
+
+  if (i < n && (s[i] === '+' || s[i] === '-')) {
+    if (s[i] === '-') sign = -1;
+    i++;
+    snap("if (s.charAt(i) == '-') sign = -1;",
+      '读走符号「' + (sign < 0 ? '-' : '+') + '」：sign = ' + sign + '（最多读一个）',
+      { consumed: i, cur: Math.min(i, n - 1) });
+  }
+
+  while (i < n && s[i] >= '0' && s[i] <= '9') {
+    res = res * 10 + (s.charCodeAt(i) - 48);
+    if (res > 2147483647) {
+      broke = true;
+      snap('if (res > Integer.MAX_VALUE) break;',
+        'res = ' + res + ' 已超过 2^31-1：立刻停，后面的数字不用看',
+        { consumed: i, cur: i }, [{ name: '状态', v: '越界，待夹回', cls: 'bad' }]);
+      break;
+    }
+    i++;
+  }
+
+  if (sign < 0) res = -res;
+  var out = Math.max(-2147483648, Math.min(2147483647, res));
+  snap('return (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, res));',
+    broke
+      ? (out === res ? '带上符号是 ' + res + '，恰好还在 int 范围内，直接返回' : '带上符号是 ' + res + '，越界了，夹回 ' + out)
+      : (i < n ? '遇到非数字，停在 i=' + i + '：返回 ' + out : '读完全部数字：返回 ' + out),
+    { consumed: n, done: true }, [{ name: '返回', v: out, cls: 'done' }]);
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

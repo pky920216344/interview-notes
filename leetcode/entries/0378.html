@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>有序矩阵中第 K 小的元素 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 189 / 1159</span>
+  <nav class="pn"><a href="0673.html">上一篇</a><a href="0051.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">378. </span>有序矩阵中第 K 小的元素</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 27</li><li class="algo">二分查找</li><li class="aux">双指针</li><li class="tag">数组</li><li class="tag">二分查找</li><li class="tag">矩阵</li><li class="tag">排序</li><li class="tag">堆（优先队列）</li><li class="st-ok" title="由本项目提交并通过">力扣已通过</li></ul>
+<p class="idea">值域二分：在 [最小值, 最大值] 上猜 mid，用左下角阶梯走法 O(n) 数出 ≤ mid 的个数，不够 k 就抬高下界。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>不在矩阵里二分，在<strong>值域</strong>上二分：<code>low = matrix[0][0]</code>，<code>high = matrix[n-1][n-1]</code>。</li><li><code>count(≤ mid)</code> 有单调性，从<strong>左下角</strong>走阶梯：<code>≤ mid</code> 就整列都算上（<code>count += row+1</code>）往右走，否则往上走，一趟 O(n)。</li><li><code>count &lt; k</code> → 答案 &gt; mid，<code>low = mid + 1</code>；否则 <code>high = mid</code>。</li><li>收敛到 <code>low == high</code> 时它一定是矩阵里真实存在的数；端点 ±10⁹ 会溢出 int，用 <code>long</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n log(max−min))，空间复杂度 O(1)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> kthSmallest(<span class="k">int</span>[][] matrix, <span class="k">int</span> k) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = matrix.length;</span><span class="ln"><span class="no">4</span>        <span class="c">// 不在矩阵里二分，在「值域」上二分：答案夹在最小值和最大值之间；</span></span><span class="ln"><span class="no">5</span>        <span class="c">// 端点能到 ±10^9，差值会超 int，用 long 防溢出</span></span><span class="ln"><span class="no">6</span>        <span class="k">long</span> low = matrix[<span class="n">0</span>][<span class="n">0</span>], high = matrix[n - <span class="n">1</span>][n - <span class="n">1</span>];</span><span class="ln"><span class="no">7</span>        <span class="k">while</span> (low &lt; high) {</span><span class="ln"><span class="no">8</span>            <span class="k">long</span> mid = low + (high - low) / <span class="n">2</span>;</span><span class="ln"><span class="no">9</span>            <span class="c">// 从左下角沿阶梯数一遍 ≤ mid 的个数，一趟 O(n)</span></span><span class="ln"><span class="no">10</span>            <span class="k">int</span> count = <span class="n">0</span>;</span><span class="ln"><span class="no">11</span>            <span class="k">for</span> (<span class="k">int</span> row = n - <span class="n">1</span>, col = <span class="n">0</span>; row &gt;= <span class="n">0</span> &amp;&amp; col &lt; n; ) {</span><span class="ln"><span class="no">12</span>                <span class="k">if</span> (matrix[row][col] &lt;= mid) { count += row + <span class="n">1</span>; col++; }</span><span class="ln"><span class="no">13</span>                <span class="k">else</span> row--;</span><span class="ln"><span class="no">14</span>            }</span><span class="ln"><span class="no">15</span>            <span class="k">if</span> (count &lt; k) low = mid + <span class="n">1</span>;   <span class="c">// ≤ mid 的不够 k 个：答案比 mid 大</span></span><span class="ln"><span class="no">16</span>            <span class="k">else</span> high = mid;                <span class="c">// 够了：答案 ≤ mid，mid 本身可能就是</span></span><span class="ln"><span class="no">17</span>        }</span><span class="ln"><span class="no">18</span>        <span class="k">return</span> (<span class="k">int</span>) low;   <span class="c">// 收敛到的 low 一定是矩阵里真实存在的数</span></span><span class="ln"><span class="no">19</span>    }</span><span class="ln"><span class="no">20</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你一个&nbsp;<code>n x n</code><em>&nbsp;</em>矩阵&nbsp;<code>matrix</code> ，其中每行和每列元素均按升序排序，找到矩阵中第 <code>k</code> 小的元素。<br />
+请注意，它是 <strong>排序后</strong> 的第 <code>k</code> 小元素，而不是第 <code>k</code> 个 <strong>不同</strong> 的元素。</p>
+
+<p>你必须找到一个内存复杂度优于&nbsp;<code>O(n<sup>2</sup>)</code> 的解决方案。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>matrix = [[1,5,9],[10,11,13],[12,13,15]], k = 8
+<strong>输出：</strong>13
+<strong>解释：</strong>矩阵中的元素为 [1,5,9,10,11,12,13,<strong>13</strong>,15]，第 8 小元素是 13
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>matrix = [[-5]], k = 1
+<strong>输出：</strong>-5
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == matrix.length</code></li>
+	<li><code>n == matrix[i].length</code></li>
+	<li><code>1 &lt;= n &lt;= 300</code></li>
+	<li><code>-10<sup>9</sup> &lt;= matrix[i][j] &lt;= 10<sup>9</sup></code></li>
+	<li>题目数据 <strong>保证</strong> <code>matrix</code> 中的所有行和列都按 <strong>非递减顺序</strong> 排列</li>
+	<li><code>1 &lt;= k &lt;= n<sup>2</sup></code></li>
+</ul>
+
+
+
+<p><strong>进阶：</strong></p>
+
+<ul>
+	<li>你能否用一个恒定的内存(即 <code>O(1)</code> 内存复杂度)来解决这个问题?</li>
+	<li>你能在 <code>O(n)</code> 的时间复杂度下解决这个问题吗?这个方法对于面试来说可能太超前了，但是你会发现阅读这篇文章（&nbsp;<a href="http://www.cse.yorku.ca/~andy/pubs/X+Y.pdf" target="_blank">this paper</a>&nbsp;）很有趣。</li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int kthSmallest(int[][] matrix, int k) {", "        int n = matrix.length;", "        // 不在矩阵里二分，在「值域」上二分：答案夹在最小值和最大值之间；", "        // 端点能到 ±10^9，差值会超 int，用 long 防溢出", "        long low = matrix[0][0], high = matrix[n - 1][n - 1];", "        while (low < high) {", "            long mid = low + (high - low) / 2;", "            // 从左下角沿阶梯数一遍 ≤ mid 的个数，一趟 O(n)", "            int count = 0;", "            for (int row = n - 1, col = 0; row >= 0 && col < n; ) {", "                if (matrix[row][col] <= mid) { count += row + 1; col++; }", "                else row--;", "            }", "            if (count < k) low = mid + 1;   // ≤ mid 的不够 k 个：答案比 mid 大", "            else high = mid;                // 够了：答案 ≤ mid，mid 本身可能就是", "        }", "        return (int) low;   // 收敛到的 low 一定是矩阵里真实存在的数", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 378. 有序矩阵中第K小的元素 —— 图解：复刻 Solution.java 的「值域二分 + 左下角阶梯计数」，在 5 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { matrix: [[1, 5, 9], [10, 11, 13], [12, 13, 15]], k: 8 };
+
+function trace(input) {
+  var matrix = input.matrix, k = input.k;
+  var n = matrix.length;
+  var frames = [];
+
+  var A_MID = 'long mid = low + (high - low) / 2;';
+  var A_WALK = 'for (int row = n - 1, col = 0; row >= 0 && col < n; ) {';
+  var A_LOW = 'if (count < k) low = mid + 1;';
+  var A_HIGH = 'else high = mid;';
+  var A_RET = 'return (int) low;';
+
+  var rowsLbl = [], colsLbl = [];
+  for (var i = 0; i < n; i++) { rowsLbl.push(String(i)); colsLbl.push(String(i)); }
+
+  function gridPanel(marks, doneCell) {
+    var m = marks || {};
+    if (doneCell) m[doneCell[0] + ',' + doneCell[1]] = 'done';
+    return Viz.grid(matrix, {
+      title: 'matrix（行列都升序）', marks: m,
+      rowLabels: rowsLbl, colLabels: colsLbl, corner: 'r＼c'
+    });
+  }
+
+  function varsPanel(low, high, mid, count, emph) {
+    function v(name, val) { return { name: name, v: val, cls: emph === name ? 'chg' : '' }; }
+    var items = [v('low', low), v('high', high)];
+    if (mid != null) items.push(v('mid', mid));
+    if (count != null) items.push(v('count', count));
+    return Viz.vars(items);
+  }
+
+  // 左下角沿阶梯走一趟，数 ≤ mid 的个数；记录走过的格子 [r, c, 是否 ≤ mid]
+  function countLE(mid) {
+    var count = 0, path = [];
+    for (var row = n - 1, col = 0; row >= 0 && col < n; ) {
+      if (matrix[row][col] <= mid) { count += row + 1; path.push([row, col, true]); col++; }
+      else { path.push([row, col, false]); row--; }
+    }
+    return { count: count, path: path };
+  }
+
+  function pathMarks(path) {
+    var m = {};
+    path.forEach(function (p) { m[p[0] + ',' + p[1]] = p[2] ? 'hit' : 'dim'; });
+    return m;
+  }
+
+  var low = matrix[0][0], high = matrix[n - 1][n - 1];
+  var f1 = false, f2 = false, f3 = false, f4 = false;
+
+  while (low < high) {
+    var mid = low + Math.floor((high - low) / 2);
+    if (!f1) {
+      f1 = true;
+      frames.push(Viz.frame(A_MID, '开局：值域 [' + low + ', ' + high + ']，取 mid = ' + mid + '，在值域上二分',
+        [gridPanel(null), varsPanel(low, high, mid, null, 'mid')]));
+    }
+    var w = countLE(mid);
+    if (!f2 && w.count < k) {
+      f2 = true;
+      frames.push(Viz.frame(A_WALK, '从左下角沿阶梯数 ≤ ' + mid + ' 的：亮格整列都算上，只有 ' + w.count + ' 个',
+        [gridPanel(pathMarks(w.path)), varsPanel(low, high, mid, w.count, 'count')]));
+    }
+    if (w.count < k) {
+      low = mid + 1;
+      if (!f3) {
+        f3 = true;
+        frames.push(Viz.frame(A_LOW, '≤ ' + mid + ' 的只有 ' + w.count + ' 个 < k = ' + k + '：答案比 ' + mid + ' 大，low = ' + low,
+          [gridPanel(null), varsPanel(low, high, mid, w.count, 'low')]));
+      }
+    } else {
+      high = mid;
+      if (!f4) {
+        f4 = true;
+        frames.push(Viz.frame(A_HIGH, 'mid = ' + mid + ' 数出 ' + w.count + ' 个 ≥ k：答案 ≤ ' + mid + '，high 收到 ' + high,
+          [gridPanel(pathMarks(w.path)), varsPanel(low, high, mid, w.count, 'high')]));
+      }
+    }
+  }
+
+  // 找到答案在矩阵里的位置（low 就是答案）
+  var done = null;
+  for (var r = 0; r < n && !done; r++) {
+    for (var c = 0; c < n; c++) {
+      if (matrix[r][c] === low) { done = [r, c]; break; }
+    }
+  }
+  frames.push(Viz.frame(A_RET, 'low 撞上 high = ' + low + '：就是第 ' + k + ' 小' + (done ? '（矩阵里的 ' + low + '）' : ''),
+    [gridPanel(null, done), varsPanel(low, high, null, null, '')]));
+
+  return { frames: frames, result: low };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

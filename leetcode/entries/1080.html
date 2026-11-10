@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>根到叶路径上的不足节点 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1020 / 1159</span>
+  <nav class="pn"><a href="0650.html">上一篇</a><a href="1259.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1080. </span>根到叶路径上的不足节点</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">深度优先搜索/递归</li><li class="tag">树</li><li class="tag">深度优先搜索</li><li class="tag">二叉树</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">后序 DFS：叶子看「根到叶整条路径和 ≥ limit」；内部结点看孩子——孩子全被删，自己也删（连坐）。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>自底向上：<code>dfs(node, path)</code> 返回「node 子树里还存在路径和 ≥ limit 的根叶路径吗」，<code>path</code> 是根到 node 的路径和。</li><li>叶子：直接判 <code>path + node.val &gt;= limit</code>，这条路径就是它自己。</li><li>内部结点：左右孩子分别递归；返回 false 的孩子指针置 <code>null</code>（<strong>孩子全不足 → 自己也连坐删除</strong>），自己 <code>left || right</code>。</li><li>根也保不住就返回 <code>null</code>（空树）；路径和用 <code>long</code> 防累加溢出。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n)，空间复杂度 O(h)（递归栈）</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="t">TreeNode</span> sufficientSubset(<span class="t">TreeNode</span> root, <span class="k">int</span> limit) {</span><span class="ln"><span class="no">3</span>        <span class="c">// 根如果也保不住（所有路径都不足），整棵树删空返回 null</span></span><span class="ln"><span class="no">4</span>        <span class="k">return</span> dfs(root, <span class="n">0</span>, limit) ? root : <span class="k">null</span>;</span><span class="ln"><span class="no">5</span>    }</span><span class="ln"><span class="no">6</span> </span><span class="ln"><span class="no">7</span>    <span class="c">// 后序：先算左右孩子是否保留，再决定自己；返回「node 子树里还有没有路径和 ≥ limit 的根叶路径」</span></span><span class="ln"><span class="no">8</span>    <span class="k">private</span> <span class="k">boolean</span> dfs(<span class="t">TreeNode</span> node, <span class="k">long</span> path, <span class="k">int</span> limit) {</span><span class="ln"><span class="no">9</span>        <span class="k">if</span> (node.left == <span class="k">null</span> &amp;&amp; node.right == <span class="k">null</span>) {</span><span class="ln"><span class="no">10</span>            <span class="k">return</span> path + node.val &gt;= limit;   <span class="c">// 叶子：看整条路径和</span></span><span class="ln"><span class="no">11</span>        }</span><span class="ln"><span class="no">12</span>        <span class="k">boolean</span> left = node.left != <span class="k">null</span> &amp;&amp; dfs(node.left, path + node.val, limit);</span><span class="ln"><span class="no">13</span>        <span class="k">boolean</span> right = node.right != <span class="k">null</span> &amp;&amp; dfs(node.right, path + node.val, limit);</span><span class="ln"><span class="no">14</span>        <span class="k">if</span> (!left) node.left = <span class="k">null</span>;     <span class="c">// 孩子全不足 → 连自己一起删（父结点也保不住）</span></span><span class="ln"><span class="no">15</span>        <span class="k">if</span> (!right) node.right = <span class="k">null</span>;</span><span class="ln"><span class="no">16</span>        <span class="k">return</span> left || right;</span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>给你二叉树的根节点 <code>root</code> 和一个整数 <code>limit</code> ，请你同时删除树中所有 <strong>不足节点 </strong>，并返回最终二叉树的根节点。</p>
+
+<p>假如通过节点 <code>node</code> 的每种可能的 “根-叶” 路径上值的总和全都小于给定的 <code>limit</code>，则该节点被称之为<strong> 不足节点 </strong>，需要被删除。</p>
+
+<p><strong>叶子节点</strong>，就是没有子节点的节点。</p>
+
+
+
+<p><strong class="example">示例 1：</strong></p>
+<img alt="" src="../assets/img/15205ce7ed49.png" style="width: 500px; height: 207px;" />
+<pre>
+<strong>输入：</strong>root = [1,2,3,4,-99,-99,7,8,9,-99,-99,12,13,-99,14], limit = 1
+<strong>输出：</strong>[1,2,3,4,null,null,7,8,9,null,14]
+</pre>
+
+<p><strong class="example">示例 2：</strong></p>
+<img alt="" src="../assets/img/5ee1e4c965dc.png" style="width: 400px; height: 274px;" />
+<pre>
+<strong>输入：</strong>root = [5,4,8,11,null,17,4,7,1,null,null,5,3], limit = 22
+<strong>输出：</strong>[5,4,8,11,null,17,4,7,null,null,null,5]
+</pre>
+
+<p><strong class="example">示例 3：</strong></p>
+<img alt="" src="../assets/img/69fe29a444b9.png" style="width: 250px; height: 199px;" />
+<pre>
+<strong>输入：</strong>root = [1,2,-3,-5,null,4,null], limit = -1
+<strong>输出：</strong>[1,null,-3,4]
+</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li>树中节点数目在范围 <code>[1, 5000]</code> 内</li>
+	<li><code>-10<sup>5</sup> &lt;= Node.val &lt;= 10<sup>5</sup></code></li>
+	<li><code>-10<sup>9</sup> &lt;= limit &lt;= 10<sup>9</sup></code></li>
+</ul>
+
+
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public TreeNode sufficientSubset(TreeNode root, int limit) {", "        // 根如果也保不住（所有路径都不足），整棵树删空返回 null", "        return dfs(root, 0, limit) ? root : null;", "    }", "", "    // 后序：先算左右孩子是否保留，再决定自己；返回「node 子树里还有没有路径和 ≥ limit 的根叶路径」", "    private boolean dfs(TreeNode node, long path, int limit) {", "        if (node.left == null && node.right == null) {", "            return path + node.val >= limit;   // 叶子：看整条路径和", "        }", "        boolean left = node.left != null && dfs(node.left, path + node.val, limit);", "        boolean right = node.right != null && dfs(node.right, path + node.val, limit);", "        if (!left) node.left = null;     // 孩子全不足 → 连自己一起删（父结点也保不住）", "        if (!right) node.right = null;", "        return left || right;", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1080. 根到叶路径上的不足节点 —— 图解：复刻 Solution.java 的后序删除（叶子判路径和，父随孩子存亡）。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { tree: [1, 2, -3, -5, null, 4, null], limit: -1 };
+
+function trace(input) {
+  var arr = input.tree;
+  var limit = input.limit;
+  var frames = [];
+
+  // 层序数组 → 结点（与 story.js 的 parseTree 同规则）
+  var nodes = [];   // {idx, val, l, r, parent, isLeft}
+  var root = null;
+  if (arr.length && arr[0] !== null) {
+    root = { idx: 0, val: arr[0] };
+    var q = [root];
+    nodes.push(root);
+    var j = 1;
+    while (q.length && j < arr.length) {
+      var cur = q.shift();
+      if (j < arr.length && arr[j] !== null) { cur.l = { idx: j, val: arr[j], parent: cur, isLeft: true }; q.push(cur.l); nodes.push(cur.l); }
+      j++;
+      if (j < arr.length && arr[j] !== null) { cur.r = { idx: j, val: arr[j], parent: cur, isLeft: false }; q.push(cur.r); nodes.push(cur.r); }
+      j++;
+    }
+  }
+
+  var alive = {};    // idx -> true（存活的结点）
+  nodes.forEach(function (nd) { alive[nd.idx] = true; });
+  var didLeaf = false, didKeepLeaf = false, didDelete = false, didParent = false;
+
+  function treePanel(extraMarks) {
+    var marks = {};
+    nodes.forEach(function (nd) {
+      if (!alive[nd.idx]) marks[nd.idx] = 'bad';
+    });
+    var all = extraMarks || {};
+    Object.keys(all).forEach(function (k) { if (alive[k]) marks[k] = all[k]; else marks[k] = 'bad'; });
+    return Viz.tree(arr, { title: 'bad = 已判定删除的结点', marks: marks });
+  }
+  function varsPanel(extra) {
+    var items = [{ name: 'limit', v: String(limit) }].concat(extra || []);
+    return Viz.vars(items);
+  }
+
+  // 与 Java 相同的后序；path 是根到 node 的路径和（不含 node.val）
+  function dfs(node, path) {
+    if (node.l == null && node.r == null) {
+      var total = path + node.val;
+      var keep = total >= limit;
+      if (!didLeaf) {
+        didLeaf = true;
+        var m = {}; m[node.idx] = keep ? 'done' : 'bad';
+        frames.push(Viz.frame('return path + node.val >= limit;',
+          '叶子 ' + node.val + '：整条路径和 ' + total + (keep ? ' ≥ limit → 保留' : ' < limit → 不足，删除'),
+          [treePanel(m), varsPanel([{ name: '结点', v: String(node.val) }, { name: '路径和', v: String(total) }])]));
+      } else if (keep && !didKeepLeaf) {
+        didKeepLeaf = true;
+        var mk = {}; mk[node.idx] = 'done';
+        frames.push(Viz.frame('return path + node.val >= limit;',
+          '叶子 ' + node.val + '：路径和 ' + total + ' ≥ limit → 这条路保住了，叶子保留',
+          [treePanel(mk), varsPanel([{ name: '结点', v: String(node.val) }, { name: '路径和', v: String(total) }])]));
+      }
+      alive[node.idx] = keep;
+      return keep;
+    }
+    var left = node.l != null && dfs(node.l, path + node.val);
+    var right = node.r != null && dfs(node.r, path + node.val);
+    if (!left && node.l != null) alive[node.l.idx] = false;
+    if (!right && node.r != null) alive[node.r.idx] = false;
+    var selfKeep = left || right;
+    if (!selfKeep && !didParent) {
+      didParent = true;
+      var m2 = {}; m2[node.idx] = 'bad';
+      frames.push(Viz.frame('return left || right;',
+        '结点 ' + node.val + ' 的孩子全被删 → 经过它的路径全不足，自己也删（父结点连坐）',
+        [treePanel(m2), varsPanel([{ name: '结点', v: String(node.val) }, { name: '判定', v: '删除' }])]));
+    }
+    alive[node.idx] = selfKeep;
+    return selfKeep;
+  }
+
+  var rootAlive = root != null && dfs(root, 0);
+
+  // 结果：存活的树按力扣层序输出（末尾多余的 null 去掉；根被删则整棵为空）
+  var result = null;
+  if (rootAlive) {
+    result = [];
+    var qq = [root];
+    while (qq.length) {
+      var nd = qq.shift();
+      if (nd == null) { result.push(null); continue; }
+      result.push(nd.val);
+      qq.push(nd.l != null && alive[nd.l.idx] ? nd.l : null);
+      qq.push(nd.r != null && alive[nd.r.idx] ? nd.r : null);
+    }
+    while (result.length && result[result.length - 1] === null) result.pop();
+  }
+
+  var finalMarks = {};
+  nodes.forEach(function (nd) { finalMarks[nd.idx] = alive[nd.idx] ? 'done' : 'bad'; });
+  frames.push(Viz.frame('return dfs(root, 0, limit) ? root : null;',
+    rootAlive ? '删完不足节点，剩下的树' : '所有路径都不足 → 整棵树删空，返回 null',
+    [treePanel(finalMarks), varsPanel([{ name: '结果', v: rootAlive ? JSON.stringify(result) : 'null', cls: 'done' }])]));
+
+  return { frames: frames, result: result };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

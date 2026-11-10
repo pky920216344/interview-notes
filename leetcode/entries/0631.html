@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>设计 Excel 求和公式 · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 727 / 1159</span>
+  <nav class="pn"><a href="0244.html">上一篇</a><a href="0850.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">631. </span>设计 Excel 求和公式</h1>
+  <ul class="meta"><li class="lv-3">困难</li><li>频度 2</li><li class="algo">设计</li><li class="aux">哈希表</li><li class="aux">深度优先搜索/递归</li><li class="tag">图</li><li class="tag">设计</li><li class="tag">拓扑排序</li><li class="tag">数组</li><li class="tag">哈希表</li><li class="tag">字符串</li><li class="tag">矩阵</li><li class="st-warn" title="会员题：本人账号不是会员，不能提交，只做了本地验证">未经力扣验证</li></ul>
+<p class="idea">每格存现值 + 公式展开表 + 反向依赖表；写入时沿反向依赖递归重算（seen 防环防重复），读取 O(1)。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>三个结构：<code>val</code> 现值、<code>fml</code> 公式格 → 展开后的格子列表、<code>rev</code> 格子 → 依赖它的公式格（反向边）。</li><li><code>set</code>/<code>sum</code> 改完值后 <code>wave</code>：沿反向边递归重算——公式格先把<strong>自己的项递归刷新</strong>（后序），再通知依赖自己的格子；<code>seen</code> 集合防环也防同一格重算两遍。</li><li><code>sum</code> 里的范围 "A1:B2" 逐格展开，重复出现的项（如 A1 + A1:B2）就加两次；被覆盖写的旧公式要从反向边里摘掉。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 set/sum O(受影响的依赖链)，get O(1)，空间复杂度 O(格子数 + 依赖边数)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">import</span> java.util.*;</span><span class="ln"><span class="no">2</span> </span><span class="ln"><span class="no">3</span><span class="k">class</span> <span class="t">Excel</span> {</span><span class="ln"><span class="no">4</span>    <span class="c">// 格子 id = 行 × 26 + 列（行列都不超过 26，id 唯一）</span></span><span class="ln"><span class="no">5</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">Integer</span>&gt; val = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();        <span class="c">// 当前值（普通格、公式格的现值）</span></span><span class="ln"><span class="no">6</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; fml = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();  <span class="c">// 公式格 → 展开后的格子列表</span></span><span class="ln"><span class="no">7</span>    <span class="k">private</span> <span class="k">final</span> <span class="t">Map</span>&lt;<span class="t">Integer</span>, <span class="t">List</span>&lt;<span class="t">Integer</span>&gt;&gt; rev = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();  <span class="c">// 格子 → 直接依赖它的公式格</span></span><span class="ln"><span class="no">8</span> </span><span class="ln"><span class="no">9</span>    <span class="k">public</span> <span class="t">Excel</span>(<span class="k">int</span> height, <span class="k">char</span> width) {</span><span class="ln"><span class="no">10</span>    }</span><span class="ln"><span class="no">11</span> </span><span class="ln"><span class="no">12</span>    <span class="k">public</span> <span class="k">void</span> set(<span class="k">int</span> row, <span class="k">char</span> column, <span class="k">int</span> v) {</span><span class="ln"><span class="no">13</span>        <span class="k">int</span> x = id(row, column);</span><span class="ln"><span class="no">14</span>        clearFormula(x);          <span class="c">// 覆盖写会顶掉旧公式</span></span><span class="ln"><span class="no">15</span>        val.put(x, v);</span><span class="ln"><span class="no">16</span>        wave(x);                  <span class="c">// 依赖它的公式格沿链重算</span></span><span class="ln"><span class="no">17</span>    }</span><span class="ln"><span class="no">18</span> </span><span class="ln"><span class="no">19</span>    <span class="k">public</span> <span class="k">int</span> get(<span class="k">int</span> row, <span class="k">char</span> column) {</span><span class="ln"><span class="no">20</span>        <span class="k">return</span> val.getOrDefault(id(row, column), <span class="n">0</span>);</span><span class="ln"><span class="no">21</span>    }</span><span class="ln"><span class="no">22</span> </span><span class="ln"><span class="no">23</span>    <span class="k">public</span> <span class="k">int</span> sum(<span class="k">int</span> row, <span class="k">char</span> column, <span class="t">List</span>&lt;<span class="t">String</span>&gt; numbers) {</span><span class="ln"><span class="no">24</span>        <span class="k">int</span> x = id(row, column);</span><span class="ln"><span class="no">25</span>        clearFormula(x);</span><span class="ln"><span class="no">26</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; terms = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">27</span>        <span class="k">for</span> (<span class="t">String</span> s : numbers)</span><span class="ln"><span class="no">28</span>            <span class="k">for</span> (<span class="k">int</span>[] cell : expand(s))</span><span class="ln"><span class="no">29</span>                terms.add(cell[<span class="n">0</span>] * <span class="n">26</span> + cell[<span class="n">1</span>]);</span><span class="ln"><span class="no">30</span>        fml.put(x, terms);</span><span class="ln"><span class="no">31</span>        <span class="k">for</span> (<span class="k">int</span> t : terms) rev.computeIfAbsent(t, k -&gt; <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;()).add(x);</span><span class="ln"><span class="no">32</span>        wave(x);</span><span class="ln"><span class="no">33</span>        <span class="k">return</span> val.get(x);</span><span class="ln"><span class="no">34</span>    }</span><span class="ln"><span class="no">35</span> </span><span class="ln"><span class="no">36</span>    <span class="c">// x 的值变了：递归重算所有直接或间接依赖它的公式格；seen 防环、防重复算</span></span><span class="ln"><span class="no">37</span>    <span class="k">private</span> <span class="k">void</span> wave(<span class="k">int</span> x) {</span><span class="ln"><span class="no">38</span>        recompute(x, <span class="k">new</span> <span class="t">HashSet</span>&lt;&gt;());</span><span class="ln"><span class="no">39</span>    }</span><span class="ln"><span class="no">40</span> </span><span class="ln"><span class="no">41</span>    <span class="c">// 把公式格 x 的值重算对：它的项可能也过期，先递归重算项，再通知依赖 x 的格子</span></span><span class="ln"><span class="no">42</span>    <span class="k">private</span> <span class="k">void</span> recompute(<span class="k">int</span> x, <span class="t">Set</span>&lt;<span class="t">Integer</span>&gt; seen) {</span><span class="ln"><span class="no">43</span>        <span class="k">if</span> (!seen.add(x)) <span class="k">return</span>;</span><span class="ln"><span class="no">44</span>        <span class="k">if</span> (fml.containsKey(x)) {</span><span class="ln"><span class="no">45</span>            <span class="k">int</span> sum = <span class="n">0</span>;</span><span class="ln"><span class="no">46</span>            <span class="k">for</span> (<span class="k">int</span> t : fml.get(x)) {</span><span class="ln"><span class="no">47</span>                <span class="k">if</span> (fml.containsKey(t)) recompute(t, seen);</span><span class="ln"><span class="no">48</span>                sum += val.getOrDefault(t, <span class="n">0</span>);</span><span class="ln"><span class="no">49</span>            }</span><span class="ln"><span class="no">50</span>            val.put(x, sum);</span><span class="ln"><span class="no">51</span>        }</span><span class="ln"><span class="no">52</span>        <span class="k">for</span> (<span class="k">int</span> d : rev.getOrDefault(x, <span class="t">List</span>.of())) recompute(d, seen);</span><span class="ln"><span class="no">53</span>    }</span><span class="ln"><span class="no">54</span> </span><span class="ln"><span class="no">55</span>    <span class="c">// 撤掉 x 上的旧公式：清掉展开表，并从各项的反向依赖里摘除 x</span></span><span class="ln"><span class="no">56</span>    <span class="k">private</span> <span class="k">void</span> clearFormula(<span class="k">int</span> x) {</span><span class="ln"><span class="no">57</span>        <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; old = fml.remove(x);</span><span class="ln"><span class="no">58</span>        <span class="k">if</span> (old != <span class="k">null</span>)</span><span class="ln"><span class="no">59</span>            <span class="k">for</span> (<span class="k">int</span> t : old) {</span><span class="ln"><span class="no">60</span>                <span class="t">List</span>&lt;<span class="t">Integer</span>&gt; l = rev.get(t);</span><span class="ln"><span class="no">61</span>                <span class="k">if</span> (l != <span class="k">null</span>) l.remove(<span class="t">Integer</span>.valueOf(x));</span><span class="ln"><span class="no">62</span>            }</span><span class="ln"><span class="no">63</span>    }</span><span class="ln"><span class="no">64</span> </span><span class="ln"><span class="no">65</span>    <span class="c">// "A1" 是单格，"A1:B2" 是矩形范围（行、列都按小到大展开）</span></span><span class="ln"><span class="no">66</span>    <span class="k">private</span> <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; expand(<span class="t">String</span> s) {</span><span class="ln"><span class="no">67</span>        <span class="k">int</span> colon = s.indexOf(<span class="s">':'</span>);</span><span class="ln"><span class="no">68</span>        <span class="k">int</span>[] a = parse(colon &lt; <span class="n">0</span> ? s : s.substring(<span class="n">0</span>, colon));</span><span class="ln"><span class="no">69</span>        <span class="k">if</span> (colon &lt; <span class="n">0</span>) <span class="k">return</span> <span class="t">List</span>.of(a);</span><span class="ln"><span class="no">70</span>        <span class="k">int</span>[] b = parse(s.substring(colon + <span class="n">1</span>));</span><span class="ln"><span class="no">71</span>        <span class="t">List</span>&lt;<span class="k">int</span>[]&gt; out = <span class="k">new</span> <span class="t">ArrayList</span>&lt;&gt;();</span><span class="ln"><span class="no">72</span>        <span class="k">for</span> (<span class="k">int</span> r = <span class="t">Math</span>.min(a[<span class="n">0</span>], b[<span class="n">0</span>]); r &lt;= <span class="t">Math</span>.max(a[<span class="n">0</span>], b[<span class="n">0</span>]); r++)</span><span class="ln"><span class="no">73</span>            <span class="k">for</span> (<span class="k">int</span> c = <span class="t">Math</span>.min(a[<span class="n">1</span>], b[<span class="n">1</span>]); c &lt;= <span class="t">Math</span>.max(a[<span class="n">1</span>], b[<span class="n">1</span>]); c++)</span><span class="ln"><span class="no">74</span>                out.add(<span class="k">new</span> <span class="k">int</span>[]{r, c});</span><span class="ln"><span class="no">75</span>        <span class="k">return</span> out;</span><span class="ln"><span class="no">76</span>    }</span><span class="ln"><span class="no">77</span> </span><span class="ln"><span class="no">78</span>    <span class="c">// "B3" → 行 3、列 1（B − A）</span></span><span class="ln"><span class="no">79</span>    <span class="k">private</span> <span class="k">int</span>[] parse(<span class="t">String</span> s) {</span><span class="ln"><span class="no">80</span>        <span class="k">return</span> <span class="k">new</span> <span class="k">int</span>[]{<span class="t">Integer</span>.parseInt(s.substring(<span class="n">1</span>)), s.charAt(<span class="n">0</span>) - <span class="s">'A'</span>};</span><span class="ln"><span class="no">81</span>    }</span><span class="ln"><span class="no">82</span> </span><span class="ln"><span class="no">83</span>    <span class="k">private</span> <span class="k">int</span> id(<span class="k">int</span> row, <span class="k">char</span> column) {</span><span class="ln"><span class="no">84</span>        <span class="k">return</span> row * <span class="n">26</span> + (column - <span class="s">'A'</span>);</span><span class="ln"><span class="no">85</span>    }</span><span class="ln"><span class="no">86</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement">该题是 Leetcode Plus 会员题</div><p class="src-note">题面取自 codetop 快照，可能与力扣现行版本略有出入。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["import java.util.*;", "", "class Excel {", "    // 格子 id = 行 × 26 + 列（行列都不超过 26，id 唯一）", "    private final Map<Integer, Integer> val = new HashMap<>();        // 当前值（普通格、公式格的现值）", "    private final Map<Integer, List<Integer>> fml = new HashMap<>();  // 公式格 → 展开后的格子列表", "    private final Map<Integer, List<Integer>> rev = new HashMap<>();  // 格子 → 直接依赖它的公式格", "", "    public Excel(int height, char width) {", "    }", "", "    public void set(int row, char column, int v) {", "        int x = id(row, column);", "        clearFormula(x);          // 覆盖写会顶掉旧公式", "        val.put(x, v);", "        wave(x);                  // 依赖它的公式格沿链重算", "    }", "", "    public int get(int row, char column) {", "        return val.getOrDefault(id(row, column), 0);", "    }", "", "    public int sum(int row, char column, List<String> numbers) {", "        int x = id(row, column);", "        clearFormula(x);", "        List<Integer> terms = new ArrayList<>();", "        for (String s : numbers)", "            for (int[] cell : expand(s))", "                terms.add(cell[0] * 26 + cell[1]);", "        fml.put(x, terms);", "        for (int t : terms) rev.computeIfAbsent(t, k -> new ArrayList<>()).add(x);", "        wave(x);", "        return val.get(x);", "    }", "", "    // x 的值变了：递归重算所有直接或间接依赖它的公式格；seen 防环、防重复算", "    private void wave(int x) {", "        recompute(x, new HashSet<>());", "    }", "", "    // 把公式格 x 的值重算对：它的项可能也过期，先递归重算项，再通知依赖 x 的格子", "    private void recompute(int x, Set<Integer> seen) {", "        if (!seen.add(x)) return;", "        if (fml.containsKey(x)) {", "            int sum = 0;", "            for (int t : fml.get(x)) {", "                if (fml.containsKey(t)) recompute(t, seen);", "                sum += val.getOrDefault(t, 0);", "            }", "            val.put(x, sum);", "        }", "        for (int d : rev.getOrDefault(x, List.of())) recompute(d, seen);", "    }", "", "    // 撤掉 x 上的旧公式：清掉展开表，并从各项的反向依赖里摘除 x", "    private void clearFormula(int x) {", "        List<Integer> old = fml.remove(x);", "        if (old != null)", "            for (int t : old) {", "                List<Integer> l = rev.get(t);", "                if (l != null) l.remove(Integer.valueOf(x));", "            }", "    }", "", "    // \"A1\" 是单格，\"A1:B2\" 是矩形范围（行、列都按小到大展开）", "    private List<int[]> expand(String s) {", "        int colon = s.indexOf(':');", "        int[] a = parse(colon < 0 ? s : s.substring(0, colon));", "        if (colon < 0) return List.of(a);", "        int[] b = parse(s.substring(colon + 1));", "        List<int[]> out = new ArrayList<>();", "        for (int r = Math.min(a[0], b[0]); r <= Math.max(a[0], b[0]); r++)", "            for (int c = Math.min(a[1], b[1]); c <= Math.max(a[1], b[1]); c++)", "                out.add(new int[]{r, c});", "        return out;", "    }", "", "    // \"B3\" → 行 3、列 1（B − A）", "    private int[] parse(String s) {", "        return new int[]{Integer.parseInt(s.substring(1)), s.charAt(0) - 'A'};", "    }", "", "    private int id(int row, char column) {", "        return row * 26 + (column - 'A');", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 631. 设计 Excel 求和公式 —— 图解：复刻 Solution.java 的「反向依赖 + 递归重算」，在 4 个关键时刻拍快照。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = {
+  h: 3, w: 'C',
+  ops: [['set', 1, 'A', 2], ['sum', 3, 'C', ['A1', 'A1:B2']], ['set', 2, 'B', 2], ['get', 3, 'C']]
+};
+
+function trace(input) {
+  var h = input.h, w = input.w;
+  var cols = w.charCodeAt(0) - 64;
+  var frames = [];
+  var val = {}, fml = {}, rev = {};
+  var out = [];
+
+  function id(r, c) { return r * 26 + c; }
+  function nameOf(x) { return String.fromCharCode(65 + (x % 26)) + Math.floor(x / 26); }
+  function parse(s) { return [parseInt(s.slice(1), 10), s.charCodeAt(0) - 65]; }
+  function expand(s) {
+    var colon = s.indexOf(':');
+    var a = parse(colon < 0 ? s : s.slice(0, colon));
+    if (colon < 0) return [a];
+    var b = parse(s.slice(colon + 1));
+    var out = [];
+    for (var r = Math.min(a[0], b[0]); r <= Math.max(a[0], b[0]); r++)
+      for (var c = Math.min(a[1], b[1]); c <= Math.max(a[1], b[1]); c++) out.push([r, c]);
+    return out;
+  }
+  function clearFormula(x) {
+    var old = fml[x];
+    if (old) {
+      delete fml[x];
+      old.forEach(function (t) {
+        var l = rev[t];
+        if (l) { var k = l.indexOf(x); if (k >= 0) l.splice(k, 1); }
+      });
+    }
+  }
+  // 与 Solution.java 相同的递归重算：先刷新项，再通知依赖者；seen 防环
+  function recompute(x, seen) {
+    if (seen[x]) return;
+    seen[x] = 1;
+    if (fml[x]) {
+      var sum = 0;
+      fml[x].forEach(function (t) {
+        if (fml[t]) recompute(t, seen);
+        sum += (val[t] || 0);
+      });
+      val[x] = sum;
+    }
+    (rev[x] || []).forEach(function (d) { recompute(d, seen); });
+  }
+  function wave(x) { recompute(x, {}); }
+
+  function gridPanel(marks) {
+    var rows = [];
+    for (var r = 1; r <= h; r++) {
+      var row = [];
+      for (var c = 0; c < cols; c++) row.push(val[id(r, c)] || 0);
+      rows.push(row);
+    }
+    var colLabels = [];
+    for (var c2 = 0; c2 < cols; c2++) colLabels.push(String.fromCharCode(65 + c2));
+    var rowLabels = [];
+    for (var r2 = 1; r2 <= h; r2++) rowLabels.push(String(r2));
+    return Viz.grid(rows, { title: '表格现值', marks: marks || {}, colLabels: colLabels, rowLabels: rowLabels, corner: '格' });
+  }
+  function depsPanel() {
+    var rows = [];
+    Object.keys(rev).forEach(function (k) {
+      var u = Number(k);
+      if (rev[k].length) rows.push({ k: nameOf(u), v: '← ' + rev[k].map(nameOf).join(' '), cls: '' });
+    });
+    return Viz.table('反向依赖：格子 ← 依赖它的公式格', rows, { hint: '改值时沿这些边传播' });
+  }
+  function varsPanel(text) {
+    return Viz.vars([{ name: '本步', v: text, cls: 'chg' }]);
+  }
+
+  input.ops.forEach(function (op, oi) {
+    var r = op[1], c = op[2].charCodeAt(0) - 65;
+    var before = null;
+    var changedMarks = function (x) {
+      var m = {};
+      Object.keys(val).forEach(function (k) { if (String(before[k]) !== String(val[k])) m[cellPos(k)] = 'chg'; });
+      m[cellPos(String(x))] = 'new';
+      return m;
+    };
+    var cellPos = function (k) { return (Math.floor(Number(k) / 26) - 1) + ',' + (Number(k) % 26); };
+    if (op[0] === 'set') {
+      var x = id(r, c);
+      before = Object.assign({}, val);
+      clearFormula(x);
+      val[x] = op[3];
+      wave(x);
+      out.push(op[3]);
+      if (oi === 0) {
+        frames.push(Viz.frame('val.put(x, v);',
+          'set 直接写入 ' + nameOf(x) + ' = ' + op[3] + '：普通格不参与依赖',
+          [gridPanel({ [(r - 1) + ',' + c]: 'new' }), varsPanel('set ' + nameOf(x) + ' = ' + op[3])]));
+      }
+      if (oi === 2) {
+        frames.push(Viz.frame('val.put(x, v);',
+          'set 改写 ' + nameOf(x) + ' = ' + op[3] + '：沿反向依赖把公式格重算',
+          [gridPanel(changedMarks(x)), depsPanel(), varsPanel('set ' + nameOf(x) + ' = ' + op[3])]));
+      }
+    } else if (op[0] === 'sum') {
+      var x = id(r, c);
+      before = Object.assign({}, val);
+      clearFormula(x);
+      var terms = [];
+      op[3].forEach(function (s) { expand(s).forEach(function (cell) { terms.push(cell[0] * 26 + cell[1]); }); });
+      fml[x] = terms;
+      terms.forEach(function (t) { (rev[t] = rev[t] || []).push(x); });
+      wave(x);
+      out.push(val[x]);
+      if (oi === 1) {
+        frames.push(Viz.frame('fml.put(x, terms);',
+          'sum 让 ' + nameOf(x) + ' 变成公式：' + op[3].join(' + ') + '，现值 ' + val[x],
+          [gridPanel(changedMarks(x)), depsPanel(), varsPanel(nameOf(x) + ' = ' + op[3].join(' + '))]));
+      }
+    } else {
+      out.push(val[id(r, c)] || 0);
+      if (oi === 3) {
+        frames.push(Viz.frame('return val.getOrDefault(id(row, column), 0);',
+          'get 直接取 ' + nameOf(id(r, c)) + ' 的现值：传播在写入时就完成了',
+          [gridPanel({ [(r - 1) + ',' + c]: 'hit' }), varsPanel('get ' + nameOf(id(r, c)) + ' → ' + out[out.length - 1])]));
+      }
+    }
+  });
+
+  return { frames: frames, result: out };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>

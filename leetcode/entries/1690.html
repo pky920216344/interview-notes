@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>石子游戏 VII · LeetCode 高频题详解</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="../index.html">总览</a>
+  <span class="pos">排名 1064 / 1159</span>
+  <nav class="pn"><a href="mianshi-03-05.html">上一篇</a><a href="0472.html">下一篇</a></nav>
+</header>
+<main class="entry">
+  <h1><span class="fid">1690. </span>石子游戏 VII</h1>
+  <ul class="meta"><li class="lv-2">中等</li><li>频度 1</li><li class="algo">动态规划</li><li class="aux">前缀和/差分</li><li class="tag">极小化极大</li><li class="tag">数组</li><li class="tag">数学</li><li class="tag">动态规划</li><li class="tag">博弈</li><li class="tag">zero-sum-game</li><li class="st-todo" title="尚未提交到力扣">待提交</li></ul>
+<p class="idea">区间 DP 求「净胜分」：dp[i][j] = 当前玩家在 [i,j] 拿一端得到剩余区间和，再减去对手在剩下区间里的净胜分，取两种拿法的较大者。</p>
+<section class="block" id="idea"><h2>思路</h2><div class="prose"><ul><li>关键转化：不求两人各得多少分，只求「当前玩家 − 对手」的最大净胜分，两人目标一致（都最大化自己的净胜分）。</li><li>拿走一端得分 = 拿走后<strong>剩余</strong>区间的和（用前缀和 O(1) 取）；对手随后在剩余区间净胜 <code>dp</code> 值，要减掉。</li><li><code>dp[i][j] = max(剩余和(i+1..j) − dp[i+1][j], 剩余和(i..j−1) − dp[i][j−1])</code>，按区间长度从小到大填表。</li><li>单块石子的区间 <code>dp[i][i] = 0</code>（拿走它得到 0 分）；答案 <code>dp[0][n−1]</code>。</li></ul></div></section>
+<section class="block" id="story-sec"><h2>图解</h2><div class="story" id="story"></div></section>
+<section class="block" id="code"><h2>最优解</h2><div class="codebox"><div class="codebar"><span>时间复杂度 O(n²)，空间复杂度 O(n²)</span><button type="button" class="btn" id="copy-code">复制 Java 代码</button></div><div class="codescroll"><pre class="code"><code><span class="ln"><span class="no">1</span><span class="k">class</span> <span class="t">Solution</span> {</span><span class="ln"><span class="no">2</span>    <span class="k">public</span> <span class="k">int</span> stoneGameVII(<span class="k">int</span>[] stones) {</span><span class="ln"><span class="no">3</span>        <span class="k">int</span> n = stones.length;</span><span class="ln"><span class="no">4</span>        <span class="k">int</span>[] pre = <span class="k">new</span> <span class="k">int</span>[n + <span class="n">1</span>];   <span class="c">// pre[i]：前 i 块石子之和，任意区间和 O(1) 可查</span></span><span class="ln"><span class="no">5</span>        <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; n; i++) pre[i + <span class="n">1</span>] = pre[i] + stones[i];</span><span class="ln"><span class="no">6</span>        <span class="c">// dp[i][j]：当前行动者在区间 [i,j] 上能取得的最大「自己 − 对手」分差</span></span><span class="ln"><span class="no">7</span>        <span class="k">int</span>[][] dp = <span class="k">new</span> <span class="k">int</span>[n][n];</span><span class="ln"><span class="no">8</span>        <span class="k">for</span> (<span class="k">int</span> len = <span class="n">2</span>; len &lt;= n; len++) {</span><span class="ln"><span class="no">9</span>            <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>, j = len - <span class="n">1</span>; j &lt; n; i++, j++) {</span><span class="ln"><span class="no">10</span>                <span class="c">// 拿走左端：先得剩余区间之和，对手随后在 [i+1,j] 净胜 dp[i+1][j]</span></span><span class="ln"><span class="no">11</span>                <span class="k">int</span> takeLeft = pre[j + <span class="n">1</span>] - pre[i + <span class="n">1</span>] - dp[i + <span class="n">1</span>][j];</span><span class="ln"><span class="no">12</span>                <span class="c">// 拿走右端：同理，对手在 [i,j-1] 净胜 dp[i][j-1]</span></span><span class="ln"><span class="no">13</span>                <span class="k">int</span> takeRight = pre[j] - pre[i] - dp[i][j - <span class="n">1</span>];</span><span class="ln"><span class="no">14</span>                dp[i][j] = <span class="t">Math</span>.max(takeLeft, takeRight);</span><span class="ln"><span class="no">15</span>            }</span><span class="ln"><span class="no">16</span>        }</span><span class="ln"><span class="no">17</span>        <span class="k">return</span> dp[<span class="n">0</span>][n - <span class="n">1</span>];</span><span class="ln"><span class="no">18</span>    }</span><span class="ln"><span class="no">19</span>}</span></code></pre></div></div></section>
+<details class="block stmt"><summary>题目</summary><div class="statement"><p>石子游戏中，爱丽丝和鲍勃轮流进行自己的回合，<strong>爱丽丝先开始</strong> 。</p>
+
+<p>有 <code>n</code> 块石子排成一排。每个玩家的回合中，可以从行中 <strong>移除</strong> 最左边的石头或最右边的石头，并获得与该行中剩余石头值之 <strong>和</strong> 相等的得分。当没有石头可移除时，得分较高者获胜。</p>
+
+<p>鲍勃发现他总是输掉游戏（可怜的鲍勃，他总是输），所以他决定尽力 <strong>减小得分的差值</strong> 。爱丽丝的目标是最大限度地 <strong>扩大得分的差值</strong> 。</p>
+
+<p>给你一个整数数组 <code>stones</code> ，其中 <code>stones[i]</code> 表示 <strong>从左边开始</strong> 的第 <code>i</code> 个石头的值，如果爱丽丝和鲍勃都 <strong>发挥出最佳水平</strong> ，请返回他们 <strong>得分的差值</strong> 。</p>
+
+
+
+<p><strong>示例 1：</strong></p>
+
+<pre>
+<strong>输入：</strong>stones = [5,3,1,4,2]
+<strong>输出：</strong>6
+<strong>解释：</strong>
+- 爱丽丝移除 2 ，得分 5 + 3 + 1 + 4 = 13 。游戏情况：爱丽丝 = 13 ，鲍勃 = 0 ，石子 = [5,3,1,4] 。
+- 鲍勃移除 5 ，得分 3 + 1 + 4 = 8 。游戏情况：爱丽丝 = 13 ，鲍勃 = 8 ，石子 = [3,1,4] 。
+- 爱丽丝移除 3 ，得分 1 + 4 = 5 。游戏情况：爱丽丝 = 18 ，鲍勃 = 8 ，石子 = [1,4] 。
+- 鲍勃移除 1 ，得分 4 。游戏情况：爱丽丝 = 18 ，鲍勃 = 12 ，石子 = [4] 。
+- 爱丽丝移除 4 ，得分 0 。游戏情况：爱丽丝 = 18 ，鲍勃 = 12 ，石子 = [] 。
+得分的差值 18 - 12 = 6 。
+</pre>
+
+<p><strong>示例 2：</strong></p>
+
+<pre>
+<strong>输入：</strong>stones = [7,90,5,1,100,10,10,2]
+<strong>输出：</strong>122</pre>
+
+
+
+<p><strong>提示：</strong></p>
+
+<ul>
+	<li><code>n == stones.length</code></li>
+	<li><code>2 <= n <= 1000</code></li>
+	<li><code>1 <= stones[i] <= 1000</code></li>
+</ul>
+</div><p class="src-note">题面取自力扣当前版本。</p></details>
+  <p class="src-note" style="margin-top:36px">数据快照 2026-11-04。题面版权归力扣所有，本站点仅供本人学习使用，请勿对外发布。</p>
+</main>
+<script id="entry-data" type="application/json">{"code": ["class Solution {", "    public int stoneGameVII(int[] stones) {", "        int n = stones.length;", "        int[] pre = new int[n + 1];   // pre[i]：前 i 块石子之和，任意区间和 O(1) 可查", "        for (int i = 0; i < n; i++) pre[i + 1] = pre[i] + stones[i];", "        // dp[i][j]：当前行动者在区间 [i,j] 上能取得的最大「自己 − 对手」分差", "        int[][] dp = new int[n][n];", "        for (int len = 2; len <= n; len++) {", "            for (int i = 0, j = len - 1; j < n; i++, j++) {", "                // 拿走左端：先得剩余区间之和，对手随后在 [i+1,j] 净胜 dp[i+1][j]", "                int takeLeft = pre[j + 1] - pre[i + 1] - dp[i + 1][j];", "                // 拿走右端：同理，对手在 [i,j-1] 净胜 dp[i][j-1]", "                int takeRight = pre[j] - pre[i] - dp[i][j - 1];", "                dp[i][j] = Math.max(takeLeft, takeRight);", "            }", "        }", "        return dp[0][n - 1];", "    }", "}"]}</script>
+<script src="../assets/viz.js"></script>
+<script src="../assets/story.js"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('entry-data').textContent);
+  var entry = (function (Viz) {
+// 1690. 石子游戏 VII —— 图解：复刻 Solution.java 的「区间 DP」。
+// 约定见 site/assets/viz.js。at 里的字符串是 Solution.java 中的行内文字，必须唯一匹配一行。
+
+var STORY_INPUT = { stones: [5, 3, 1, 4] };
+
+function trace(input) {
+  var stones = input.stones;
+  var n = stones.length;
+
+  var pre = [0];                       // pre[i]：前 i 块之和，与 Java 一致
+  for (var k = 0; k < n; k++) pre.push(pre[k] + stones[k]);
+
+  var dp = [];                         // dp[i][j]，与 Java 同一套递推
+  for (var a = 0; a < n; a++) dp.push(new Array(n).fill(0));
+  var frames = [];
+
+  var A_LEN = 'for (int len = 2; len <= n; len++) {';
+  var A_MAX = 'dp[i][j] = Math.max(takeLeft, takeRight);';
+  var A_RET = 'return dp[0][n - 1];';
+
+  // dp 表：上三角填数，下三角留空；cur 当前格、hit 两个依赖格、done 已填好
+  function gridPanel(marks) {
+    var rows = [], rowLabels = [], colLabels = [];
+    for (var i = 0; i < n; i++) {
+      var row = [];
+      for (var j = 0; j < n; j++) row.push(j >= i ? String(dp[i][j]) : '');
+      rows.push(row);
+      rowLabels.push('i=' + i);
+      colLabels.push('j=' + j);
+    }
+    return Viz.grid(rows, { title: 'dp[i][j]：当前玩家在 [i,j] 的最大净胜分', marks: marks || {}, rowLabels: rowLabels, colLabels: colLabels, corner: '区间 [i,j]' });
+  }
+  function varsPanel(extra) {
+    var items = [{ name: 'stones 剩余区间和', v: String(pre[n]) }];
+    (extra || []).forEach(function (it) { items.push(it); });
+    return Viz.vars(items);
+  }
+  function snap(at, key, extra, marks) {
+    frames.push(Viz.frame(at, key, [gridPanel(marks), varsPanel(extra)]));
+  }
+
+  snap(A_LEN, 'dp[i][j]：当前玩家在 [i,j] 能拿到的最大净胜分；单格区间都是 0',
+    [{ name: 'len', v: '2（先算最短的区间）' }], {});
+
+  for (var len = 2; len <= n; len++) {
+    for (var i = 0, j = len - 1; j < n; i++, j++) {
+      var takeLeft = pre[j + 1] - pre[i + 1] - dp[i + 1][j];
+      var takeRight = pre[j] - pre[i] - dp[i][j - 1];
+      dp[i][j] = Math.max(takeLeft, takeRight);
+      var show = (i === 0 && j === 1) || (i === 0 && j === n - 1);
+      if (show) {
+        var marks = {};
+        marks[i + ',' + j] = 'cur';
+        marks[(i + 1) + ',' + j] = 'hit';
+        marks[i + ',' + (j - 1)] = 'hit';
+        snap(A_MAX,
+          '[i=' + i + ',j=' + j + ']：拿左端得 ' + (pre[j + 1] - pre[i + 1]) + '，拿右端得 ' + (pre[j] - pre[i])
+          + '，再各减对手的净胜分 → dp=' + dp[i][j],
+          [
+            { name: '拿左端净胜', v: String(takeLeft), cls: takeLeft >= takeRight ? 'chg' : '' },
+            { name: '拿右端净胜', v: String(takeRight), cls: takeRight > takeLeft ? 'chg' : '' }
+          ], marks);
+      }
+    }
+  }
+
+  var finalMarks = {};
+  finalMarks['0,' + (n - 1)] = 'done';
+  snap(A_RET, '整局打完：先手能净胜 dp[0][' + (n - 1) + '] = ' + dp[0][n - 1] + ' 分',
+    [{ name: '答案', v: String(dp[0][n - 1]), cls: 'done' }], finalMarks);
+
+  return { frames: frames, result: dp[0][n - 1] };
+}
+
+    return { trace: trace, story: STORY_INPUT };
+  })(window.Viz);
+  renderStory(document.getElementById('story'), entry.trace(entry.story).frames, data.code);
+
+  var btn = document.getElementById('copy-code');
+  var text = data.code.join('\n') + '\n';
+  function done() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制 Java 代码'; }, 1500); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = '复制失败'; }
+    ta.remove();
+  }
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+})();
+</script>
+</body>
+</html>
